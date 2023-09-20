@@ -25,7 +25,7 @@ adb shell sh /tmp/install_on_modem.sh
 
 
 
-# 2 Original README.md files
+# The 2 Original README.md files
 
 
 
@@ -126,6 +126,14 @@ bash-3.2# ./modem-multiclient.py
 
 If it's still not working, let me know!
 
+
+
+
+
+
+
+
+
 # Simple Web Admin Interface for Quectel Modem using RJ45 Boards
 Simple Admin / Monitoring web UI for Quectel modems that are connected via a RGMII Ethernet interface (aka a "RJ45 to M.2" or "Ethernet to M.2" adapter board). Such as <a href="https://www.aliexpress.us/item/3256804672394777.html">Generic RJ45 Board</a> or the <a href="https://www.aliexpress.us/item/3256805527880876.html">MCUZone board</a>
 
@@ -146,7 +154,7 @@ If you are able to test on other modems and get it working, feel free to PR.
 ## Installation Automated
 Script will do everything but setup Nate's at_telnet_daemon
 ```bash
-adb shell wget -P /tmp https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/install_on_modem.sh
+adb shell wget -P /tmp https://raw.githubusercontent.com/rbflurry/quectel-rgmii-simpleadmin/main/install_on_modem.sh
 adb shell chmod +x /tmp/install_on_modem.sh
 adb shell sh /tmp/install_on_modem.sh
 ```
