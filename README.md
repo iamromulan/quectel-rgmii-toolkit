@@ -1,7 +1,35 @@
 # AT Telnet Daemon and Simple Admin combo installer/uninstaller
+
 This will install a Combination of https://github.com/natecarlson/quectel-rgmii-at-command-client/tree/main/at_telnet_daemon  and; https://github.com/rbflurry/quectel-rgmii-simpleadmin
+
 ONLY FOR THE QUECTEL RM520N-GL
+
 *****WORK IN PROGRESS NOT READY TO INSTALL*****
+## Installation Automated
+Script will do everything but setup Nate's at_telnet_daemon
+```bash
+adb shell wget -P /tmp https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/install_on_modem.sh
+adb shell chmod +x /tmp/install_on_modem.sh
+adb shell sh /tmp/install_on_modem.sh
+```
+
+
+
+## Uninstallation Automated
+Script will ask to remove Simpleadmin then ask to remove AT Telnet Daemon
+```bash
+adb shell wget -P /tmp https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/uninstall_on_modem.sh
+adb shell chmod +x /tmp/install_on_modem.sh
+adb shell sh /tmp/install_on_modem.sh
+```
+
+
+
+# 2 Original README.md files
+
+
+
+
 # AT Telnet Daemon for Quectel Modem
 
 This will provide a telnet interface to the AT command port of Quectel modems that are connected via a RGMII Ethernet interface (aka a "RJ45 to M.2" or "Ethernet to M.2" adapter board). It is an alternative to the ETH AT command interface that Quectel provides, which is a bit flaky and requires a custom client.
@@ -118,7 +146,7 @@ If you are able to test on other modems and get it working, feel free to PR.
 ## Installation Automated
 Script will do everything but setup Nate's at_telnet_daemon
 ```bash
-adb shell wget -P /tmp https://raw.githubusercontent.com/rbflurry/quectel-rgmii-simpleadmin/main/install_on_modem.sh
+adb shell wget -P /tmp https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/install_on_modem.sh
 adb shell chmod +x /tmp/install_on_modem.sh
 adb shell sh /tmp/install_on_modem.sh
 ```
