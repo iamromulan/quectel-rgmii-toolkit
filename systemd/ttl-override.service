@@ -1,0 +1,12 @@
+[Unit]
+Description=TTL Override
+After=ql-netd.service
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usrdata/simpleadmin/ttl/ttl-override start
+User=root
+
+[Install]
+WantedBy=multi-user.target

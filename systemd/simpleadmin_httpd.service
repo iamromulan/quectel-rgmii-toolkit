@@ -1,0 +1,11 @@
+[Unit]
+Description=SimpleAdmin httpd service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/httpd -f -h /usrdata/simpleadmin/www -p 8080
+ExecStop=/bin/kill -WINCH ${MAINPID}
+
+[Install]
+WantedBy=multi-user.target

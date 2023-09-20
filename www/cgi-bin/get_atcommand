@@ -1,0 +1,30 @@
+#!/bin/bash
+QUERY_STRING=$(echo "${QUERY_STRING}" | sed 's/;//g')
+function urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
+
+if [ "${QUERY_STRING}" ]; then
+
+        export IFS="&"
+        for cmd in ${QUERY_STRING}; do
+
+                if [ "$(echo $cmd | grep '=')" ]; then
+                        key=$(echo $cmd | awk -F '=' '{print $1}')
+                        value=$(echo $cmd | awk -F '=' '{print $2}')
+                        eval $key=$value
+                fi
+
+        done
+
+fi
+
+MYATCMD=$(printf '%b\n' "${atcmd//%/\\x}")
+if [ -n "${MYATCMD}" ]; then
+   x=$(urldecode "$atcmd")
+   runcmd=$(echo -en "$x\r\n" | microcom -t 2000 /dev/ttyOUT)
+  # runcmd=$(/usrdata/simpleadmin/scripts/doAT.py "$MYATCMD")
+fi
+
+echo "Content-type: text/plain"
+echo $x
+echo ""
+echo $runcmd

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+while true; do
+    # Send request to modem and wait 5 seconds for data
+    echo -en "AT+QSPN;+CEREG=2;+CEREG?;+CEREG=0;+C5GREG=2;+C5GREG?;+C5GREG=0;+CSQ;+QENG=\"servingcell\";+QRSRP;+QCAINFO;+QNWPREFCFG=\"mode_pref\";+QTEMP\r\n" \
+    | microcom -t 3000 /dev/ttyOUT > /tmp/modemstatus.txt
+    if [ $? -eq 0 ]
+    then
+        # Parse
+        if [ -f /tmp/modemstatus.txt ]
+        then
+    	      /usrdata/simpleadmin/scripts/modemstatus_parse.sh
+        fi
+    fi
+    sleep 25  # Add a sleep to avoid CPU overload
+done

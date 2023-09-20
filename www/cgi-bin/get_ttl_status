@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Check iptables for ttlvalue
+ttlvalue=$(iptables -t mangle -vnL | grep TTL | awk '{print $13}')
+ttlenabled=true;
+
+# Set Variables
+if [ -z "${ttlvalue}" ]; then
+    ttlvalue=0
+    ttlenabled=false
+fi
+
+echo "Content-type: text/json" 
+echo ""
+cat <<EOT
+{
+    "isEnabled": $ttlenabled,
+    "ttl": $ttlvalue
+}
