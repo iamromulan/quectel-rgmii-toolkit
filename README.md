@@ -6,7 +6,7 @@ ONLY FOR THE QUECTEL RM520N-GL
 
 *****WORK IN PROGRESS NOT READY TO INSTALL*****
 ## Installation Automated
-Script will do everything but setup Nate's at_telnet_daemon
+Script will ask to install AT Telnet Daemon then ask to install Simpleadmin 
 ```bash
 adb shell wget -P /tmp https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/install_on_modem.sh
 adb shell chmod +x /tmp/install_on_modem.sh
