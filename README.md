@@ -198,3 +198,13 @@ adb shell systemctl daemon-reload
 
 ## Acknowledgements
 This heavily uses the AT Command Parsing Scripts (Basically a copy with minor tweaks) of Dairyman's Rooter Source https://github.com/ofmodemsandmen/ROOterSource2203
+
+![image](https://github.com/rbflurry/quectel-rgmii-simpleadmin/assets/22154114/ae5746d9-332e-4e34-90a0-3f96c3a19d9e)
+
+
+![image](https://github.com/rbflurry/quectel-rgmii-simpleadmin/assets/22154114/0e80bec2-37de-447e-8768-3f73dc62f6d6)
+
+
+![image](https://github.com/rbflurry/quectel-rgmii-simpleadmin/assets/22154114/65671dbf-81ba-44ef-88e1-218e740c0de7)
+
+
