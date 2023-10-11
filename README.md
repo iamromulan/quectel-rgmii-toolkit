@@ -4,7 +4,6 @@ This will install a Combination of https://github.com/natecarlson/quectel-rgmii-
 
 ONLY FOR THE QUECTEL RM520N-GL
 
-*****WORK IN PROGRESS NOT READY TO INSTALL*****
 ## Installation Automated
 Script will ask to install AT Telnet Daemon then ask to install Simpleadmin 
 ```bash
