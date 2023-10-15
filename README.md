@@ -18,8 +18,8 @@ adb shell sh /tmp/install_on_modem.sh
 Script will ask to remove Simpleadmin then ask to remove AT Telnet Daemon
 ```bash
 adb shell wget -P /tmp https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/uninstall_on_modem.sh
-adb shell chmod +x /tmp/install_on_modem.sh
-adb shell sh /tmp/install_on_modem.sh
+adb shell chmod +x /tmp/uninstall_on_modem.sh
+adb shell sh /tmp/uninstall_on_modem.sh
 ```
 
 
