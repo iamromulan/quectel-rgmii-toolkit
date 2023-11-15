@@ -1,14 +1,18 @@
 #!/bin/sh
 
 # Define paths
+USRDATA_DIR="/usrdata"
+MICROPYTHON_DIR="/usrdata/micropython"
 AT_TELNET_DIR="/usrdata/at-telnet"
 SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 TMP_DIR="/tmp"
 GITHUB_URL="https://github.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/archive/refs/heads/main.zip"
 
+
 # Check if AT Telnet Daemon is installed
 is_at_telnet_installed() {
-    [ -d "$AT_TELNET_DIR" ] && return 0 || return 1
+    [ -d "$MICROPYTHON_DIR" ] && return 0 || return 1
+	[ -d "$AT_TELNET_DIR" ] && return 0 || return 1
 }
 
 # Check if Simple Admin is installed
@@ -32,13 +36,14 @@ install_update_at_telnet() {
     cd $TMP_DIR
     wget $GITHUB_URL -O main.zip
     unzip -o main.zip
-    cp -Rf quectel-rgmii-simpleadmin-at-telnet-daemon-main/attelnetdaemon/ $AT_TELNET_DIR
+    cp -Rf quectel-rgmii-simpleadmin-at-telnet-daemon-main/attelnetdaemon/at-telnet $USRDATA_DIR
+	cp -Rf quectel-rgmii-simpleadmin-at-telnet-daemon-main/attelnetdaemon/micropython $USRDATA_DIR
 
     # Set execute permissions
-    chmod +x $AT_TELNET_DIR/micropython/micropython
-    chmod +x $AT_TELNET_DIR/at-telnet/modem-multiclient.py
-    chmod +x $AT_TELNET_DIR/at-telnet/socat-armel-static
-    chmod +x $AT_TELNET_DIR/at-telnet/picocom
+    chmod +x $MICROPYTHON_DIR/micropython
+    chmod +x $AT_TELNET_DIR/modem-multiclient.py
+    chmod +x $AT_TELNET_DIR/socat-armel-static
+    chmod +x $AT_TELNET_DIR/picocom
 
     # Copy systemd unit files & reload
     cp -f $AT_TELNET_DIR/systemd_units/*.service /lib/systemd/system
@@ -58,7 +63,8 @@ remove_at_telnet() {
     remount_rw
     systemctl stop at-telnet-daemon
     systemctl disable at-telnet-daemon
-    rm -rf $AT_TELNET_DIR
+    rm -rf $MICROPYTHON_DIR
+	rm -rf $AT_TELNET_DIR
     rm /lib/systemd/system/at-telnet-daemon.service
     rm /lib/systemd/system/socat-smd11.service
     rm /lib/systemd/system/socat-smd11-to-ttyIN.service
@@ -73,7 +79,7 @@ install_update_simple_admin() {
     cd $TMP_DIR
     wget $GITHUB_URL -O main.zip
     unzip -o main.zip
-    cp -Rf quectel-rgmii-simpleadmin-at-telnet-daemon-main/simpleadmin/ $SIMPLE_ADMIN_DIR
+    cp -Rf quectel-rgmii-simpleadmin-at-telnet-daemon-main/simpleadmin/ $USRDATA_DIR
 
     # Set execute permissions
     chmod +x $SIMPLE_ADMIN_DIR/scripts/*
