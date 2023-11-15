@@ -16,8 +16,19 @@ is_simple_admin_installed() {
     [ -d "$SIMPLE_ADMIN_DIR" ] && return 0 || return 1
 }
 
+# Function to remount file system as read-write
+remount_rw() {
+    mount -o remount,rw /
+}
+
+# Function to remount file system as read-only
+remount_ro() {
+    mount -o remount,ro /
+}
+
 # Function to install/update AT Telnet Daemon
 install_update_at_telnet() {
+    remount_rw
     cd $TMP_DIR
     wget $GITHUB_URL -O main.zip
     unzip -o main.zip
@@ -38,10 +49,13 @@ install_update_at_telnet() {
     ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
     ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
     ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+
+    remount_ro
 }
 
 # Function to remove AT Telnet Daemon
 remove_at_telnet() {
+    remount_rw
     systemctl stop at-telnet-daemon
     systemctl disable at-telnet-daemon
     rm -rf $AT_TELNET_DIR
@@ -50,10 +64,12 @@ remove_at_telnet() {
     rm /lib/systemd/system/socat-smd11-to-ttyIN.service
     rm /lib/systemd/system/socat-smd11-from-ttyIN.service
     systemctl daemon-reload
+    remount_ro
 }
 
 # Function to install/update Simple Admin
 install_update_simple_admin() {
+    remount_rw
     cd $TMP_DIR
     wget $GITHUB_URL -O main.zip
     unzip -o main.zip
@@ -72,10 +88,13 @@ install_update_simple_admin() {
     ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
     ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
     ln -sf /lib/systemd/system/ttl-override.service /lib/systemd/system/multi-user.target.wants/
+
+    remount_ro
 }
 
 # Function to remove Simple Admin
 remove_simple_admin() {
+    remount_rw
     systemctl stop simpleadmin_httpd
     systemctl disable simpleadmin_httpd
     rm -rf $SIMPLE_ADMIN_DIR
@@ -83,6 +102,7 @@ remove_simple_admin() {
     rm /lib/systemd/system/simpleadmin_generate_status.service
     rm /lib/systemd/system/ttl-override.service
     systemctl daemon-reload
+    remount_ro
 }
 
 # Main menu
