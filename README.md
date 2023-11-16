@@ -13,9 +13,13 @@
 > :warning: Your modem must already be connected to the internet for this to work
 
 Script will present a list of options:
+    
     1) AT Telnet Daemon
+    
     2) Simple Admin
+    
     3) Exit
+
 If it is not installed and you press 1 or 2 it will install. If it is, it will prompt to uninstall or update. 
 
 You can copy/paste this into a command prompt on a system with adb installed. If you don't have adb follow the directions in my main [RGMII Guide](https://github.com/iamromulan/quectel-rgmii-configuration-notes#using-adb)
