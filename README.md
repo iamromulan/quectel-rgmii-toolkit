@@ -13,20 +13,19 @@
 > :warning: Your modem must already be connected to the internet for this to work
 
 Script will present a list of options:
-    
-    1) AT Telnet Daemon
-    
-    2) Simple Admin
-    
-    3) Exit
+
+ 1.  AT Telnet Daemon
+ 2.  Simple Admin
+ 3. Exit
+
 
 If it is not installed and you press 1 or 2 it will install. If it is, it will prompt to uninstall or update. 
 
 You can copy/paste this into a command prompt on a system with adb installed. If you don't have adb follow the directions in my main [RGMII Guide](https://github.com/iamromulan/quectel-rgmii-configuration-notes#using-adb)
 ```bash
-adb shell wget -P /tmp https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/RM520_rgmii_toolkit.sh
-adb shell chmod +x /tmp/RM520_rgmii_toolkit.sh
-adb shell sh /tmp/RM520_rgmii_toolkit.sh
+adb shell wget -P /tmp https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/install_on_modem.sh
+adb shell chmod +x /tmp/install_on_modem.sh
+adb shell sh /tmp/install_on_modem.sh
 ```
 If you have trouble downloading the file make sure your modem is connected to a cellular network.
 
