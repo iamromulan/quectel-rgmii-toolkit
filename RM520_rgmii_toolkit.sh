@@ -54,6 +54,13 @@ install_update_at_telnet() {
     ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
     ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
     ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+	
+	# Start Services
+	systemctl start socat-smd11
+	sleep 2s
+	systemctl start socat-smd11-to-ttyIN
+	systemctl start socat-smd11-from-ttyIN
+	systemctl start at-telnet-daemon
 
     remount_ro
 }
@@ -94,6 +101,11 @@ install_update_simple_admin() {
     ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
     ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
     ln -sf /lib/systemd/system/ttl-override.service /lib/systemd/system/multi-user.target.wants/
+	
+	# Start Services
+	systemctl start simpleadmin_generate_status
+	systemctl start simpleadmin_httpd
+	systemctl start ttl-override
 
     remount_ro
 }
