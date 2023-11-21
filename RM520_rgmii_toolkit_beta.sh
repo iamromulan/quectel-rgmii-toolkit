@@ -185,10 +185,10 @@ remove_simple_admin() {
 
 # Main menu
 while true; do
-    echo "Select an application to manage:"
-    echo "1) Send AT Command"
-    echo "2) AT Telnet Daemon"
-    echo "3) Simple Admin"
+    echo "Select an option:"
+    echo "1) Send AT Commands"
+    echo "2) Install/Update or remove AT Telnet Daemon"
+    echo "3) Install/Update or remove Simple Admin"
     echo "4) Exit"
     read -p "Enter your choice: " choice
 
