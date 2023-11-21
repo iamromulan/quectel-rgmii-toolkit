@@ -1,25 +1,35 @@
 # AT Telnet Daemon and Simple Admin combo installer/updater/uninstaller
 **ONLY FOR THE QUECTEL RM520N-GL (for now)**
 #### [JUMP TO COMBO INSTALLER](#installation-automated)
-**Currently:** This will install or if already installed, update or remove a Combination of [AT Telnet Daemon](https://github.com/natecarlson/quectel-rgmii-at-command-client/tree/main/at_telnet_daemon)  and; [Simpleadmin](https://github.com/iamromulan/quectel-rgmii-simpleadmin)
+**Currently:** This will install or if already installed, update or remove a Combination of [AT Telnet Daemon](https://github.com/natecarlson/quectel-rgmii-at-command-client/tree/main/at_telnet_daemon)  and; [Simpleadmin](https://github.com/iamromulan/quectel-rgmii-simpleadmin). This will also allow you to set a daily reboot timer and send AT commands easily. 
 
-**My goal** is for this to also install a settable and changeable daily reboot, and provide an interactive AT shell within adb shell/directly in the root shell. The .sh these is based on will also be available. (Hopefully coming soon)
+**My goal** is for this to also include any new useful scripts or software for this modem and others that support RGMII mode.
 ## Screenshots
+
 ![Home Page](https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/iamromulansimpleindex.png)
 ![AT Commands](https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/iamromulanatcommands.png)
 ![enter image description here](https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/iamromulansimpleTTL.png)
+![enter image description here](https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/iamromulantoolkit.png)
 ## Installation Automated
 
 > :warning: Your modem must already be connected to the internet for this to work
 
+
 Script will present a list of options:
 
- 1.  AT Telnet Daemon
- 2.  Simple Admin
- 3. Exit
+ 1.  Send AT Commands
+ 2.  Install/Update or remove AT Telnet Daemon
+ 3. Install/Update or remove Simple Admin
+ 4. Install/Change or remove Daily Reboot Timer
+ 5. Exit
 
 
-If it is not installed and you press 1 or 2 it will install. If it is, it will prompt to uninstall or update. 
+The Simple Admin web interface depends on the AT Telnet Daemon so you'll need to install both. 
+Press 2, wait for it to install then press 3. 
+After that the web interface should be working. 
+If you press 4 it will create a daily reboot timer and ask you for the time it should reboot daily in UTC 24-hour format.
+If it is already installed and you press 2, 3, or 4 it will prompt to uninstall, update, or change. 
+If you press 1 you can send AT commands, sending exit in lower case will return you to the main menu.
 
 You can copy/paste this into a command prompt on a system with adb installed. If you don't have adb follow the directions in my main [RGMII Guide](https://github.com/iamromulan/quectel-rgmii-configuration-notes#using-adb)
 ```bash
