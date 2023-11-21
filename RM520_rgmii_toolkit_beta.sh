@@ -234,12 +234,14 @@ manage_reboot_timer() {
 
     # Check if the rebootmodem service, timer, or trigger already exists
     if [ -f /lib/systemd/system/rebootmodem.service ] || [ -f /lib/systemd/system/rebootmodem.timer ] || [ -f /lib/systemd/system/rebootmodem-trigger.service ]; then
-        printf "The rebootmodem service/timer/trigger is already installed. Do you want to change or remove it? (change/remove): "
-        read user_action
+        echo "The rebootmodem service/timer/trigger is already installed."
+        echo "1) Change"
+        echo "2) Remove"
+        read -p "Enter your choice (1 for Change, 2 for Remove): " reboot_choice
 
-        case $user_action in
-            remove)
-                 # Stop and disable timer and trigger service by removing symlinks
+        case $reboot_choice in
+            2)
+                # Stop and disable timer and trigger service by removing symlinks
                 systemctl stop rebootmodem.timer
                 systemctl stop rebootmodem-trigger.service
 
@@ -254,7 +256,7 @@ manage_reboot_timer() {
 
                 echo "Rebootmodem service, timer, and trigger removed successfully."
                 ;;
-            change)
+            1)
                 printf "Enter the new time for daily reboot (24-hour format in Coordinated Universal Time, HH:MM): "
                 read new_time
 
@@ -272,7 +274,7 @@ manage_reboot_timer() {
                 fi
                 ;;
             *)
-                echo "Invalid action. Exiting."
+                echo "Invalid choice. Exiting."
                 exit 1
                 ;;
         esac
