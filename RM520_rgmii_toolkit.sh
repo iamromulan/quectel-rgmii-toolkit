@@ -223,7 +223,7 @@ Type=oneshot
 ExecStart=/bin/systemctl start rebootmodem.timer
 RemainAfterExit=yes" > /lib/systemd/system/rebootmodem-trigger.service
 
-    # Create symbolic links for the trigger service in the wanted directory and give exe perm to service unit
+    # Create symbolic links for the trigger service in the wanted directory
     ln -sf /lib/systemd/system/rebootmodem-trigger.service /lib/systemd/system/multi-user.target.wants/
 
     # Reload systemd to recognize the new timer and trigger service
