@@ -202,7 +202,7 @@ Description=Reboot Modem Daily
 
 [Service]
 Type=oneshot
-ExecStart=$MODEM_REBOOT_SCRIPT
+ExecStart=/bin/sh /usrdata/reboot_modem.sh
 Restart=no
 RemainAfterExit=no" > /lib/systemd/system/rebootmodem.service
 
