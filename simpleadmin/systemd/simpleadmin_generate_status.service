@@ -1,6 +1,5 @@
 [Unit]
 Description=Simpleadmin service to generate status from modem
-Requires=socat-smd11.service
 
 [Service]
 ExecStart=/usrdata/simpleadmin/scripts/build_modem_status
