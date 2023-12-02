@@ -1,0 +1,25 @@
+[Unit]
+Description=Telnet daemon for AT command
+
+# Being extra silly with the dependencies for this.
+# TODO: Update the python code to validate that the serial port
+# is working on a regular basis, and keep attempting to retry
+# if not. Then these dependencies won't need to be so strict.
+After=socat-smd11.service
+Requires=socat-smd11.service socat-smd11-from-ttyIN.service socat-smd11-to-ttyIN.service
+ReloadPropagatedFrom=socat-smd11.service socat-smd11-from-ttyIN.service socat-smd11-to-ttyIN.service
+
+StartLimitIntervalSec=2m
+StartLimitBurst=100
+
+[Service]
+ExecStart=/usrdata/at-telnet/modem-multiclient.py
+Nice=5
+Restart=always
+RestartSec=2s
+# Increased log rate limits, so we can see what's going on.
+LogRateLimitIntervalSec=5s
+LogRateLimitBurst=100
+
+[Install]
+WantedBy=multi-user.target
