@@ -176,11 +176,11 @@ install_update_at_telnet() {
 		
         # Start Services
         systemctl start at-telnet-daemon
+	remount_ro
     else
-        
+        remount_ro
     fi
-
-    remount_ro
+    
 }
 
 # Function to remove AT Telnet Daemon
