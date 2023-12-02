@@ -1,10 +1,10 @@
 [Unit]
-Description=Read from /dev/ttyIN and write to smd11
-BindsTo=socat-smd11.service
-After=socat-smd11.service
+Description=Read from /dev/ttyIN and write to smd7
+BindsTo=socat-smd7.service
+After=socat-smd7.service
 
 [Service]
-ExecStart=/bin/bash -c "/bin/cat /dev/ttyIN > /dev/smd11"
+ExecStart=/bin/bash -c "/bin/cat /dev/ttyIN > /dev/smd7"
 ExecStartPost=/bin/sleep 2s
 StandardInput=tty-force
 Restart=always
