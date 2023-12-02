@@ -6,10 +6,10 @@
 **My goal** is for this to also include any new useful scripts or software for this modem and others that support RGMII mode.
 ## Screenshots
 
-![Home Page](https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/iamromulansimpleindex.png)
-![AT Commands](https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/iamromulanatcommands.png)
-![enter image description here](https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/iamromulansimpleTTL.png)
-![enter image description here](https://raw.githubusercontent.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/main/iamromulantoolkit.png)
+![Home Page](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulansimpleindex.png?raw=true)
+![AT Commands](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulanatcommands.png?raw=true)
+![TTL](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulansimpleTTL.png?raw=true)
+![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulantoolkit.png?raw=true)
 ## Installation Automated
 
 > :warning: Your modem must already be connected to the internet for this to work
