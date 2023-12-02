@@ -109,8 +109,9 @@ install_update_at_telnet() {
 
     # User prompt for selecting device
     echo "Which device should AT over Telnet use?"
-    echo "1) smd11 (default)"
-    echo "2) smd7 (use this if another application is using smd11)"
+    echo "This will create virtual tty ports (serial ports) that will use either smd11 or smd7"
+    echo "1) Use smd11 (default)"
+    echo "2) Use smd7 (use this if another application is using smd11)"
     read -p "Enter your choice (1 or 2): " device_choice
 
     # Stop and disable existing services before installing new ones
@@ -160,6 +161,10 @@ install_update_at_telnet() {
     
 
     # User prompt for enabling Telnet server
+    echo "-Telnet server is not required for simpleadmin"
+    echo "-Simpleadmin uses the tty port created in the previous step"
+    echo "-If enabled a telnet server will listen on the gateway address on port 5000"
+    echo "-It isn't password protceted though so it is recommended to only enable if you need it" 
     echo "Enable Telnet server?"
     echo "1) Yes"
     echo "2) No"
@@ -172,8 +177,7 @@ install_update_at_telnet() {
         # Start Services
         systemctl start at-telnet-daemon
     else
-        rm -f /lib/systemd/system/multi-user.target.wants/at-telnet-daemon.service
-
+        
     fi
 
     remount_ro
@@ -182,17 +186,57 @@ install_update_at_telnet() {
 # Function to remove AT Telnet Daemon
 remove_at_telnet() {
     remount_rw
+    # Stop and disable all possible services related to AT Telnet Daemon
     systemctl stop at-telnet-daemon
     systemctl disable at-telnet-daemon
-    rm -rf $MICROPYTHON_DIR
-	rm -rf $AT_TELNET_DIR
+    systemctl stop socat-smd11
+    systemctl stop socat-smd11-to-ttyIN
+    systemctl stop socat-smd11-from-ttyIN
+    systemctl stop socat-smd7
+    systemctl stop socat-smd7-to-ttyIN
+    systemctl stop socat-smd7-from-ttyIN
+
+    # Remove all systemd service files for both smd11 and smd7 configurations
     rm /lib/systemd/system/at-telnet-daemon.service
     rm /lib/systemd/system/socat-smd11.service
     rm /lib/systemd/system/socat-smd11-to-ttyIN.service
     rm /lib/systemd/system/socat-smd11-from-ttyIN.service
+    rm /lib/systemd/system/socat-smd7.service
+    rm /lib/systemd/system/socat-smd7-to-ttyIN.service
+    rm /lib/systemd/system/socat-smd7-from-ttyIN.service
+
+    # Reload systemd to apply changes
     systemctl daemon-reload
+
+    # Prompt user before removing micropython
+    echo "Do you want to remove MicroPython?"
+    echo "1) Yes"
+    echo "2) No"
+    read -p "Enter your choice: " choice
+
+    case $choice in
+        1 )
+            rm -rf $MICROPYTHON_DIR
+            echo "MicroPython directory removed."
+            ;;
+        2 )
+            echo "MicroPython directory not removed."
+            ;;
+        * )
+            echo "Invalid choice. MicroPython directory not removed."
+            ;;
+    esac
+
+    # Remove the AT Telnet Daemon directory
+    rm -rf $AT_TELNET_DIR
+
+    # Additional cleanup if necessary
+    # (Add any other file or directory removals here if needed)
+
     remount_ro
+    echo "AT Telnet Daemon removed successfully."
 }
+
 
 # Function to install/update Simple Admin
 install_update_simple_admin() {
@@ -364,6 +408,7 @@ manage_reboot_timer() {
 
 # Main menu
 while true; do
+    echo "Welcome to iamromulan's RGMII Toolkit script for Quectel RMxxx Series modems!"
     echo "Select an option:"
     echo "1) Send AT Commands"
     echo "2) Install/Update or remove AT Telnet Daemon"
