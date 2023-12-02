@@ -99,7 +99,7 @@ install_update_at_telnet() {
     wget $GITHUB_URL -O main.zip
     unzip -o main.zip
     cp -Rf quectel-rgmii-simpleadmin-at-telnet-daemon-main/attelnetdaemon/at-telnet $USRDATA_DIR
-	cp -Rf quectel-rgmii-simpleadmin-at-telnet-daemon-main/attelnetdaemon/micropython $USRDATA_DIR
+    cp -Rf quectel-rgmii-simpleadmin-at-telnet-daemon-main/attelnetdaemon/micropython $USRDATA_DIR
 
     # Set execute permissions
     chmod +x $MICROPYTHON_DIR/micropython
@@ -107,21 +107,74 @@ install_update_at_telnet() {
     chmod +x $AT_TELNET_DIR/socat-armel-static
     chmod +x $AT_TELNET_DIR/picocom
 
-    # Copy systemd unit files & reload
-    cp -f $AT_TELNET_DIR/systemd_units/*.service /lib/systemd/system
+    # User prompt for selecting device
+    echo "Which device should AT over Telnet use?"
+    echo "1) smd11 (default)"
+    echo "2) smd7 (use this if another application is using smd11)"
+    read -p "Enter your choice (1 or 2): " device_choice
+
+    # Stop and disable existing services before installing new ones
+    systemctl stop at-telnet-daemon
+    systemctl disable at-telnet-daemon
+    systemctl stop socat-smd11
+    systemctl stop socat-smd11-to-ttyIN
+    systemctl stop socat-smd11-from-ttyIN
+    systemctl stop socat-smd7
+    systemctl stop socat-smd7-to-ttyIN
+    systemctl stop socat-smd7-from-ttyIN
+    rm /lib/systemd/system/at-telnet-daemon.service
+    rm /lib/systemd/system/socat-smd11.service
+    rm /lib/systemd/system/socat-smd11-to-ttyIN.service
+    rm /lib/systemd/system/socat-smd11-from-ttyIN.service
+    rm /lib/systemd/system/socat-smd7.service
+    rm /lib/systemd/system/socat-smd7-to-ttyIN.service
+    rm /lib/systemd/system/socat-smd7-from-ttyIN.service
     systemctl daemon-reload
 
-    # Link systemd files
-    ln -sf /lib/systemd/system/at-telnet-daemon.service /lib/systemd/system/multi-user.target.wants/
-    ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
-    ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-    ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-    # Start Services
-    systemctl start socat-smd11
-    sleep 2s
-    systemctl start socat-smd11-to-ttyIN
-    systemctl start socat-smd11-from-ttyIN
-    systemctl start at-telnet-daemon
+    # Depending on the choice, copy the respective systemd unit files
+    case $device_choice in
+        2)
+            cp -f $AT_TELNET_DIR/smd7_systemd_units/*.service /lib/systemd/system
+			ln -sf /lib/systemd/system/socat-smd7.service /lib/systemd/system/multi-user.target.wants/
+			ln -sf /lib/systemd/system/socat-smd7-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+			ln -sf /lib/systemd/system/socat-smd7-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+			systemctl daemon-reload
+			systemctl start socat-smd7
+			sleep 2s
+			systemctl start socat-smd7-to-ttyIN
+			systemctl start socat-smd7-from-ttyIN
+            ;;
+        1)
+            cp -f $AT_TELNET_DIR/systemd_units/*.service /lib/systemd/system
+			ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
+			ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+			ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+			systemctl daemon-reload
+			systemctl start socat-smd11
+			sleep 2s
+			systemctl start socat-smd11-to-ttyIN
+			systemctl start socat-smd11-from-ttyIN
+            ;;
+    esac
+
+    
+
+    # User prompt for enabling Telnet server
+    echo "Enable Telnet server?"
+    echo "1) Yes"
+    echo "2) No"
+    read -p "Enter your choice (1 or 2): " telnet_choice
+
+    # Link or remove systemd files based on user choice
+    if [ "$telnet_choice" = "1" ]; then
+        ln -sf /lib/systemd/system/at-telnet-daemon.service /lib/systemd/system/multi-user.target.wants/
+		
+        # Start Services
+        systemctl start at-telnet-daemon
+    else
+        rm -f /lib/systemd/system/multi-user.target.wants/at-telnet-daemon.service
+
+    fi
 
     remount_ro
 }
