@@ -1,4 +1,4 @@
-# AT Telnet Daemon and Simple Admin combo installer/updater/uninstaller
+# RGMII Toolkit
 **ORIGINALLY FOR THE QUECTEL RM520N-GL, However, People are saying this will work on all M.2 RMxxx modems**
 #### [JUMP TO COMBO INSTALLER](#installation-automated)
 **Currently:** This will install or if already installed, update or remove a Combination of [AT Telnet Daemon](https://github.com/natecarlson/quectel-rgmii-at-command-client/tree/main/at_telnet_daemon)  and; [Simpleadmin](https://github.com/iamromulan/quectel-rgmii-simpleadmin). This will also allow you to set a daily reboot timer and send AT commands easily. 
@@ -25,7 +25,6 @@ Script will present a list of options:
 
 
 The Simple Admin web interface depends on the AT Telnet Daemon so you'll need to install both. 
-Press 2, wait for it to install then press 3. 
 After that the web interface should be working. 
 If you press 4 it will create a daily reboot timer and ask you for the time it should reboot daily in UTC 24-hour format.
 If it is already installed and you press 2, 3, or 4 it will prompt to uninstall, update, or change. 
