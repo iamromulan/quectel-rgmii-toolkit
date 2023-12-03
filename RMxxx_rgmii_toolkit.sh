@@ -7,6 +7,8 @@ AT_TELNET_DIR="/usrdata/at-telnet"
 SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 TMP_DIR="/tmp"
 GITHUB_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/main.zip"
+GITHUB_SIMPADMIN_NOCMD_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminnoatcmds.zip"
+GITHUB_SIMPADMIN_TTL_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminttlonly.zip"
 
 # AT Command Script Variables and Functions
 DEVICE_FILE="/dev/smd7"
@@ -240,37 +242,107 @@ remove_at_telnet() {
 
 # Function to install/update Simple Admin
 install_update_simple_admin() {
-    remount_rw
-    cd $TMP_DIR
-    wget $GITHUB_URL -O main.zip
-    unzip -o main.zip
-    cp -Rf quectel-rgmii-toolkit-main/simpleadmin/ $USRDATA_DIR
+    while true; do
+        echo "Make sure to Install AT Telnet Daemon first. You don't need to Enable the Telnet Server if you don't need it"
+	echo "What version of Simple Admin do you want to install? This will start a webserver on port 8080"
+        echo "1) Full Install"
+        echo "2) No AT Commands, List only (for use with firmware that already has a web UI)"
+        echo "3) TTL Only"
+        echo "4) Return to Main Menu"
+        echo "Select your choice: "
+        read choice
 
-    # Set execute permissions
-    chmod +x $SIMPLE_ADMIN_DIR/scripts/*
-    chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-    chmod +x $SIMPLE_ADMIN_DIR/ttl/ttl-override
+        case $choice in
+            1)
+                remount_rw
+                cd $TMP_DIR
+                wget $GITHUB_URL -O main.zip
+                unzip -o main.zip
+                cp -Rf quectel-rgmii-toolkit-main/simpleadmin/ $USRDATA_DIR
 
-    # Copy systemd unit files & reload
-    cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
-    systemctl daemon-reload
+                chmod +x $SIMPLE_ADMIN_DIR/scripts/*
+                chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
+                chmod +x $SIMPLE_ADMIN_DIR/ttl/ttl-override
 
-    # Link systemd files
-    ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
-    ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
-    ln -sf /lib/systemd/system/ttl-override.service /lib/systemd/system/multi-user.target.wants/
-    # Start Services
-    systemctl start simpleadmin_generate_status
-    systemctl start simpleadmin_httpd
-    systemctl start ttl-override
+                cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
+                systemctl daemon-reload
 
-    remount_ro
+                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
+                ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
+                ln -sf /lib/systemd/system/ttl-override.service /lib/systemd/system/multi-user.target.wants/
+
+                systemctl start simpleadmin_generate_status
+                systemctl start simpleadmin_httpd
+                systemctl start ttl-override
+                remount_ro
+                break
+                ;;
+            2)
+                remount_rw
+                cd $TMP_DIR
+                wget $GITHUB_SIMPADMIN_NOCMD_URL -O simpleadminnoatcmds.zip
+                unzip -o simpleadminnoatcmds.zip
+                cp -Rf quectel-rgmii-toolkit-simpleadminnoatcmds/simpleadmin/ $USRDATA_DIR
+
+                chmod +x $SIMPLE_ADMIN_DIR/scripts/*
+                chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
+                chmod +x $SIMPLE_ADMIN_DIR/ttl/ttl-override
+
+                cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
+                systemctl daemon-reload
+
+                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
+                ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
+                ln -sf /lib/systemd/system/ttl-override.service /lib/systemd/system/multi-user.target.wants/
+
+                systemctl start simpleadmin_generate_status
+                systemctl start simpleadmin_httpd
+                systemctl start ttl-override
+                remount_ro
+                break
+                ;;
+            3)
+                remount_rw
+                cd $TMP_DIR
+                wget $GITHUB_SIMPADMIN_TTL_URL -O simpleadminttlonly.zip
+                unzip -o simpleadminttlonly.zip
+                cp -Rf quectel-rgmii-toolkit-simpleadminttlonly/simpleadmin/ $USRDATA_DIR
+
+                chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
+                chmod +x $SIMPLE_ADMIN_DIR/ttl/ttl-override
+
+                cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
+                systemctl daemon-reload
+
+                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
+                ln -sf /lib/systemd/system/ttl-override.service /lib/systemd/system/multi-user.target.wants/
+
+                systemctl start simpleadmin_httpd
+                systemctl start ttl-override
+                remount_ro
+                break
+                ;;
+            4)
+                echo "Returning to main menu..."
+                break
+                ;;
+            *)
+                echo "Invalid choice. Please try again."
+                ;;
+        esac
+    done
 }
+
+
 
 # Function to remove Simple Admin
 remove_simple_admin() {
     remount_rw
+    systemctl stop simpleadmin_generate_status
+    systemctl stop ttl-override
     systemctl stop simpleadmin_httpd
+    systemctl disable simpleadmin_httpd
+    systemctl disable ttl-override
     systemctl disable simpleadmin_httpd
     rm -rf $SIMPLE_ADMIN_DIR
     rm /lib/systemd/system/simpleadmin_httpd.service
