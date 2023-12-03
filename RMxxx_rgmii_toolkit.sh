@@ -6,7 +6,7 @@ MICROPYTHON_DIR="/usrdata/micropython"
 AT_TELNET_DIR="/usrdata/at-telnet"
 SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 TMP_DIR="/tmp"
-GITHUB_URL="https://github.com/iamromulan/quectel-rgmii-simpleadmin-at-telnet-daemon/archive/refs/heads/main.zip"
+GITHUB_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/main.zip"
 
 # AT Command Script Variables and Functions
 DEVICE_FILE="/dev/smd7"
@@ -98,8 +98,8 @@ install_update_at_telnet() {
     cd $TMP_DIR
     wget $GITHUB_URL -O main.zip
     unzip -o main.zip
-    cp -Rf quectel-rgmii-simpleadmin-at-telnet-daemon-main/attelnetdaemon/at-telnet $USRDATA_DIR
-    cp -Rf quectel-rgmii-simpleadmin-at-telnet-daemon-main/attelnetdaemon/micropython $USRDATA_DIR
+    cp -Rf quectel-rgmii-toolkit-main/attelnetdaemon/at-telnet $USRDATA_DIR
+    cp -Rf quectel-rgmii-toolkit-main/attelnetdaemon/micropython $USRDATA_DIR
 
     # Set execute permissions
     chmod +x $MICROPYTHON_DIR/micropython
@@ -244,7 +244,7 @@ install_update_simple_admin() {
     cd $TMP_DIR
     wget $GITHUB_URL -O main.zip
     unzip -o main.zip
-    cp -Rf quectel-rgmii-simpleadmin-at-telnet-daemon-main/simpleadmin/ $USRDATA_DIR
+    cp -Rf quectel-rgmii-toolkit-main/simpleadmin/ $USRDATA_DIR
 
     # Set execute permissions
     chmod +x $SIMPLE_ADMIN_DIR/scripts/*
