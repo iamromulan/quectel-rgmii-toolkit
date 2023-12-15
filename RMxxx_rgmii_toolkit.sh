@@ -9,6 +9,7 @@ TMP_DIR="/tmp"
 GITHUB_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/main.zip"
 GITHUB_SIMPADMIN_NOCMD_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminnoatcmds.zip"
 GITHUB_SIMPADMIN_TTL_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminttlonly.zip"
+TAILSCALE_DIR="/usrdata/tailscale/"
 
 # AT Command Script Variables and Functions
 DEVICE_FILE="/dev/smd7"
@@ -408,6 +409,113 @@ RemainAfterExit=yes" > /lib/systemd/system/rebootmodem-trigger.service
     echo "Reboot schedule set successfully. The modem will reboot daily at $user_time UTC."
 }
 
+# Function for Tailscale Submenu
+tailscale_menu() {
+    while true; do
+        echo "Tailscale Menu"
+        echo "1) Install/Update/Remove Tailscale"
+        echo "2) Configure Tailscale"
+        echo "3) Return to Main Menu"
+        read -p "Enter your choice: " tailscale_choice
+
+        case $tailscale_choice in
+            1) install_update_remove_tailscale;;
+            2) configure_tailscale;;
+            3) break;;
+            *) echo "Invalid option";;
+        esac
+    done
+}
+
+# Function to install, update, or remove Tailscale
+install_update_remove_tailscale() {
+    if [ -d "$TAILSCALE_DIR" ]; then
+        echo "Tailscale is already installed."
+        echo "1) Update Tailscale"
+        echo "2) Remove Tailscale"
+        read -p "Enter your choice: " tailscale_update_remove_choice
+
+        case $tailscale_update_remove_choice in
+            1) 
+                echo "Updating Tailscale..."
+                $TAILSCALE_DIR/tailscale down
+                $TAILSCALE_DIR/tailscale logout
+                systemctl stop tailscaled
+                # Follow the installation steps with force overwrite
+                remount_rw
+                cd $TMP_DIR
+                wget $GITHUB_URL -O main.zip
+                unzip -o main.zip
+                cp -Rf quectel-rgmii-toolkit-main/tailscale/ $USRDATA_DIR
+                chmod +x /usrdata/tailscale/tailscaled
+                chmod +x /usrdata/tailscale/tailscale
+                cp -f /usrdata/tailscale/systemd/* /lib/systemd/system
+                systemctl daemon-reload
+                ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
+                systemctl start tailscaled
+                remount_ro
+                echo "Tailscale updated successfully."
+				echo "You will need to reconnect and Log back in"
+				read -p "Press Enter to continue..."
+                ;;
+            2) 
+                echo "Removing Tailscale..."
+                $TAILSCALE_DIR/tailscale down
+                $TAILSCALE_DIR/tailscale logout
+                systemctl stop tailscaled
+                systemctl disable tailscaled
+                rm -f /lib/systemd/system/tailscaled.service
+                systemctl daemon-reload
+                rm -rf $TAILSCALE_DIR
+                remount_ro
+                echo "Tailscale removed successfully."
+                ;;
+            *) 
+                echo "Invalid option";;
+        esac
+    else
+        echo "Installing Tailscale..."
+        remount_rw
+        cd $TMP_DIR
+        wget $GITHUB_URL -O main.zip
+        unzip -o main.zip
+        cp -Rf quectel-rgmii-toolkit-main/tailscale/ $USRDATA_DIR
+        chmod +x /usrdata/tailscale/tailscaled
+        chmod +x /usrdata/tailscale/tailscale
+        cp -f /usrdata/tailscale/systemd/* /lib/systemd/system
+        systemctl daemon-reload
+        ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
+        systemctl start tailscaled
+        remount_ro
+        echo "Tailscale installed successfully."
+    fi
+}
+
+
+# Function to Configure Tailscale
+configure_tailscale() {
+    while true; do
+        echo "Configure Tailscale"
+        echo "1) Connect to Tailnet"
+        echo "2) Connect to Tailnet with SSH ON"
+		echo "3) Connect to Tailnet with SSH OFF (reset flag)"
+		echo "4) Disconnect from Tailnet (reconnects at reboot)"
+        echo "5) Logout from tailscale account"
+		echo "6) Return to Tailscale Menu"
+        read -p "Enter your choice: " config_choice
+
+        case $config_choice in
+            1) $TAILSCALE_DIR/tailscale up;;
+            2) $TAILSCALE_DIR/tailscale up --ssh;;
+			3) $TAILSCALE_DIR/tailscale up --reset;;
+			4) $TAILSCALE_DIR/tailscale down;;
+			5) $TAILSCALE_DIR/tailscale logout;;
+            6) break;;
+            *) echo "Invalid option";;
+        esac
+    done
+}
+
 # Function to manage Daily Reboot Timer
 manage_reboot_timer() {
     # Remount root filesystem as read-write
@@ -485,8 +593,9 @@ while true; do
     echo "1) Send AT Commands"
     echo "2) Install/Update or remove AT Telnet Daemon"
     echo "3) Install/Update or remove Simple Admin"
-    echo "4) Install/Change or remove Daily Reboot Timer"
-    echo "5) Exit"
+    echo "4) Tailscale Management"
+	echo "5) Install/Change or remove Daily Reboot Timer"
+    echo "6) Exit"
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -525,10 +634,13 @@ while true; do
                 install_update_simple_admin
             fi
             ;;
-        4)
+        4)  
+			tailscale_menu
+			;;
+		5)
             manage_reboot_timer
             ;;
-        5) 
+        6) 
             break
             ;;
         *)
@@ -538,4 +650,3 @@ while true; do
 done
 
 echo "Exiting script."
-
