@@ -186,6 +186,10 @@ install_update_at_telnet() {
    	rm -rf /tmp/quectel-rgmii-toolkit-main/
     else
         remount_ro
+ 	# Cleanup
+  	echo "Cleaning up..."
+  	rm /tmp/main.zip
+   	rm -rf /tmp/quectel-rgmii-toolkit-main/
     fi
     
 }
