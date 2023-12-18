@@ -500,9 +500,12 @@ install_update_remove_tailscale() {
         cd $TMP_DIR
         wget $GITHUB_URL -O main.zip
         unzip -o main.zip
-        cp -Rf quectel-rgmii-toolkit-main/tailscale/ $USRDATA_DIR
+        echo "Copying to /userdata/"
+	cp -Rf quectel-rgmii-toolkit-main/tailscale/ $USRDATA_DIR
+	echo "Setting Permissions"
         chmod +x /usrdata/tailscale/tailscaled
         chmod +x /usrdata/tailscale/tailscale
+	echo "Copy systemd units"
         cp -f /usrdata/tailscale/systemd/* /lib/systemd/system
         systemctl daemon-reload
         ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
