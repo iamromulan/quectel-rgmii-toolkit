@@ -666,7 +666,12 @@ while true; do
             manage_reboot_timer
             ;;
         6) 
-            break
+        # Cleanup
+  	    echo "Cleaning up..."
+  	    rm /tmp/main.zip
+            rm -rf /tmp/quectel-rgmii-toolkit-main/
+	    echo "Goodbye!"
+     	    break
             ;;
         *)
             echo "Invalid option"
