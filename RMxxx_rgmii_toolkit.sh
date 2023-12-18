@@ -180,6 +180,10 @@ install_update_at_telnet() {
         # Start Services
         systemctl start at-telnet-daemon
 	remount_ro
+ 	# Cleanup
+  	echo "Cleaning up..."
+  	rm /tmp/main.zip
+   	rm -rf /tmp/quectel-rgmii-toolkit-main/
     else
         remount_ro
     fi
@@ -276,6 +280,9 @@ install_update_simple_admin() {
                 systemctl start simpleadmin_httpd
                 systemctl start ttl-override
                 remount_ro
+  		echo "Cleaning up..."
+  		rm /tmp/main.zip
+   		rm -rf /tmp/quectel-rgmii-toolkit-main/
                 break
                 ;;
             2)
@@ -300,6 +307,9 @@ install_update_simple_admin() {
                 systemctl start simpleadmin_httpd
                 systemctl start ttl-override
                 remount_ro
+		echo "Cleaning up..."
+  		rm /tmp/simpleadminnoatcmds.zip
+   		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminnoatcmds/
                 break
                 ;;
             3)
@@ -321,6 +331,9 @@ install_update_simple_admin() {
                 systemctl start simpleadmin_httpd
                 systemctl start ttl-override
                 remount_ro
+		echo "Cleaning up..."
+ 	 	rm /tmp/simpleadminttlonly.zip
+   		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminttlonly/
                 break
                 ;;
             4)
@@ -452,7 +465,11 @@ install_update_remove_tailscale() {
                 cp -f /usrdata/tailscale/systemd/* /lib/systemd/system
                 systemctl daemon-reload
                 ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
+		echo "Starting Tailscaled..."
                 systemctl start tailscaled
+		echo "Cleaning up..."
+  		rm /tmp/main.zip
+   		rm -rf /tmp/quectel-rgmii-toolkit-main/
                 remount_ro
                 echo "Tailscale updated successfully."
 				echo "You will need to reconnect and Log back in"
@@ -485,8 +502,12 @@ install_update_remove_tailscale() {
         cp -f /usrdata/tailscale/systemd/* /lib/systemd/system
         systemctl daemon-reload
         ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
+	echo "Starting Tailscaled..."
         systemctl start tailscaled
         remount_ro
+	echo "Cleaning up..."
+  	rm /tmp/main.zip
+   	rm -rf /tmp/quectel-rgmii-toolkit-main/
         echo "Tailscale installed successfully."
     fi
 }
