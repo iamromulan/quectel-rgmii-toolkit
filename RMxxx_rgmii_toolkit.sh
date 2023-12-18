@@ -455,11 +455,11 @@ install_update_remove_tailscale() {
         case $tailscale_update_remove_choice in
             1) 
                 echo "Updating Tailscale..."
-                $TAILSCALE_DIR/tailscale down
+                remount_rw
+		$TAILSCALE_DIR/tailscale down
                 $TAILSCALE_DIR/tailscale logout
                 systemctl stop tailscaled
                 # Follow the installation steps with force overwrite
-                remount_rw
                 cd $TMP_DIR
                 wget $GITHUB_URL -O main.zip
                 unzip -o main.zip
@@ -481,6 +481,7 @@ install_update_remove_tailscale() {
                 ;;
             2) 
                 echo "Removing Tailscale..."
+		remount_rw
                 $TAILSCALE_DIR/tailscale down
                 $TAILSCALE_DIR/tailscale logout
                 systemctl stop tailscaled
