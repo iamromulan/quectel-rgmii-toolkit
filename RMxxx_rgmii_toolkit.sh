@@ -10,6 +10,7 @@ GITHUB_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/hea
 GITHUB_SIMPADMIN_NOCMD_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminnoatcmds.zip"
 GITHUB_SIMPADMIN_TTL_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminttlonly.zip"
 TAILSCALE_DIR="/usrdata/tailscale/"
+TAILSCALE_SYSD_DIR="/usrdata/tailscale/systemd"
 
 # AT Command Script Variables and Functions
 DEVICE_FILE="/dev/smd7"
@@ -460,20 +461,27 @@ install_update_remove_tailscale() {
                 $TAILSCALE_DIR/tailscale logout
                 systemctl stop tailscaled
                 # Follow the installation steps with force overwrite
-                cd $TMP_DIR
-                wget $GITHUB_URL -O main.zip
-                unzip -o main.zip
-                cp -Rf quectel-rgmii-toolkit-main/tailscale/ $USRDATA_DIR
-                chmod +x /usrdata/tailscale/tailscaled
-                chmod +x /usrdata/tailscale/tailscale
-                cp -f /usrdata/tailscale/systemd/* /lib/systemd/system
-                systemctl daemon-reload
-                ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
-		echo "Starting Tailscaled..."
-                systemctl start tailscaled
-		echo "Cleaning up..."
-  		rm /tmp/main.zip
-   		rm -rf /tmp/quectel-rgmii-toolkit-main/
+		echo "Downloading the latest Tailscale binaries..."
+		wget -O $TAILSCALE_DIR/tailscaled https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscaled
+		wget -O $TAILSCALE_DIR/tailscale https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscale
+
+		echo "Setting permissions for the new binaries..."
+		chmod +x $TAILSCALE_DIR/tailscaled
+		chmod +x $TAILSCALE_DIR/tailscale
+
+		echo "Downloading the latest systemd files..."
+		wget -O $TAILSCALE_SYSD_DIR/tailscaled.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
+		wget -O $TAILSCALE_SYSD_DIR/tailscaled.defaults https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.defaults
+
+		echo "Copying the new systemd units..."
+		cp -f $TAILSCALE_SYSD_DIR/* /lib/systemd/system
+		systemctl daemon-reload
+
+		echo "Restarting Tailscaled service..."
+		systemctl restart tailscaled
+
+		echo "Tailscale updated successfully."
+               
                 remount_ro
                 echo "Tailscale updated successfully."
 				echo "You will need to reconnect and Log back in"
@@ -498,28 +506,30 @@ install_update_remove_tailscale() {
     else
         echo "Installing Tailscale..."
         remount_rw
-        cd $TMP_DIR
-        wget $GITHUB_URL -O main.zip
-        unzip -o main.zip
-	sleep 2s
-        echo "Copying to /userdata/"
-	cp -Rf quectel-rgmii-toolkit-main/tailscale/ $USRDATA_DIR
+	echo "Creating /usrdata/tailscale/"
+	mkdir $TAILSCALE_DIR
+ 	mkdir $TAILSCALE_SYSD_DIR
+        cd $TAILSCALE_DIR
+	echo "Downloading binary: /usrdata/tailscale/tailscaled"
+        wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscaled
+	echo "Downloading binary: /usrdata/tailscale/tailscale"
+ 	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscale
+    	echo "Downloading systemd files..."
+     	cd $TAILSCALE_SYSD_DIR
+      	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
+       	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.defaults
  	sleep 2s
-	echo "Setting Permissions"
+	echo "Setting Permissions..."
         chmod +x /usrdata/tailscale/tailscaled
         chmod +x /usrdata/tailscale/tailscale
-	echo "Copy systemd units"
+	echo "Copy systemd units..."
         cp -f /usrdata/tailscale/systemd/* /lib/systemd/system
-	sleep 2s
+	ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
         systemctl daemon-reload
-	sleep 2s
-        ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
 	echo "Starting Tailscaled..."
         systemctl start tailscaled
+	cd /
         remount_ro
-	echo "Cleaning up..."
-  	rm /tmp/main.zip
-   	rm -rf /tmp/quectel-rgmii-toolkit-main/
         echo "Tailscale installed successfully."
     fi
 }
@@ -531,18 +541,18 @@ configure_tailscale() {
         echo "Configure Tailscale"
         echo "1) Connect to Tailnet"
         echo "2) Connect to Tailnet with SSH ON"
-		echo "3) Connect to Tailnet with SSH OFF (reset flag)"
-		echo "4) Disconnect from Tailnet (reconnects at reboot)"
+	echo "3) Connect to Tailnet with SSH OFF (reset flag)"
+	echo "4) Disconnect from Tailnet (reconnects at reboot)"
         echo "5) Logout from tailscale account"
-		echo "6) Return to Tailscale Menu"
+	echo "6) Return to Tailscale Menu"
         read -p "Enter your choice: " config_choice
 
         case $config_choice in
             1) $TAILSCALE_DIR/tailscale up;;
             2) $TAILSCALE_DIR/tailscale up --ssh;;
-			3) $TAILSCALE_DIR/tailscale up --reset;;
-			4) $TAILSCALE_DIR/tailscale down;;
-			5) $TAILSCALE_DIR/tailscale logout;;
+	    3) $TAILSCALE_DIR/tailscale up --reset;;
+     	    4) $TAILSCALE_DIR/tailscale down;;
+            5) $TAILSCALE_DIR/tailscale logout;;
             6) break;;
             *) echo "Invalid option";;
         esac
