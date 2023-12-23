@@ -302,9 +302,6 @@ install_update_simple_admin() {
                 systemctl start simpleadmin_httpd
                 systemctl start ttl-override
                 remount_ro
-  		echo "Cleaning up..."
-  		rm /tmp/main.zip
-   		rm -rf /tmp/quectel-rgmii-toolkit-main/
                 break
                 ;;
             2)
@@ -648,9 +645,6 @@ manage_reboot_timer() {
 
 # Main menu
 while true; do
-    echo "Cleaning up..."
-    rm /tmp/main.zip
-    rm -rf /tmp/quectel-rgmii-toolkit-main/
     echo "Welcome to iamromulan's RGMII Toolkit script for Quectel RMxxx Series modems!"
     echo "Select an option:"
     echo "1) Send AT Commands"
@@ -705,9 +699,6 @@ while true; do
             ;;
         6) 
         # Cleanup
-  	    echo "Cleaning up..."
-  	    rm /tmp/main.zip
-            rm -rf /tmp/quectel-rgmii-toolkit-main/
 	    echo "Goodbye!"
      	    break
             ;;
