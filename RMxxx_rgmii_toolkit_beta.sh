@@ -146,7 +146,6 @@ install_update_at_telnet() {
     read -p "Enter your choice (1 or 2): " device_choice
 
     # Stop and disable existing services before installing new ones
-    set +x
     systemctl stop at-telnet-daemon
     systemctl disable at-telnet-daemon
     systemctl stop socat-smd11
@@ -163,7 +162,6 @@ install_update_at_telnet() {
     rm /lib/systemd/system/socat-smd7-to-ttyIN.service
     rm /lib/systemd/system/socat-smd7-from-ttyIN.service
     systemctl daemon-reload
-    set -x
 
     # Depending on the choice, copy the respective systemd unit files
     case $device_choice in
