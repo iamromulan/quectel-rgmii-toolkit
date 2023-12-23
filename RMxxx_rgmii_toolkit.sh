@@ -4,9 +4,12 @@
 USRDATA_DIR="/usrdata"
 MICROPYTHON_DIR="/usrdata/micropython"
 AT_TELNET_DIR="/usrdata/at-telnet"
+AT_TELNET_SYSD_DIR="/usrdata/at-telnet/systemd_units"
+AT_TELNET_SMD7_SYSD_DIR="/usrdata/at-telnet/smd7_systemd_units"
 SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 TMP_DIR="/tmp"
 GITHUB_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/main.zip"
+GITHUB_SIMPADMIN_FULL_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminfull.zip"
 GITHUB_SIMPADMIN_NOCMD_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminnoatcmds.zip"
 GITHUB_SIMPADMIN_TTL_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminttlonly.zip"
 TAILSCALE_DIR="/usrdata/tailscale/"
@@ -99,11 +102,35 @@ remount_ro() {
 # Function to install/update AT Telnet Daemon
 install_update_at_telnet() {
     remount_rw
-    cd $TMP_DIR
-    wget $GITHUB_URL -O main.zip
-    unzip -o main.zip
-    cp -Rf quectel-rgmii-toolkit-main/attelnetdaemon/at-telnet $USRDATA_DIR
-    cp -Rf quectel-rgmii-toolkit-main/attelnetdaemon/micropython $USRDATA_DIR
+    mkdir $MICROPYTHON_DIR
+    mkdir $AT_TELNET_DIR
+    cd $MICROPYTHON_DIR
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/errno.py
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/fcntl.py
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/ffilib.py
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/logging.py
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/micropython
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/os_compat.py
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/serial.py
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/stat.py
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/time.py
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/traceback.mpy
+    cd $AT_TELNET_DIR
+    mkdir $AT_TELNET_SYSD_DIR
+    mkdir $AT_TELNET_SMD7_SYSD_DIR
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/modem-multiclient.py
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/picocom
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/socat-armel-static
+    cd $AT_TELNET_SYSD_DIR
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/systemd_units/socat-smd11.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/systemd_units/at-telnet-daemon.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/systemd_units/socat-smd11-from-ttyIN.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/systemd_units/socat-smd11-to-ttyIN.service
+    cd $AT_TELNET_SMD7_SYSD_DIR
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/smd7_systemd_units/at-telnet-daemon.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/smd7_systemd_units/socat-smd7-from-ttyIN.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/smd7_systemd_units/socat-smd7-to-ttyIN.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/smd7_systemd_units/socat-smd7.service
 
     # Set execute permissions
     chmod +x $MICROPYTHON_DIR/micropython
@@ -139,7 +166,7 @@ install_update_at_telnet() {
     # Depending on the choice, copy the respective systemd unit files
     case $device_choice in
         2)
-            cp -f $AT_TELNET_DIR/smd7_systemd_units/*.service /lib/systemd/system
+            cp -f $AT_TELNET_SMD7_SYSD_DIR/*.service /lib/systemd/system
 			ln -sf /lib/systemd/system/socat-smd7.service /lib/systemd/system/multi-user.target.wants/
 			ln -sf /lib/systemd/system/socat-smd7-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
 			ln -sf /lib/systemd/system/socat-smd7-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
@@ -150,7 +177,7 @@ install_update_at_telnet() {
 			systemctl start socat-smd7-from-ttyIN
             ;;
         1)
-            cp -f $AT_TELNET_DIR/systemd_units/*.service /lib/systemd/system
+            cp -f $AT_TELNET_SYSD_DIR/*.service /lib/systemd/system
 			ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
 			ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
 			ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
@@ -181,16 +208,8 @@ install_update_at_telnet() {
         # Start Services
         systemctl start at-telnet-daemon
 	remount_ro
- 	# Cleanup
-  	echo "Cleaning up..."
-  	rm /tmp/main.zip
-   	rm -rf /tmp/quectel-rgmii-toolkit-main/
     else
         remount_ro
- 	# Cleanup
-  	echo "Cleaning up..."
-  	rm /tmp/main.zip
-   	rm -rf /tmp/quectel-rgmii-toolkit-main/
     fi
     
 }
@@ -241,10 +260,6 @@ remove_at_telnet() {
 
     # Remove the AT Telnet Daemon directory
     rm -rf $AT_TELNET_DIR
-
-    # Additional cleanup if necessary
-    # (Add any other file or directory removals here if needed)
-
     remount_ro
     echo "AT Telnet Daemon removed successfully."
 }
@@ -266,9 +281,9 @@ install_update_simple_admin() {
             1)
                 remount_rw
                 cd $TMP_DIR
-                wget $GITHUB_URL -O main.zip
-                unzip -o main.zip
-                cp -Rf quectel-rgmii-toolkit-main/simpleadmin/ $USRDATA_DIR
+                wget $GITHUB_SIMPADMIN_FULL_URL -O simpleadminfull.zip
+                unzip -o simpleadminfull.zip
+                cp -Rf quectel-rgmii-toolkit-simpleadminfull/simpleadmin/ $USRDATA_DIR
 
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
                 chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
@@ -285,9 +300,6 @@ install_update_simple_admin() {
                 systemctl start simpleadmin_httpd
                 systemctl start ttl-override
                 remount_ro
-  		echo "Cleaning up..."
-  		rm /tmp/main.zip
-   		rm -rf /tmp/quectel-rgmii-toolkit-main/
                 break
                 ;;
             2)
@@ -631,9 +643,6 @@ manage_reboot_timer() {
 
 # Main menu
 while true; do
-    echo "Cleaning up..."
-    rm /tmp/main.zip
-    rm -rf /tmp/quectel-rgmii-toolkit-main/
     echo "Welcome to iamromulan's RGMII Toolkit script for Quectel RMxxx Series modems!"
     echo "Select an option:"
     echo "1) Send AT Commands"
@@ -688,9 +697,6 @@ while true; do
             ;;
         6) 
         # Cleanup
-  	    echo "Cleaning up..."
-  	    rm /tmp/main.zip
-            rm -rf /tmp/quectel-rgmii-toolkit-main/
 	    echo "Goodbye!"
      	    break
             ;;
