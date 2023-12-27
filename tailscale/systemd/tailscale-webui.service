@@ -1,1 +1,11 @@
+[Unit]
+Description=Tailscale Web Interface
+After=network.target
 
+[Service]
+Type=oneshot
+ExecStart=/usrdata/tailscale/tailscale web --listen 0.0.0.0:8088
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
