@@ -1,6 +1,6 @@
-[Unit]
 Description=Tailscale Web Interface
-After=network.target
+After=network.target tailscaled.service
+Requires=tailscaled.service
 
 [Service]
 Type=oneshot
