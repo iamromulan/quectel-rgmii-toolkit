@@ -3,7 +3,7 @@ After=network.target tailscaled.service
 Requires=tailscaled.service
 
 [Service]
-Type=oneshot
+Type=simple
 ExecStart=/usrdata/tailscale/tailscale web --listen 0.0.0.0:8088
 RemainAfterExit=yes
 
