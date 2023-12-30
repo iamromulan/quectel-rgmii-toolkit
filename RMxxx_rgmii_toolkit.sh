@@ -551,21 +551,45 @@ install_update_remove_tailscale() {
 configure_tailscale() {
     while true; do
         echo "Configure Tailscale"
-        echo "1) Connect to Tailnet"
-        echo "2) Connect to Tailnet with SSH ON"
-	echo "3) Connect to Tailnet with SSH OFF (reset flag)"
-	echo "4) Disconnect from Tailnet (reconnects at reboot)"
-        echo "5) Logout from tailscale account"
-	echo "6) Return to Tailscale Menu"
+        echo "1) Enable Tailscale Web UI at http://192.168.225.1:8088 (Gateway on port 8088)"
+	echo "2) Disable Tailscale Web UI"
+	echo "3) Connect to Tailnet"
+        echo "4) Connect to Tailnet with SSH ON"
+	echo "5) Connect to Tailnet with SSH OFF (reset flag)"
+	echo "6) Disconnect from Tailnet (reconnects at reboot)"
+        echo "7) Logout from tailscale account"
+	echo "8) Return to Tailscale Menu"
         read -p "Enter your choice: " config_choice
 
         case $config_choice in
-            1) $TAILSCALE_DIR/tailscale up;;
-            2) $TAILSCALE_DIR/tailscale up --ssh;;
-	    3) $TAILSCALE_DIR/tailscale up --reset;;
-     	    4) $TAILSCALE_DIR/tailscale down;;
-            5) $TAILSCALE_DIR/tailscale logout;;
-            6) break;;
+            1)
+		remount_rw
+		cd /lib/systemd/system/
+		wget -O tailscale-webui.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui.service
+     		ln -sf /lib/systemd/system/tailscale-webui.service /lib/systemd/system/multi-user.target.wants/
+     		systemctl daemon-reload
+       		echo "Tailscale Web UI Enabled"
+	 	echo "Starting Web UI..." 
+     		systemctl start tailscale-webui
+       		echo "Web UI started!"
+     	   	remount_ro
+		;;
+	    2) 
+		remount_rw
+  		systemctl stop tailscale-webui
+    		systemctl disable tailscale-webui
+  		rm /lib/systemd/system/multi-user.target.wants/tailscale-webui.service
+    		rm /lib/systemd/system/tailscale-webui.service
+     		systemctl daemon-reload
+       		echo "Tailscale Web UI Stopped and Disabled"
+     	   	remount_ro
+		;;
+	    3) $TAILSCALE_DIR/tailscale up;;
+            4) $TAILSCALE_DIR/tailscale up --ssh;;
+	    5) $TAILSCALE_DIR/tailscale up --reset;;
+     	    6) $TAILSCALE_DIR/tailscale down;;
+            7) $TAILSCALE_DIR/tailscale logout;;
+            8) break;;
             *) echo "Invalid option";;
         esac
     done
