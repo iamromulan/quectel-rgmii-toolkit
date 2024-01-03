@@ -14,6 +14,10 @@ GITHUB_SIMPADMIN_NOCMD_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/
 GITHUB_SIMPADMIN_TTL_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminttlonly.zip"
 TAILSCALE_DIR="/usrdata/tailscale/"
 TAILSCALE_SYSD_DIR="/usrdata/tailscale/systemd"
+SIMPLE_FIREWALL_DIR="/usrdata/simplefirewall"
+SIMPLE_FIREWALL_SCRIPT="$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
+SIMPLE_FIREWALL_SYSTEMD_DIR="$SIMPLE_FIREWALL_DIR/systemd"
+SIMPLE_FIREWALL_SERVICE="/lib/systemd/system/simplefirewall.service"
 
 # AT Command Script Variables and Functions
 DEVICE_FILE="/dev/smd7"
@@ -84,20 +88,117 @@ is_at_telnet_installed() {
 	[ -d "$AT_TELNET_DIR" ] && return 0 || return 1
 }
 
-# Check if Simple Admin is installed
-is_simple_admin_installed() {
-    [ -d "$SIMPLE_ADMIN_DIR" ] && return 0 || return 1
+# Function to check if Simple Firewall is installed
+is_simple_firewall_installed() {
+    if [ -d "$SIMPLE_FIREWALL_DIR" ]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
-# Function to remount file system as read-write
-remount_rw() {
+# Function to install/update Simple Firewall
+install_update_simple_firewall() {
+    echo "Installing/Updating Simple Firewall..."
     mount -o remount,rw /
+    mkdir -p "$SIMPLE_FIREWALL_DIR"
+    mkdir -p "$SIMPLE_FIREWALL_SYSTEMD_DIR"
+    wget -O "$SIMPLE_FIREWALL_SCRIPT" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/simplefirewall/simplefirewall.sh
+    chmod +x "$SIMPLE_FIREWALL_SCRIPT"
+    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/simplefirewall/systemd/simplefirewall.service
+    cp -f "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" "$SIMPLE_FIREWALL_SERVICE"
+    ln -sf "$SIMPLE_FIREWALL_SERVICE" "/etc/systemd/system/multi-user.target.wants/"
+    systemctl daemon-reload
+    systemctl restart simplefirewall
+    mount -o remount,ro /
+    echo "Simple Firewall installation/update complete."
 }
 
-# Function to remount file system as read-only
-remount_ro() {
+# Function to uninstall Simple Firewall
+uninstall_simple_firewall() {
+    echo "Uninstalling Simple Firewall..."
+    mount -o remount,rw /
+    systemctl stop simplefirewall
+    rm -f "$SIMPLE_FIREWALL_SERVICE"
+    rm -rf "$SIMPLE_FIREWALL_DIR"
+    systemctl daemon-reload
     mount -o remount,ro /
+    echo "Simple Firewall uninstalled."
 }
+
+# Function to configure Simple Firewall
+configure_simple_firewall() {
+    if [ ! -f "$SIMPLE_FIREWALL_SCRIPT" ]; then
+        echo "Simple Firewall script not found."
+        return
+    fi
+
+    echo "Current firewall configuration:"
+    ports=$(grep '^PORTS=' "$SIMPLE_FIREWALL_SCRIPT" | cut -d'(' -f2 | tr -d '")' | tr ' ' '\n')
+    echo "$ports" | nl
+
+    while true; do
+        echo "Enter a port number to add/remove, or type 'done' to finish:"
+        read port
+        if [ "$port" = "done" ]; then
+            break
+        elif echo "$ports" | grep -q "^$port\$"; then
+            # Remove port
+            ports=$(echo "$ports" | grep -v "^$port\$")
+            echo "Port $port removed."
+        else
+            # Add port
+            ports=$(echo "$ports"; echo "$port")
+            echo "Port $port added."
+        fi
+    done
+
+    # Update the script with new ports
+    new_ports_line="PORTS=($(echo "$ports" | tr '\n' ' '))"
+    sed -i "s/^PORTS=(.*)$/$new_ports_line/" "$SIMPLE_FIREWALL_SCRIPT"
+    systemctl restart simplefirewall
+    echo "Firewall configuration updated."
+}
+
+# Function for Simplefirewall Submenu
+simplefirewall_menu() {
+while true; do
+    echo "Simple Firewall Management"
+    echo "1) Install/Update/Uninstall Simple Firewall"
+    echo "2) Configure Simple Firewall"
+    echo "3) Exit"
+    read -p "Enter your choice: " choice
+
+    case $choice in
+        1)
+            if is_simple_firewall_installed; then
+                echo "Simple Firewall is already installed."
+                echo "1) Update Simple Firewall"
+                echo "2) Uninstall Simple Firewall"
+                read -p "Enter your choice: " update_uninstall_choice
+                case $update_uninstall_choice in
+                    1) install_update_simple_firewall;;
+                    2) uninstall_simple_firewall;;
+                    *) echo "Invalid option";;
+                esac
+            else
+                install_update_simple_firewall
+            fi
+            ;;
+        2)
+            configure_simple_firewall
+            ;;
+        3)
+            echo "Exiting..."
+            break
+            ;;
+        *)
+            echo "Invalid option"
+            ;;
+    esac
+done
+}
+
 
 # Function to install/update AT Telnet Daemon
 install_update_at_telnet() {
@@ -670,11 +771,12 @@ while true; do
     echo "Welcome to iamromulan's RGMII Toolkit script for Quectel RMxxx Series modems!"
     echo "Select an option:"
     echo "1) Send AT Commands"
-    echo "2) Install/Update or remove AT Telnet Daemon"
-    echo "3) Install/Update or remove Simple Admin"
-    echo "4) Tailscale Management"
-	echo "5) Install/Change or remove Daily Reboot Timer"
-    echo "6) Exit"
+    echo "2) Install/Update/Uninstall or Configure Simple Firewall"
+    echo "3) Install/Update or remove AT Telnet Daemon"
+    echo "4) Install/Update or remove Simple Admin"
+    echo "5) Tailscale Management"
+    echo "6) Install/Change or remove Daily Reboot Timer"
+    echo "7) Exit"
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -682,6 +784,9 @@ while true; do
             send_at_commands
             ;;
         2)
+	    simplefirewall_menu
+            ;;
+	3)
             if is_at_telnet_installed; then
                 echo "AT Telnet Daemon is already installed."
                 echo "1) Update"
@@ -697,7 +802,7 @@ while true; do
                 install_update_at_telnet
             fi
             ;;
-        3)
+        4)
             if is_simple_admin_installed; then
                 echo "Simple Admin is already installed."
                 echo "1) Update"
@@ -713,14 +818,13 @@ while true; do
                 install_update_simple_admin
             fi
             ;;
-        4)  
-			tailscale_menu
-			;;
-		5)
+        5)  
+	    tailscale_menu
+	    ;;
+	6)
             manage_reboot_timer
             ;;
-        6) 
-        # Cleanup
+        7) 
 	    echo "Goodbye!"
      	    break
             ;;
