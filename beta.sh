@@ -143,8 +143,9 @@ configure_simple_firewall() {
         return
     fi
 
-    echo "Current firewall configuration:"
-    ports=$(grep '^PORTS=' "$SIMPLE_FIREWALL_SCRIPT" | cut -d'=' -f2 | tr -d '()' | tr ' ' '\n' | grep -o '[0-9]\+')
+    # Extract current ports configuration
+    current_ports_line=$(grep '^PORTS=' "$SIMPLE_FIREWALL_SCRIPT")
+    ports=$(echo "$current_ports_line" | cut -d'=' -f2 | tr -d '()' | tr ' ' '\n' | grep -o '[0-9]\+')
     echo "$ports" | awk '{print NR") "$0}'
 
     while true; do
@@ -165,12 +166,15 @@ configure_simple_firewall() {
         fi
     done
 
-    # Update the script with new ports
+    # Prepare updated ports line
     new_ports_line="PORTS=($(echo "$ports" | tr '\n' ' '))"
-    sed -i "s/^PORTS=(.*)$/$new_ports_line/" "$SIMPLE_FIREWALL_SCRIPT"
+    
+    # Update the script with new ports
+    sed -i "s/$current_ports_line/$new_ports_line/" "$SIMPLE_FIREWALL_SCRIPT"
     systemctl restart simplefirewall
     echo "Firewall configuration updated."
 }
+
 
 
 
