@@ -135,7 +135,7 @@ configure_simple_firewall() {
 
     echo "Current firewall configuration:"
     ports=$(grep '^PORTS=' "$SIMPLE_FIREWALL_SCRIPT" | cut -d'(' -f2 | tr -d '")' | tr ' ' '\n')
-    echo "$ports" | nl
+    echo "$ports" | awk '{print NR") "$0}'
 
     while true; do
         echo "Enter a port number to add/remove, or type 'done' to finish:"
