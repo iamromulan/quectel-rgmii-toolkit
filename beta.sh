@@ -144,7 +144,7 @@ configure_simple_firewall() {
     fi
 
     echo "Current firewall configuration:"
-    ports=$(grep '^PORTS=' "$SIMPLE_FIREWALL_SCRIPT" | cut -d'(' -f2 | tr -d '")' | tr ' ' '\n')
+    ports=$(grep '^PORTS=' "$SIMPLE_FIREWALL_SCRIPT" | cut -d'=' -f2 | tr -d '()' | tr ' ' '\n' | grep -o '[0-9]\+')
     echo "$ports" | awk '{print NR") "$0}'
 
     while true; do
@@ -158,7 +158,7 @@ configure_simple_firewall() {
             echo "Port $port removed."
         else
             # Add port
-            ports=$(echo "$ports"; echo "$port")
+            ports=$(echo "$ports"; echo "$port" | grep -o '[0-9]\+')
             echo "Port $port added."
         fi
     done
@@ -169,6 +169,7 @@ configure_simple_firewall() {
     systemctl restart simplefirewall
     echo "Firewall configuration updated."
 }
+
 
 # Function for Simplefirewall Submenu
 simplefirewall_menu() {
