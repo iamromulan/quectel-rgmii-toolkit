@@ -82,6 +82,16 @@ send_at_commands() {
     fi
 }
 
+# Function to remount file system as read-write
+remount_rw() {
+    mount -o remount,rw /
+}
+
+# Function to remount file system as read-only
+remount_ro() {
+    mount -o remount,ro /
+}
+
 # Check if AT Telnet Daemon is installed
 is_at_telnet_installed() {
     [ -d "$MICROPYTHON_DIR" ] && return 0 || return 1
