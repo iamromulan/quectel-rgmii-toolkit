@@ -152,6 +152,8 @@ configure_simple_firewall() {
         read port
         if [ "$port" = "done" ]; then
             break
+        elif ! echo "$port" | grep -qE '^[0-9]+$'; then
+            echo "Invalid input: Please enter a numeric value."
         elif echo "$ports" | grep -q "^$port\$"; then
             # Remove port
             ports=$(echo "$ports" | grep -v "^$port\$")
@@ -169,6 +171,7 @@ configure_simple_firewall() {
     systemctl restart simplefirewall
     echo "Firewall configuration updated."
 }
+
 
 
 # Function for Simplefirewall Submenu
