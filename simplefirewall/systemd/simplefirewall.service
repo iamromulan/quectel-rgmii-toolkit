@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/usrdata/simplefirewall/simplefirewall.sh
+ExecStart=/bin/bash /usrdata/simplefirewall/simplefirewall.sh
 RemainAfterExit=yes
 
 [Install]
