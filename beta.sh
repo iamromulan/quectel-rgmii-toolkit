@@ -117,7 +117,7 @@ install_update_simple_firewall() {
     chmod +x "$SIMPLE_FIREWALL_SCRIPT"
     wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/simplefirewall/systemd/simplefirewall.service
     cp -f "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" "$SIMPLE_FIREWALL_SERVICE"
-    ln -sf "$SIMPLE_FIREWALL_SERVICE" "/etc/systemd/system/multi-user.target.wants/"
+    ln -sf "$SIMPLE_FIREWALL_SERVICE" "/lib/systemd/system/multi-user.target.wants/"
     systemctl daemon-reload
     systemctl restart simplefirewall
     mount -o remount,ro /
@@ -129,6 +129,7 @@ uninstall_simple_firewall() {
     echo "Uninstalling Simple Firewall..."
     mount -o remount,rw /
     systemctl stop simplefirewall
+    rm -f "/lib/systemd/system/multi-user.target.wants/simplefirewall.service"
     rm -f "$SIMPLE_FIREWALL_SERVICE"
     rm -rf "$SIMPLE_FIREWALL_DIR"
     systemctl daemon-reload
