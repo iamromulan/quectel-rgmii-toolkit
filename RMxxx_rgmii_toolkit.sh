@@ -858,3 +858,4 @@ while true; do
 done
 
 echo "Exiting script."
+}
