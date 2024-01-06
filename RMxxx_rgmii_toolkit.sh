@@ -857,6 +857,3 @@ while true; do
             ;;
     esac
 done
-
-echo "Exiting script."
-}
