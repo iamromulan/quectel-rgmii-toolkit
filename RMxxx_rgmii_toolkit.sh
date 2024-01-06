@@ -110,6 +110,7 @@ is_simple_firewall_installed() {
 # Check if Simple Admin is installed
 is_simple_admin_installed() {
     [ -d "$SIMPLE_ADMIN_DIR" ] && return 0 || return 1
+}
 
 # Function to install/update Simple Firewall
 install_update_simple_firewall() {
