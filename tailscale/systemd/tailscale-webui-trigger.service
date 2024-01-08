@@ -1,0 +1,8 @@
+[Unit]
+Description=Trigger the Tailscale Web UI
+After=tailscaled.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl start tailscale-webui
+RemainAfterExit=yes
