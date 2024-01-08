@@ -1,5 +1,5 @@
 Description=Tailscale Web Interface
-After=network.target tailscaled.service
+After=tailscaled.service
 Requires=tailscaled.service
 
 [Service]
