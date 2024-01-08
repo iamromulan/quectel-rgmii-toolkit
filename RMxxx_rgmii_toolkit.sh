@@ -691,7 +691,8 @@ configure_tailscale() {
 		remount_rw
 		cd /lib/systemd/system/
 		wget -O tailscale-webui.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui.service
-     		ln -sf /lib/systemd/system/tailscale-webui.service /lib/systemd/system/multi-user.target.wants/
+  		wget -O tailscale-webui-trigger.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui-trigger.service
+     		ln -sf /lib/systemd/system/tailscale-webui-trigger.service /lib/systemd/system/multi-user.target.wants/
      		systemctl daemon-reload
        		echo "Tailscale Web UI Enabled"
 	 	echo "Starting Web UI..." 
@@ -702,9 +703,11 @@ configure_tailscale() {
 	    2) 
 		remount_rw
   		systemctl stop tailscale-webui
-    		systemctl disable tailscale-webui
+    		systemctl disable tailscale-webui-trigger
   		rm /lib/systemd/system/multi-user.target.wants/tailscale-webui.service
+    		rm /lib/systemd/system/multi-user.target.wants/tailscale-webui-trigger.service
     		rm /lib/systemd/system/tailscale-webui.service
+      		rm /lib/systemd/system/tailscale-webui-trigger.service
      		systemctl daemon-reload
        		echo "Tailscale Web UI Stopped and Disabled"
      	   	remount_ro
