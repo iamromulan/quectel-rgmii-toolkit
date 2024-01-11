@@ -30,9 +30,19 @@ start_listening() {
 
 send_at_command() {
     echo "Enter AT command (or type 'exit' to quit): "
+    echo "Type 'install' to simply type atcmd in shell from now on"
     read at_command
     if [ "$at_command" = "exit" ]; then
         return 1
+    fi
+    
+    if [ "$at_command" = "install" ]; then
+        wget -P /usrdata https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/atcmd
+	chmod +x /usrdata/atcmd
+ 	remount_rw
+ 	ln -sf /usrdata/atcmd /sbin
+  	remount_ro
+   	echo "Installed. Type atcmd from adb shell or ssh to start an AT Command session"
     fi
     echo -e "${at_command}\r" > "$DEVICE_FILE"
 }
