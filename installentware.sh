@@ -5,6 +5,9 @@
 ARCH=armv7sf-k3.2
 TYPE='alternative'
 
+# Remount root filesystem as read-write
+mount -o remount,rw /
+
 echo 'Info: Checking for prerequisites and creating folders...'
 if grep -qs '/opt ' /proc/mounts; then
     echo 'Info: /opt is already mounted.'
@@ -48,6 +51,11 @@ fi
 # Fix for multiuser environment
 chmod 777 /opt/tmp
 
+# Append /opt/bin and /opt/sbin to the system-wide PATH in /etc/profile at the beginning
+if ! grep -q 'PATH=.*opt/bin' /etc/profile; then
+    sed -i 's|PATH="|PATH="/opt/bin:/opt/sbin:|' /etc/profile
+fi
+
 # Create the rc.unslung start systemd service
 echo "Info: Creating systemd service for Entware initialization..."
 cat <<EOF > /etc/systemd/system/rc.unslung.service
@@ -75,3 +83,5 @@ if [ "$TYPE" = 'alternative' ]; then
   echo 'Info: Use ssh server from Entware for better compatibility.'
 fi
 echo 'Info: Found a Bug? Please report at https://github.com/Entware/Entware/issues'
+# Remount root filesystem as read-only
+mount -o remount,ro /
