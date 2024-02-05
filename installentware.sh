@@ -113,9 +113,9 @@ ln -s /lib/systemd/system/start-opt-mount.service /lib/systemd/system/multi-user
 
 # Update /etc/profile for PATH
 echo 'Info: Updating /etc/profile for PATH...'
-if ! grep -q 'PATH=.*opt/bin' /etc/profile; then
-    sed -i 's|PATH="|PATH="/opt/bin:/opt/sbin:|' /etc/profile
-fi
+export PATH=/usrdata/opt/bin:/usrdata/opt/sbin:$PATH
+echo 'Info: This is only temporary, you will need to do this for each shell session...'
+echo 'Info: Run export PATH=/usrdata/opt/bin:/usrdata/opt/sbin:$PATH to do it'
 
 # Create and enable rc.unslung service
 echo 'Info: Creating rc.unslung service...'
@@ -139,6 +139,7 @@ systemctl start rc.unslung.service
 echo 'Info: Congratulations!'
 echo 'Info: If there are no errors above then Entware was successfully initialized.'
 echo 'Info: Add /opt/bin & /opt/sbin to $PATH variable'
+echo 'Info: Run export PATH=/usrdata/opt/bin:/usrdata/opt/sbin:$PATH to do it'
 if [ $TYPE = 'alternative' ]; then
   echo 'Info: Use ssh server from Entware for better compatibility.'
 fi
