@@ -101,7 +101,7 @@ fi
 
 # Create and enable rc.unslung service
 echo 'Info: Creating rc.unslung service...'
-cat <<EOF > /etc/systemd/system/rc.unslung.service
+cat <<EOF > /lib/systemd/system/rc.unslung.service
 [Unit]
 Description=Start Entware services
 
@@ -115,7 +115,7 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-ln -s /etc/systemd/system/rc.unslung.service /etc/systemd/system/multi-user.target.wants/rc.unslung.service
+ln -s /lib/systemd/system/rc.unslung.service /lib/systemd/system/multi-user.target.wants/rc.unslung.service
 systemctl start rc.unslung.service
 
 echo 'Info: Congratulations!'
