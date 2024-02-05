@@ -1,37 +1,36 @@
 #!/bin/sh
 
-#TYPE='generic'
-TYPE='alternative'
-
-#|---------|-----------------------|---------------|---------------|---------------------|-------------------|-------------------|----------------------|-------------------|
-#| ARCH    | aarch64-k3.10         | armv5sf-k3.2  | armv7sf-k2.6  | armv7sf-k3.2        | mipselsf-k3.4     | mipssf-k3.4       | x64-k3.2             | x86-k2.6          |
-#| LOADER  | ld-linux-aarch64.so.1 | ld-linux.so.3 | ld-linux.so.3 | ld-linux.so.3       | ld.so.1           | ld.so.1           | ld-linux-x86-64.so.2 | ld-linux.so.2     |
-#| GLIBC   | 2.27                  | 2.27          | 2.23          | 2.27                | 2.27              | 2.27              | 2.27                 | 2.23              |
-#|---------|-----------------------|---------------|---------------|---------------------|-------------------|-------------------|----------------------|-------------------|
-
-unset LD_LIBRARY_PATH
-unset LD_PRELOAD
+# Entware installation script modified to use /usrdata/opt with a systemd mount unit
 
 ARCH=armv7sf-k3.2
-LOADER=ld-linux.so.3
-GLIBC=2.27
+TYPE='alternative'
 
 echo 'Info: Checking for prerequisites and creating folders...'
-if [ -d /opt ]; then
-    echo 'Warning: Folder /opt exists!'
+if grep -qs '/opt ' /proc/mounts; then
+    echo 'Info: /opt is already mounted.'
 else
-    mkdir /opt
+    if [ ! -d /usrdata/opt ]; then
+        mkdir -p /usrdata/opt
+    fi
+    # Create systemd mount unit to bind /usrdata/opt to /opt
+    echo "Info: Creating systemd mount unit for /opt..."
+    cat <<EOF > /etc/systemd/system/opt.mount
+[Unit]
+Description=Bind /usrdata/opt to /opt
+
+[Mount]
+What=/usrdata/opt
+Where=/opt
+Type=none
+Options=bind
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    systemctl daemon-reload
+    systemctl enable opt.mount
+    systemctl start opt.mount
 fi
-# no need to create many folders. entware-opt package creates most
-for folder in bin etc lib/opkg tmp var/lock
-do
-  if [ -d "/opt/$folder" ]; then
-    echo "Warning: Folder /opt/$folder exists!"
-    echo 'Warning: If something goes wrong please clean /opt folder and try again.'
-  else
-    mkdir -p /opt/$folder
-  fi
-done
 
 echo 'Info: Opkg package manager deployment...'
 URL=http://bin.entware.net/${ARCH}/installer
@@ -41,7 +40,7 @@ wget $URL/opkg.conf -O /opt/etc/opkg.conf
 
 echo 'Info: Basic packages installation...'
 /opt/bin/opkg update
-if [ $TYPE = 'alternative' ]; then
+if [ "$TYPE" = 'alternative' ]; then
   /opt/bin/opkg install busybox
 fi
 /opt/bin/opkg install entware-opt
@@ -49,27 +48,29 @@ fi
 # Fix for multiuser environment
 chmod 777 /opt/tmp
 
-for file in passwd group shells shadow gshadow; do
-  if [ $TYPE = 'generic' ]; then
-    if [ -f /etc/$file ]; then
-      ln -sf /etc/$file /opt/etc/$file
-    else
-      [ -f /opt/etc/$file.1 ] && cp /opt/etc/$file.1 /opt/etc/$file
-    fi
-  else
-    if [ -f /opt/etc/$file.1 ]; then
-      cp /opt/etc/$file.1 /opt/etc/$file
-    fi
-  fi
-done
+# Create the rc.unslung start systemd service
+echo "Info: Creating systemd service for Entware initialization..."
+cat <<EOF > /etc/systemd/system/rc.unslung.service
+[Unit]
+Description=Start Entware services
 
-[ -f /etc/localtime ] && ln -sf /etc/localtime /opt/etc/localtime
+[Service]
+Type=oneshot
+ExecStart=/opt/etc/init.d/rc.unslung start
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable rc.unslung.service
 
 echo 'Info: Congratulations!'
 echo 'Info: If there are no errors above then Entware was successfully initialized.'
-echo 'Info: Add /opt/bin & /opt/sbin to $PATH variable'
-echo 'Info: Add "/opt/etc/init.d/rc.unslung start" to startup script for Entware services to start'
-if [ $TYPE = 'alternative' ]; then
+echo 'Info: Remember to add /opt/bin & /opt/sbin to your PATH variable.'
+echo 'Info: Entware services will start automatically on boot.'
+if [ "$TYPE" = 'alternative' ]; then
   echo 'Info: Use ssh server from Entware for better compatibility.'
 fi
 echo 'Info: Found a Bug? Please report at https://github.com/Entware/Entware/issues'
