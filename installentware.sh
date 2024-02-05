@@ -75,7 +75,7 @@ mv /opt/* /usrdata/opt/
 
 # Bind /usrdata/opt to /opt
 echo 'Info: Setting up /opt mount to /usrdata/opt...'
-cat <<EOF > /etc/systemd/system/opt.mount
+cat <<EOF > /lib/systemd/system/opt.mount
 [Unit]
 Description=Bind /usrdata/opt to /opt
 
@@ -90,7 +90,7 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-ln -s /etc/systemd/system/opt.mount /etc/systemd/system/multi-user.target.wants/opt.mount
+ln -s /lib/systemd/system/opt.mount /lib/systemd/system/multi-user.target.wants/opt.mount
 systemctl start opt.mount
 
 # Update /etc/profile for PATH
