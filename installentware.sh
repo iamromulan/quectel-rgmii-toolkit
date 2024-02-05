@@ -90,7 +90,6 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-ln -s /lib/systemd/system/opt.mount /lib/systemd/system/multi-user.target.wants/opt.mount
 systemctl start opt.mount
 
 # Update /etc/profile for PATH
