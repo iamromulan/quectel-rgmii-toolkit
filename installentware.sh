@@ -92,6 +92,25 @@ EOF
 systemctl daemon-reload
 systemctl start opt.mount
 
+# Additional systemd service to ensure opt.mount starts at boot
+echo 'Info: Creating service to start opt.mount at boot...'
+cat <<EOF > /lib/systemd/system/start-opt-mount.service
+[Unit]
+Description=Ensure opt.mount is started at boot
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl start opt.mount
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+ln -s /lib/systemd/system/start-opt-mount.service /lib/systemd/system/multi-user.target.wants/start-opt-mount.service
+
+
 # Update /etc/profile for PATH
 echo 'Info: Updating /etc/profile for PATH...'
 if ! grep -q 'PATH=.*opt/bin' /etc/profile; then
