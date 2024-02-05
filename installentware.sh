@@ -64,7 +64,8 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable rc.unslung.service
+ln -s /etc/systemd/system/rc.unslung.service /etc/systemd/system/multi-user.target.wants/rc.unslung.service
+systemctl start rc.unslung.service
 
 echo 'Info: Congratulations!'
 echo 'Info: If there are no errors above then Entware was successfully initialized.'
