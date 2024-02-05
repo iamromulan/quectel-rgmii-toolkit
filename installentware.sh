@@ -28,7 +28,7 @@ Options=bind
 WantedBy=multi-user.target
 EOF
     systemctl daemon-reload
-    systemctl enable opt.mount
+    ln -s /etc/systemd/system/opt.mount /etc/systemd/system/multi-user.target.wants/opt.mount
     systemctl start opt.mount
 fi
 
