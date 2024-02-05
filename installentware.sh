@@ -121,7 +121,6 @@ systemctl start rc.unslung.service
 echo 'Info: Congratulations!'
 echo 'Info: If there are no errors above then Entware was successfully initialized.'
 echo 'Info: Add /opt/bin & /opt/sbin to $PATH variable'
-echo 'Info: Add "/opt/etc/init.d/rc.unslung start" to startup script for Entware services to start'
 if [ $TYPE = 'alternative' ]; then
   echo 'Info: Use ssh server from Entware for better compatibility.'
 fi
