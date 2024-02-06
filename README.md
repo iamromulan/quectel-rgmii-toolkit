@@ -59,6 +59,43 @@ That's it! From another device running tailscale you should be able to access yo
 IP or Hostname being the IP or hostname assigned to it in your tailnet
 
  - Note that your SSH client must be able to give you a link to sign in with upon connecting. That's how the session is authorized. Works fine in Windows CMD or on Android use JuiceSSH.
+## Advanced/Beta
+
+### Entware/OPKG installation
+Recently I was able to successfully install opkg, the same package manager that OpenWRT has! This was acheved through [Entware!](https://github.com/Entware/Entware/wiki) 
+I modified [this](https://bin.entware.net/armv7sf-k3.2/installer/generic.sh)  generic installer to include a few tweaks to make it more compatible and automated for Quectel modems. In my testing I used the RM521F-GL and RM502Q-AE but it should work for others as long as you have enough space and a /usrdata mount point to work with.
+
+#### To install Entware/OPKG
+Simply run this command from adb shell or SSH shell
+
+    wget -O- https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/installentware.sh | sh
+
+It isn't perfect yet so here's what you gotta know about going into it
+
+ - After installing, the `opkg` command will work
+ - You can run `opkg list` to see a list of installable packages
+ - Everything opkg does is installed to /opt
+ - `/opt` is actually located at `/usrdata/opt` to save space but is   
+   mounted at `/opt`
+ - Anything `opkg` installs will not be available in the system path by 
+   default but you can get around this either:
+
+#### Temporarily:
+ Run this at the start of each adb shell or SSH shell session
+
+    export PATH=/opt/bin:/opt/sbin:$PATH
+
+#### Permanently:
+Symbolic linking each binary installed by the package to `/bin` and `/sbin` from `/opt/bin` and `/opt/sbin`
+For example, if you were to install zerotier:
+
+    opkg install zerotier
+    ln -sf /opt/bin/zerotier-one /bin
+    ln -sf /opt/bin/zerotier-cli /bin
+    ln -sf /opt/bin/zerotier-idtool /bin
+
+Now you can run those 3 binaries from the shell anytime since they are linked in a place already part of the system path.
+
 ## Acknowledgements
 Thanks to the work of [Nate Carlson](https://github.com/natecarlson) (Telnet Deamon, Original RGMII Notes), [aesthernr](https://github.com/aesthernr) (Original simpleadmin), and [rbflurry](https://github.com/rbflurry/) (Fixing simpleadmin not functioning) we can install these! The Telnet Deamon is a Telnet to AT command server. With it, you can connect with a Telenet client like PuTTY on port 5000 to the modems gateway IP (Normally 192.168.225.1) and send AT commands over Telnet! Simpleadmin is a simple web interface you'll be able to access using the modems gateway IP address. You can see some basic signal stats, send AT commands from the browser, and change your TTL directly on the modem. By default this will be on port 8080 so if you didn't change the gateway IP address you'd go to http://192.168.225.1:8080/ and you'd find what you see in the [Screenshots](#screenshots) section.
 
@@ -66,5 +103,4 @@ Simpleadmin heavily uses the AT Command Parsing Scripts (Basically a copy with m
 
 Tailscale was obtained through Tailscale's static build page. Since these modems have a 32-bit ARM processor on-board I used the arm package. https://pkgs.tailscale.com/stable/#static
 
-
-
+Entware/opkg was obtained through [Entware's wiki](https://github.com/Entware/Entware/wiki/Alternative-install-vs-standard)
