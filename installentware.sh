@@ -1,7 +1,7 @@
 #!/bin/sh
 
-#TYPE='generic'
-TYPE='alternative'
+TYPE='generic'
+#TYPE='alternative'
 
 #|---------|-----------------------|---------------|---------------|---------------------|-------------------|-------------------|----------------------|-------------------|
 #| ARCH    | aarch64-k3.10         | armv5sf-k3.2  | armv7sf-k2.6  | armv7sf-k3.2        | mipselsf-k3.4     | mipssf-k3.4       | x64-k3.2             | x86-k2.6          |
@@ -139,7 +139,7 @@ systemctl start rc.unslung.service
 echo 'Info: Congratulations!'
 echo 'Info: If there are no errors above then Entware was successfully initialized.'
 echo 'Info: Add /opt/bin & /opt/sbin to $PATH variable'
-echo 'Info: Run export PATH=/usrdata/opt/bin:/usrdata/opt/sbin:$PATH to do it'
+echo 'Info: Run export PATH=/opt/bin:/opt/sbin:$PATH to do it'
 if [ $TYPE = 'alternative' ]; then
   echo 'Info: Use ssh server from Entware for better compatibility.'
 fi
