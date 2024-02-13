@@ -518,62 +518,6 @@ remove_simple_admin() {
     remount_ro
 }
 
-# Function to create systemd service and timer files with the user-specified time
-create_service_and_timer() {
-    remount_rw
-    # Define the path for the modem reboot script
-    MODEM_REBOOT_SCRIPT="$USRDATA_DIR/reboot_modem.sh"
-
-    # Create the modem reboot script
-    echo "#!/bin/sh
-/bin/echo -e 'AT+CFUN=1,1 \r' > /dev/smd7" > "$MODEM_REBOOT_SCRIPT"
-
-    # Make the script executable
-    chmod +x "$MODEM_REBOOT_SCRIPT"
-
-    # Create the systemd service file for reboot
-    echo "[Unit]
-Description=Reboot Modem Daily
-
-[Service]
-Type=oneshot
-ExecStart=/bin/sh /usrdata/reboot_modem.sh
-Restart=no
-RemainAfterExit=no" > /lib/systemd/system/rebootmodem.service
-
-    # Create the systemd timer file with the user-specified time
-    echo "[Unit]
-Description=Starts rebootmodem.service daily at the specified time
-
-[Timer]
-OnCalendar=*-*-* $user_time:00
-Persistent=false" > /lib/systemd/system/rebootmodem.timer
-
-    # Create a trigger service that starts the timer at boot
-    echo "[Unit]
-Description=Trigger the rebootmodem timer at boot
-
-[Service]
-Type=oneshot
-ExecStart=/bin/systemctl start rebootmodem.timer
-RemainAfterExit=yes" > /lib/systemd/system/rebootmodem-trigger.service
-
-    # Create symbolic links for the trigger service in the wanted directory
-    ln -sf /lib/systemd/system/rebootmodem-trigger.service /lib/systemd/system/multi-user.target.wants/
-
-    # Reload systemd to recognize the new timer and trigger service
-    systemctl daemon-reload
-    sleep 2s
-
-    # Start the trigger service, which will start the timer
-    systemctl start rebootmodem-trigger.service
-    remount_ro
-
-    # Confirmation
-    echo "Rebootmodem-trigger service created and started successfully."
-    echo "Reboot schedule set successfully. The modem will reboot daily at $user_time UTC."
-}
-
 # Function for Tailscale Submenu
 tailscale_menu() {
     while true; do
@@ -803,6 +747,115 @@ manage_reboot_timer() {
     mount -o remount,ro /
 }
 
+# Function to create systemd service and timer files with the user-specified time
+create_service_and_timer() {
+    remount_rw
+    # Define the path for the modem reboot script
+    MODEM_REBOOT_SCRIPT="$USRDATA_DIR/reboot_modem.sh"
+
+    # Create the modem reboot script
+    echo "#!/bin/sh
+/bin/echo -e 'AT+CFUN=1,1 \r' > /dev/smd7" > "$MODEM_REBOOT_SCRIPT"
+
+    # Make the script executable
+    chmod +x "$MODEM_REBOOT_SCRIPT"
+
+    # Create the systemd service file for reboot
+    echo "[Unit]
+Description=Reboot Modem Daily
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /usrdata/reboot_modem.sh
+Restart=no
+RemainAfterExit=no" > /lib/systemd/system/rebootmodem.service
+
+    # Create the systemd timer file with the user-specified time
+    echo "[Unit]
+Description=Starts rebootmodem.service daily at the specified time
+
+[Timer]
+OnCalendar=*-*-* $user_time:00
+Persistent=false" > /lib/systemd/system/rebootmodem.timer
+
+    # Create a trigger service that starts the timer at boot
+    echo "[Unit]
+Description=Trigger the rebootmodem timer at boot
+
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl start rebootmodem.timer
+RemainAfterExit=yes" > /lib/systemd/system/rebootmodem-trigger.service
+
+    # Create symbolic links for the trigger service in the wanted directory
+    ln -sf /lib/systemd/system/rebootmodem-trigger.service /lib/systemd/system/multi-user.target.wants/
+
+    # Reload systemd to recognize the new timer and trigger service
+    systemctl daemon-reload
+    sleep 2s
+
+    # Start the trigger service, which will start the timer
+    systemctl start rebootmodem-trigger.service
+    remount_ro
+
+    # Confirmation
+    echo "Rebootmodem-trigger service created and started successfully."
+    echo "Reboot schedule set successfully. The modem will reboot daily at $user_time UTC."
+}
+
+manage_cfun_fix() {
+    cfun_service_path="/lib/systemd/system/cfunfix.service"
+    cfun_fix_script="/usrdata/cfun_fix.sh"
+
+    mount -o remount,rw /
+
+    if [ -f "$cfun_service_path" ]; then
+        echo "The CFUN fix is already installed. Do you want to remove it?"
+        echo "1) Yes"
+        echo "2) No"
+        read -p "Enter your choice: " choice
+
+        if [ "$choice" = "1" ]; then
+            echo "Removing CFUN fix..."
+            systemctl stop cfunfix.service
+            rm -f /lib/systemd/system/multi-user.target.wants/cfunfix.service
+            rm -f "$cfun_service_path"
+            rm -f "$cfun_fix_script"
+            systemctl daemon-reload
+            echo "CFUN fix has been removed."
+        else
+            echo "Returning to main menu..."
+        fi
+    else
+        echo "Installing CFUN fix..."
+
+        # Create the CFUN fix script
+        echo "#!/bin/sh
+/bin/echo -e 'AT+CFUN=1 \r' > /dev/smd7" > "$cfun_fix_script"
+        chmod +x "$cfun_fix_script"
+
+        # Create the systemd service file to execute the CFUN fix script at boot
+        echo "[Unit]
+Description=CFUN Fix Service
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=$cfun_fix_script
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target" > "$cfun_service_path"
+
+        ln -sf $service_path /lib/systemd/system/multi-user.target.wants/
+	systemctl daemon-reload
+ 	mount -o remount,ro /
+        echo "CFUN fix has been installed and will execute at every boot."
+    fi
+}
+
+
+
 # Main menu
 while true; do
     echo "Welcome to iamromulan's RGMII Toolkit script for Quectel RMxxx Series modems!"
@@ -813,7 +866,8 @@ while true; do
     echo "4) Install/Update or remove Simple Admin"
     echo "5) Tailscale Management"
     echo "6) Install/Change or remove Daily Reboot Timer"
-    echo "7) Exit"
+    echo "7) Install/Uninstall CFUN 0 Fix"
+    echo "8) Exit"
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -861,7 +915,10 @@ while true; do
 	6)
             manage_reboot_timer
             ;;
-        7) 
+	7)
+            manage_cfun_fix
+            ;;	    
+        8) 
 	    echo "Goodbye!"
      	    break
             ;;
