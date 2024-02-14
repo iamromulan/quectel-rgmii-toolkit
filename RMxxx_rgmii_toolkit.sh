@@ -847,7 +847,7 @@ RemainAfterExit=yes
 [Install]
 WantedBy=multi-user.target" > "$cfun_service_path"
 
-        ln -sf $service_path /lib/systemd/system/multi-user.target.wants/
+        ln -sf "$service_path" "/lib/systemd/system/multi-user.target.wants/"
 	systemctl daemon-reload
  	mount -o remount,ro /
         echo "CFUN fix has been installed and will execute at every boot."
