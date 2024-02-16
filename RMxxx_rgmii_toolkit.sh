@@ -494,7 +494,7 @@ install_update_simple_admin() {
 		remount_rw
                 cd $TMP_DIR
                 wget $GITHUB_SIMPADMIN_TEST_URL -O simpleadmintest.zip
-                unzip -o simpleadminfull.zip
+                unzip -o simpleadmintest.zip
                 cp -Rf quectel-rgmii-toolkit-simpleadmintest/simpleadmin/ $USRDATA_DIR
 
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
