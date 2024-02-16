@@ -410,7 +410,7 @@ install_update_simple_admin() {
         echo "2) No AT Commands, List only (for use with firmware that already has a web UI)"
         echo "3) TTL Only"
 	echo "4) Install Test Build (work in progress/not ready yet)"
-        echo "4) Return to Main Menu"
+        echo "5) Return to Main Menu"
         echo "Select your choice: "
         read choice
 
