@@ -4,7 +4,7 @@
 # Uses ttlvalue file to read what ttl should be set to
 
 
-if [ -f /usrdata/simpleadmin/ttl/ttlvalue ];
+if [ -f /usrdata/simplefirewall/ttlvalue ];
 then
 	ttlfile=$(</usrdata/simpleadmin/ttl/ttlvalue)
     TTLVALUE=$(echo $ttlfile | grep -o "[0-9]\{1,3\}")

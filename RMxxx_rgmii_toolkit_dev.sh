@@ -1,29 +1,37 @@
 #!/bin/sh
 
-# Define paths
-USRDATA_DIR="/usrdata"
-MICROPYTHON_DIR="/usrdata/micropython"
-AT_TELNET_DIR="/usrdata/at-telnet"
-AT_TELNET_SYSD_DIR="/usrdata/at-telnet/systemd_units"
-AT_TELNET_SMD7_SYSD_DIR="/usrdata/at-telnet/smd7_systemd_units"
-SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
+# Define toolkit paths
+GITTREE="development"
 TMP_DIR="/tmp"
-GITHUB_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/main.zip"
-GITHUB_SIMPADMIN_FULL_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminfull.zip"
-GITHUB_SIMPADMIN_NOCMD_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminnoatcmds.zip"
-GITHUB_SIMPADMIN_TTL_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminttlonly.zip"
-GITHUB_SIMPADMIN_TEST_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadmintest.zip"
-TAILSCALE_DIR="/usrdata/tailscale/"
-TAILSCALE_SYSD_DIR="/usrdata/tailscale/systemd"
+USRDATA_DIR="/usrdata"
+SOCAT_AT_DIR="/usrdata/socat-at-bridge"
+SOCAT_AT_SYSD_DIR="/usrdata/socat-at-bridge/systemd_units"
+SOCAT_AT_SMD7_SYSD_DIR="/usrdata/socat-at-bridge/smd7_systemd_units"
+SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 SIMPLE_FIREWALL_DIR="/usrdata/simplefirewall"
 SIMPLE_FIREWALL_SCRIPT="$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
 SIMPLE_FIREWALL_SYSTEMD_DIR="$SIMPLE_FIREWALL_DIR/systemd"
 SIMPLE_FIREWALL_SERVICE="/lib/systemd/system/simplefirewall.service"
-
+GITHUB_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/$GITTREE.zip"
+GITHUB_SIMPADMIN_FULL_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminfullatcmds.zip"
+GITHUB_SIMPADMIN_TTL_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminttlonly.zip"
+GITHUB_SIMPADMIN_TEST_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadmintest.zip"
+TAILSCALE_DIR="/usrdata/tailscale/"
+TAILSCALE_SYSD_DIR="/usrdata/tailscale/systemd"
 # AT Command Script Variables and Functions
 DEVICE_FILE="/dev/smd7"
 TIMEOUT=4  # Set a timeout for the response
+# Function to remount file system as read-write
+remount_rw() {
+    mount -o remount,rw /
+}
 
+# Function to remount file system as read-only
+remount_ro() {
+    mount -o remount,ro /
+}
+
+# Basic AT commands without socat bridge for fast responce commands only
 start_listening() {
     cat "$DEVICE_FILE" > /tmp/device_readout &
     CAT_PID=$!
@@ -93,195 +101,40 @@ send_at_commands() {
     fi
 }
 
-# Function to remount file system as read-write
-remount_rw() {
-    mount -o remount,rw /
-}
-
-# Function to remount file system as read-only
-remount_ro() {
-    mount -o remount,ro /
-}
-
-# Check if AT Telnet Daemon is installed
-is_at_telnet_installed() {
-    [ -d "$MICROPYTHON_DIR" ] && return 0 || return 1
-	[ -d "$AT_TELNET_DIR" ] && return 0 || return 1
-}
-
-# Function to check if Simple Firewall is installed
-is_simple_firewall_installed() {
-    if [ -d "$SIMPLE_FIREWALL_DIR" ]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 # Check if Simple Admin is installed
 is_simple_admin_installed() {
     [ -d "$SIMPLE_ADMIN_DIR" ] && return 0 || return 1
 }
 
-# Function to install/update Simple Firewall
-install_update_simple_firewall() {
-    echo "Installing/Updating Simple Firewall..."
-    mount -o remount,rw /
-    mkdir -p "$SIMPLE_FIREWALL_DIR"
-    mkdir -p "$SIMPLE_FIREWALL_SYSTEMD_DIR"
-    wget -O "$SIMPLE_FIREWALL_SCRIPT" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/simplefirewall/simplefirewall.sh
-    chmod +x "$SIMPLE_FIREWALL_SCRIPT"
-    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/simplefirewall/systemd/simplefirewall.service
-    cp -f "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" "$SIMPLE_FIREWALL_SERVICE"
-    ln -sf "$SIMPLE_FIREWALL_SERVICE" "/lib/systemd/system/multi-user.target.wants/"
-    systemctl daemon-reload
-    systemctl restart simplefirewall
-    mount -o remount,ro /
-    echo "Simple Firewall installation/update complete."
-}
-
-# Function to uninstall Simple Firewall
-uninstall_simple_firewall() {
-    echo "Uninstalling Simple Firewall..."
-    mount -o remount,rw /
-    systemctl stop simplefirewall
-    rm -f "/lib/systemd/system/multi-user.target.wants/simplefirewall.service"
-    rm -f "$SIMPLE_FIREWALL_SERVICE"
-    rm -rf "$SIMPLE_FIREWALL_DIR"
-    systemctl daemon-reload
-    mount -o remount,ro /
-    echo "Simple Firewall uninstalled."
-}
-
-# Function to configure Simple Firewall
-configure_simple_firewall() {
-    if [ ! -f "$SIMPLE_FIREWALL_SCRIPT" ]; then
-        echo "Simple Firewall script not found."
-        return
-    fi
-
-    # Extract current ports configuration
-    current_ports_line=$(grep '^PORTS=' "$SIMPLE_FIREWALL_SCRIPT")
-    ports=$(echo "$current_ports_line" | cut -d'=' -f2 | tr -d '()' | tr ' ' '\n' | grep -o '[0-9]\+')
-    echo "$ports" | awk '{print NR") "$0}'
-
-    while true; do
-        echo "Enter a port number to add/remove, or type 'done' to finish:"
-        read port
-        if [ "$port" = "done" ]; then
-            break
-        elif ! echo "$port" | grep -qE '^[0-9]+$'; then
-            echo "Invalid input: Please enter a numeric value."
-        elif echo "$ports" | grep -q "^$port\$"; then
-            # Remove port
-            ports=$(echo "$ports" | grep -v "^$port\$")
-            echo "Port $port removed."
-        else
-            # Add port
-            ports=$(echo "$ports"; echo "$port" | grep -o '[0-9]\+')
-            echo "Port $port added."
-        fi
-    done
-
-    # Prepare updated ports line
-    new_ports_line="PORTS=($(echo "$ports" | tr '\n' ' '))"
-    
-    # Update the script with new ports
-    sed -i "s/$current_ports_line/$new_ports_line/" "$SIMPLE_FIREWALL_SCRIPT"
-    systemctl restart simplefirewall
-    echo "Firewall configuration updated."
-}
-
-
-
-
-# Function for Simplefirewall Submenu
-simplefirewall_menu() {
-while true; do
-    echo "Simple Firewall Management"
-    echo "1) Install/Update/Uninstall Simple Firewall"
-    echo "2) Configure Simple Firewall"
-    echo "3) Exit"
-    read -p "Enter your choice: " choice
-
-    case $choice in
-        1)
-            if is_simple_firewall_installed; then
-                echo "Simple Firewall is already installed."
-                echo "1) Update Simple Firewall"
-                echo "2) Uninstall Simple Firewall"
-                read -p "Enter your choice: " update_uninstall_choice
-                case $update_uninstall_choice in
-                    1) install_update_simple_firewall;;
-                    2) uninstall_simple_firewall;;
-                    *) echo "Invalid option";;
-                esac
-            else
-                install_update_simple_firewall
-            fi
-            ;;
-        2)
-            configure_simple_firewall
-            ;;
-        3)
-            echo "Exiting..."
-            break
-            ;;
-        *)
-            echo "Invalid option"
-            ;;
-    esac
-done
-}
-
-
-# Function to install/update AT Telnet Daemon
-install_update_at_telnet() {
+# Function to install/update AT Socat Bridge
+install_update_at_socat() {
     remount_rw
-    mkdir $MICROPYTHON_DIR
-    mkdir $AT_TELNET_DIR
-    cd $MICROPYTHON_DIR
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/errno.py
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/fcntl.py
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/ffilib.py
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/logging.py
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/micropython
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/os_compat.py
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/serial.py
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/stat.py
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/time.py
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/micropython/traceback.mpy
-    cd $AT_TELNET_DIR
-    mkdir $AT_TELNET_SYSD_DIR
-    mkdir $AT_TELNET_SMD7_SYSD_DIR
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/modem-multiclient.py
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/picocom
+    mkdir "$SOCAT_AT_DIR"
+    cd "$SOCAT_AT_DIR"
+    mkdir $SOCAT_AT_SYSD_DIR
+    mkdir $SOCAT_AT_SMD7_SYSD_DIR
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/socat-armel-static
     cd $AT_TELNET_SYSD_DIR
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/systemd_units/socat-smd11.service
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/systemd_units/at-telnet-daemon.service
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/systemd_units/socat-smd11-from-ttyIN.service
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/systemd_units/socat-smd11-to-ttyIN.service
     cd $AT_TELNET_SMD7_SYSD_DIR
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/smd7_systemd_units/at-telnet-daemon.service
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/smd7_systemd_units/socat-smd7-from-ttyIN.service
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/smd7_systemd_units/socat-smd7-to-ttyIN.service
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/smd7_systemd_units/socat-smd7.service
 
     # Set execute permissions
-    chmod +x $MICROPYTHON_DIR/micropython
-    chmod +x $AT_TELNET_DIR/modem-multiclient.py
-    chmod +x $AT_TELNET_DIR/socat-armel-static
-    chmod +x $AT_TELNET_DIR/picocom
+    chmod +x "$SOCAT_AT_DIR"/socat-armel-static
 
     # User prompt for selecting device
-    echo "Which device should AT over Telnet use?"
+    echo "Which device should Simpleadmin use?"
     echo "This will create virtual tty ports (serial ports) that will use either smd11 or smd7"
     echo "1) Use smd11 (default)"
-    echo "2) Use smd7 (use this if another application is using smd11)"
+    echo "2) Use smd7 (use this if another application is using smd11 already)"
     read -p "Enter your choice (1 or 2): " device_choice
 
     # Stop and disable existing services before installing new ones
+	echo -e "\033[0;32mThese errors are OK, script tries to remove all first in case you are updating\033[0m"
     systemctl stop at-telnet-daemon
     systemctl disable at-telnet-daemon
     systemctl stop socat-smd11
@@ -298,7 +151,8 @@ install_update_at_telnet() {
     rm /lib/systemd/system/socat-smd7-to-ttyIN.service
     rm /lib/systemd/system/socat-smd7-from-ttyIN.service
     systemctl daemon-reload
-
+	echo -e "\033[0;32mThese errors are OK, script tries to remove all first in case you are updating\033[0m"
+	
     # Depending on the choice, copy the respective systemd unit files
     case $device_choice in
         2)
@@ -311,6 +165,7 @@ install_update_at_telnet() {
 			sleep 2s
 			systemctl start socat-smd7-to-ttyIN
 			systemctl start socat-smd7-from-ttyIN
+			cd /
             ;;
         1)
             cp -f $AT_TELNET_SYSD_DIR/*.service /lib/systemd/system
@@ -322,195 +177,203 @@ install_update_at_telnet() {
 			sleep 2s
 			systemctl start socat-smd11-to-ttyIN
 			systemctl start socat-smd11-from-ttyIN
+			cd /
             ;;
     esac
-
-    
-
-    # User prompt for enabling Telnet server
-    echo "-Telnet server is not required for simpleadmin"
-    echo "-Simpleadmin uses the tty port created in the previous step"
-    echo "-If enabled a telnet server will listen on the gateway address on port 5000"
-    echo "-It isn't password protceted though so it is recommended to only enable if you need it" 
-    echo "Enable Telnet server?"
-    echo "1) Yes"
-    echo "2) No"
-    read -p "Enter your choice (1 or 2): " telnet_choice
-
-    # Link or remove systemd files based on user choice
-    if [ "$telnet_choice" = "1" ]; then
-        ln -sf /lib/systemd/system/at-telnet-daemon.service /lib/systemd/system/multi-user.target.wants/
-		
-        # Start Services
-        systemctl start at-telnet-daemon
-	remount_ro
-    else
-        remount_ro
-    fi
     
 }
 
-# Function to remove AT Telnet Daemon
-remove_at_telnet() {
-    remount_rw
-    # Stop and disable all possible services related to AT Telnet Daemon
-    systemctl stop at-telnet-daemon
-    systemctl disable at-telnet-daemon
-    systemctl stop socat-smd11
-    systemctl stop socat-smd11-to-ttyIN
-    systemctl stop socat-smd11-from-ttyIN
-    systemctl stop socat-smd7
-    systemctl stop socat-smd7-to-ttyIN
-    systemctl stop socat-smd7-from-ttyIN
-
-    # Remove all systemd service files for both smd11 and smd7 configurations
-    rm /lib/systemd/system/at-telnet-daemon.service
-    rm /lib/systemd/system/socat-smd11.service
-    rm /lib/systemd/system/socat-smd11-to-ttyIN.service
-    rm /lib/systemd/system/socat-smd11-from-ttyIN.service
-    rm /lib/systemd/system/socat-smd7.service
-    rm /lib/systemd/system/socat-smd7-to-ttyIN.service
-    rm /lib/systemd/system/socat-smd7-from-ttyIN.service
-
-    # Reload systemd to apply changes
+# Function to install Simple Firewall
+install_simple_firewall() {
+	systemctl stop simplefirewall
+	systemctl stop ttl-overide
+	echo -e "\033[0;32mInstalling/Updating Simple Firewall...\033[0m"
+    mount -o remount,rw /
+    mkdir -p "$SIMPLE_FIREWALL_DIR"
+    mkdir -p "$SIMPLE_FIREWALL_SYSTEMD_DIR"
+    wget -O "$SIMPLE_FIREWALL_DIR/simplefirewall.sh" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/simplefirewall.sh
+    wget -O "$SIMPLE_FIREWALL_DIR/ttl-overide" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttl-overide
+    wget -O "$SIMPLE_FIREWALL_DIR/ttlvalue" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttlvalue
+    chmod +x "$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
+    chmod +x "$SIMPLE_FIREWALL_DIR/ttl-overide"	
+    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/simplefirewall.service
+	wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/ttl-overide.service" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/ttl-overide.service
+	cp -f $SIMPLE_FIREWALL_SYSTEMD_DIR/* /lib/systemd/system
+    ln -sf "/lib/systemd/system/simplefirewall.service" "/lib/systemd/system/multi-user.target.wants/"
+	ln -sf "/lib/systemd/system/ttl-overide.service" "/lib/systemd/system/multi-user.target.wants/"
     systemctl daemon-reload
-
-    # Prompt user before removing micropython
-    echo "Do you want to remove MicroPython?"
-    echo "1) Yes"
-    echo "2) No"
-    read -p "Enter your choice: " choice
-
-    case $choice in
-        1 )
-            rm -rf $MICROPYTHON_DIR
-            echo "MicroPython directory removed."
-            ;;
-        2 )
-            echo "MicroPython directory not removed."
-            ;;
-        * )
-            echo "Invalid choice. MicroPython directory not removed."
-            ;;
-    esac
-
-    # Remove the AT Telnet Daemon directory
-    rm -rf $AT_TELNET_DIR
+    systemctl start simplefirewall
+	systemctl start ttl-overide
     remount_ro
-    echo "AT Telnet Daemon removed successfully."
+    echo -e "\033[0;32mSimple Firewall installation/update complete.\033[0m"
 }
 
+configure_simple_firewall() {
+    if [ ! -f "$SIMPLE_FIREWALL_SCRIPT" ]; then
+        echo "Simple Firewall script not found."
+        return
+    fi
+
+    echo "Configuring Simple Firewall:"
+    echo "1) Configure incoming port block"
+    echo "2) Configure TTL"
+    read -p "Enter your choice (1-2): " menu_choice
+
+    case $menu_choice in
+    1)
+        # Original ports configuration code with exit option
+        current_ports_line=$(grep '^PORTS=' "$SIMPLE_FIREWALL_SCRIPT")
+        ports=$(echo "$current_ports_line" | cut -d'=' -f2 | tr -d '()' | tr ' ' '\n' | grep -o '[0-9]\+')
+        echo "Current configured ports:"
+        echo "$ports" | awk '{print NR") "$0}'
+
+        while true; do
+            echo "Enter a port number to add/remove, or type 'done' or 'exit' to finish:"
+            read port
+            if [ "$port" = "done" ] || [ "$port" = "exit" ]; then
+                if [ "$port" = "exit" ]; then
+                    echo "Exiting without making changes..."
+                    return
+                fi
+                break
+            elif ! echo "$port" | grep -qE '^[0-9]+$'; then
+                echo "Invalid input: Please enter a numeric value."
+            elif echo "$ports" | grep -q "^$port\$"; then
+                ports=$(echo "$ports" | grep -v "^$port\$")
+                echo "Port $port removed."
+            else
+                ports=$(echo "$ports"; echo "$port" | grep -o '[0-9]\+')
+                echo "Port $port added."
+            fi
+        done
+
+        if [ "$port" != "exit" ]; then
+            new_ports_line="PORTS=($(echo "$ports" | tr '\n' ' '))"
+            sed -i "s/$current_ports_line/$new_ports_line/" "$SIMPLE_FIREWALL_SCRIPT"
+        fi
+        ;;
+    2)
+        # TTL configuration code
+        ttl_value=$(cat /usrdata/simplefirewall/ttlvalue)
+        if [ "$ttl_value" -eq 0 ]; then
+            echo "TTL is not set."
+        else
+            echo "TTL value is set to $ttl_value."
+        fi
+
+        echo "Type 'exit' to cancel."
+        read -p "What do you want the TTL value to be: " new_ttl_value
+        if [ "$new_ttl_value" = "exit" ]; then
+            echo "Exiting TTL configuration..."
+            return
+        elif ! echo "$new_ttl_value" | grep -qE '^[0-9]+$'; then
+            echo "Invalid input: Please enter a numeric value."
+            return
+        else
+            echo "$new_ttl_value" > /usrdata/simplefirewall/ttlvalue
+            echo "TTL value updated to $new_ttl_value."
+        fi
+        ;;
+    *)
+        echo "Invalid choice. Please select either 1 or 2."
+        ;;
+    esac
+
+    systemctl restart simplefirewall
+    echo "Firewall configuration updated."
+}
 
 # Function to install/update Simple Admin
-install_update_simple_admin() {
+install_simple_admin() {
     while true; do
-        echo "Make sure to Install AT Telnet Daemon first. You don't need to Enable the Telnet Server if you don't need it"
-	echo "What version of Simple Admin do you want to install? This will start a webserver on port 8080"
+		echo "What version of Simple Admin do you want to install? This will start a webserver on port 8080"
         echo "1) Full Install"
-        echo "2) No AT Commands, List only (for use with firmware that already has a web UI)"
+        echo "2) No AT Commands, List only "
         echo "3) TTL Only"
-	echo "4) Install Test Build (work in progress/not ready yet)"
+		echo "4) Install Test Build (work in progress/not ready yet)"
         echo "5) Return to Main Menu"
         echo "Select your choice: "
         read choice
 
         case $choice in
             1)
+				install_update_at_socat
+				install_simple_firewall
                 remount_rw
                 cd $TMP_DIR
                 wget $GITHUB_SIMPADMIN_FULL_URL -O simpleadminfull.zip
                 unzip -o simpleadminfull.zip
                 cp -Rf quectel-rgmii-toolkit-simpleadminfull/simpleadmin/ $USRDATA_DIR
-
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
                 chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                chmod +x $SIMPLE_ADMIN_DIR/ttl/ttl-override
-
                 cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
-
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
-                ln -sf /lib/systemd/system/ttl-override.service /lib/systemd/system/multi-user.target.wants/
-
                 systemctl start simpleadmin_generate_status
                 systemctl start simpleadmin_httpd
-                systemctl start ttl-override
                 remount_ro
+                echo "Cleaning up..."
+				rm /tmp/simpleadminfull.zip
+				rm -rf /tmp/quectel-rgmii-toolkit-simpleadminfull/
                 break
                 ;;
             2)
+				install_update_at_socat
+				install_simple_firewall
                 remount_rw
                 cd $TMP_DIR
                 wget $GITHUB_SIMPADMIN_NOCMD_URL -O simpleadminnoatcmds.zip
                 unzip -o simpleadminnoatcmds.zip
                 cp -Rf quectel-rgmii-toolkit-simpleadminnoatcmds/simpleadmin/ $USRDATA_DIR
-
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
                 chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                chmod +x $SIMPLE_ADMIN_DIR/ttl/ttl-override
-
                 cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
-
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
-                ln -sf /lib/systemd/system/ttl-override.service /lib/systemd/system/multi-user.target.wants/
-
                 systemctl start simpleadmin_generate_status
                 systemctl start simpleadmin_httpd
-                systemctl start ttl-override
                 remount_ro
-		echo "Cleaning up..."
-  		rm /tmp/simpleadminnoatcmds.zip
-   		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminnoatcmds/
+				echo "Cleaning up..."
+				rm /tmp/simpleadminnoatcmds.zip
+				rm -rf /tmp/quectel-rgmii-toolkit-simpleadminnoatcmds/
                 break
                 ;;
             3)
+				install_simple_firewall
                 remount_rw
                 cd $TMP_DIR
                 wget $GITHUB_SIMPADMIN_TTL_URL -O simpleadminttlonly.zip
                 unzip -o simpleadminttlonly.zip
                 cp -Rf quectel-rgmii-toolkit-simpleadminttlonly/simpleadmin/ $USRDATA_DIR
-
-                chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                chmod +x $SIMPLE_ADMIN_DIR/ttl/ttl-override
-
+				chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
                 cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
-
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
-                ln -sf /lib/systemd/system/ttl-override.service /lib/systemd/system/multi-user.target.wants/
-
                 systemctl start simpleadmin_httpd
-                systemctl start ttl-override
                 remount_ro
-		echo "Cleaning up..."
- 	 	rm /tmp/simpleadminttlonly.zip
-   		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminttlonly/
+				echo "Cleaning up..."
+				rm /tmp/simpleadminttlonly.zip
+				rm -rf /tmp/quectel-rgmii-toolkit-simpleadminttlonly/
                 break
                 ;;
             4)
-		remount_rw
+				install_update_at_socat
+				install_simple_firewall
+                remount_rw
                 cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_TEST_URL -O simpleadmintest.zip
+                wget $GITHUB_SIMPADMIN_FULL_URL -O simpleadmintest.zip
                 unzip -o simpleadmintest.zip
                 cp -Rf quectel-rgmii-toolkit-simpleadmintest/simpleadmin/ $USRDATA_DIR
-
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
                 chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                chmod +x $SIMPLE_ADMIN_DIR/ttl/ttl-override
-
                 cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
-
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
-                ln -sf /lib/systemd/system/ttl-override.service /lib/systemd/system/multi-user.target.wants/
-
                 systemctl start simpleadmin_generate_status
                 systemctl start simpleadmin_httpd
-                systemctl start ttl-override
                 remount_ro
                 break
                 ;;
@@ -525,23 +388,70 @@ install_update_simple_admin() {
     done
 }
 
+# Function to Uninstall Simpleadmin and dependencies
+uninstall_simpleadmin_components() {
+    echo "Starting the uninstallation process for Simpleadmin components."
+    echo "Note: Uninstalling certain components may affect the functionality of others."
 
+    # Uninstall Simple Firewall
+    echo "Do you want to uninstall Simplefirewall?"
+    echo "If you do, the TTL part of simpleadmin will no longer work."
+    echo "1) Yes"
+    echo "2) No"
+    read -p "Enter your choice (1 or 2): " choice_simplefirewall
+    if [ "$choice_simplefirewall" -eq 1 ]; then
+        echo "Uninstalling Simplefirewall..."
+        systemctl stop simplefirewall
+        systemctl stop ttl-overide
+        rm -f /lib/systemd/system/simplefirewall.service
+        rm -f /lib/systemd/system/ttl-overide.service
+        systemctl daemon-reload
+        rm -rf "$SIMPLE_FIREWALL_DIR"
+        echo "Simplefirewall uninstalled."
+    fi
 
-# Function to remove Simple Admin
-remove_simple_admin() {
-    remount_rw
-    systemctl stop simpleadmin_generate_status
-    systemctl stop ttl-override
-    systemctl stop simpleadmin_httpd
-    systemctl disable simpleadmin_httpd
-    systemctl disable ttl-override
-    systemctl disable simpleadmin_httpd
-    rm -rf $SIMPLE_ADMIN_DIR
-    rm /lib/systemd/system/simpleadmin_httpd.service
-    rm /lib/systemd/system/simpleadmin_generate_status.service
-    rm /lib/systemd/system/ttl-override.service
-    systemctl daemon-reload
-    remount_ro
+    # Uninstall socat-at-bridge
+    echo "Do you want to uninstall socat-at-bridge?"
+    echo "If you do, AT commands and the stat page will no longer work."
+    echo "1) Yes"
+    echo "2) No"
+    read -p "Enter your choice (1 or 2): " choice_socat_at_bridge
+    if [ "$choice_socat_at_bridge" -eq 1 ]; then
+        echo "Uninstalling socat-at-bridge..."
+        systemctl stop socat-smd11
+        systemctl stop socat-smd11-to-ttyIN
+        systemctl stop socat-smd11-from-ttyIN
+        systemctl stop socat-smd7
+        systemctl stop socat-smd7-to-ttyIN
+        systemctl stop socat-smd7-from-ttyIN
+        rm -f /lib/systemd/system/socat-smd11.service
+        rm -f /lib/systemd/system/socat-smd11-to-ttyIN.service
+        rm -f /lib/systemd/system/socat-smd11-from-ttyIN.service
+        rm -f /lib/systemd/system/socat-smd7.service
+        rm -f /lib/systemd/system/socat-smd7-to-ttyIN.service
+        rm -f /lib/systemd/system/socat-smd7-from-ttyIN.service
+        systemctl daemon-reload
+        rm -rf "$SOCAT_AT_DIR"
+        echo "socat-at-bridge uninstalled."
+    fi
+
+    # Uninstall the rest of Simpleadmin
+    echo "Do you want to uninstall the rest of Simpleadmin?"
+    echo "1) Yes"
+    echo "2) No"
+    read -p "Enter your choice (1 or 2): " choice_simpleadmin
+    if [ "$choice_simpleadmin" -eq 1 ]; then
+        echo "Uninstalling the rest of Simpleadmin..."
+        systemctl stop simpleadmin_httpd
+        systemctl stop simpleadmin_generate_status
+        rm -f /lib/systemd/system/simpleadmin_httpd.service
+        rm -f /lib/systemd/system/simpleadmin_generate_status.service
+        systemctl daemon-reload
+        rm -rf "$SIMPLE_ADMIN_DIR"
+        echo "The rest of Simpleadmin uninstalled."
+    fi
+
+    echo "Uninstallation process completed."
 }
 
 # Function for Tailscale Submenu
@@ -572,41 +482,12 @@ install_update_remove_tailscale() {
 
         case $tailscale_update_remove_choice in
             1) 
-                echo "Updating Tailscale..."
-                remount_rw
-		$TAILSCALE_DIR/tailscale down
-                $TAILSCALE_DIR/tailscale logout
-                systemctl stop tailscaled
-                # Follow the installation steps with force overwrite
-		echo "Downloading the latest Tailscale binaries..."
-		wget -O $TAILSCALE_DIR/tailscaled https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscaled
-		wget -O $TAILSCALE_DIR/tailscale https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscale
-
-		echo "Setting permissions for the new binaries..."
-		chmod +x $TAILSCALE_DIR/tailscaled
-		chmod +x $TAILSCALE_DIR/tailscale
-
-		echo "Downloading the latest systemd files..."
-		wget -O $TAILSCALE_SYSD_DIR/tailscaled.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
-		wget -O $TAILSCALE_SYSD_DIR/tailscaled.defaults https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.defaults
-
-		echo "Copying the new systemd units..."
-		cp -f $TAILSCALE_SYSD_DIR/* /lib/systemd/system
-		systemctl daemon-reload
-
-		echo "Restarting Tailscaled service..."
-		systemctl restart tailscaled
-
-		echo "Tailscale updated successfully."
-               
-                remount_ro
-                echo "Tailscale updated successfully."
-				echo "You will need to reconnect and Log back in"
-				read -p "Press Enter to continue..."
+				echo "Updating Tailscale..."
+				/usrdata/tailscale/tailscale update			
                 ;;
             2) 
                 echo "Removing Tailscale..."
-		remount_rw
+				remount_rw
                 $TAILSCALE_DIR/tailscale down
                 $TAILSCALE_DIR/tailscale logout
                 systemctl stop tailscaled
@@ -623,82 +504,81 @@ install_update_remove_tailscale() {
     else
         echo "Installing Tailscale..."
         remount_rw
-	echo "Creating /usrdata/tailscale/"
-	mkdir $TAILSCALE_DIR
- 	mkdir $TAILSCALE_SYSD_DIR
+		echo "Creating /usrdata/tailscale/"
+		mkdir $TAILSCALE_DIR
+		mkdir $TAILSCALE_SYSD_DIR
         cd $TAILSCALE_DIR
-	echo "Downloading binary: /usrdata/tailscale/tailscaled"
+		echo "Downloading binary: /usrdata/tailscale/tailscaled"
         wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscaled
-	echo "Downloading binary: /usrdata/tailscale/tailscale"
- 	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscale
+		echo "Downloading binary: /usrdata/tailscale/tailscale"
+		wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscale
     	echo "Downloading systemd files..."
      	cd $TAILSCALE_SYSD_DIR
       	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
        	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.defaults
- 	sleep 2s
-	echo "Setting Permissions..."
+		sleep 2s
+		echo "Setting Permissions..."
         chmod +x /usrdata/tailscale/tailscaled
         chmod +x /usrdata/tailscale/tailscale
-	echo "Copy systemd units..."
+		echo "Copy systemd units..."
         cp -f /usrdata/tailscale/systemd/* /lib/systemd/system
-	ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
+		ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
         systemctl daemon-reload
-	echo "Starting Tailscaled..."
+		echo "Starting Tailscaled..."
         systemctl start tailscaled
-	cd /
+		cd /
         remount_ro
         echo "Tailscale installed successfully."
     fi
 }
 
-
 # Function to Configure Tailscale
 configure_tailscale() {
     while true; do
-        echo "Configure Tailscale"
-        echo "1) Enable Tailscale Web UI at http://192.168.225.1:8088 (Gateway on port 8088)"
+    echo "Configure Tailscale"
+    echo "1) Enable Tailscale Web UI at http://192.168.225.1:8088 (Gateway on port 8088)"
 	echo "2) Disable Tailscale Web UI"
 	echo "3) Connect to Tailnet"
-        echo "4) Connect to Tailnet with SSH ON"
-	echo "5) Connect to Tailnet with SSH OFF (reset flag)"
+    echo "4) Connect to Tailnet with SSH ON"
+	echo "5) Reconnect to Tailnet with SSH OFF"
 	echo "6) Disconnect from Tailnet (reconnects at reboot)"
-        echo "7) Logout from tailscale account"
+    echo "7) Logout from tailscale account"
 	echo "8) Return to Tailscale Menu"
         read -p "Enter your choice: " config_choice
 
         case $config_choice in
-            1)
+        1)
 		remount_rw
 		cd /lib/systemd/system/
 		wget -O tailscale-webui.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui.service
   		wget -O tailscale-webui-trigger.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui-trigger.service
-     		ln -sf /lib/systemd/system/tailscale-webui-trigger.service /lib/systemd/system/multi-user.target.wants/
-     		systemctl daemon-reload
-       		echo "Tailscale Web UI Enabled"
+     	ln -sf /lib/systemd/system/tailscale-webui-trigger.service /lib/systemd/system/multi-user.target.wants/
+     	systemctl daemon-reload
+       	echo "Tailscale Web UI Enabled"
 	 	echo "Starting Web UI..." 
-     		systemctl start tailscale-webui
-       		echo "Web UI started!"
-     	   	remount_ro
+     	systemctl start tailscale-webui
+       	echo "Web UI started!"
+     	remount_ro
 		;;
 	    2) 
 		remount_rw
   		systemctl stop tailscale-webui
-    		systemctl disable tailscale-webui-trigger
+    	systemctl disable tailscale-webui-trigger
   		rm /lib/systemd/system/multi-user.target.wants/tailscale-webui.service
-    		rm /lib/systemd/system/multi-user.target.wants/tailscale-webui-trigger.service
-    		rm /lib/systemd/system/tailscale-webui.service
-      		rm /lib/systemd/system/tailscale-webui-trigger.service
-     		systemctl daemon-reload
-       		echo "Tailscale Web UI Stopped and Disabled"
-     	   	remount_ro
+    	rm /lib/systemd/system/multi-user.target.wants/tailscale-webui-trigger.service
+    	rm /lib/systemd/system/tailscale-webui.service
+      	rm /lib/systemd/system/tailscale-webui-trigger.service
+     	systemctl daemon-reload
+       	echo "Tailscale Web UI Stopped and Disabled"
+     	remount_ro
 		;;
-	    3) $TAILSCALE_DIR/tailscale up;;
-            4) $TAILSCALE_DIR/tailscale up --ssh;;
-	    5) $TAILSCALE_DIR/tailscale up --reset;;
-     	    6) $TAILSCALE_DIR/tailscale down;;
-            7) $TAILSCALE_DIR/tailscale logout;;
-            8) break;;
-            *) echo "Invalid option";;
+	    3) $TAILSCALE_DIR/tailscale up --accept-dns=false --reset;;
+        4) $TAILSCALE_DIR/tailscale up --ssh --accept-dns=false --reset;;
+	    5) $TAILSCALE_DIR/tailscale up --accept-dns=false --reset;;
+     	6) $TAILSCALE_DIR/tailscale down;;
+        7) $TAILSCALE_DIR/tailscale logout;;
+        8) break;;
+        *) echo "Invalid option";;
         esac
     done
 }
@@ -773,7 +653,7 @@ manage_reboot_timer() {
     mount -o remount,ro /
 }
 
-# Function to create systemd service and timer files with the user-specified time
+# Function to create systemd service and timer files with the user-specified time for the reboot timer
 create_service_and_timer() {
     remount_rw
     # Define the path for the modem reboot script
@@ -880,20 +760,17 @@ WantedBy=multi-user.target" > "$cfun_service_path"
     fi
 }
 
-
-
 # Main menu
 while true; do
     echo "Welcome to iamromulan's RGMII Toolkit script for Quectel RMxxx Series modems!"
     echo "Select an option:"
     echo "1) Send AT Commands"
-    echo "2) Install/Update/Uninstall or Configure Simple Firewall"
-    echo "3) Install/Update or remove AT Telnet Daemon"
-    echo "4) Install/Update or remove Simple Admin"
-    echo "5) Tailscale Management"
-    echo "6) Install/Change or remove Daily Reboot Timer"
-    echo "7) Install/Uninstall CFUN 0 Fix"
-    echo "8) Exit"
+    echo "2) Install/Update/Uninstall Simple Admin"
+    echo "3) Simple Firewall Management"
+	echo "4) Tailscale Management"
+    echo "5) Install/Change or remove Daily Reboot Timer"
+    echo "6) Install/Uninstall CFUN 0 Fix"
+    echo "7) Exit"
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -901,53 +778,38 @@ while true; do
             send_at_commands
             ;;
         2)
-	    simplefirewall_menu
-            ;;
-	3)
-            if is_at_telnet_installed; then
-                echo "AT Telnet Daemon is already installed."
-                echo "1) Update"
-                echo "2) Remove"
-                read -p "Enter your choice: " at_telnet_choice
-                case $at_telnet_choice in
-                    1) install_update_at_telnet;;
-                    2) remove_at_telnet;;
-                    *) echo "Invalid option";;
-                esac
-            else
-                echo "Installing AT Telnet Daemon..."
-                install_update_at_telnet
-            fi
-            ;;
-        4)
             if is_simple_admin_installed; then
-                echo "Simple Admin is already installed."
-                echo "1) Update"
-                echo "2) Remove"
+                echo "Simple Admin is already installed. It must be removed first"
+                echo "1) Remove"
+                echo "2) Return to main menu"
                 read -p "Enter your choice: " simple_admin_choice
                 case $simple_admin_choice in
-                    1) install_update_simple_admin;;
-                    2) remove_simple_admin;;
+                    1) uninstall_simpleadmin_components;;
+                    2) break;;
                     *) echo "Invalid option";;
                 esac
             else
                 echo "Installing Simple Admin..."
-                install_update_simple_admin
+                install_simple_admin
             fi
             ;;
-        5)  
-	    tailscale_menu
-	    ;;
-	6)
+		3)
+			configure_simple_firewall
+            ;;
+        
+        4)  
+			tailscale_menu
+			;;
+		5)
             manage_reboot_timer
             ;;
-	7)
+		6)
             manage_cfun_fix
             ;;	    
-        8) 
-	    echo "Goodbye!"
+        7) 
+			echo "Goodbye!"
      	    break
-            ;;
+            ;;	
         *)
             echo "Invalid option"
             ;;
