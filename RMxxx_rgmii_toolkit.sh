@@ -134,7 +134,7 @@ install_update_at_socat() {
     read -p "Enter your choice (1 or 2): " device_choice
 
     # Stop and disable existing services before installing new ones
-	echo -e "\033[0;32mThese errors are OK, script tries to remove all first in case you are updating\033[0m"
+    echo -e "\033[0;32mThese errors are OK, script tries to remove all first in case you are updating\033[0m"
     systemctl stop at-telnet-daemon
     systemctl disable at-telnet-daemon
     systemctl stop socat-smd11
@@ -151,7 +151,7 @@ install_update_at_socat() {
     rm /lib/systemd/system/socat-smd7-to-ttyIN.service
     rm /lib/systemd/system/socat-smd7-from-ttyIN.service
     systemctl daemon-reload
-	echo -e "\033[0;32mThese errors are OK, script tries to remove all first in case you are updating\033[0m"
+    echo -e "\033[0;32mThese errors are OK, script tries to remove all first in case you are updating\033[0m"
 	
     # Depending on the choice, copy the respective systemd unit files
     case $device_choice in
@@ -165,6 +165,7 @@ install_update_at_socat() {
 			sleep 2s
 			systemctl start socat-smd7-to-ttyIN
 			systemctl start socat-smd7-from-ttyIN
+   			remount_ro
 			cd /
             ;;
         1)
@@ -177,6 +178,7 @@ install_update_at_socat() {
 			sleep 2s
 			systemctl start socat-smd11-to-ttyIN
 			systemctl start socat-smd11-from-ttyIN
+   			remount_ro
 			cd /
             ;;
     esac
@@ -185,25 +187,25 @@ install_update_at_socat() {
 
 # Function to install Simple Firewall
 install_simple_firewall() {
-	systemctl stop simplefirewall
-	systemctl stop ttl-overide
-	echo -e "\033[0;32mInstalling/Updating Simple Firewall...\033[0m"
+    systemctl stop simplefirewall
+    systemctl stop ttl-override
+    echo -e "\033[0;32mInstalling/Updating Simple Firewall...\033[0m"
     mount -o remount,rw /
     mkdir -p "$SIMPLE_FIREWALL_DIR"
     mkdir -p "$SIMPLE_FIREWALL_SYSTEMD_DIR"
     wget -O "$SIMPLE_FIREWALL_DIR/simplefirewall.sh" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/simplefirewall.sh
-    wget -O "$SIMPLE_FIREWALL_DIR/ttl-overide" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttl-overide
+    wget -O "$SIMPLE_FIREWALL_DIR/ttl-override" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttl-override
     wget -O "$SIMPLE_FIREWALL_DIR/ttlvalue" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttlvalue
     chmod +x "$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
-    chmod +x "$SIMPLE_FIREWALL_DIR/ttl-overide"	
+    chmod +x "$SIMPLE_FIREWALL_DIR/ttl-override"	
     wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/simplefirewall.service
-	wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/ttl-overide.service" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/ttl-overide.service
-	cp -f $SIMPLE_FIREWALL_SYSTEMD_DIR/* /lib/systemd/system
+    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/ttl-override.service" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/ttl-override.service
+    cp -f $SIMPLE_FIREWALL_SYSTEMD_DIR/* /lib/systemd/system
     ln -sf "/lib/systemd/system/simplefirewall.service" "/lib/systemd/system/multi-user.target.wants/"
-	ln -sf "/lib/systemd/system/ttl-overide.service" "/lib/systemd/system/multi-user.target.wants/"
+    ln -sf "/lib/systemd/system/ttl-override.service" "/lib/systemd/system/multi-user.target.wants/"
     systemctl daemon-reload
     systemctl start simplefirewall
-	systemctl start ttl-overide
+    systemctl start ttl-override
     remount_ro
     echo -e "\033[0;32mSimple Firewall installation/update complete.\033[0m"
 }
@@ -286,19 +288,19 @@ configure_simple_firewall() {
 # Function to install/update Simple Admin
 install_simple_admin() {
     while true; do
-		echo "What version of Simple Admin do you want to install? This will start a webserver on port 8080"
+	echo "What version of Simple Admin do you want to install? This will start a webserver on port 8080"
         echo "1) Full Install"
         echo "2) No AT Commands, List only "
         echo "3) TTL Only"
-		echo "4) Install Test Build (work in progress/not ready yet)"
+	echo "4) Install Test Build (work in progress/not ready yet)"
         echo "5) Return to Main Menu"
         echo "Select your choice: "
         read choice
 
         case $choice in
             1)
-				install_update_at_socat
-				install_simple_firewall
+		install_update_at_socat
+		install_simple_firewall
                 remount_rw
                 cd $TMP_DIR
                 wget $GITHUB_SIMPADMIN_FULL_URL -O simpleadminfull.zip
@@ -314,13 +316,13 @@ install_simple_admin() {
                 systemctl start simpleadmin_httpd
                 remount_ro
                 echo "Cleaning up..."
-				rm /tmp/simpleadminfull.zip
-				rm -rf /tmp/quectel-rgmii-toolkit-simpleadminfull/
+		rm /tmp/simpleadminfull.zip
+		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminfull/
                 break
                 ;;
             2)
-				install_update_at_socat
-				install_simple_firewall
+		install_update_at_socat
+		install_simple_firewall
                 remount_rw
                 cd $TMP_DIR
                 wget $GITHUB_SIMPADMIN_NOCMD_URL -O simpleadminnoatcmds.zip
@@ -335,32 +337,32 @@ install_simple_admin() {
                 systemctl start simpleadmin_generate_status
                 systemctl start simpleadmin_httpd
                 remount_ro
-				echo "Cleaning up..."
-				rm /tmp/simpleadminnoatcmds.zip
-				rm -rf /tmp/quectel-rgmii-toolkit-simpleadminnoatcmds/
+		echo "Cleaning up..."
+		rm /tmp/simpleadminnoatcmds.zip
+		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminnoatcmds/
                 break
                 ;;
             3)
-				install_simple_firewall
+		install_simple_firewall
                 remount_rw
                 cd $TMP_DIR
                 wget $GITHUB_SIMPADMIN_TTL_URL -O simpleadminttlonly.zip
                 unzip -o simpleadminttlonly.zip
                 cp -Rf quectel-rgmii-toolkit-simpleadminttlonly/simpleadmin/ $USRDATA_DIR
-				chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
+		chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
                 cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 systemctl start simpleadmin_httpd
                 remount_ro
-				echo "Cleaning up..."
-				rm /tmp/simpleadminttlonly.zip
-				rm -rf /tmp/quectel-rgmii-toolkit-simpleadminttlonly/
+		echo "Cleaning up..."
+		rm /tmp/simpleadminttlonly.zip
+		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminttlonly/
                 break
                 ;;
             4)
-				install_update_at_socat
-				install_simple_firewall
+		install_update_at_socat
+		install_simple_firewall
                 remount_rw
                 cd $TMP_DIR
                 wget $GITHUB_SIMPADMIN_FULL_URL -O simpleadmintest.zip
@@ -392,6 +394,7 @@ install_simple_admin() {
 uninstall_simpleadmin_components() {
     echo "Starting the uninstallation process for Simpleadmin components."
     echo "Note: Uninstalling certain components may affect the functionality of others."
+    remount_rw
 
     # Uninstall Simple Firewall
     echo "Do you want to uninstall Simplefirewall?"
@@ -402,9 +405,9 @@ uninstall_simpleadmin_components() {
     if [ "$choice_simplefirewall" -eq 1 ]; then
         echo "Uninstalling Simplefirewall..."
         systemctl stop simplefirewall
-        systemctl stop ttl-overide
+        systemctl stop ttl-override
         rm -f /lib/systemd/system/simplefirewall.service
-        rm -f /lib/systemd/system/ttl-overide.service
+        rm -f /lib/systemd/system/ttl-override.service
         systemctl daemon-reload
         rm -rf "$SIMPLE_FIREWALL_DIR"
         echo "Simplefirewall uninstalled."
@@ -418,6 +421,7 @@ uninstall_simpleadmin_components() {
     read -p "Enter your choice (1 or 2): " choice_socat_at_bridge
     if [ "$choice_socat_at_bridge" -eq 1 ]; then
         echo "Uninstalling socat-at-bridge..."
+	systemctl stop at-telnet-daemon
         systemctl stop socat-smd11
         systemctl stop socat-smd11-to-ttyIN
         systemctl stop socat-smd11-from-ttyIN
@@ -430,8 +434,11 @@ uninstall_simpleadmin_components() {
         rm -f /lib/systemd/system/socat-smd7.service
         rm -f /lib/systemd/system/socat-smd7-to-ttyIN.service
         rm -f /lib/systemd/system/socat-smd7-from-ttyIN.service
+	rm -f /lib/systemd/system/at-telnet-daemon.service
         systemctl daemon-reload
         rm -rf "$SOCAT_AT_DIR"
+	rm -rf "/usrdata/micropython"
+ 	rm -rf "/usrdata/at-telnet"
         echo "socat-at-bridge uninstalled."
     fi
 
@@ -449,6 +456,7 @@ uninstall_simpleadmin_components() {
         systemctl daemon-reload
         rm -rf "$SIMPLE_ADMIN_DIR"
         echo "The rest of Simpleadmin uninstalled."
+	remount_ro
     fi
 
     echo "Uninstallation process completed."
@@ -482,16 +490,15 @@ install_update_remove_tailscale() {
 
         case $tailscale_update_remove_choice in
             1) 
-				echo "Updating Tailscale..."
-				/usrdata/tailscale/tailscale update			
+		echo "Updating Tailscale..."
+		/usrdata/tailscale/tailscale update			
                 ;;
             2) 
                 echo "Removing Tailscale..."
-				remount_rw
+		remount_rw
                 $TAILSCALE_DIR/tailscale down
                 $TAILSCALE_DIR/tailscale logout
                 systemctl stop tailscaled
-                systemctl disable tailscaled
                 rm -f /lib/systemd/system/tailscaled.service
                 systemctl daemon-reload
                 rm -rf $TAILSCALE_DIR
@@ -504,29 +511,29 @@ install_update_remove_tailscale() {
     else
         echo "Installing Tailscale..."
         remount_rw
-		echo "Creating /usrdata/tailscale/"
-		mkdir $TAILSCALE_DIR
-		mkdir $TAILSCALE_SYSD_DIR
+	echo "Creating /usrdata/tailscale/"
+	mkdir $TAILSCALE_DIR
+	mkdir $TAILSCALE_SYSD_DIR
         cd $TAILSCALE_DIR
-		echo "Downloading binary: /usrdata/tailscale/tailscaled"
+	echo "Downloading binary: /usrdata/tailscale/tailscaled"
         wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscaled
-		echo "Downloading binary: /usrdata/tailscale/tailscale"
-		wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscale
+	echo "Downloading binary: /usrdata/tailscale/tailscale"
+	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscale
     	echo "Downloading systemd files..."
      	cd $TAILSCALE_SYSD_DIR
       	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
        	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.defaults
-		sleep 2s
-		echo "Setting Permissions..."
+	sleep 2s
+	echo "Setting Permissions..."
         chmod +x /usrdata/tailscale/tailscaled
         chmod +x /usrdata/tailscale/tailscale
-		echo "Copy systemd units..."
+	echo "Copy systemd units..."
         cp -f /usrdata/tailscale/systemd/* /lib/systemd/system
-		ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
+	ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
         systemctl daemon-reload
-		echo "Starting Tailscaled..."
+	echo "Starting Tailscaled..."
         systemctl start tailscaled
-		cd /
+	cd /
         remount_ro
         echo "Tailscale installed successfully."
     fi
@@ -537,44 +544,44 @@ configure_tailscale() {
     while true; do
     echo "Configure Tailscale"
     echo "1) Enable Tailscale Web UI at http://192.168.225.1:8088 (Gateway on port 8088)"
-	echo "2) Disable Tailscale Web UI"
-	echo "3) Connect to Tailnet"
+    echo "2) Disable Tailscale Web UI"
+    echo "3) Connect to Tailnet"
     echo "4) Connect to Tailnet with SSH ON"
-	echo "5) Reconnect to Tailnet with SSH OFF"
-	echo "6) Disconnect from Tailnet (reconnects at reboot)"
+    echo "5) Reconnect to Tailnet with SSH OFF"
+    echo "6) Disconnect from Tailnet (reconnects at reboot)"
     echo "7) Logout from tailscale account"
-	echo "8) Return to Tailscale Menu"
-        read -p "Enter your choice: " config_choice
+    echo "8) Return to Tailscale Menu"
+    read -p "Enter your choice: " config_choice
 
         case $config_choice in
         1)
-		remount_rw
-		cd /lib/systemd/system/
-		wget -O tailscale-webui.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui.service
-  		wget -O tailscale-webui-trigger.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui-trigger.service
+	remount_rw
+	cd /lib/systemd/system/
+	wget -O tailscale-webui.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui.service
+  	wget -O tailscale-webui-trigger.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui-trigger.service
      	ln -sf /lib/systemd/system/tailscale-webui-trigger.service /lib/systemd/system/multi-user.target.wants/
      	systemctl daemon-reload
        	echo "Tailscale Web UI Enabled"
-	 	echo "Starting Web UI..." 
+	echo "Starting Web UI..." 
      	systemctl start tailscale-webui
        	echo "Web UI started!"
      	remount_ro
-		;;
-	    2) 
-		remount_rw
-  		systemctl stop tailscale-webui
+	;;
+	2) 
+	remount_rw
+  	systemctl stop tailscale-webui
     	systemctl disable tailscale-webui-trigger
-  		rm /lib/systemd/system/multi-user.target.wants/tailscale-webui.service
+  	rm /lib/systemd/system/multi-user.target.wants/tailscale-webui.service
     	rm /lib/systemd/system/multi-user.target.wants/tailscale-webui-trigger.service
     	rm /lib/systemd/system/tailscale-webui.service
       	rm /lib/systemd/system/tailscale-webui-trigger.service
      	systemctl daemon-reload
        	echo "Tailscale Web UI Stopped and Disabled"
      	remount_ro
-		;;
-	    3) $TAILSCALE_DIR/tailscale up --accept-dns=false --reset;;
+	;;
+	3) $TAILSCALE_DIR/tailscale up --accept-dns=false --reset;;
         4) $TAILSCALE_DIR/tailscale up --ssh --accept-dns=false --reset;;
-	    5) $TAILSCALE_DIR/tailscale up --accept-dns=false --reset;;
+	5) $TAILSCALE_DIR/tailscale up --accept-dns=false --reset;;
      	6) $TAILSCALE_DIR/tailscale down;;
         7) $TAILSCALE_DIR/tailscale logout;;
         8) break;;
