@@ -113,15 +113,15 @@ install_update_at_socat() {
     cd "$SOCAT_AT_DIR"
     mkdir $SOCAT_AT_SYSD_DIR
     mkdir $SOCAT_AT_SMD7_SYSD_DIR
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/socat-armel-static
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/socat-armel-static
     cd $AT_TELNET_SYSD_DIR
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/systemd_units/socat-smd11.service
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/systemd_units/socat-smd11-from-ttyIN.service
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/systemd_units/socat-smd11-to-ttyIN.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-from-ttyIN.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-to-ttyIN.service
     cd $AT_TELNET_SMD7_SYSD_DIR
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/smd7_systemd_units/socat-smd7-from-ttyIN.service
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/smd7_systemd_units/socat-smd7-to-ttyIN.service
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/attelnetdaemon/at-telnet/smd7_systemd_units/socat-smd7.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/smd7_systemd_units/socat-smd7-from-ttyIN.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/smd7_systemd_units/socat-smd7-to-ttyIN.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/smd7_systemd_units/socat-smd7.service
 
     # Set execute permissions
     chmod +x "$SOCAT_AT_DIR"/socat-armel-static
