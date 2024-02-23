@@ -272,11 +272,11 @@ configure_simple_firewall() {
             echo "Invalid input: Please enter a numeric value."
             return
         else
-            systemctl stop ttl-override
+            /usrdata/simplefirewall/ttl-override stop
 	    iptables -t mangle -F POSTROUTING
  	    ip6tables -t mangle -F POSTROUTING
 	    echo "$new_ttl_value" > /usrdata/simplefirewall/ttlvalue
-     	    systemctl start ttl-override
+     	    /usrdata/simplefirewall/ttl-override start
             echo "TTL value updated to $new_ttl_value."
         fi
         ;;
