@@ -114,11 +114,11 @@ install_update_at_socat() {
     mkdir $SOCAT_AT_SYSD_DIR
     mkdir $SOCAT_AT_SMD7_SYSD_DIR
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/socat-armel-static
-    cd $AT_TELNET_SYSD_DIR
+    cd $SOCAT_AT_SYSD_DIR
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11.service
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-from-ttyIN.service
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-to-ttyIN.service
-    cd $AT_TELNET_SMD7_SYSD_DIR
+    cd $SOCAT_AT_SMD7_SYSD_DIR
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/smd7_systemd_units/socat-smd7-from-ttyIN.service
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/smd7_systemd_units/socat-smd7-to-ttyIN.service
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/smd7_systemd_units/socat-smd7.service
@@ -156,7 +156,7 @@ install_update_at_socat() {
     # Depending on the choice, copy the respective systemd unit files
     case $device_choice in
         2)
-            cp -f $AT_TELNET_SMD7_SYSD_DIR/*.service /lib/systemd/system
+            cp -f $SOCAT_AT_SMD7_SYSD_DIR/*.service /lib/systemd/system
 	    ln -sf /lib/systemd/system/socat-smd7.service /lib/systemd/system/multi-user.target.wants/
 	    ln -sf /lib/systemd/system/socat-smd7-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
 	    ln -sf /lib/systemd/system/socat-smd7-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
@@ -169,7 +169,7 @@ install_update_at_socat() {
 	    cd /
             ;;
         1)
-            cp -f $AT_TELNET_SYSD_DIR/*.service /lib/systemd/system
+            cp -f $SOCAT_AT_SYSD_DIR/*.service /lib/systemd/system
 	    ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
 	    ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
 	    ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
