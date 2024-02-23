@@ -38,8 +38,8 @@ start_listening() {
 }
 
 send_at_command() {
-    echo "Enter AT command (or type 'exit' to quit): "
-    echo "Type 'install' to simply type atcmd in shell from now on"
+    echo -e "\e[1;32mEnter AT command (or type 'exit' to quit): \e[0m"
+    echo -e "\e[1;36mType 'install' to simply type atcmd in shell from now on\e[0m"
     read at_command
     if [ "$at_command" = "exit" ]; then
         return 1
@@ -51,7 +51,7 @@ send_at_command() {
  	remount_rw
  	ln -sf /usrdata/atcmd /sbin
   	remount_ro
-   	echo "Installed. Type atcmd from adb shell or ssh to start an AT Command session"
+   	echo -e "\e[1;32mInstalled. Type atcmd from adb shell or ssh to start an AT Command session\e[0m"
     fi
     echo -e "${at_command}\r" > "$DEVICE_FILE"
 }
@@ -61,17 +61,19 @@ wait_for_response() {
     local current_time
     local elapsed_time
 
-    echo "Command sent, waiting for response..."
+    echo -e "\e[1;32mCommand sent, waiting for response...\e[0m"
     while true; do
         if grep -qe "OK" -e "ERROR" /tmp/device_readout; then
-            echo "Response received:"
+            echo -e "\e[1;32mResponse received:\e[0m"
             cat /tmp/device_readout
             return 0
         fi
         current_time=$(date +%s)
         elapsed_time=$((current_time - start_time))
         if [ "$elapsed_time" -ge "$TIMEOUT" ]; then
-            echo "Error: Response timed out."
+            echo -e "\e[1;31mError: Response timed out.\e[0m"  # Red
+	    echo -e "\e[1;32mIf the responce takes longer than a second or 2 to repond this will not work\e[0m"  # Green
+	    echo -e "\e[1;36mA better AT command implimentation will be made soon\e[0m"  # Cyan
             return 1
         fi
         sleep 1
@@ -97,7 +99,7 @@ send_at_commands() {
             cleanup
         done
     else
-        echo "Error: Device $DEVICE_FILE does not exist or is not a character special file."
+        echo -e "\e[1;31mError: Device $DEVICE_FILE does not exist!\e[0m"
     fi
 }
 
@@ -127,10 +129,10 @@ install_update_at_socat() {
     chmod +x "$SOCAT_AT_DIR"/socat-armel-static
 
     # User prompt for selecting device
-    echo "Which device should Simpleadmin use?"
-    echo "This will create virtual tty ports (serial ports) that will use either smd11 or smd7"
-    echo "1) Use smd11 (default)"
-    echo "2) Use smd7 (use this if another application is using smd11 already)"
+    echo -e "\e[1;32mWhich device should Simpleadmin use?\e[0m"
+    echo -e "\e[1;32mThis will create virtual tty ports (serial ports) that will use either smd11 or smd7\e[0m"
+    echo -e "\e[38;5;40m1) Use smd11 (default)\e[0m"
+    echo -e "\e[38;5;27m2) Use smd7 (use this if another application is using smd11 already)\e[0m"
     read -p "Enter your choice (1 or 2): " device_choice
 
     # Stop and disable existing services before installing new ones
@@ -230,9 +232,9 @@ configure_simple_firewall() {
         esac
     fi
 
-    echo "Configuring Simple Firewall:"
-    echo "1) Configure incoming port block"
-    echo "2) Configure TTL"
+    echo -e "\e[1;32mConfigure Simple Firewall:\e[0m"
+    echo -e "\e[38;5;208m1) Configure incoming port block\e[0m"
+    echo -e "\e[38;5;27m2) Configure TTL\e[0m"
     read -p "Enter your choice (1-2): " menu_choice
 
     case $menu_choice in
@@ -240,26 +242,26 @@ configure_simple_firewall() {
         # Original ports configuration code with exit option
         current_ports_line=$(grep '^PORTS=' "$SIMPLE_FIREWALL_SCRIPT")
         ports=$(echo "$current_ports_line" | cut -d'=' -f2 | tr -d '()' | tr ' ' '\n' | grep -o '[0-9]\+')
-        echo "Current configured ports:"
+        echo -e "\e[1;32mCurrent configured ports:\e[0m"
         echo "$ports" | awk '{print NR") "$0}'
 
         while true; do
-            echo "Enter a port number to add/remove, or type 'done' or 'exit' to finish:"
+            echo -e "\e[1;32mEnter a port number to add/remove, or type 'done' or 'exit' to finish:\e[0m"
             read port
             if [ "$port" = "done" ] || [ "$port" = "exit" ]; then
                 if [ "$port" = "exit" ]; then
-                    echo "Exiting without making changes..."
+                    echo -e "\e[1;31mExiting without making changes...\e[0m"
                     return
                 fi
                 break
             elif ! echo "$port" | grep -qE '^[0-9]+$'; then
-                echo "Invalid input: Please enter a numeric value."
+                echo -e "\e[1;31mInvalid input: Please enter a numeric value.\e[0m"
             elif echo "$ports" | grep -q "^$port\$"; then
                 ports=$(echo "$ports" | grep -v "^$port\$")
-                echo "Port $port removed."
+                echo -e "\e[1;32mPort $port removed.\e[0m"
             else
                 ports=$(echo "$ports"; echo "$port" | grep -o '[0-9]\+')
-                echo "Port $port added."
+                echo -e "\e[1;32mPort $port added.\e[0m"
             fi
         done
 
@@ -272,18 +274,18 @@ configure_simple_firewall() {
         # TTL configuration code
         ttl_value=$(cat /usrdata/simplefirewall/ttlvalue)
         if [ "$ttl_value" -eq 0 ]; then
-            echo "TTL is not set."
+            echo -e "\e[1;31mTTL is not set.\e[0m"
         else
-            echo "TTL value is set to $ttl_value."
+            echo -e "\e[1;32mTTL value is set to $ttl_value.\e[0m"
         fi
 
-        echo "Type 'exit' to cancel."
+        echo -e "\e[1;31mType 'exit' to cancel.\e[0m"
         read -p "What do you want the TTL value to be: " new_ttl_value
         if [ "$new_ttl_value" = "exit" ]; then
-            echo "Exiting TTL configuration..."
+            echo -e "\e[1;31mExiting TTL configuration...\e[0m"
             return
         elif ! echo "$new_ttl_value" | grep -qE '^[0-9]+$'; then
-            echo "Invalid input: Please enter a numeric value."
+            echo -e "\e[1;31mInvalid input: Please enter a numeric value.\e[0m"
             return
         else
             /usrdata/simplefirewall/ttl-override stop
@@ -293,24 +295,24 @@ configure_simple_firewall() {
         fi
         ;;
     *)
-        echo "Invalid choice. Please select either 1 or 2."
+        echo -e "\e[1;31mInvalid choice. Please select either 1 or 2.\e[0m"
         ;;
     esac
 
     systemctl restart simplefirewall
-    echo "Firewall configuration updated."
+    echo -e "\e[1;32mFirewall configuration updated.\e[0m"
 }
 
 # Function to install/update Simple Admin
 install_simple_admin() {
     while true; do
-	echo "What version of Simple Admin do you want to install? This will start a webserver on port 8080"
-        echo "1) Full Install"
-        echo "2) No AT Commands, List only "
-        echo "3) TTL Only"
-	echo "4) Install Test Build (work in progress/not ready yet)"
-        echo "5) Return to Main Menu"
-        echo "Select your choice: "
+	echo -e "\e[1;32mWhat version of Simple Admin do you want to install? This will start a webserver on port 8080\e[0m"
+        echo -e "\e[1;32m1) Full Install\e[0m"
+	echo -e "\e[1;34m2) No AT Commands, List only\e[0m"
+	echo -e "\e[1;33m3) TTL Only\e[0m"
+	echo -e "\e[1;31m4) Install Test Build (work in progress/not ready yet)\e[0m"
+	echo -e "\e[0;33m5) Return to Main Menu\e[0m"
+ 	echo -e "\e[1;32mSelect your choice: \e[0m"
         read choice
 
         case $choice in
@@ -408,15 +410,16 @@ install_simple_admin() {
 
 # Function to Uninstall Simpleadmin and dependencies
 uninstall_simpleadmin_components() {
-    echo "Starting the uninstallation process for Simpleadmin components."
-    echo "Note: Uninstalling certain components may affect the functionality of others."
+    echo -e "\e[1;32mStarting the uninstallation process for Simpleadmin components.\e[0m"
+    echo -e "\e[1;32mNote: Uninstalling certain components may affect the functionality of others.\e[0m"
+    echo -e "\e[1;36mIf you are upgrading from an older version of the toolkit uninstall/say yes to all everything.\e[0m"
     remount_rw
 
     # Uninstall Simple Firewall
-    echo "Do you want to uninstall Simplefirewall?"
-    echo "If you do, the TTL part of simpleadmin will no longer work."
-    echo "1) Yes"
-    echo "2) No"
+    echo -e "\e[1;32mDo you want to uninstall Simplefirewall?\e[0m"
+    echo -e "\e[1;31mIf you do, the TTL part of simpleadmin will no longer work.\e[0m"
+    echo -e "\e[1;32m1) Yes\e[0m"
+    echo -e "\e[1;31m2) No\e[0m"
     read -p "Enter your choice (1 or 2): " choice_simplefirewall
     if [ "$choice_simplefirewall" -eq 1 ]; then
         echo "Uninstalling Simplefirewall..."
@@ -430,10 +433,10 @@ uninstall_simpleadmin_components() {
     fi
 
     # Uninstall socat-at-bridge
-    echo "Do you want to uninstall socat-at-bridge?"
-    echo "If you do, AT commands and the stat page will no longer work."
-    echo "1) Yes"
-    echo "2) No"
+    echo -e "\e[1;32mDo you want to uninstall socat-at-bridge?\e[0m"
+    echo -e "\e[1;31mIf you do, AT commands and the stat page will no longer work.\e[0m"
+    echo -e "\e[1;32m1) Yes\e[0m"
+    echo -e "\e[1;31m2) No\e[0m"
     read -p "Enter your choice (1 or 2): " choice_socat_at_bridge
     if [ "$choice_socat_at_bridge" -eq 1 ]; then
         echo "Uninstalling socat-at-bridge..."
@@ -459,9 +462,9 @@ uninstall_simpleadmin_components() {
     fi
 
     # Uninstall the rest of Simpleadmin
-    echo "Do you want to uninstall the rest of Simpleadmin?"
-    echo "1) Yes"
-    echo "2) No"
+    echo -e "\e[1;32mDo you want to uninstall the rest of Simpleadmin?\e[0m"
+    echo -e "\e[1;32m1) Yes\e[0m"
+    echo -e "\e[1;31m2) No\e[0m"
     read -p "Enter your choice (1 or 2): " choice_simpleadmin
     if [ "$choice_simpleadmin" -eq 1 ]; then
         echo "Uninstalling the rest of Simpleadmin..."
@@ -481,10 +484,10 @@ uninstall_simpleadmin_components() {
 # Function for Tailscale Submenu
 tailscale_menu() {
     while true; do
-        echo "Tailscale Menu"
-        echo "1) Install/Update/Remove Tailscale"
-        echo "2) Configure Tailscale"
-        echo "3) Return to Main Menu"
+        echo -e "\e[1;32mTailscale Menu\e[0m"
+	echo -e "\e[1;32m1) Install/Update/Remove Tailscale\e[0m"
+	echo -e "\e[1;36m2) Configure Tailscale\e[0m"
+	echo -e "\e[1;31m3) Return to Main Menu\e[0m"
         read -p "Enter your choice: " tailscale_choice
 
         case $tailscale_choice in
@@ -559,14 +562,14 @@ install_update_remove_tailscale() {
 configure_tailscale() {
     while true; do
     echo "Configure Tailscale"
-    echo "1) Enable Tailscale Web UI at http://192.168.225.1:8088 (Gateway on port 8088)"
-    echo "2) Disable Tailscale Web UI"
-    echo "3) Connect to Tailnet"
-    echo "4) Connect to Tailnet with SSH ON"
-    echo "5) Reconnect to Tailnet with SSH OFF"
-    echo "6) Disconnect from Tailnet (reconnects at reboot)"
-    echo "7) Logout from tailscale account"
-    echo "8) Return to Tailscale Menu"
+    echo -e "\e[38;5;40m1) Enable Tailscale Web UI at http://192.168.225.1:8088 (Gateway on port 8088)\e[0m"  # Green
+    echo -e "\e[38;5;196m2) Disable Tailscale Web UI\e[0m"  # Red
+    echo -e "\e[38;5;27m3) Connect to Tailnet\e[0m"  # Brown
+    echo -e "\e[38;5;87m4) Connect to Tailnet with SSH ON\e[0m"  # Light cyan
+    echo -e "\e[38;5;105m5) Reconnect to Tailnet with SSH OFF\e[0m"  # Light magenta
+    echo -e "\e[38;5;172m6) Disconnect from Tailnet (reconnects at reboot)\e[0m"  # Light yellow
+    echo -e "\e[1;31m7) Logout from tailscale account\e[0m"
+    echo -e "\e[38;5;27m8) Return to Tailscale Menu\e[0m"
     read -p "Enter your choice: " config_choice
 
         case $config_choice in
@@ -613,9 +616,9 @@ manage_reboot_timer() {
 
     # Check if the rebootmodem service, timer, or trigger already exists
     if [ -f /lib/systemd/system/rebootmodem.service ] || [ -f /lib/systemd/system/rebootmodem.timer ] || [ -f /lib/systemd/system/rebootmodem-trigger.service ]; then
-        echo "The rebootmodem service/timer/trigger is already installed."
-        echo "1) Change"
-        echo "2) Remove"
+        echo -e "\e[1;32mThe rebootmodem service/timer/trigger is already installed.\e[0m"
+	echo -e "\e[1;32m1) Change\e[0m"  # Green
+	echo -e "\e[1;31m2) Remove\e[0m"  # Red
         read -p "Enter your choice (1 for Change, 2 for Remove): " reboot_choice
 
         case $reboot_choice in
@@ -634,7 +637,7 @@ manage_reboot_timer() {
                 # Reload systemd to apply changes
                 systemctl daemon-reload
 
-                echo "Rebootmodem service, timer, trigger, and script removed successfully."
+                echo -e "\e[1;32mRebootmodem service, timer, trigger, and script removed successfully.\e[0m"
                 ;;
             1)
                 printf "Enter the new time for daily reboot (24-hour format in Coordinated Universal Time, HH:MM): "
@@ -655,7 +658,7 @@ manage_reboot_timer() {
                 fi
                 ;;
             *)
-                echo "Invalid choice. Exiting."
+                echo -e "\e[1;31mInvalid choice. Exiting.\e[0m"
                 exit 1
                 ;;
         esac
@@ -728,8 +731,8 @@ RemainAfterExit=yes" > /lib/systemd/system/rebootmodem-trigger.service
     remount_ro
 
     # Confirmation
-    echo "Rebootmodem-trigger service created and started successfully."
-    echo "Reboot schedule set successfully. The modem will reboot daily at $user_time UTC."
+    echo -e "\e[1;32mRebootmodem-trigger service created and started successfully.\e[0m"
+    echo -e "\e[1;32mReboot schedule set successfully. The modem will reboot daily at $user_time UTC.\e[0m"
 }
 
 manage_cfun_fix() {
@@ -739,9 +742,9 @@ manage_cfun_fix() {
     mount -o remount,rw /
 
     if [ -f "$cfun_service_path" ]; then
-        echo "The CFUN fix is already installed. Do you want to remove it?"
-        echo "1) Yes"
-        echo "2) No"
+        echo -e "\e[1;32mThe CFUN fix is already installed. Do you want to remove it?\e[0m"  # Green
+	echo -e "\e[1;32m1) Yes\e[0m"  # Green
+	echo -e "\e[1;31m2) No\e[0m"   # Red
         read -p "Enter your choice: " choice
 
         if [ "$choice" = "1" ]; then
@@ -756,7 +759,7 @@ manage_cfun_fix() {
             echo "Returning to main menu..."
         fi
     else
-        echo "Installing CFUN fix..."
+        echo -e "\e[1;32mInstalling CFUN fix...\e[0m"
 
         # Create the CFUN fix script
         echo "#!/bin/sh
@@ -779,7 +782,7 @@ WantedBy=multi-user.target" > "$cfun_service_path"
         ln -sf "$cfun_service_path" "/lib/systemd/system/multi-user.target.wants/"
 	systemctl daemon-reload
  	mount -o remount,ro /
-        echo "CFUN fix has been installed and will execute at every boot."
+        echo -e "\e[1;32mCFUN fix has been installed and will execute at every boot.\e[0m"
     fi
 }
 
@@ -867,17 +870,17 @@ echo "                                           :+##+.            "
             ;;
         2)
             if is_simple_admin_installed; then
-                echo "Simple Admin is already installed. It must be removed first"
-                echo "1) Remove"
-                echo "2) Return to main menu"
+                echo -e "\e[1;31mSimple Admin is already installed. It must be removed first\e[0m"
+                echo -e "\e[1;32m1) Remove\e[0m"  # Green
+		echo -e "\e[0;33m2) Return to main menu\e[0m"
                 read -p "Enter your choice: " simple_admin_choice
                 case $simple_admin_choice in
                     1) uninstall_simpleadmin_components;;
                     2) break;;
-                    *) echo "Invalid option";;
+                    *) echo -e "\e[1;31mInvalid option\e[0m";;
                 esac
             else
-                echo "Installing Simple Admin..."
+                echo -e "\e[1;32mInstalling Simple Admin...\e[0m"
                 install_simple_admin
             fi
             ;;
@@ -895,16 +898,16 @@ echo "                                           :+##+.            "
             manage_cfun_fix
             ;;	    
         7) 
-	    echo "Installing Entware/OPKG"
+	    echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
      	    wget -O- https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/installentware.sh | sh
      	    break
             ;;
 	8) 
-	    echo "Goodbye!"
+	    echo -e "\e[1;32mGoodbye!\e[0m"
      	    break
             ;;    
         *)
-            echo "Invalid option"
+            echo -e "\e[1;31mInvalid option\e[0m"
             ;;
     esac
 done
