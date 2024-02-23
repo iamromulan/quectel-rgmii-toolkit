@@ -6,7 +6,7 @@
 
 if [ -f /usrdata/simplefirewall/ttlvalue ];
 then
-	ttlfile=$(</usrdata/simpleadmin/ttl/ttlvalue)
+	ttlfile=$(</usrdata/simplefirewall/ttlvalue)
     TTLVALUE=$(echo $ttlfile | grep -o "[0-9]\{1,3\}")
     
     if [ -z "${TTLVALUE}" ]; then
@@ -15,7 +15,7 @@ then
     fi
 else
     # Couldnt find ttlvalue file, lets generate one with 0 ttlvalue (0 = disabled)
-    touch /usrdata/simpleadmin/ttl/ttlvalue && echo '0' > /usrdata/simpleadmin/ttl/ttlvalue
+    touch /usrdata/simplefirewall/ttlvalue && echo '0' > /usrdata/simplefirewall/ttlvalue
     exit 1
 fi
 
