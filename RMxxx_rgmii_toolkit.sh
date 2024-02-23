@@ -212,8 +212,22 @@ install_simple_firewall() {
 
 configure_simple_firewall() {
     if [ ! -f "$SIMPLE_FIREWALL_SCRIPT" ]; then
-        echo "Simple Firewall script not found."
-        return
+        echo -e "\033[0;31mSimplefirewall is not installed, would you like to install it?\033[0m"
+        echo -e "\033[0;32m1) Yes\033[0m"
+        echo -e "\033[0;31m2) No\033[0m"
+        read -p "Enter your choice (1-2): " install_choice
+
+        case $install_choice in
+            1)
+                install_simple_firewall
+                ;;
+            2)
+                return
+                ;;
+            *)
+                echo -e "\033[0;31mInvalid choice. Please select either 1 or 2.\033[0m"
+                ;;
+        esac
     fi
 
     echo "Configuring Simple Firewall:"
