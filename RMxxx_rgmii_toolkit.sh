@@ -273,11 +273,9 @@ configure_simple_firewall() {
             return
         else
             /usrdata/simplefirewall/ttl-override stop
-	    iptables -t mangle -F POSTROUTING
- 	    ip6tables -t mangle -F POSTROUTING
 	    echo "$new_ttl_value" > /usrdata/simplefirewall/ttlvalue
      	    /usrdata/simplefirewall/ttl-override start
-            echo "TTL value updated to $new_ttl_value."
+            echo -e "\033[0;32mTTL value updated to $new_ttl_value.\033[0m"
         fi
         ;;
     *)
