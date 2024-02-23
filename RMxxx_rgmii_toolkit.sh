@@ -157,29 +157,29 @@ install_update_at_socat() {
     case $device_choice in
         2)
             cp -f $AT_TELNET_SMD7_SYSD_DIR/*.service /lib/systemd/system
-			ln -sf /lib/systemd/system/socat-smd7.service /lib/systemd/system/multi-user.target.wants/
-			ln -sf /lib/systemd/system/socat-smd7-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-			ln -sf /lib/systemd/system/socat-smd7-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-			systemctl daemon-reload
-			systemctl start socat-smd7
-			sleep 2s
-			systemctl start socat-smd7-to-ttyIN
-			systemctl start socat-smd7-from-ttyIN
-   			remount_ro
-			cd /
+	    ln -sf /lib/systemd/system/socat-smd7.service /lib/systemd/system/multi-user.target.wants/
+	    ln -sf /lib/systemd/system/socat-smd7-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+	    ln -sf /lib/systemd/system/socat-smd7-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+	    systemctl daemon-reload
+	    systemctl start socat-smd7
+	    sleep 2s
+	    systemctl start socat-smd7-to-ttyIN
+	    systemctl start socat-smd7-from-ttyIN
+   	    remount_ro
+	    cd /
             ;;
         1)
             cp -f $AT_TELNET_SYSD_DIR/*.service /lib/systemd/system
-			ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
-			ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-			ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-			systemctl daemon-reload
-			systemctl start socat-smd11
-			sleep 2s
-			systemctl start socat-smd11-to-ttyIN
-			systemctl start socat-smd11-from-ttyIN
-   			remount_ro
-			cd /
+	    ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
+	    ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+	    ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+	    systemctl daemon-reload
+	    systemctl start socat-smd11
+	    sleep 2s
+	    systemctl start socat-smd11-to-ttyIN
+	    systemctl start socat-smd11-from-ttyIN
+   	    remount_ro
+	    cd /
             ;;
     esac
     
@@ -365,7 +365,7 @@ install_simple_admin() {
 		install_simple_firewall
                 remount_rw
                 cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_FULL_URL -O simpleadmintest.zip
+                wget $GITHUB_SIMPADMIN_TEST_URL -O simpleadmintest.zip
                 unzip -o simpleadmintest.zip
                 cp -Rf quectel-rgmii-toolkit-simpleadmintest/simpleadmin/ $USRDATA_DIR
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
@@ -774,10 +774,11 @@ while true; do
     echo "1) Send AT Commands"
     echo "2) Install/Update/Uninstall Simple Admin"
     echo "3) Simple Firewall Management"
-	echo "4) Tailscale Management"
+    echo "4) Tailscale Management"
     echo "5) Install/Change or remove Daily Reboot Timer"
     echo "6) Install/Uninstall CFUN 0 Fix"
-    echo "7) Exit"
+    echo "7) Install Entware/OPKG (BETA/Advanced)"
+    echo "8) Exit"
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -800,23 +801,28 @@ while true; do
                 install_simple_admin
             fi
             ;;
-		3)
-			configure_simple_firewall
+	3)
+	    configure_simple_firewall
             ;;
         
         4)  
-			tailscale_menu
-			;;
-		5)
+	    tailscale_menu
+	    ;;
+	5)
             manage_reboot_timer
             ;;
-		6)
+	6)
             manage_cfun_fix
             ;;	    
         7) 
-			echo "Goodbye!"
+	    echo "Installing Entware/OPKG"
+     	    wget -O- https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/installentware.sh | sh
      	    break
-            ;;	
+            ;;
+	8) 
+	    echo "Goodbye!"
+     	    break
+            ;;    
         *)
             echo "Invalid option"
             ;;
