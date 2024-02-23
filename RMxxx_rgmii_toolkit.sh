@@ -273,6 +273,7 @@ configure_simple_firewall() {
             return
         else
             echo "$new_ttl_value" > /usrdata/simplefirewall/ttlvalue
+	    systemctl restart ttl-override
             echo "TTL value updated to $new_ttl_value."
         fi
         ;;
