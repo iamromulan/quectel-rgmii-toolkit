@@ -200,7 +200,7 @@ install_simple_firewall() {
     chmod +x "$SIMPLE_FIREWALL_DIR/ttl-override"	
     wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/simplefirewall.service
     wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/ttl-override.service" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/ttl-override.service
-    cp -f $SIMPLE_FIREWALL_SYSTEMD_DIR/* /lib/systemd/system
+    cp -rf $SIMPLE_FIREWALL_SYSTEMD_DIR/* /lib/systemd/system
     ln -sf "/lib/systemd/system/simplefirewall.service" "/lib/systemd/system/multi-user.target.wants/"
     ln -sf "/lib/systemd/system/ttl-override.service" "/lib/systemd/system/multi-user.target.wants/"
     systemctl daemon-reload
