@@ -22,7 +22,7 @@ setTTL=$(printf '%b\n' "${ttlvalue//%/\\x}")
 
 if [ -n "${setTTL}" ]; then
     # Stop Service To Remove Rules
-    /usrdata/simpleadmin/ttl/ttl-override stop
+    /usrdata/simplefirewall/ttl-override stop
 
     # Check iptables is still set
     ttlcheck=$(iptables -t mangle -vnL | grep TTL | awk '{print $13}')
@@ -34,10 +34,10 @@ if [ -n "${setTTL}" ]; then
     fi
 
     # Echo TTL to file
-    echo $setTTL > /usrdata/simpleadmin/ttl/ttlvalue
+    echo $setTTL > /usrdata/simplefirewall/ttlvalue
 
     # Set Start Service
-    /usrdata/simpleadmin/ttl/ttl-override start
+    /usrdata/simplefirewall/ttl-override start
 fi
 
 

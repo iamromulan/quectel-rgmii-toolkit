@@ -5,7 +5,7 @@ DefaultDependencies=no
 
 [Service]
 Type=oneshot
-ExecStart=/usrdata/simpleadmin/ttl/ttl-override start
+ExecStart=/usrdata/simplefirewall/ttl-override start
 User=root
 
 [Install]

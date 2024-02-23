@@ -21,7 +21,6 @@ MYATCMD=$(printf '%b\n' "${atcmd//%/\\x}")
 if [ -n "${MYATCMD}" ]; then
    x=$(urldecode "$atcmd")
    runcmd=$(echo -en "$x\r\n" | microcom -t 2000 /dev/ttyOUT)
-  # runcmd=$(/usrdata/simpleadmin/scripts/doAT.py "$MYATCMD")
 fi
 
 echo "Content-type: text/plain"
