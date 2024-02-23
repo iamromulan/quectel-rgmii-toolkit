@@ -156,7 +156,7 @@ install_update_at_socat() {
     # Depending on the choice, copy the respective systemd unit files
     case $device_choice in
         2)
-            cp -f $SOCAT_AT_SMD7_SYSD_DIR/*.service /lib/systemd/system
+            cp -rf $SOCAT_AT_SMD7_SYSD_DIR/*.service /lib/systemd/system
 	    ln -sf /lib/systemd/system/socat-smd7.service /lib/systemd/system/multi-user.target.wants/
 	    ln -sf /lib/systemd/system/socat-smd7-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
 	    ln -sf /lib/systemd/system/socat-smd7-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
@@ -169,7 +169,7 @@ install_update_at_socat() {
 	    cd /
             ;;
         1)
-            cp -f $SOCAT_AT_SYSD_DIR/*.service /lib/systemd/system
+            cp -rf $SOCAT_AT_SYSD_DIR/*.service /lib/systemd/system
 	    ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
 	    ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
 	    ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
@@ -310,7 +310,7 @@ install_simple_admin() {
                 cp -Rf quectel-rgmii-toolkit-simpleadminfull/simpleadmin/ $USRDATA_DIR
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
                 chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
+                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
@@ -332,7 +332,7 @@ install_simple_admin() {
                 cp -Rf quectel-rgmii-toolkit-simpleadminnoatcmds/simpleadmin/ $USRDATA_DIR
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
                 chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
+                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
@@ -352,7 +352,7 @@ install_simple_admin() {
                 unzip -o simpleadminttlonly.zip
                 cp -Rf quectel-rgmii-toolkit-simpleadminttlonly/simpleadmin/ $USRDATA_DIR
 		chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
+                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 systemctl start simpleadmin_httpd
@@ -372,7 +372,7 @@ install_simple_admin() {
                 cp -Rf quectel-rgmii-toolkit-simpleadmintest/simpleadmin/ $USRDATA_DIR
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
                 chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -f $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
+                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
@@ -530,7 +530,7 @@ install_update_remove_tailscale() {
         chmod +x /usrdata/tailscale/tailscaled
         chmod +x /usrdata/tailscale/tailscale
 	echo "Copy systemd units..."
-        cp -f /usrdata/tailscale/systemd/* /lib/systemd/system
+        cp -rf /usrdata/tailscale/systemd/* /lib/systemd/system
 	ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
         systemctl daemon-reload
 	echo "Starting Tailscaled..."
