@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Define toolkit paths
-GITTREE="development"
+GITTREE="main"
 TMP_DIR="/tmp"
 USRDATA_DIR="/usrdata"
 SOCAT_AT_DIR="/usrdata/socat-at-bridge"
