@@ -77,18 +77,18 @@ create_opt_mount() {
     # Bind /usrdata/opt to /opt
     echo -e '\033[32mInfo: Setting up /opt mount to /usrdata/opt...\033[0m'
     cat <<EOF > /lib/systemd/system/opt.mount
-    [Unit]
-    Description=Bind /usrdata/opt to /opt
-    
-    [Mount]
-    What=/usrdata/opt
-    Where=/opt
-    Type=none
-    Options=bind
-    
-    [Install]
-    WantedBy=multi-user.target
-    EOF
+[Unit]
+Description=Bind /usrdata/opt to /opt
+
+[Mount]
+What=/usrdata/opt
+Where=/opt
+Type=none
+Options=bind
+
+[Install]
+WantedBy=multi-user.target
+EOF
     
     systemctl daemon-reload
     systemctl start opt.mount
@@ -96,17 +96,17 @@ create_opt_mount() {
     # Additional systemd service to ensure opt.mount starts at boot
     echo -e '\033[32mInfo: Creating service to start opt.mount at boot...\033[0m'
     cat <<EOF > /lib/systemd/system/start-opt-mount.service
-    [Unit]
-    Description=Ensure opt.mount is started at boot
-    After=network.target
-        
-    [Service]
-    Type=oneshot
-    ExecStart=/bin/systemctl start opt.mount
+[Unit]
+Description=Ensure opt.mount is started at boot
+After=network.target
 
-    [Install]
-    WantedBy=multi-user.target
-    EOF
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl start opt.mount
+
+[Install]
+WantedBy=multi-user.target
+EOF
 
     systemctl daemon-reload
     ln -s /lib/systemd/system/start-opt-mount.service /lib/systemd/system/multi-user.target.wants/start-opt-mount.service
