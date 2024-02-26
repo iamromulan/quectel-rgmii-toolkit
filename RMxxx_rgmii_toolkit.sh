@@ -900,7 +900,8 @@ echo "                                           :+##+.            "
             ;;	    
         7) 
 	    echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
-     	    wget -O- https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/installentware.sh | sh
+	    cd /tmp && wget -O installentware.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/installentware.sh && chmod +x installentware.sh && ./installentware.sh
+     	    cd /
      	    break
             ;;
 	8) 
