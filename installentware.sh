@@ -1,23 +1,77 @@
 #!/bin/sh
 
 TYPE='generic'
-#TYPE='alternative'
-
-#|---------|-----------------------|---------------|---------------|---------------------|-------------------|-------------------|----------------------|-------------------|
-#| ARCH    | aarch64-k3.10         | armv5sf-k3.2  | armv7sf-k2.6  | armv7sf-k3.2        | mipselsf-k3.4     | mipssf-k3.4       | x64-k3.2             | x86-k2.6          |
-#| LOADER  | ld-linux-aarch64.so.1 | ld-linux.so.3 | ld-linux.so.3 | ld-linux.so.3       | ld.so.1           | ld.so.1           | ld-linux-x86-64.so.2 | ld-linux.so.2     |
-#| GLIBC   | 2.27                  | 2.27          | 2.23          | 2.27                | 2.27              | 2.27              | 2.27                 | 2.23              |
-#|---------|-----------------------|---------------|---------------|---------------------|-------------------|-------------------|----------------------|-------------------|
-
+#|---------|-----------------|
+#| ARCH    | armv7sf-k3.2    | 
+#| LOADER  | ld-linux.so.3   | 
+#| GLIBC   | 2.27            | 
+#|---------|-----------------|
 unset LD_LIBRARY_PATH
 unset LD_PRELOAD
-
 ARCH=armv7sf-k3.2
 LOADER=ld-linux.so.3
 GLIBC=2.27
 
 # Remount filesystem as read-write
 mount -o remount,rw /
+
+# Check if /opt exists
+if [ -d /opt ]; then
+    echo "Do you want to uninstall Entware/OPKG first? It is already installed."
+    echo "1) Yes"
+    echo "2) No"
+    echo "3) Cancel"
+    read -p "Select an option: " choice
+
+    case $choice in
+        1)
+            # Call the uninstall function
+            uninstall_entware
+            exit 0
+            ;;
+        2)
+            # Continue with the script
+            echo "Continuing with the script..."
+            ;;
+        3)
+            echo "Canceling. Exiting script."
+            exit 0
+            ;;            
+        *)
+            echo "Invalid option. Exiting."
+            exit 1
+            ;;
+    esac
+fi
+
+uninstall_entware() {
+    echo 'Info: Starting Entware/OPKG uninstallation...'
+
+    # Stop services
+    systemctl stop rc.unslung.service
+    systemctl disable rc.unslung.service
+    rm /lib/systemd/system/rc.unslung.service
+    
+    systemctl stop opt.mount
+    systemctl disable opt.mount
+    rm /lib/systemd/system/opt.mount
+    rm /lib/systemd/system/start-opt-mount.service
+
+    # Unmount /opt if mounted
+    mountpoint -q /opt && umount /opt
+
+    # Remove Entware installation directory
+    rm -rf /usrdata/opt
+    rm -rf /opt
+
+    # Reload systemctl daemon
+    systemctl daemon-reload
+
+    # Optionally, clean up any modifications to /etc/profile or other system files
+    # This step depends on the specific changes made by the user or the installation script
+
+    echo 'Info: Entware/OPKG has been uninstalled successfully.'
+}
 
 echo 'Info: Checking for prerequisites and creating folders...'
 if [ -d /opt ]; then
@@ -44,9 +98,6 @@ wget $URL/opkg.conf -O /opt/etc/opkg.conf
 
 echo 'Info: Basic packages installation...'
 /opt/bin/opkg update
-if [ $TYPE = 'alternative' ]; then
-  /opt/bin/opkg install busybox
-fi
 /opt/bin/opkg install entware-opt
 
 # Fix for multiuser environment
