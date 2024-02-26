@@ -15,35 +15,6 @@ GLIBC=2.27
 # Remount filesystem as read-write
 mount -o remount,rw /
 
-# Check if /opt exists
-if [ -d /opt ]; then
-    echo -e "\033[32mDo you want to uninstall Entware/OPKG first? It is already installed.\033[0m"
-    echo -e "\033[32m1) Yes\033[0m"
-    echo -e "\033[32m2) No\033[0m"
-    echo -e "\033[32m3) Cancel\033[0m"
-    read -p "Select an option: " choice
-
-    case $choice in
-        1)
-            # Call the uninstall function
-            uninstall_entware
-            exit 0
-            ;;
-        2)
-            # Continue with the script
-            echo "Continuing with the script..."
-            ;;
-        3)
-            echo "Canceling. Exiting script."
-            exit 0
-            ;;            
-        *)
-            echo "Invalid option. Exiting."
-            exit 1
-            ;;
-    esac
-fi
-
 uninstall_entware() {
     echo -e '\033[31mInfo: Starting Entware/OPKG uninstallation...\033[0m'
 
@@ -72,6 +43,35 @@ uninstall_entware() {
 
     echo -e '\033[32mInfo: Entware/OPKG has been uninstalled successfully.\033[0m'
 }
+
+# Check if /opt exists
+if [ -d /opt ]; then
+    echo -e "\033[32mDo you want to uninstall Entware/OPKG first? It is already installed.\033[0m"
+    echo -e "\033[32m1) Yes\033[0m"
+    echo -e "\033[32m2) No\033[0m"
+    echo -e "\033[32m3) Cancel\033[0m"
+    read -p "Select an option: " choice
+
+    case $choice in
+        1)
+            # Call the uninstall function
+            uninstall_entware
+            exit 0
+            ;;
+        2)
+            # Continue with the script
+            echo "Continuing with the script..."
+            ;;
+        3)
+            echo "Canceling. Exiting script."
+            exit 0
+            ;;            
+        *)
+            echo "Invalid option. Exiting."
+            exit 1
+            ;;
+    esac
+fi
 
 create_opt_mount() {
     # Bind /usrdata/opt to /opt
