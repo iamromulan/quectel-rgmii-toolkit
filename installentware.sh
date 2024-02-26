@@ -17,10 +17,10 @@ mount -o remount,rw /
 
 # Check if /opt exists
 if [ -d /opt ]; then
-    echo "Do you want to uninstall Entware/OPKG first? It is already installed."
-    echo "1) Yes"
-    echo "2) No"
-    echo "3) Cancel"
+    echo -e "\033[32mDo you want to uninstall Entware/OPKG first? It is already installed.\033[0m"
+    echo -e "\033[32m1) Yes\033[0m"
+    echo -e "\033[32m2) No\033[0m"
+    echo -e "\033[32m3) Cancel\033[0m"
     read -p "Select an option: " choice
 
     case $choice in
@@ -45,15 +45,15 @@ if [ -d /opt ]; then
 fi
 
 uninstall_entware() {
-    echo 'Info: Starting Entware/OPKG uninstallation...'
+    echo -e '\033[31mInfo: Starting Entware/OPKG uninstallation...\033[0m'
 
     # Stop services
     systemctl stop rc.unslung.service
-    systemctl disable rc.unslung.service
+    rm /lib/systemd/system/multi-user.target.wants/rc.unslung.service
     rm /lib/systemd/system/rc.unslung.service
     
     systemctl stop opt.mount
-    systemctl disable opt.mount
+    rm /lib/systemd/system/multi-user.target.wants/start-opt-mount.service
     rm /lib/systemd/system/opt.mount
     rm /lib/systemd/system/start-opt-mount.service
 
@@ -70,33 +70,72 @@ uninstall_entware() {
     # Optionally, clean up any modifications to /etc/profile or other system files
     # This step depends on the specific changes made by the user or the installation script
 
-    echo 'Info: Entware/OPKG has been uninstalled successfully.'
+    echo -e '\033[32mInfo: Entware/OPKG has been uninstalled successfully.\033[0m'
 }
 
-echo 'Info: Checking for prerequisites and creating folders...'
+create_opt_mount() {
+    # Bind /usrdata/opt to /opt
+    echo -e '\033[32mInfo: Setting up /opt mount to /usrdata/opt...\033[0m'
+    cat <<EOF > /lib/systemd/system/opt.mount
+    [Unit]
+    Description=Bind /usrdata/opt to /opt
+    
+    [Mount]
+    What=/usrdata/opt
+    Where=/opt
+    Type=none
+    Options=bind
+    
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+    
+    systemctl daemon-reload
+    systemctl start opt.mount
+    
+    # Additional systemd service to ensure opt.mount starts at boot
+    echo -e '\033[32mInfo: Creating service to start opt.mount at boot...\033[0m'
+    cat <<EOF > /lib/systemd/system/start-opt-mount.service
+    [Unit]
+    Description=Ensure opt.mount is started at boot
+    After=network.target
+        
+    [Service]
+    Type=oneshot
+    ExecStart=/bin/systemctl start opt.mount
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+
+    systemctl daemon-reload
+    ln -s /lib/systemd/system/start-opt-mount.service /lib/systemd/system/multi-user.target.wants/start-opt-mount.service
+}
+
+echo -e '\033[32mInfo: Checking for /opt...\033[0m'
 if [ -d /opt ]; then
-    echo 'Warning: Folder /opt exists!'
+    echo -e '\033[31mWarning: /opt exists!\033[0m'
 else
-    mkdir /opt
+    create_opt_mount
 fi
 # no need to create many folders. entware-opt package creates most
 for folder in bin etc lib/opkg tmp var/lock
 do
   if [ -d "/opt/$folder" ]; then
-    echo "Warning: Folder /opt/$folder exists!"
-    echo 'Warning: If something goes wrong please clean /opt folder and try again.'
+    echo -e '\033[31mWarning: Folder /opt/$folder exists!\033[0m'
+    echo -e '\033[31mWarning: If something goes wrong please clean /opt folder and try again.\033[0m'
   else
     mkdir -p /opt/$folder
   fi
 done
 
-echo 'Info: Opkg package manager deployment...'
+echo -e '\033[32mInfo: Opkg package manager deployment...\033[0m'
 URL=http://bin.entware.net/${ARCH}/installer
 wget $URL/opkg -O /opt/bin/opkg
 chmod 755 /opt/bin/opkg
 wget $URL/opkg.conf -O /opt/etc/opkg.conf
 
-echo 'Info: Basic packages installation...'
+echo -e '\033[32mInfo: Basic packages installation...\033[0m'
 /opt/bin/opkg update
 /opt/bin/opkg install entware-opt
 
@@ -119,57 +158,8 @@ done
 
 [ -f /etc/localtime ] && ln -sf /etc/localtime /opt/etc/localtime
 
-# Move /opt to /usrdata/opt after installation
-echo 'Info: Moving Entware to /usrdata/opt...'
-mkdir -p /usrdata/opt
-mv /opt/* /usrdata/opt/
-
-# Bind /usrdata/opt to /opt
-echo 'Info: Setting up /opt mount to /usrdata/opt...'
-cat <<EOF > /lib/systemd/system/opt.mount
-[Unit]
-Description=Bind /usrdata/opt to /opt
-
-[Mount]
-What=/usrdata/opt
-Where=/opt
-Type=none
-Options=bind
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-systemctl daemon-reload
-systemctl start opt.mount
-
-# Additional systemd service to ensure opt.mount starts at boot
-echo 'Info: Creating service to start opt.mount at boot...'
-cat <<EOF > /lib/systemd/system/start-opt-mount.service
-[Unit]
-Description=Ensure opt.mount is started at boot
-After=network.target
-
-[Service]
-Type=oneshot
-ExecStart=/bin/systemctl start opt.mount
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-systemctl daemon-reload
-ln -s /lib/systemd/system/start-opt-mount.service /lib/systemd/system/multi-user.target.wants/start-opt-mount.service
-
-
-# Update /etc/profile for PATH
-echo 'Info: Updating /etc/profile for PATH...'
-export PATH=/usrdata/opt/bin:/usrdata/opt/sbin:$PATH
-echo 'Info: This is only temporary, you will need to do this for each shell session...'
-echo 'Info: Run export PATH=/usrdata/opt/bin:/usrdata/opt/sbin:$PATH to do it'
-
 # Create and enable rc.unslung service
-echo 'Info: Creating rc.unslung service...'
+echo -e '\033[32mInfo: Creating rc.unslung (Entware init.d service)...\033[0m'
 cat <<EOF > /lib/systemd/system/rc.unslung.service
 [Unit]
 Description=Start Entware services
@@ -188,11 +178,11 @@ EOF
 systemctl daemon-reload
 ln -s /lib/systemd/system/rc.unslung.service /lib/systemd/system/multi-user.target.wants/rc.unslung.service
 systemctl start rc.unslung.service
-echo 'Info: Congratulations!'
-echo 'Info: If there are no errors above then Entware was successfully initialized.'
-echo 'Info: Add /opt/bin & /opt/sbin to $PATH variable'
-echo 'Info: Run export PATH=/opt/bin:/opt/sbin:$PATH to do it for this session only'
-echo 'Info: opkg at /opt/bin will be linked to /bin but any package you install with opkg will not be automatically.'
+echo -e '\033[32mInfo: Congratulations!\033[0m'
+echo -e '\033[32mInfo: If there are no errors above then Entware was successfully initialized.\033[0m'
+echo -e '\033[32mInfo: Add /opt/bin & /opt/sbin to $PATH variable\033[0m'
+echo -e '\033[32mInfo: Run export PATH=/opt/bin:/opt/sbin:$PATH to do it for this session only\033[0m'
+echo -e '\033[32mInfo: opkg at /opt/bin will be linked to /bin but any package you install with opkg will not be automatically.\033[0m'
 ln -sf /opt/bin/opkg /bin
 opkg update
 # Remount filesystem as read-only
