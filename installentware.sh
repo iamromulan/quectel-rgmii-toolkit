@@ -137,16 +137,12 @@ EOF
 systemctl daemon-reload
 ln -s /lib/systemd/system/rc.unslung.service /lib/systemd/system/multi-user.target.wants/rc.unslung.service
 systemctl start rc.unslung.service
-
 echo 'Info: Congratulations!'
 echo 'Info: If there are no errors above then Entware was successfully initialized.'
 echo 'Info: Add /opt/bin & /opt/sbin to $PATH variable'
-echo 'Info: Run export PATH=/opt/bin:/opt/sbin:$PATH to do it'
+echo 'Info: Run export PATH=/opt/bin:/opt/sbin:$PATH to do it for this session only'
 echo 'Info: opkg at /opt/bin will be linked to /bin but any package you install with opkg will not be automatically.'
 ln -sf /opt/bin/opkg /bin
-if [ $TYPE = 'alternative' ]; then
-  echo 'Info: Use ssh server from Entware for better compatibility.'
-fi
-echo 'Info: Found a Bug? Please report at https://github.com/Entware/Entware/issues'
+opkg update
 # Remount filesystem as read-only
 mount -o remount,ro /
