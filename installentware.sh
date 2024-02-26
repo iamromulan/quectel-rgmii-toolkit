@@ -125,6 +125,8 @@ Description=Start Entware services
 
 [Service]
 Type=oneshot
+# Add a delay to give /opt time to mount
+ExecStartPre=/bin/sleep 5
 ExecStart=/opt/etc/init.d/rc.unslung start
 RemainAfterExit=yes
 
