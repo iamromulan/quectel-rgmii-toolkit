@@ -36,11 +36,6 @@ nr_bw() {
 	esac
 }
 
-if [ ! -f /tmp/modemstatus.txt ]
-then
-	/usrdata/simpleadmin/scripts/get_modem_data.py > /dev/null
-fi
-
 # Read File
 OX=$(</tmp/modemstatus.txt)
 
