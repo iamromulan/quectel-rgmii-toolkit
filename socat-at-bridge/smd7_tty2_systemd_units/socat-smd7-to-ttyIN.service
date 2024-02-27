@@ -1,0 +1,14 @@
+[Unit]
+Description=Read from /dev/smd7 and write to ttyIN2
+BindsTo=socat-smd7.service
+After=socat-smd7.service
+
+[Service]
+ExecStart=/bin/bash -c "/bin/cat /dev/smd7 > /dev/ttyIN2"
+ExecStartPost=/bin/sleep 2s
+StandardInput=tty-force
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target
