@@ -787,6 +787,50 @@ WantedBy=multi-user.target" > "$cfun_service_path"
     fi
 }
 
+# Function for TTYd install
+install_ttyd() {
+    while true; do
+    echo -e "\e[1;31mMake sure to replace the default Quectel /bin/login\e[0m"
+    echo -e "\e[1;31mInstall Entware then run opkg install shadow-login\e[0m"
+    echo -e "\e[1;31mRemount as read-write: mount -o remount,rw /\e[0m"
+    echo -e "\e[1;31mThen delete the existing login binary: rm /bin/login \e[0m"
+    echo -e "\e[1;31mMake a symbolic link to the new one: ln -sf /opt/bin/login /bin \e[0m"
+    echo -e "\e[1;31mSet your password: passwd \e[0m"
+    echo "============================================================================="
+    echo -e "\e[92m5) Proceed with install?\e[0m" # Light Green
+    echo -e "\033[0;32m1) Yes\033[0m"
+    echo -e "\033[0;31m2) No\033[0m"
+    read -p "Enter your choice: " choice
+
+        case $choice in
+        1)
+            remount_rw
+	    mkdir /usrdata/ttyd/
+     	    cd /usrdata/ttyd/
+	    mkdir scripts
+	    mkdir systemd
+	    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/ttyd/ttyd
+	    chmod +x ttyd
+	    cd scripts
+	    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/ttyd/scripts/ttyd.bash
+	    chmod +x ttyd.bash
+	    cd /usrdata/ttyd/systemd
+	    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/ttyd/systemd/ttyd.service
+     	    cd /lib/systemd/system/
+	    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/ttyd/systemd/ttyd.service
+	    ln -sf /lib/systemd/system/ttyd.service /lib/systemd/system/multi-user.target.wants
+	    systemctl daemon-reload
+	    systemctl start ttyd
+     	    cd /
+	    echo -e "\e[1;31mInstall Complete! Server up on port 443. No TLS/SSL enabled yet. \e[0m"
+     	    break
+            ;;
+        2)
+            break
+            ;;
+
+}
+
 # Main menu
 while true; do
 echo "                           .%+:                              "
@@ -862,7 +906,8 @@ echo "                                           :+##+.            "
     echo -e "\e[92m5) Install/Change or remove Daily Reboot Timer\e[0m" # Light Green
     echo -e "\e[91m6) Install/Uninstall CFUN 0 Fix\e[0m" # Light Red
     echo -e "\e[96m7) Install Entware/OPKG (BETA/Advanced)\e[0m" # Cyan (repeated color for additional options)
-    echo -e "\e[93m8) Exit\e[0m" # Yellow (repeated color for exit option)
+    echo -e "\e[96m8) Install TTYd (BETA,443,No TLS/SSL)\e[0m" # Cyan
+    echo -e "\e[93m9) Exit\e[0m" # Yellow (repeated color for exit option)
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -902,9 +947,11 @@ echo "                                           :+##+.            "
 	    echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
 	    cd /tmp && wget -O installentware.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/installentware.sh && chmod +x installentware.sh && ./installentware.sh
      	    cd /
-     	    break
             ;;
-	8) 
+	8)  
+ 	    install_ttyd
+      	    ;;
+	9) 
 	    echo -e "\e[1;32mGoodbye!\e[0m"
      	    break
             ;;    
