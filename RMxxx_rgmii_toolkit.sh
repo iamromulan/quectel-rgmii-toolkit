@@ -828,7 +828,8 @@ install_ttyd() {
         2)
             break
             ;;
-
+    esac
+done
 }
 
 # Main menu
