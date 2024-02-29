@@ -81,7 +81,7 @@ NR_SA=$(echo $OX | grep -o "+QENG: \"SERVINGCELL\",[^,]\+,\"NR5G-SA\",\"[DFT]\{3
 if [ -n "$NR_NSA" ]; then
 	QENG=",,"$(echo $OX" " | grep -o "+QENG: \"LTE\".\+\"NR5G-NSA\"," | tr " " ",")
 	if [ -z "$QENG5" ]; then
-		QENG5=$(echo $OX | grep -o "+QENG:[ ]\?\"NR5G-NSA\",[0-9]\{3\},[0-9]\{2,3\},[0-9]\{1,5\},-[0-9]\{2,3\},[-0-9]\{1,3\},-[0-9]\{2,3\}")
+		QENG5=$(echo $OX | grep -o "+QENG:[ ]\?\"NR5G-NSA\",[0-9]\{3\},[0-9]\{2,3\},[0-9]\{1,5\},-[0-9]\{2,3\},[-0-9]\{1,3\},-[0-9]\{2,3\},[0-9]\{1,6\},[0-9]\{1,3\}")
 		if [ -n "$QENG5" ]; then
 			QENG5=$QENG5",,"
 		fi
@@ -176,10 +176,11 @@ case $RAT in
 		if [ -n "$NR_NSA" ]; then
 			MODE="LTE/NR EN-DC"
 			echo "0" > /tmp/modnetwork
-			if [ -n "$QENG5" ]  && [ -n "$LBAND" ] && [ "$RSCP" != "-" ] && [ "$ECIO" != "-" ]; then
-				PCI="$PCI, "$(echo $QENG5 | cut -d, -f4)
+			if [ -n "$QENG5" ]; then
+				QENG5=$QENG5",,"
+				PCI=$(echo $QENG5 | cut -d, -f4)
 				SCHV=$(echo $QENG5 | cut -d, -f8)
-				SLBV=$(echo $QENG5 | cut -d, -f9)
+				SLBV=$(echo $QENG5 | cut -d, -f9) # Now correctly captures the NR band
 				BW=$(echo $QENG5 | cut -d, -f10 | grep -o "[0-9]\{1,3\}")
 				if [ -n "$SLBV" ]; then
 					LBAND=$LBAND"<br />n"$SLBV
