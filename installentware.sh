@@ -139,7 +139,9 @@ if [ -n "$PRE_OPKG_PATH" ]; then
 else
     echo "Info: no existing opkg binary detected, proceeding with installation"
 fi
-
+echo -e '\033[32mInfo: Creating /opt mount pointed to /usrdata/opt ...\033[0m'
+create_opt_mount
+echo -e '\033[32mInfo: Proceeding with main installation ...\033[0m'
 # no need to create many folders. entware-opt package creates most
 for folder in bin etc lib/opkg tmp var/lock
 do
