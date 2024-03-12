@@ -11,6 +11,7 @@ unset LD_PRELOAD
 ARCH=armv7sf-k3.2
 LOADER=ld-linux.so.3
 GLIBC=2.27
+PRE_OPKG_PATH=$(which opkg)
 
 # Remount filesystem as read-write
 mount -o remount,rw /
@@ -20,6 +21,7 @@ uninstall_entware() {
 
     # Stop services
     systemctl stop rc.unslung.service
+    /opt/etc/init.d/rc.unslung stop
     rm /lib/systemd/system/multi-user.target.wants/rc.unslung.service
     rm /lib/systemd/system/rc.unslung.service
     
@@ -67,8 +69,7 @@ if [ -d /opt ]; then
             exit 0
             ;;            
         *)
-            echo "Invalid option. Exiting."
-            exit 1
+            echo "Invalid option. Please select 1, 2, or 3."
             ;;
     esac
 fi
@@ -112,12 +113,33 @@ EOF
     ln -s /lib/systemd/system/start-opt-mount.service /lib/systemd/system/multi-user.target.wants/start-opt-mount.service
 }
 
-echo -e '\033[32mInfo: Checking for /opt...\033[0m'
-if [ -d /opt ]; then
-    echo -e '\033[31mWarning: /opt exists!\033[0m'
+if [ -n "$PRE_OPKG_PATH" ]; then
+    while true; do
+        echo "opkg already exists at: $PRE_OPKG_PATH"
+        echo "Do you want to rename it to opkg_old?"
+        echo "1. Yes (Highly Recommended)"
+        echo "2. No (The opkg command may not work)"
+        read -p "Select an option (1 or 2): " user_choice
+
+        case $user_choice in
+            1)
+                mv "$PRE_OPKG_PATH" "${PRE_OPKG_PATH}_old"
+                echo "Factory/Already existing opkg has been renamed to opkg_old."
+                break
+                ;;
+            2)        
+                echo "Proceeding without renaming opkg."
+                break
+                ;;
+            *)
+                echo "Invalid option. Please select 1 or 2."
+                ;;
+        esac
+    done
 else
-    create_opt_mount
+    echo "Info: no existing opkg binary detected, proceeding with installation"
 fi
+
 # no need to create many folders. entware-opt package creates most
 for folder in bin etc lib/opkg tmp var/lock
 do
