@@ -11,7 +11,8 @@
 ![TTL](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulansimpleTTL.png?raw=true)
 ![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulantoolkit.png?raw=true)
 
-
+# Developmet Branch. BETA testers and those who are brave only
+### This branch is for active changes in progress and may or may not be ready yet
 ## How to Use
 **To run the Toolkit:**
  - Open ADB & Fastboot++ covered in [Using ADB](https://github.com/iamromulan/quectel-rgmii-configuration-notes?tab=readme-ov-file#unlocking-and-using-adb) or just use adb
@@ -19,13 +20,21 @@
  - Run `adb devices` to make sure your modem is detected by adb
  - Run `adb shell ping 8.8.8.8` to make sure the shell can access the internet. If you get an error, make sure the modem is connected to a cellular network and make sure `AT+QMAPWAC=1` as covered in the troubleshooting section: [I Can't get internet access from the Ethernet port (Common)](https://github.com/iamromulan/quectel-rgmii-configuration-notes/tree/main?tab=readme-ov-file#i-cant-get-internet-access-from-the-ethernet-port-common)
  - If you don't get an error you should be getting replies back endlessly, press `CTRL-C` to stop it.
- - Run the following commands 
+ - Simply Copy/Paste this into your Command Prompt/Shell 
 ```bash
-adb shell wget -P /tmp https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/RMxxx_rgmii_toolkit.sh
-adb shell chmod +x /tmp/RMxxx_rgmii_toolkit.sh
-adb shell sh /tmp/RMxxx_rgmii_toolkit.sh
+adb shell "cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh" && cd /
 ```
-**After running that last command:**
+
+**Or, if you want to stay in the modems shell when you are done**
+
+```
+adb shell
+```
+Then run
+```
+cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh && cd /
+```
+**You should see:**
 ![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulantoolkit.png?raw=true)
 
 ## Tailscale Installation and Config
