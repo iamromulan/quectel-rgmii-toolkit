@@ -95,9 +95,9 @@ COPS_MNC="-"
 CID=""
 CID5=""
 RAT=""
-# get MCCMNC and then remove the quotes
-MCCMNC=$(echo $OX | grep -o "+QSPN: \"[^\"]*\",\"[^\"]*\",\"[^\"]*\",[0-9]\+,\"[0-9]\+\"" | cut -d, -f5) | tr -d '"'
 QSPN=$(echo $OX | grep -o '+QSPN: "[^"]*","[^"]*","[^"]*",[^"]*,"[^"]*"' | cut -c 8-)
+#  GET MCCMNC from the last field of QSPN
+MCCMNC=$(echo $QSPN | cut -d, -f5 | tr -d '"')
 PROVIDER=$(echo $QSPN | cut -d, -f1 | tr -d '"')
 PROVIDER_ID=$(echo $QSPN | cut -d, -f5 | tr -d '"')
 CSQ=$(echo $OX | grep -o "+CSQ: [0-9]\{1,2\}" | grep -o "[0-9]\{1,2\}")
