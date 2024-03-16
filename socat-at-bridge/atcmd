@@ -1,25 +1,48 @@
 #!/bin/bash
 
-while true; do
-    echo "Type \"exit\" to end the session"
-    echo "Enter AT Command:"
+# Define constants for device and baud rate
+DEVICE="/dev/ttyOUT2"
+BAUD=115200
 
+# Function to clean up before exit
+cleanup() {
+    # Ensure microcom process is killed
+    [[ -n $microcom_pid ]] && kill $microcom_pid &> /dev/null
+    # Remove temporary file if it exists
+    [[ -f "$tmpfile" ]] && rm "$tmpfile"
+}
+
+# Setup trap to clean up on script exit
+trap cleanup EXIT
+
+echo "Type 'exit' to end the session."
+while true; do
+    echo "Enter AT Command:"
     read user_input
 
+    # Exit if user types 'exit'
     if [[ "$user_input" == "exit" ]]; then
         echo "Exiting..."
         exit 0
-    else
-        # Create a temporary file for the command
-        tmpcmd=$(mktemp /tmp/command.XXXXXX)
-
-        # Write user command to the temporary file
-        echo "$user_input" > "$tmpcmd"
-
-        # Use microcom to send the command to the device
-        microcom -s 115200 /dev/ttyOUT2 < "$tmpcmd"
-
-        # Cleanup
-        rm "$tmpcmd"
     fi
+
+    # Send command to device via microcom
+    tmpfile=$(mktemp /tmp/microcom_output.XXXXXX)
+    # Start microcom with output redirected to temp file in background
+    (echo "$user_input" && cat) | microcom -s $BAUD $DEVICE > "$tmpfile" 2>&1 &
+    microcom_pid=$!
+
+    # Wait for "OK" or "ERROR" in output
+    while : ; do
+        if grep -qE "OK|ERROR" "$tmpfile"; then
+            kill $microcom_pid &> /dev/null
+            wait $microcom_pid 2>/dev/null
+            cat "$tmpfile" # Display the output
+            break
+        fi
+        sleep 1 # Check periodically
+    done
+
+    # Cleanup for the next iteration
+    cleanup
 done
