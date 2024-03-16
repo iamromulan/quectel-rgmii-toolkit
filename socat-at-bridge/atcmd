@@ -10,29 +10,16 @@ while true; do
         echo "Exiting..."
         exit 0
     else
-        # Create a temporary file for output
-        tmpfile=$(mktemp /tmp/microcom_output.XXXXXX)
+        # Create a temporary file for the command
+        tmpcmd=$(mktemp /tmp/command.XXXXXX)
 
-        # Send the input to microcom, redirect output to the temporary file
-        # Note: Adjust the path to microcom as necessary
-        echo "$user_input" > /dev/ttyOUT2
-        microcom -d /dev/ttyOUT2 > "$tmpfile" &
-        microcom_pid=$!
+        # Write user command to the temporary file
+        echo "$user_input" > "$tmpcmd"
 
-        # Use tail to monitor the temporary file's output
-        tail -f "$tmpfile" | while read line; do
-            echo "$line"
-            if [[ "$line" == *OK || "$line" == *ERROR ]]; then
-                kill -SIGINT $microcom_pid
-                break
-            fi
-        done
-
-        # Wait for microcom to finish
-        wait $microcom_pid
+        # Use microcom to send the command to the device
+        microcom -s 115200 /dev/ttyOUT2 < "$tmpcmd"
 
         # Cleanup
-        rm "$tmpfile"
+        rm "$tmpcmd"
     fi
 done
-
