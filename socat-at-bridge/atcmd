@@ -1,48 +1,40 @@
 #!/bin/bash
 
-# Define constants for device and baud rate
-DEVICE="/dev/ttyOUT2"
+DEVICE=/dev/ttyOUT2
 BAUD=115200
 
-# Function to clean up before exit
-cleanup() {
-    # Ensure microcom process is killed
-    [[ -n $microcom_pid ]] && kill $microcom_pid &> /dev/null
-    # Remove temporary file if it exists
-    [[ -f "$tmpfile" ]] && rm "$tmpfile"
-}
+# Setup device
+stty -F $DEVICE cs8 $BAUD ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
 
-# Setup trap to clean up on script exit
-trap cleanup EXIT
-
+# Main loop
 echo "Type 'exit' to end the session."
 while true; do
-    echo "Enter AT Command:"
+    echo -n "Enter AT Command: "
     read user_input
 
-    # Exit if user types 'exit'
+    # Exit condition
     if [[ "$user_input" == "exit" ]]; then
         echo "Exiting..."
-        exit 0
+        break
     fi
 
-    # Send command to device via microcom
-    tmpfile=$(mktemp /tmp/microcom_output.XXXXXX)
-    # Start microcom with output redirected to temp file in background
-    (echo "$user_input" && cat) | microcom -s $BAUD $DEVICE > "$tmpfile" 2>&1 &
-    microcom_pid=$!
+    # Send command to device
+    echo -e "$user_input\r" > $DEVICE &
 
-    # Wait for "OK" or "ERROR" in output
-    while : ; do
-        if grep -qE "OK|ERROR" "$tmpfile"; then
-            kill $microcom_pid &> /dev/null
-            wait $microcom_pid 2>/dev/null
-            cat "$tmpfile" # Display the output
-            break
-        fi
-        sleep 1 # Check periodically
-    done
+    # Read output in the background
+    (cat $DEVICE > /tmp/response & PID=$!
+        # Wait for "OK" or "ERROR" to appear in the output
+        while ! grep -qe "OK" -e "ERROR" /tmp/response; do
+            sleep 0.5
+        done
 
-    # Cleanup for the next iteration
-    cleanup
+        # Kill the background reading process
+        kill $PID
+
+        # Print the response
+        cat /tmp/response
+        # Cleanup
+        > /tmp/response
+    ) &
+    wait $!
 done
