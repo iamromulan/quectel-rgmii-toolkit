@@ -141,7 +141,7 @@ install_update_at_socat() {
     mkdir $SOCAT_AT_SYSD_DIR
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/socat-armel-static
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/killsmd7bridge
-	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/atcmd
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/atcmd
     cd $SOCAT_AT_SYSD_DIR
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11.service
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-from-ttyIN.service
@@ -152,18 +152,19 @@ install_update_at_socat() {
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7.service
 
     # Set execute permissions
+    cd $SOCAT_AT_DIR
     chmod +x socat-armel-static
-	chmod +x killsmd7bridge
-	chmod +x atcmd
+    chmod +x killsmd7bridge
+    chmod +x atcmd
 	
-	# Link new command for AT Commands from the shell
-	ln -sf $SOCAT_AT_DIR/atcmd /bin
+    # Link new command for AT Commands from the shell
+    ln -sf $SOCAT_AT_DIR/atcmd /bin
 	
-	# Install service units
-	echo -e "\033[0;32mAdding AT Socat Bridge systemd service units...\033[0m"
+    # Install service units
+    echo -e "\033[0;32mAdding AT Socat Bridge systemd service units...\033[0m"
     cp -rf $SOCAT_AT_SYSD_DIR/*.service /lib/systemd/system
     ln -sf /lib/systemd/system/socat-killsmd7bridge.service /lib/systemd/system/multi-user.target.wants/
-	ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
     ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
     ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
     ln -sf /lib/systemd/system/socat-smd7.service /lib/systemd/system/multi-user.target.wants/
@@ -174,14 +175,14 @@ install_update_at_socat() {
     sleep 2s
     systemctl start socat-smd11-to-ttyIN
     systemctl start socat-smd11-from-ttyIN
-	echo -e "\033[0;32mAT Socat Bridge service online: smd11 to ttyOUT\033[0m"
+    echo -e "\033[0;32mAT Socat Bridge service online: smd11 to ttyOUT\033[0m"
     systemctl start socat-killsmd7bridge
     sleep 1s
-	systemctl start socat-smd7
-	sleep 2s
+    systemctl start socat-smd7
+    sleep 2s
     systemctl start socat-smd7-to-ttyIN2
     systemctl start socat-smd7-from-ttyIN2
-	echo -e "\033[0;32mAT Socat Bridge service online: smd7 to ttyOUT2\033[0m"
+    echo -e "\033[0;32mAT Socat Bridge service online: smd7 to ttyOUT2\033[0m"
     remount_ro
     cd /
     echo -e "\033[0;32mAT Socat Bridge services Installed!\033[0m"
