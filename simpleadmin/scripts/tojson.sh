@@ -2,21 +2,32 @@
 # sarav (hello@grity.com)
 # convert key=value to json
 # Created at Gritfy ( Devops Junction )
-#
+# Updated by: dr-dolomite to make it more robust since it was failing on some casess
 
-file_name=$1
-last_line=$(wc -l < $file_name)
-current_line=0
+file_name="$1"
 
 echo "{"
-while read line
-do
-  current_line=$(($current_line + 1))
-  if [[ $current_line -ne $last_line ]]; then
-  [ -z "$line" ] && continue
-     echo $line|awk -F'='  '{ print " \""$1"\" : "$2","}'|grep -iv '\"#'
-  else
-    echo $line|awk -F'='  '{ print " \""$1"\" : "$2""}'|grep -iv '\"#'
-  fi
-done < $file_name
+last_line=$(wc -l < "$file_name")
+
+while IFS='=' read -r key value || [[ -n "$key" ]]; do
+    # Skip empty lines and comments
+    if [[ -z "$key" || "$key" == \#* ]]; then
+        continue
+    fi
+
+    # Trim leading and trailing whitespace from key and value
+    key=$(echo "$key" | awk '{$1=$1};1')
+    value=$(echo "$value" | awk '{$1=$1};1')
+
+    # Print key-value pair in JSON format without surrounding double quotes on value
+    printf ' "%s" : %s' "$key" "$value"
+
+    # Check if not the last line, add comma
+    if [ $((++current_line)) -lt "$last_line" ]; then
+        printf ','
+    fi
+
+    printf '\n'
+done < "$file_name"
+
 echo "}"

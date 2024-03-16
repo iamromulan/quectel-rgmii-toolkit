@@ -1,9 +1,21 @@
 #!/bin/bash
 
 while true; do
+    # Run AT+CGMM to get the modem model
+    echo -en "AT+CGMM\r\n" | microcom -t 1000 /dev/ttyOUT > /tmp/modemmodel.txt
+    sleep 2
+
+    #  Run AT+CGCONTRDP once then proceed to while loop
+    echo -en "AT+CGCONTRDP\r\n" | microcom -t 1000 /dev/ttyOUT > /tmp/apn.txt
+    sleep 2
+
+    # Run AT+QUIMSLOT? to get the current sim slot
+    echo -en "AT+QUIMSLOT?\r\n" | microcom -t 1000 /dev/ttyOUT > /tmp/simslot.txt
+    sleep 2
+
     # Send request to modem and wait 5 seconds for data
     echo -en "AT+QSPN;+CEREG=2;+CEREG?;+CEREG=0;+C5GREG=2;+C5GREG?;+C5GREG=0;+CSQ;+QENG=\"servingcell\";+QRSRP;+QCAINFO;+QNWPREFCFG=\"mode_pref\";+QTEMP\r\n" \
-    | microcom -t 3000 /dev/ttyOUT > /tmp/modemstatus.txt
+    | microcom -t 5000 /dev/ttyOUT > /tmp/modemstatus.txt
     if [ $? -eq 0 ]
     then
         # Parse

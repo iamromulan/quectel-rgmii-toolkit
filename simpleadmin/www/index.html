@@ -1,233 +1,244 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- change to a much simpler tab title -->
+    <title>Simple Admin</title>
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>RM5xxx Connection Info</title>
-    
     <script src="/js/alpinejs.min.js" defer></script>
-    <link rel="stylesheet" href="/css/bulma.css">
-    <link rel="stylesheet" type="text/css" href="/css/admin.css">
-</head>
+    <link rel="stylesheet" href="/css/bulma.css" />
+    <link rel="stylesheet" type="text/css" href="/css/admin.css" />
+  </head>
 
-<body>
-
+  <body>
     <!-- START NAV -->
     <nav class="navbar is-black" x-data="{ isOpen: false }">
-        <div class="container">
-            <div class="navbar-brand">
-                <a class="navbar-item brand-text" href="/">
-                    Quectel RM5xxx Simple Admin
-                </a>
-                <a role="button" class="navbar-burger burger" @click="isOpen = !isOpen">
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                </a>
-            </div>
-            <div id="navMenu" class="navbar-menu" :class="isOpen ? 'is-active' : ''">
-                <div class="navbar-start">
-                    <a class="navbar-item" href="/">
-                        Connection Info
-                    </a>
-                    <a class="navbar-item" href="/atcommander.html">
-                        AT Commands
-                    </a>
-                    <a class="navbar-item" href="/ttl.html">
-                        TTL Changer
-                    </a>
-                </div>
-
-            </div>
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item brand-text" href="/"> Quectel Simple Admin </a>
+          <a
+            role="button"
+            class="navbar-burger burger"
+            @click="isOpen = !isOpen"
+          >
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
         </div>
+        <div
+          id="navMenu"
+          class="navbar-menu"
+          :class="isOpen ? 'is-active' : ''"
+        >
+          <div class="navbar-start">
+            <a class="navbar-item" href="/"> Connection Info </a>
+            <a class="navbar-item" href="/atcommander.html"> AT Commands </a>
+            <a class="navbar-item" href="/ttl.html"> TTL Changer </a>
+          </div>
+        </div>
+      </div>
     </nav>
     <!-- END NAV -->
     <div class="container">
-        <div class="columns">
-            <div class="column is-12" x-data="getSignalData()" x-init="init()">
-                <section class="hero is-info welcome is-small">
-                    <div class="hero-body">
-                        <div class="container">
-                            <h1 class="title">
-                                Quectel RMxxx Connection Info
-                            </h1>
-                            <h2 class="subtitle">
-                                Data Updated: <span x-text="lastUpdate"></span>
-                            </h2>
-                        </div>
-                    </div>
-                </section>
-                <section class="info-tiles">
-                    <div class="tile is-ancestor has-text-centered">
-                        <div class="tile is-parent">
-                            <article class="tile is-child box">
-                                <p class="title" x-text="csqData.MODE"></p>
-                                <p class="subtitle">Network</p>
-                            </article>
-                        </div>
-                        <div class="tile is-parent">
-                            <article class="tile is-child box">
-                                <p class="title" x-text="csqData.CSQ_PER"></p>
-                                <p class="subtitle">Signal Strength</p>
-                            </article>
-                        </div>
-                        <div class="tile is-parent">
-                            <article class="tile is-child box">
-                                <p class="title" x-text="csqData.TEMP"></p>
-                                <p class="subtitle">Modem Temperature</p>
-                            </article>
-                        </div>
-                        <div class="tile is-parent">
-                            <article class="tile is-child box">
-                                <p class="title" x-html="csqData.LBAND"></p>
-                                <p class="subtitle">Band</p>
-                            </article>
-                        </div>
-                    </div>
-                </section>
-                <div class="columns">
-                    <div class="column is-6">
-                        <div class="card events-card">
-                            <header class="card-header">
-                                <p class="card-header-title">
-                                    Signal Information
-                                </p>
-                            </header>
-                            <div class="card-table">
-                                <div class="content">
-                                    <table class="table is-fullwidth is-striped">
-                                        <tbody>
-                                            <tr>
-                                                <th>Provider</th>
-                                                <td x-text="csqData.PROVIDER">
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>CSQ</th>
-                                                <td x-text="csqData.CSQ">
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Signal Strength</th>
-                                                <td x-text="csqData.CSQ_PER">
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>RSSI</th>
-                                                <td x-text="csqData.CSQ_RSSI">
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>ECIO<sup>3G</sup>/RSRQ<sup>4G</sup>/SS_RSRQ<sup>5G</sup></th>
-                                                <td x-html="csqData.ECIO">
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>RSCP<sup>3G</sup>/RSRP<sup>4G</sup>/SS_RSRP<sup>5G</sup></th>
-                                                <td x-html="csqData.RSCP">
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>SINR</th>
-                                                <td x-html="csqData.SINR">
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="column is-6">
-                        <div class="card events-card">
-                            <header class="card-header">
-                                <p class="card-header-title">
-                                    Cell Information
-                                </p>
-                            </header>
-                            <div class="card-table">
-                                <div class="content">
-                                    <table class="table is-fullwidth is-striped">
-                                        <tbody>
-                                            <tr>
-                                                <th>MCC MNC</th>
-                                                <td>
-                                                    <span x-text="csqData.COPS_MCC"></span>
-                                                    /
-                                                    <span x-text="csqData.COPS_MNC"></span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>RNC<sup>3G</sup>/eNB ID<sup>4G/5G</sup></th>
-                                                <td>
-                                                    <span x-text="csqData.RNC"></span>
-                                                    <span x-text="csqData.RNC_NUM"></span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Lag<sup>3G</sup>/TAC<sup>4G/5G</sup></th>
-                                                <td>
-                                                    <span x-text="csqData.LAC"></span>
-                                                    <span x-text="csqData.LAC_NUM"></span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Cell ID</th>
-                                                <td x-text="csqData.CID">
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Band</th>
-                                                <td x-html="csqData.LBAND">
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Channel</th>
-                                                <td x-text="csqData.CHANNEL">
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>PCI</th>
-                                                <td x-text="csqData.PCI">
-                                                </td>
-                                            </tr>
-
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <div class="columns">
+        <div class="column is-12" x-data="getSignalData()" x-init="init()">
+          <section class="hero is-info welcome is-small">
+            <div class="hero-body">
+              <div class="container">
+                <!-- Fetches the correct Model Name -->
+                <h1 class="title">
+                  Quectel <span x-text="csqData.MODEM_MODEL"></span> Connection
+                  Info
+                </h1>
+                <h2 class="subtitle">
+                  Data Updated: <span x-text="lastUpdate"></span>
+                </h2>
+              </div>
             </div>
+          </section>
+          <section class="info-tiles">
+            <div class="tile is-ancestor has-text-centered">
+              <div class="tile is-parent">
+                <article class="tile is-child box">
+                  <!-- added APN -->
+                  <p class="title" x-text="csqData.APN"></p>
+                  <p class="subtitle">Current APN</p>
+                  <p
+                    class="title"
+                    style="margin-top: 1rem"
+                    x-html="csqData.SIMSLOT"
+                  ></p>
+                  <p class="subtitle">Current SIM</p>
+                </article>
+              </div>
+              <div class="tile is-parent">
+                <article class="tile is-child box">
+                  <!-- added APN -->
+                  <p class="title" x-text="csqData.MODE"></p>
+                  <p class="subtitle">Network</p>
+                  <p
+                    class="title"
+                    x-text="csqData.PC_BAND"
+                    style="margin-top: 1rem"
+                  ></p>
+                  <p class="subtitle">Primary Band</p>
+                </article>
+              </div>
+              <!-- added primary band and secondary bands value -->
+              <div class="tile is-parent">
+                <article class="tile is-child box">
+                  <p class="title" x-html="csqData.SC_BANDS"></p>
+                  <p class="subtitle">Aggregated Bands</p>
+                </article>
+              </div>
+              <div class="tile is-parent">
+                <article class="tile is-child box">
+                  <p class="title" x-text="csqData.CSQ_PER"></p>
+                  <p class="subtitle">Signal Strength</p>
+                  <p
+                    class="title"
+                    x-text="csqData.TEMP"
+                    style="margin-top: 1rem"
+                  ></p>
+                  <p class="subtitle">Modem Temperature</p>
+                </article>
+              </div>
+            </div>
+          </section>
+          <div class="columns">
+            <div class="column is-6">
+              <div class="card events-card">
+                <header class="card-header">
+                  <p class="card-header-title">Signal Information</p>
+                </header>
+                <div class="card-table">
+                  <div class="content">
+                    <table class="table is-fullwidth is-striped">
+                      <tbody>
+                        <tr>
+                          <th>Provider</th>
+                          <td x-text="csqData.PROVIDER"></td>
+                        </tr>
+                        <tr>
+                          <th>CSQ</th>
+                          <td x-text="csqData.CSQ"></td>
+                        </tr>
+                        <tr>
+                          <th>Signal Strength</th>
+                          <td x-text="csqData.CSQ_PER"></td>
+                        </tr>
+                        <tr>
+                          <th>RSSI</th>
+                          <td x-text="csqData.CSQ_RSSI"></td>
+                        </tr>
+                        <tr>
+                          <th>
+                            ECIO<sup>3G</sup>/RSRQ<sup>4G</sup>/SS_RSRQ<sup
+                              >5G</sup
+                            >
+                          </th>
+                          <td x-html="csqData.ECIO"></td>
+                        </tr>
+                        <tr>
+                          <th>
+                            RSCP<sup>3G</sup>/RSRP<sup>4G</sup>/SS_RSRP<sup
+                              >5G</sup
+                            >
+                          </th>
+                          <td x-html="csqData.RSCP"></td>
+                        </tr>
+                        <tr>
+                          <th>SINR</th>
+                          <td x-html="csqData.SINR"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="card events-card">
+                <header class="card-header">
+                  <p class="card-header-title">Cell Information</p>
+                </header>
+                <div class="card-table">
+                  <div class="content">
+                    <table class="table is-fullwidth is-striped">
+                      <tbody>
+                        <tr>
+                          <th>MCC MNC</th>
+                          <td>
+                            <span x-text="csqData.MCCMNC"></span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>RNC<sup>3G</sup>/eNB ID<sup>4G/5G</sup></th>
+                          <td>
+                            <span x-text="csqData.RNC"></span>
+                            <span x-text="csqData.RNC_NUM"></span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Lag<sup>3G</sup>/TAC<sup>4G/5G</sup></th>
+                          <td>
+                            <span x-text="csqData.LAC"></span>
+                            <span x-text="csqData.LAC_NUM"></span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Cell ID</th>
+                          <td x-text="csqData.CID"></td>
+                        </tr>
+                        <tr>
+                          <th>Band</th>
+                          <td x-html="csqData.LBAND"></td>
+                        </tr>
+                        <tr>
+                          <th>Channel</th>
+                          <td x-text="csqData.CHANNEL"></td>
+                        </tr>
+                        <tr>
+                          <th>PCI</th>
+                          <td x-text="csqData.PCI"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <script>
-        function getSignalData() {
-            return {
-                csqData: {},
-                lastUpdate: new Date().toLocaleString(),
-                getcsq() {
-                    fetch('/cgi-bin/get_csq')
-                        .then((res) => res.json())
-                        .then((data) => {
-                            this.csqData = data;
-                            this.lastUpdate = new Date(data.LASTUPDATE * 1000).toLocaleString();
-                        });
-                },
-                init() {
-                    this.getcsq();
-                    setInterval(() => {
-                        this.getcsq();
-                    }, 30000);
-                }
-
-            }
-        }
+      function getSignalData() {
+        return {
+          csqData: {},
+          lastUpdate: new Date().toLocaleString(),
+          getcsq() {
+            fetch("/cgi-bin/get_csq")
+              .then((res) => res.json())
+              .then((data) => {
+                this.csqData = data;
+                this.lastUpdate = new Date(
+                  data.LASTUPDATE * 1000
+                ).toLocaleString();
+              });
+          },
+          init() {
+            this.getcsq();
+            setInterval(() => {
+              this.getcsq();
+            }, 30000);
+          },
+        };
+      }
     </script>
-</body>
-
+  </body>
 </html>

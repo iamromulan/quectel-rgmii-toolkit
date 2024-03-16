@@ -19,7 +19,7 @@
         <div class="container">
             <div class="navbar-brand">
                 <a class="navbar-item brand-text" href="/">
-                    Quectel RM5xxx Simple Admin
+                    Quectel Simple Admin
                 </a>
                 <a role="button" class="navbar-burger burger" @click="isOpen = !isOpen">
                     <span aria-hidden="true"></span>
@@ -143,8 +143,6 @@
 								<li>AT+QMAP="DHCPV4DNS","disable" (disable the onboard DNS proxy; recommended for IPPT)</li>
 								<li>AT+QMAP="MPDN_rule",0,1,0,1,1,"FF:FF:FF:FF:FF:FF" (Turn on IP Passthrough for Ethernet)</li>
 								<li>AT+QMAP="MPDN_rule",0 (turn off IPPT/clear MPDN rule 0; Remember to run AT+QMAPWAC=1 and reboot after)</li>
-								<li>AT+GSN (Show current IMEI)</li>
-								
                             </ul>
                         </div>
                     </div>

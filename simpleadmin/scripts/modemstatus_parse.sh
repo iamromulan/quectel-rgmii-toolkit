@@ -36,6 +36,43 @@ nr_bw() {
 	esac
 }
 
+# Function to get the secondary LTE bands
+get_secondary_bands() {
+	# Extract LTE BANDs from SCC lines
+	SCC_BANDS=$(echo "$OX" | grep '+QCAINFO: "SCC"' | grep -o '"LTE BAND [0-9]\+"' | tr -d '"' | sed '1d')
+	
+	# Extract NR5G BANDs from SCC lines
+	NR_BAND=$(echo "$OX" | grep '+QCAINFO: "SCC"' | grep -o '"NR5G BAND [0-9]\+"' | tr -d '"')
+	
+	# Check if both SCC and NR bands are non-empty
+	if [ -n "$SCC_BANDS" ] && [ -n "$NR_BAND" ]; then
+		# Concatenate LTE BANDs with NR5G BANDs
+		SC_BANDS="$SCC_BANDS<br />$NR_BAND"
+	else
+		# Set SC_BANDS to the non-empty variable or empty if both are empty
+		SC_BANDS="${SCC_BANDS}${NR_BAND}"
+	fi
+
+	# Get the PCI value. For example: 264 based on this +QCAINFO: "PCC",1775,75,"LTE BAND 3",1,264,-103,-13,-71,0
+	MAIN_PCI=$(echo "$OX" | grep '+QCAINFO: "PCC"' | grep -o ',[0-9]\{1,5\},' | tr -d ',')
+}
+
+# Get the modem model from /tmp/modemmodel.txt and parse it
+MODEM_MODEL=$(</tmp/modemmodel.txt)
+# Get the model name from the modem model (they either start with RG or RM)
+MODEM_MODEL=$(echo "$MODEM_MODEL" | grep -o "RG[^ ]\+\|RM[^ ]\+")
+
+# Get the APN from /tmp/apn.txt and parse it
+APN=$(</tmp/apn.txt)
+APN=$(echo "$APN" | grep -o '"[^"]*"' | head -n1 | tr -d '"')
+
+# Get the SIM slot from /tmp/simslot.txt and parse it
+# simslot.txt looks like this: +QUIMSLOT: 1
+SIMSLOT=$(</tmp/simslot.txt)
+SIMSLOT=$(echo "$SIMSLOT" | grep -o "[0-9]")
+# Append SIM before the SIM slot number
+SIMSLOT="SIM "$SIMSLOT
+
 # Read File
 OX=$(</tmp/modemstatus.txt)
 
@@ -62,6 +99,8 @@ CID=""
 CID5=""
 RAT=""
 QSPN=$(echo $OX | grep -o '+QSPN: "[^"]*","[^"]*","[^"]*",[^"]*,"[^"]*"' | cut -c 8-)
+#  GET MCCMNC from the last field of QSPN
+MCCMNC=$(echo $QSPN | cut -d, -f5 | tr -d '"')
 PROVIDER=$(echo $QSPN | cut -d, -f1 | tr -d '"')
 PROVIDER_ID=$(echo $QSPN | cut -d, -f5 | tr -d '"')
 CSQ=$(echo $OX | grep -o "+CSQ: [0-9]\{1,2\}" | grep -o "[0-9]\{1,2\}")
@@ -76,12 +115,15 @@ else
 	CSQ_PER="-"
 	CSQ_RSSI="-"
 fi
+get_secondary_bands
+# End of QCAINFO 
 NR_NSA=$(echo $OX | grep -o "+QENG:[ ]\?\"NR5G-NSA\",")
 NR_SA=$(echo $OX | grep -o "+QENG: \"SERVINGCELL\",[^,]\+,\"NR5G-SA\",\"[DFT]\{3\}\",")
 if [ -n "$NR_NSA" ]; then
 	QENG=",,"$(echo $OX" " | grep -o "+QENG: \"LTE\".\+\"NR5G-NSA\"," | tr " " ",")
 	if [ -z "$QENG5" ]; then
-		QENG5=$(echo $OX | grep -o "+QENG:[ ]\?\"NR5G-NSA\",[0-9]\{3\},[0-9]\{2,3\},[0-9]\{1,5\},-[0-9]\{2,3\},[-0-9]\{1,3\},-[0-9]\{2,3\},[0-9]\{1,6\},[0-9]\{1,3\}")
+		# Fixed an issue where the last 2 digits were not included in the regex
+		QENG5=$(echo $OX | grep -o "+QENG:[ ]\?\"NR5G-NSA\",[0-9]\{3\},[0-9]\{2,3\},[0-9]\{1,5\},-[0-9]\{2,3\},[-0-9]\{1,3\},-[0-9]\{2,3\},[0-9]\{1,6\},[0-9]\{1,3\},[0-9]\{1,3\},[0-9]\{1,3\}")
 		if [ -n "$QENG5" ]; then
 			QENG5=$QENG5",,"
 		fi
@@ -109,6 +151,7 @@ if [ -n "$QTEMP" ]; then
 	CTEMP=$(echo $QTEMP | grep -o "[0-9]\{1,3\}")$(printf "\xc2\xb0")"C"
 fi
 RAT=$(echo $QENG | cut -d, -f4 | grep -o "[-A-Z5]\{3,7\}")
+
 
 rm -f /tmp/modnetwork
 case $RAT in
@@ -146,6 +189,7 @@ case $RAT in
 			BWU="unknown"
 		fi
 		if [ -n "$LBAND" ]; then
+			PC_BAND="LTE BAND "$LBAND
 			LBAND="B"$LBAND" (Bandwidth $BWD MHz Down | $BWU MHz Up)"
 		fi
 		RSRP=$(echo $QENG | cut -d, -f15 | grep -o "[0-9]\{1,3\}")
@@ -178,10 +222,11 @@ case $RAT in
 			echo "0" > /tmp/modnetwork
 			if [ -n "$QENG5" ]; then
 				QENG5=$QENG5",,"
-				PCI=$(echo $QENG5 | cut -d, -f4)
+				# Append the initial PCI value rather than overwriting it
+				PCI="$PCI, "$(echo $QENG5 | cut -d, -f4)
 				SCHV=$(echo $QENG5 | cut -d, -f8)
 				SLBV=$(echo $QENG5 | cut -d, -f9) # Now correctly captures the NR band
-				BW=$(echo $QENG5 | cut -d, -f10 | grep -o "[0-9]\{1,3\}")
+				BW=$(echo $QENG5 | cut -d, -f10) # Now gets the correct BW
 				if [ -n "$SLBV" ]; then
 					LBAND=$LBAND"<br />n"$SLBV
 					if [ -n "$BW" ]; then
@@ -194,7 +239,8 @@ case $RAT in
 						CHANNEL=$CHANNEL", -"
 					fi
 				else
-					LBAND=$LBAND"<br />nxx (unknown NR5G band)"
+					# removed the (unknown NR5G BAND) and replaced with No NR5G Band to avoid confusion
+					LBAND=$LBAND"<br />No NR5G Band Detected"
 					CHANNEL=$CHANNEL", -"
 				fi
 				RSCP=$RSCP" dBm<br />"$(echo $QENG5 | cut -d, -f5)
@@ -261,7 +307,9 @@ case $RAT in
 			PCI=$(echo $QENG5 | cut -d, -f8)
 			CHANNEL=$(echo $QENG5 | cut -d, -f10)
 			LBAND=$(echo $QENG5 | cut -d, -f11)
+			PC_BAND="NR5G BAND "$LBAND
 			BW=$(echo $QENG5 | cut -d, -f12)
+			nr_bw
 			LBAND="n"$LBAND" (Bandwidth $BW MHz)"
 			RSCP=$(echo $QENG5 | cut -d, -f13)
 			ECIO=$(echo $QENG5 | cut -d, -f14)
@@ -429,12 +477,11 @@ if [ -z "$LAC" ]; then
 	RNC="-"
 fi
 
-
 LUPDATE=$(date +%s)
 rm -fR /tmp/signal.txt
 MODEZ=$(echo $MODE | tr -d '"')
 {
-    echo 'PROVIDER="'"$PROVIDER"'"'
+	echo 'PROVIDER="'"$PROVIDER"'"'
 	echo 'CSQ="'"$CSQ"'"'
 	echo 'CSQ_PER="'"$CSQ_PER"'"'
 	echo 'CSQ_RSSI="'"$CSQ_RSSI"'"'
@@ -447,6 +494,11 @@ MODEZ=$(echo $MODE | tr -d '"')
 	echo 'NETMODE="'"$NETMODE"'"'
 	echo 'CHANNEL="'"$CHANNEL"'"'
 	echo 'LBAND="'"$LBAND"'"'
+	echo 'PC_BAND="'"$PC_BAND"'"'
+	echo 'SC_BANDS="'"$SC_BANDS"'"'
+	echo 'APN="'"$APN"'"'
+	echo 'MODEM_MODEL="'"$MODEM_MODEL"'"'
+	echo 'SIMSLOT="'"$SIMSLOT"'"'
 	echo 'PCI="'"$PCI"'"'
 	echo 'TEMP="'"$CTEMP"'"'
 	echo 'SINR="'"$SINR"'"'
@@ -454,6 +506,7 @@ MODEZ=$(echo $MODE | tr -d '"')
 	echo 'COPS="'"$COPS"'"'
 	echo 'COPS_MCC="'"$COPS_MCC"'"'
 	echo 'COPS_MNC="'"$COPS_MNC"'"'
+	echo 'MCCMNC="'"$MCCMNC"'"'
 	echo 'LAC="'"$LAC"'"'
 	echo 'LAC_NUM="'""'"'
 	echo 'CID="'"$CID"'"'
