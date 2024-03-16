@@ -2,10 +2,9 @@
 
 DEVICE=/dev/ttyOUT2
 BAUD=115200
-TIMEOUT_DURATION=5 # Seconds to wait for a response
 
-# Setup device
-stty -F $DEVICE cs8 $BAUD ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
+# Configure device with stty
+stty -F $DEVICE $BAUD raw -echo
 
 echo -e "\033[0;36mType 'exit' to end the session.\033[0m"
 while true; do
@@ -17,12 +16,17 @@ while true; do
         exit 0
     fi
 
-    # Send command to the device
+    # Send the AT command to the device
     echo -e "$user_input\r" > $DEVICE
 
-    # Use timeout to read the device's output and ensure it doesn't hang
-    response=$(timeout $TIMEOUT_DURATION cat $DEVICE)
-
-    echo -en "\033[0;32m$response\033[0m"
-
+    # Prepare to capture the response
+    {
+        # Keep reading until we find a line ending with OK or ERROR
+        while IFS= read -r line; do
+            echo -e "\033[0;32m$line\033[0m"
+            if [[ "$line" == *OK || "$line" == *ERROR ]]; then
+                break
+            fi
+        done
+    } < $DEVICE
 done
