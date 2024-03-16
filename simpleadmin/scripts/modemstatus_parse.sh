@@ -52,6 +52,9 @@ get_secondary_bands() {
 		# Set SC_BANDS to the non-empty variable or empty if both are empty
 		SC_BANDS="${SCC_BANDS}${NR_BAND}"
 	fi
+
+	# Get the PCI value. For example: 264 based on this +QCAINFO: "PCC",1775,75,"LTE BAND 3",1,264,-103,-13,-71,0
+	MAIN_PCI=$(echo "$OX" | grep '+QCAINFO: "PCC"' | grep -o ',[0-9]\{1,5\},' | tr -d ',')
 }
 
 # Get the modem model from /tmp/modemmodel.txt and parse it
@@ -219,7 +222,8 @@ case $RAT in
 			echo "0" > /tmp/modnetwork
 			if [ -n "$QENG5" ]; then
 				QENG5=$QENG5",,"
-				PCI=$(echo $QENG5 | cut -d, -f4)
+				# Append the initial PCI value rather than overwriting it
+				PCI="$PCI, "$(echo $QENG5 | cut -d, -f4)
 				SCHV=$(echo $QENG5 | cut -d, -f8)
 				SLBV=$(echo $QENG5 | cut -d, -f9) # Now correctly captures the NR band
 				BW=$(echo $QENG5 | cut -d, -f10) # Now gets the correct BW
