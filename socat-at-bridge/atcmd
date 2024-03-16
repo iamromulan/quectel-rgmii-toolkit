@@ -1,10 +1,27 @@
 #!/bin/bash
 
 DEVICE=/dev/ttyOUT2
-BAUD=115200
 
-# Configure device with stty
-stty -F $DEVICE $BAUD raw -echo
+# Function to setup device communication parameters
+setup_device() {
+    stty -F $DEVICE cs8 115200 ignbrk -brkint -icrnl -imaxbel \
+        -opost -onlcr -isig -icanon -iexten -echo -echoe -echok \
+        -echoctl -echoke noflsh -ixon -crtscts
+}
+
+# Function to read from device until "OK" or "ERROR" is found
+read_response() {
+    {
+        while IFS= read -r line; do
+            echo -e "\033[0;32m$line\033[0m"
+            if [[ "$line" == *"OK" || "$line" == *"ERROR" ]]; then
+                break
+            fi
+        done < "$DEVICE"
+    } &
+    READ_PID=$!
+    wait $READ_PID
+}
 
 echo -e "\033[0;36mType 'exit' to end the session.\033[0m"
 while true; do
@@ -16,17 +33,7 @@ while true; do
         exit 0
     fi
 
-    # Send the AT command to the device
+    setup_device
     echo -e "$user_input\r" > $DEVICE
-
-    # Prepare to capture the response
-    {
-        # Keep reading until we find a line ending with OK or ERROR
-        while IFS= read -r line; do
-            echo -e "\033[0;32m$line\033[0m"
-            if [[ "$line" == *OK || "$line" == *ERROR ]]; then
-                break
-            fi
-        done
-    } < $DEVICE
+    read_response
 done
