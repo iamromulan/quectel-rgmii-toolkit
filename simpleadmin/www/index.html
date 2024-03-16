@@ -17,9 +17,7 @@
     <nav class="navbar is-black" x-data="{ isOpen: false }">
       <div class="container">
         <div class="navbar-brand">
-          <a class="navbar-item brand-text" href="/">
-            Quectel Simple Admin
-          </a>
+          <a class="navbar-item brand-text" href="/"> Quectel Simple Admin </a>
           <a
             role="button"
             class="navbar-burger burger"
@@ -65,22 +63,22 @@
             <div class="tile is-ancestor has-text-centered">
               <div class="tile is-parent">
                 <article class="tile is-child box">
-                  <!-- relocated signal strength here -->
-                  <p class="title" x-text="csqData.MODE"></p>
-                  <p class="subtitle">Network</p>
+                  <!-- added APN -->
+                  <p class="title" x-text="csqData.APN"></p>
+                  <p class="subtitle">Current APN</p>
                   <p
                     class="title"
                     style="margin-top: 1rem"
-                    x-text="csqData.CSQ_PER"
+                    x-html="csqData.SIMSLOT"
                   ></p>
-                  <p class="subtitle">Signal Strength</p>
+                  <p class="subtitle">Current SIM</p>
                 </article>
               </div>
               <div class="tile is-parent">
                 <article class="tile is-child box">
                   <!-- added APN -->
-                  <p class="title" x-text="csqData.APN"></p>
-                  <p class="subtitle">Current APN</p>
+                  <p class="title" x-text="csqData.MODE"></p>
+                  <p class="subtitle">Network</p>
                   <p
                     class="title"
                     x-text="csqData.PC_BAND"
@@ -98,8 +96,8 @@
               </div>
               <div class="tile is-parent">
                 <article class="tile is-child box">
-                  <p class="title" x-html="csqData.SIMSLOT"></p>
-                  <p class="subtitle">Current SIM</p>
+                  <p class="title" x-text="csqData.CSQ_PER"></p>
+                  <p class="subtitle">Signal Strength</p>
                   <p
                     class="title"
                     x-text="csqData.TEMP"
@@ -204,7 +202,7 @@
                           <td x-text="csqData.CHANNEL"></td>
                         </tr>
                         <tr>
-                          <th>4G PCI, 5G PCI</th>
+                          <th>PCI</th>
                           <td x-text="csqData.PCI"></td>
                         </tr>
                       </tbody>
