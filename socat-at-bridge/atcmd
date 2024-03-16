@@ -1,0 +1,38 @@
+#!/bin/bash
+
+while true; do
+    echo "Type \"exit\" to end the session"
+    echo "Enter AT Command:"
+
+    read user_input
+
+    if [[ "$user_input" == "exit" ]]; then
+        echo "Exiting..."
+        exit 0
+    else
+        # Create a temporary file for output
+        tmpfile=$(mktemp /tmp/microcom_output.XXXXXX)
+
+        # Send the input to microcom, redirect output to the temporary file
+        # Note: Adjust the path to microcom as necessary
+        echo "$user_input" > /dev/ttyOUT2
+        microcom -d /dev/ttyOUT2 > "$tmpfile" &
+        microcom_pid=$!
+
+        # Use tail to monitor the temporary file's output
+        tail -f "$tmpfile" | while read line; do
+            echo "$line"
+            if [[ "$line" == *OK || "$line" == *ERROR ]]; then
+                kill -SIGINT $microcom_pid
+                break
+            fi
+        done
+
+        # Wait for microcom to finish
+        wait $microcom_pid
+
+        # Cleanup
+        rm "$tmpfile"
+    fi
+done
+

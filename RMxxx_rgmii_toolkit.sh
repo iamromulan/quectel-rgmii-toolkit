@@ -1,12 +1,12 @@
 #!/bin/sh
 
 # Define toolkit paths
+GITUSER="iamromulan"
 GITTREE="development"
 TMP_DIR="/tmp"
 USRDATA_DIR="/usrdata"
 SOCAT_AT_DIR="/usrdata/socat-at-bridge"
 SOCAT_AT_SYSD_DIR="/usrdata/socat-at-bridge/systemd_units"
-SOCAT_AT_SMD7_SYSD_DIR="/usrdata/socat-at-bridge/smd7_systemd_units"
 SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 SIMPLE_FIREWALL_DIR="/usrdata/simplefirewall"
 SIMPLE_FIREWALL_SCRIPT="$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
@@ -47,12 +47,9 @@ send_at_command() {
     fi
     
     if [ "$at_command" = "install" ]; then
-        wget -P /usrdata https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/atcmd
-	chmod +x /usrdata/atcmd
- 	remount_rw
- 	ln -sf /usrdata/atcmd /sbin
-  	remount_ro
-   	echo -e "\e[1;32mInstalled. Type atcmd from adb shell or ssh to start an AT Command session\e[0m"
+		install_update_at_socat
+		echo -e "\e[1;32mInstalled. Type atcmd from adb shell or ssh to start an AT Command session\e[0m"
+		return 1
     fi
     echo -e "${at_command}\r" > "$DEVICE_FILE"
 }
@@ -112,80 +109,82 @@ is_simple_admin_installed() {
 # Function to install/update AT Socat Bridge
 install_update_at_socat() {
     remount_rw
-    mkdir "$SOCAT_AT_DIR"
-    cd "$SOCAT_AT_DIR"
+    
+	# Stop and disable existing services/files before installing new ones
+	echo -e "\033[0;32mRemoving installed AT Socat Bridge services...\033[0m"
+	systemctl stop at-telnet-daemon > /dev/null 2>&1
+	systemctl disable at-telnet-daemon > /dev/null 2>&1
+	systemctl stop socat-smd11 > /dev/null 2>&1
+	systemctl stop socat-smd11-to-ttyIN > /dev/null 2>&1
+	systemctl stop socat-smd11-from-ttyIN > /dev/null 2>&1
+	systemctl stop socat-smd7 > /dev/null 2>&1
+	systemctl stop socat-smd7-to-ttyIN2 > /dev/null 2>&1
+	systemctl stop socat-smd7-to-ttyIN > /dev/null 2>&1
+	systemctl stop socat-smd7-from-ttyIN2 > /dev/null 2>&1
+	systemctl stop socat-smd7-from-ttyIN > /dev/null 2>&1
+	rm /lib/systemd/system/at-telnet-daemon.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd11.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd11-to-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd11-from-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-to-ttyIN2.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-to-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-from-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-from-ttyIN2.service > /dev/null 2>&1
+	systemctl daemon-reload > /dev/null 2>&1
+	rm -rf "$SOCAT_AT_DIR" > /dev/null 2>&1
+	
+	# Install service units
+	echo -e "\033[0;32mInstalling AT Socat Bridge services...\033[0m"
+	mkdir $SOCAT_AT_DIR
+    cd $SOCAT_AT_DIR
     mkdir $SOCAT_AT_SYSD_DIR
-    mkdir $SOCAT_AT_SMD7_SYSD_DIR
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/socat-armel-static
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/killsmd7bridge
+	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/atcmd
     cd $SOCAT_AT_SYSD_DIR
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11.service
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-from-ttyIN.service
     wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-to-ttyIN.service
-    cd $SOCAT_AT_SMD7_SYSD_DIR
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/smd7_systemd_units/socat-smd7-from-ttyIN.service
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/smd7_systemd_units/socat-smd7-to-ttyIN.service
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/smd7_systemd_units/socat-smd7.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-killsmd7bridge.service	
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7-from-ttyIN2.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7-to-ttyIN2.service
+    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7.service
 
     # Set execute permissions
-    chmod +x "$SOCAT_AT_DIR"/socat-armel-static
-
-    # User prompt for selecting device
-    echo -e "\e[1;32mWhich device should Simpleadmin use?\e[0m"
-    echo -e "\e[1;32mThis will create virtual tty ports (serial ports) that will use either smd11 or smd7\e[0m"
-    echo -e "\e[38;5;40m1) Use smd11 (default)\e[0m"
-    echo -e "\e[38;5;27m2) Use smd7 (use this if another application is using smd11 already)\e[0m"
-    read -p "Enter your choice (1 or 2): " device_choice
-
-    # Stop and disable existing services before installing new ones
-    echo -e "\033[0;32mThese errors are OK, script tries to remove all first in case you are updating\033[0m"
-    systemctl stop at-telnet-daemon
-    systemctl disable at-telnet-daemon
-    systemctl stop socat-smd11
-    systemctl stop socat-smd11-to-ttyIN
-    systemctl stop socat-smd11-from-ttyIN
-    systemctl stop socat-smd7
-    systemctl stop socat-smd7-to-ttyIN
-    systemctl stop socat-smd7-from-ttyIN
-    rm /lib/systemd/system/at-telnet-daemon.service
-    rm /lib/systemd/system/socat-smd11.service
-    rm /lib/systemd/system/socat-smd11-to-ttyIN.service
-    rm /lib/systemd/system/socat-smd11-from-ttyIN.service
-    rm /lib/systemd/system/socat-smd7.service
-    rm /lib/systemd/system/socat-smd7-to-ttyIN.service
-    rm /lib/systemd/system/socat-smd7-from-ttyIN.service
-    systemctl daemon-reload
-    echo -e "\033[0;32mThese errors are OK, script tries to remove all first in case you are updating\033[0m"
+    chmod +x socat-armel-static
+	chmod +x killsmd7bridge
+	chmod +x atcmd
 	
-    # Depending on the choice, copy the respective systemd unit files
-    case $device_choice in
-        2)
-            cp -rf $SOCAT_AT_SMD7_SYSD_DIR/*.service /lib/systemd/system
-	    ln -sf /lib/systemd/system/socat-smd7.service /lib/systemd/system/multi-user.target.wants/
-	    ln -sf /lib/systemd/system/socat-smd7-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-	    ln -sf /lib/systemd/system/socat-smd7-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-	    systemctl daemon-reload
-	    systemctl start socat-smd7
-	    sleep 2s
-	    systemctl start socat-smd7-to-ttyIN
-	    systemctl start socat-smd7-from-ttyIN
-   	    remount_ro
-	    cd /
-            ;;
-        1)
-            cp -rf $SOCAT_AT_SYSD_DIR/*.service /lib/systemd/system
-	    ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
-	    ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-	    ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-	    systemctl daemon-reload
-	    systemctl start socat-smd11
-	    sleep 2s
-	    systemctl start socat-smd11-to-ttyIN
-	    systemctl start socat-smd11-from-ttyIN
-   	    remount_ro
-	    cd /
-            ;;
-    esac
-    
+	# Link new command for AT Commands from the shell
+	ln -sf $SOCAT_AT_DIR/atcmd /bin
+	
+	# Install service units
+	echo -e "\033[0;32mAdding AT Socat Bridge systemd service units...\033[0m"
+    cp -rf $SOCAT_AT_SYSD_DIR/*.service /lib/systemd/system
+    ln -sf /lib/systemd/system/socat-killsmd7bridge.service /lib/systemd/system/multi-user.target.wants/
+	ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/socat-smd7.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/socat-smd7-to-ttyIN2.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/socat-smd7-from-ttyIN2.service /lib/systemd/system/multi-user.target.wants/
+    systemctl daemon-reload
+    systemctl start socat-smd11
+    sleep 2s
+    systemctl start socat-smd11-to-ttyIN
+    systemctl start socat-smd11-from-ttyIN
+	echo -e "\033[0;32mAT Socat Bridge service online: smd11 to ttyOUT\033[0m"
+    systemctl start socat-killsmd7bridge
+    sleep 1s
+	systemctl start socat-smd7
+	sleep 2s
+    systemctl start socat-smd7-to-ttyIN2
+    systemctl start socat-smd7-from-ttyIN2
+	echo -e "\033[0;32mAT Socat Bridge service online: smd7 to ttyOUT2\033[0m"
+    remount_ro
+    cd /
+    echo -e "\033[0;32mAT Socat Bridge services Installed!\033[0m"
 }
 
 # Function to install Simple Firewall
