@@ -115,11 +115,12 @@ EOF
 
 if [ -n "$PRE_OPKG_PATH" ]; then
     while true; do
-        echo "opkg already exists at: $PRE_OPKG_PATH"
-        echo "Do you want to rename it to opkg_old?"
-        echo "1. Yes (Highly Recommended)"
-        echo "2. No (The opkg command may not work)"
+        echo -e "\033[32mopkg already exists at: $PRE_OPKG_PATH"\033[0m"
+        echo -e "\033[32mDo you want to rename it to opkg_old?"\033[0m"
+        echo -e "\033[32m1) Yes (Highly Recommended)\033[0m"
+        echo -e "\033[32m2) No (The opkg command may not work)"\033[0m"
         read -p "Select an option (1 or 2): " user_choice
+        
 
         case $user_choice in
             1)
