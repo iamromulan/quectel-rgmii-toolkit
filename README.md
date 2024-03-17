@@ -8,7 +8,6 @@ Please PR to this branch instead of main :)
 Fork development, and PR development to development :)
 
 
-
 #### [JUMP TO HOW TO USE](#how-to-use)
 **Currently:** This will allow you to install or if already installed, update, remove, or modify:
  - Simple Admin: A simple web interface for managing your Quectel m.2 modem through it's gateway address
@@ -146,6 +145,8 @@ Thank You to:
 [rbflurry](https://github.com/rbflurry/) for inital Simple Admin fixes
 
 [dr-dolomite](https://github.com/dr-dolomite) for some major stat page improvements and this repos first approved external PR!
+
+[tarunVreddy](https://github.com/tarunVreddy) for helping with the SA band aggregation parse
 
 ### Existing projects:
 Simpleadmin heavily uses the AT Command Parsing Scripts (Basically a copy with new changes and tweaks) of Dairyman's Rooter Source https://github.com/ofmodemsandmen/ROOterSource2203

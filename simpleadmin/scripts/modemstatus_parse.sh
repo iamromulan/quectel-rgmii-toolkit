@@ -36,7 +36,7 @@ nr_bw() {
 	esac
 }
 
-# Function to get the secondary LTE bands
+# Function to get the secondary LTE & NR5G bands
 get_secondary_bands() {
 	# Extract LTE BANDs from SCC lines
 	SCC_BANDS=$(echo "$OX" | grep '+QCAINFO: "SCC"' | grep -o '"LTE BAND [0-9]\+"' | tr -d '"' | sed '1d')
@@ -52,9 +52,6 @@ get_secondary_bands() {
 		# Set SC_BANDS to the non-empty variable or empty if both are empty
 		SC_BANDS="${SCC_BANDS}${NR_BAND}"
 	fi
-
-	# Get the PCI value. For example: 264 based on this +QCAINFO: "PCC",1775,75,"LTE BAND 3",1,264,-103,-13,-71,0
-	MAIN_PCI=$(echo "$OX" | grep '+QCAINFO: "PCC"' | grep -o ',[0-9]\{1,5\},' | tr -d ',')
 }
 
 # Get the modem model from /tmp/modemmodel.txt and parse it
