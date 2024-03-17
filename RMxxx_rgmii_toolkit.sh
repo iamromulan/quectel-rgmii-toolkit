@@ -1,22 +1,22 @@
 #!/bin/sh
 
 # Define toolkit paths
+GITUSER="iamromulan"
 GITTREE="main"
 TMP_DIR="/tmp"
 USRDATA_DIR="/usrdata"
 SOCAT_AT_DIR="/usrdata/socat-at-bridge"
 SOCAT_AT_SYSD_DIR="/usrdata/socat-at-bridge/systemd_units"
-SOCAT_AT_SMD7_SYSD_DIR="/usrdata/socat-at-bridge/smd7_systemd_units"
 SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 SIMPLE_FIREWALL_DIR="/usrdata/simplefirewall"
 SIMPLE_FIREWALL_SCRIPT="$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
 SIMPLE_FIREWALL_SYSTEMD_DIR="$SIMPLE_FIREWALL_DIR/systemd"
 SIMPLE_FIREWALL_SERVICE="/lib/systemd/system/simplefirewall.service"
-GITHUB_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/$GITTREE.zip"
-GITHUB_SIMPADMIN_FULL_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminfull.zip"
-GITHUB_SIMPADMIN_NOCMD_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminnoatcmds.zip"
-GITHUB_SIMPADMIN_TTL_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadminttlonly.zip"
-GITHUB_SIMPADMIN_TEST_URL="https://github.com/iamromulan/quectel-rgmii-toolkit/archive/refs/heads/simpleadmintest.zip"
+GITHUB_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/$GITTREE.zip"
+GITHUB_SIMPADMIN_FULL_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadminfull.zip"
+GITHUB_SIMPADMIN_NOCMD_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadminnoatcmds.zip"
+GITHUB_SIMPADMIN_TTL_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadminttlonly.zip"
+GITHUB_SIMPADMIN_TEST_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadmintest.zip"
 TAILSCALE_DIR="/usrdata/tailscale/"
 TAILSCALE_SYSD_DIR="/usrdata/tailscale/systemd"
 # AT Command Script Variables and Functions
@@ -39,20 +39,19 @@ start_listening() {
 }
 
 send_at_command() {
-    echo -e "\e[1;32mEnter AT command (or type 'exit' to quit): \e[0m"
+    echo -e "\e[1;31mThis only works for basic quick responding commands!\e[0m"  # Red
     echo -e "\e[1;36mType 'install' to simply type atcmd in shell from now on\e[0m"
+    echo -e "\e[1;36mThe installed version is much better than this portable version\e[0m"
+    echo -e "\e[1;32mEnter AT command (or type 'exit' to quit): \e[0m"
     read at_command
     if [ "$at_command" = "exit" ]; then
         return 1
     fi
     
     if [ "$at_command" = "install" ]; then
-        wget -P /usrdata https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/atcmd
-	chmod +x /usrdata/atcmd
- 	remount_rw
- 	ln -sf /usrdata/atcmd /sbin
-  	remount_ro
-   	echo -e "\e[1;32mInstalled. Type atcmd from adb shell or ssh to start an AT Command session\e[0m"
+		install_update_at_socat
+		echo -e "\e[1;32mInstalled. Type atcmd from adb shell or ssh to start an AT Command session\e[0m"
+		return 1
     fi
     echo -e "${at_command}\r" > "$DEVICE_FILE"
 }
@@ -73,8 +72,8 @@ wait_for_response() {
         elapsed_time=$((current_time - start_time))
         if [ "$elapsed_time" -ge "$TIMEOUT" ]; then
             echo -e "\e[1;31mError: Response timed out.\e[0m"  # Red
-	    echo -e "\e[1;32mIf the responce takes longer than a second or 2 to repond this will not work\e[0m"  # Green
-	    echo -e "\e[1;36mA better AT command implimentation will be made soon\e[0m"  # Cyan
+	    echo -e "\e[1;32mIf the responce takes longer than a second or 2 to respond this will not work\e[0m"  # Green
+	    echo -e "\e[1;36mType install to install the better version of this that will work.\e[0m"  # Cyan
             return 1
         fi
         sleep 1
@@ -112,80 +111,83 @@ is_simple_admin_installed() {
 # Function to install/update AT Socat Bridge
 install_update_at_socat() {
     remount_rw
-    mkdir "$SOCAT_AT_DIR"
-    cd "$SOCAT_AT_DIR"
+    
+	# Stop and disable existing services/files before installing new ones
+	echo -e "\033[0;32mRemoving installed AT Socat Bridge services...\033[0m"
+	systemctl stop at-telnet-daemon > /dev/null 2>&1
+	systemctl disable at-telnet-daemon > /dev/null 2>&1
+	systemctl stop socat-smd11 > /dev/null 2>&1
+	systemctl stop socat-smd11-to-ttyIN > /dev/null 2>&1
+	systemctl stop socat-smd11-from-ttyIN > /dev/null 2>&1
+	systemctl stop socat-smd7 > /dev/null 2>&1
+	systemctl stop socat-smd7-to-ttyIN2 > /dev/null 2>&1
+	systemctl stop socat-smd7-to-ttyIN > /dev/null 2>&1
+	systemctl stop socat-smd7-from-ttyIN2 > /dev/null 2>&1
+	systemctl stop socat-smd7-from-ttyIN > /dev/null 2>&1
+	rm /lib/systemd/system/at-telnet-daemon.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd11.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd11-to-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd11-from-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-to-ttyIN2.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-to-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-from-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-from-ttyIN2.service > /dev/null 2>&1
+	systemctl daemon-reload > /dev/null 2>&1
+	rm -rf "$SOCAT_AT_DIR" > /dev/null 2>&1
+	
+	# Install service units
+	echo -e "\033[0;32mInstalling AT Socat Bridge services...\033[0m"
+	mkdir $SOCAT_AT_DIR
+    cd $SOCAT_AT_DIR
     mkdir $SOCAT_AT_SYSD_DIR
-    mkdir $SOCAT_AT_SMD7_SYSD_DIR
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/socat-armel-static
+    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/socat-armel-static
+    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/killsmd7bridge
+    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/atcmd
     cd $SOCAT_AT_SYSD_DIR
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11.service
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-from-ttyIN.service
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-to-ttyIN.service
-    cd $SOCAT_AT_SMD7_SYSD_DIR
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/smd7_systemd_units/socat-smd7-from-ttyIN.service
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/smd7_systemd_units/socat-smd7-to-ttyIN.service
-    wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/smd7_systemd_units/socat-smd7.service
+    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11.service
+    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-from-ttyIN.service
+    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-to-ttyIN.service
+    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-killsmd7bridge.service	
+    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7-from-ttyIN2.service
+    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7-to-ttyIN2.service
+    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7.service
 
     # Set execute permissions
-    chmod +x "$SOCAT_AT_DIR"/socat-armel-static
-
-    # User prompt for selecting device
-    echo -e "\e[1;32mWhich device should Simpleadmin use?\e[0m"
-    echo -e "\e[1;32mThis will create virtual tty ports (serial ports) that will use either smd11 or smd7\e[0m"
-    echo -e "\e[38;5;40m1) Use smd11 (default)\e[0m"
-    echo -e "\e[38;5;27m2) Use smd7 (use this if another application is using smd11 already)\e[0m"
-    read -p "Enter your choice (1 or 2): " device_choice
-
-    # Stop and disable existing services before installing new ones
-    echo -e "\033[0;32mThese errors are OK, script tries to remove all first in case you are updating\033[0m"
-    systemctl stop at-telnet-daemon
-    systemctl disable at-telnet-daemon
-    systemctl stop socat-smd11
-    systemctl stop socat-smd11-to-ttyIN
-    systemctl stop socat-smd11-from-ttyIN
-    systemctl stop socat-smd7
-    systemctl stop socat-smd7-to-ttyIN
-    systemctl stop socat-smd7-from-ttyIN
-    rm /lib/systemd/system/at-telnet-daemon.service
-    rm /lib/systemd/system/socat-smd11.service
-    rm /lib/systemd/system/socat-smd11-to-ttyIN.service
-    rm /lib/systemd/system/socat-smd11-from-ttyIN.service
-    rm /lib/systemd/system/socat-smd7.service
-    rm /lib/systemd/system/socat-smd7-to-ttyIN.service
-    rm /lib/systemd/system/socat-smd7-from-ttyIN.service
-    systemctl daemon-reload
-    echo -e "\033[0;32mThese errors are OK, script tries to remove all first in case you are updating\033[0m"
+    cd $SOCAT_AT_DIR
+    chmod +x socat-armel-static
+    chmod +x killsmd7bridge
+    chmod +x atcmd
 	
-    # Depending on the choice, copy the respective systemd unit files
-    case $device_choice in
-        2)
-            cp -rf $SOCAT_AT_SMD7_SYSD_DIR/*.service /lib/systemd/system
-	    ln -sf /lib/systemd/system/socat-smd7.service /lib/systemd/system/multi-user.target.wants/
-	    ln -sf /lib/systemd/system/socat-smd7-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-	    ln -sf /lib/systemd/system/socat-smd7-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-	    systemctl daemon-reload
-	    systemctl start socat-smd7
-	    sleep 2s
-	    systemctl start socat-smd7-to-ttyIN
-	    systemctl start socat-smd7-from-ttyIN
-   	    remount_ro
-	    cd /
-            ;;
-        1)
-            cp -rf $SOCAT_AT_SYSD_DIR/*.service /lib/systemd/system
-	    ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
-	    ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-	    ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-	    systemctl daemon-reload
-	    systemctl start socat-smd11
-	    sleep 2s
-	    systemctl start socat-smd11-to-ttyIN
-	    systemctl start socat-smd11-from-ttyIN
-   	    remount_ro
-	    cd /
-            ;;
-    esac
-    
+    # Link new command for AT Commands from the shell
+    ln -sf $SOCAT_AT_DIR/atcmd /bin
+	
+    # Install service units
+    echo -e "\033[0;32mAdding AT Socat Bridge systemd service units...\033[0m"
+    cp -rf $SOCAT_AT_SYSD_DIR/*.service /lib/systemd/system
+    ln -sf /lib/systemd/system/socat-killsmd7bridge.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/socat-smd7.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/socat-smd7-to-ttyIN2.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/socat-smd7-from-ttyIN2.service /lib/systemd/system/multi-user.target.wants/
+    systemctl daemon-reload
+    systemctl start socat-smd11
+    sleep 2s
+    systemctl start socat-smd11-to-ttyIN
+    systemctl start socat-smd11-from-ttyIN
+    echo -e "\033[0;32mAT Socat Bridge service online: smd11 to ttyOUT\033[0m"
+    systemctl start socat-killsmd7bridge
+    sleep 1s
+    systemctl start socat-smd7
+    sleep 2s
+    systemctl start socat-smd7-to-ttyIN2
+    systemctl start socat-smd7-from-ttyIN2
+    echo -e "\033[0;32mAT Socat Bridge service online: smd7 to ttyOUT2\033[0m"
+    remount_ro
+    cd /
+    echo -e "\033[0;32mAT Socat Bridge services Installed!\033[0m"
 }
 
 # Function to install Simple Firewall
@@ -196,13 +198,13 @@ install_simple_firewall() {
     mount -o remount,rw /
     mkdir -p "$SIMPLE_FIREWALL_DIR"
     mkdir -p "$SIMPLE_FIREWALL_SYSTEMD_DIR"
-    wget -O "$SIMPLE_FIREWALL_DIR/simplefirewall.sh" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/simplefirewall.sh
-    wget -O "$SIMPLE_FIREWALL_DIR/ttl-override" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttl-override
-    wget -O "$SIMPLE_FIREWALL_DIR/ttlvalue" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttlvalue
+    wget -O "$SIMPLE_FIREWALL_DIR/simplefirewall.sh" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/simplefirewall.sh
+    wget -O "$SIMPLE_FIREWALL_DIR/ttl-override" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttl-override
+    wget -O "$SIMPLE_FIREWALL_DIR/ttlvalue" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttlvalue
     chmod +x "$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
     chmod +x "$SIMPLE_FIREWALL_DIR/ttl-override"	
-    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/simplefirewall.service
-    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/ttl-override.service" https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/ttl-override.service
+    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/simplefirewall.service
+    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/ttl-override.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/ttl-override.service
     cp -rf $SIMPLE_FIREWALL_SYSTEMD_DIR/* /lib/systemd/system
     ln -sf "/lib/systemd/system/simplefirewall.service" "/lib/systemd/system/multi-user.target.wants/"
     ln -sf "/lib/systemd/system/ttl-override.service" "/lib/systemd/system/multi-user.target.wants/"
@@ -435,31 +437,37 @@ uninstall_simpleadmin_components() {
 
     # Uninstall socat-at-bridge
     echo -e "\e[1;32mDo you want to uninstall socat-at-bridge?\e[0m"
-    echo -e "\e[1;31mIf you do, AT commands and the stat page will no longer work.\e[0m"
+    echo -e "\e[1;31mIf you do, AT commands and the stat page will no longer work. atcmd won't either.\e[0m"
     echo -e "\e[1;32m1) Yes\e[0m"
     echo -e "\e[1;31m2) No\e[0m"
     read -p "Enter your choice (1 or 2): " choice_socat_at_bridge
     if [ "$choice_socat_at_bridge" -eq 1 ]; then
-        echo "Uninstalling socat-at-bridge..."
-	systemctl stop at-telnet-daemon
-        systemctl stop socat-smd11
-        systemctl stop socat-smd11-to-ttyIN
-        systemctl stop socat-smd11-from-ttyIN
-        systemctl stop socat-smd7
-        systemctl stop socat-smd7-to-ttyIN
-        systemctl stop socat-smd7-from-ttyIN
-        rm -f /lib/systemd/system/socat-smd11.service
-        rm -f /lib/systemd/system/socat-smd11-to-ttyIN.service
-        rm -f /lib/systemd/system/socat-smd11-from-ttyIN.service
-        rm -f /lib/systemd/system/socat-smd7.service
-        rm -f /lib/systemd/system/socat-smd7-to-ttyIN.service
-        rm -f /lib/systemd/system/socat-smd7-from-ttyIN.service
-	rm -f /lib/systemd/system/at-telnet-daemon.service
-        systemctl daemon-reload
-        rm -rf "$SOCAT_AT_DIR"
-	rm -rf "/usrdata/micropython"
- 	rm -rf "/usrdata/at-telnet"
-        echo "socat-at-bridge uninstalled."
+        echo -e "\033[0;32mRemoving installed AT Socat Bridge services...\033[0m"
+	systemctl stop at-telnet-daemon > /dev/null 2>&1
+	systemctl disable at-telnet-daemon > /dev/null 2>&1
+	systemctl stop socat-smd11 > /dev/null 2>&1
+	systemctl stop socat-smd11-to-ttyIN > /dev/null 2>&1
+	systemctl stop socat-smd11-from-ttyIN > /dev/null 2>&1
+	systemctl stop socat-smd7 > /dev/null 2>&1
+	systemctl stop socat-smd7-to-ttyIN2 > /dev/null 2>&1
+	systemctl stop socat-smd7-to-ttyIN > /dev/null 2>&1
+	systemctl stop socat-smd7-from-ttyIN2 > /dev/null 2>&1
+	systemctl stop socat-smd7-from-ttyIN > /dev/null 2>&1
+	rm /lib/systemd/system/at-telnet-daemon.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd11.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd11-to-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd11-from-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-to-ttyIN2.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-to-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-from-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-from-ttyIN2.service > /dev/null 2>&1
+	systemctl daemon-reload > /dev/null 2>&1
+	rm -rf "$SOCAT_AT_DIR" > /dev/null 2>&1
+        rm -rf "$SOCAT_AT_DIR" > /dev/null 2>&1
+	rm -rf "/usrdata/micropython" > /dev/null 2>&1
+ 	rm -rf "/usrdata/at-telnet" > /dev/null 2>&1
+        echo -e "\033[0;32mAT Socat Bridge services removed!...\033[0m"
     fi
 
     # Uninstall the rest of Simpleadmin
@@ -536,13 +544,13 @@ install_update_remove_tailscale() {
 	mkdir $TAILSCALE_SYSD_DIR
         cd $TAILSCALE_DIR
 	echo "Downloading binary: /usrdata/tailscale/tailscaled"
-        wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscaled
+        wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/tailscaled
 	echo "Downloading binary: /usrdata/tailscale/tailscale"
-	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/tailscale
+	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/tailscale
     	echo "Downloading systemd files..."
      	cd $TAILSCALE_SYSD_DIR
-      	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
-       	wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.defaults
+      	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
+       	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.defaults
 	sleep 2s
 	echo "Setting Permissions..."
         chmod +x /usrdata/tailscale/tailscaled
@@ -577,8 +585,8 @@ configure_tailscale() {
         1)
 	remount_rw
 	cd /lib/systemd/system/
-	wget -O tailscale-webui.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui.service
-  	wget -O tailscale-webui-trigger.service https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui-trigger.service
+	wget -O tailscale-webui.service https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui.service
+  	wget -O tailscale-webui-trigger.service https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/systemd/tailscale-webui-trigger.service
      	ln -sf /lib/systemd/system/tailscale-webui-trigger.service /lib/systemd/system/multi-user.target.wants/
      	systemctl daemon-reload
        	echo "Tailscale Web UI Enabled"
@@ -787,6 +795,60 @@ WantedBy=multi-user.target" > "$cfun_service_path"
     fi
 }
 
+# Function for TTYd install
+install_ttyd() {
+    echo -e "\e[1;34mStarting ttyd installation process...\e[0m"
+
+    if [ ! -f "/opt/bin/opkg" ]; then
+        echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
+        cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
+        if [ "$?" -ne 0 ]; then
+            echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
+            exit 1
+        fi
+        cd /
+    else
+        echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
+    fi
+
+    mount -o remount,rw /
+    opkg update && opkg install shadow-login shadow-passwd
+    if [ "$?" -ne 0 ]; then
+        echo -e "\e[1;31mPackage installation failed. Please check your internet connection and try again.\e[0m"
+        exit 1
+    fi
+
+    # Replacing the login and passwd binaries
+    rm /opt/etc/shadow
+    cp /etc/shadow /opt/etc/
+    rm /bin/login /usr/bin/passwd
+    ln -sf /opt/bin/login /bin
+    ln -sf /opt/bin/passwd /usr/bin/
+    echo -e "\e[1;31mPlease set your system login password.\e[0m"
+    /usr/bin/passwd
+
+    # Setting up ttyd
+    mkdir -p /usrdata/ttyd/scripts /usrdata/ttyd/systemd
+    cd /usrdata/ttyd/
+    wget -O ttyd "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/ttyd" && chmod +x ttyd
+    wget -O scripts/ttyd.bash "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/scripts/ttyd.bash" && chmod +x scripts/ttyd.bash
+    wget -O systemd/ttyd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/systemd/ttyd.service"
+    cp systemd/ttyd.service /lib/systemd/system/
+    ln -sf /lib/systemd/system/ttyd.service /etc/systemd/system/multi-user.target.wants/
+    
+    # Enabling and starting ttyd service
+    systemctl daemon-reload
+    systemctl enable ttyd
+    systemctl start ttyd
+    if [ "$?" -ne 0 ]; then
+        echo -e "\e[1;31mFailed to start ttyd service. Please check the systemd service file and ttyd binary.\e[0m"
+        exit 1
+    fi
+
+    echo -e "\e[1;32mInstall Complete! ttyd server is up on port 443. Note: No TLS/SSL enabled yet.\e[0m"
+}
+
+
 # Main menu
 while true; do
 echo "                           .%+:                              "
@@ -862,7 +924,8 @@ echo "                                           :+##+.            "
     echo -e "\e[92m5) Install/Change or remove Daily Reboot Timer\e[0m" # Light Green
     echo -e "\e[91m6) Install/Uninstall CFUN 0 Fix\e[0m" # Light Red
     echo -e "\e[96m7) Install Entware/OPKG (BETA/Advanced)\e[0m" # Cyan (repeated color for additional options)
-    echo -e "\e[93m8) Exit\e[0m" # Yellow (repeated color for exit option)
+    echo -e "\e[96m8) Install TTYd (BETA,443,No TLS/SSL)\e[0m" # Cyan
+    echo -e "\e[93m9) Exit\e[0m" # Yellow (repeated color for exit option)
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -900,10 +963,13 @@ echo "                                           :+##+.            "
             ;;	    
         7) 
 	    echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
-     	    wget -O- https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/installentware.sh | sh
-     	    break
+	    cd /tmp && wget -O installentware.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh && chmod +x installentware.sh && ./installentware.sh
+     	    cd /
             ;;
-	8) 
+	8)  
+ 	    install_ttyd
+      	    ;;
+	9) 
 	    echo -e "\e[1;32mGoodbye!\e[0m"
      	    break
             ;;    

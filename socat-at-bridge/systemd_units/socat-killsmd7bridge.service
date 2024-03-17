@@ -1,0 +1,9 @@
+[Unit]
+Description=Kill port_bridge process on boot
+
+[Service]
+Type=oneshot
+ExecStart=/usrdata/socat-at-bridge/killsmd7bridge
+
+[Install]
+WantedBy=multi-user.target

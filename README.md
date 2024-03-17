@@ -1,7 +1,22 @@
 # RGMII Toolkit
-**ORIGINALLY FOR THE QUECTEL RM520N-GL, However, People are saying this will work on all M.2 RMxxx modems**
+Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2 to RJ45 adapter (RGMII)
 #### [JUMP TO HOW TO USE](#how-to-use)
-**Currently:** This will install or if already installed, update or remove a Combination of [AT Telnet Daemon](https://github.com/natecarlson/quectel-rgmii-at-command-client/tree/main/at_telnet_daemon)  and; [Simpleadmin](https://github.com/iamromulan/quectel-rgmii-simpleadmin). This will also allow you to set a daily reboot timer and send AT commands easily. 
+**Currently:** This will allow you to install or if already installed, update, remove, or modify:
+ - Simple Admin: A simple web interface for managing your Quectel m.2 modem through it's gateway address
+	 - It will install socat-at-bridge: sets up ttyOUT and ttyOUT2 for AT commands. You'll be able to use the `atcmd` command as well for an interactive at command session from adb, ssh, or ttyd
+	 - It will install simplefirewall: A simple firewall that blocks definable incoming ports and a TTL mangle option/modifier. As of now only the TTL is controllable through Simple Admin. You can edit port block options and TTL from the 3rd option in the toolkit
+ - Tailscale: A magic VPN for accessing Simple Admin, SSH, and ttyd on the go. The Toolkit installs the Tailscale client directly to the modem and allows you to login and configure other settings. Head over to tailscale.com to sign up for a free account and learn more.
+ - Schedule a Daily Reboot at a specified time
+ - A fix for certain modems that don't start in CFUN=1 mode
+ - Entware/OPKG: A package installer/manager/repo
+	- Run `opkg help` to see how to use it
+	- These packages are installable: https://bin.entware.net/armv7sf-k3.2/Packages.html
+ - TTYd: A shell session right from your browser
+	 - Currently this uses port 443 but SSL/TLS is not in use (http only for now)
+	 - Entware/OPKG is required so it will install it if it isn't installed
+	 - This will replace the stock Quectel login and passwd binaries with ones from entware
+
+  
 
 **My goal** is for this to also include any new useful scripts or software for this modem and others that support RGMII mode.
 ## Screenshots
@@ -40,26 +55,25 @@ cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamr
 
 > :warning: Your modem must already be connected to the internet for this to install
 ### Installation:
-Open up the toolkit main menu and press 4 to enter the Tailscale menu
+Open up the toolkit main menu and **press 4** to enter the Tailscale menu
 
 ![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/tailscalemenu.png?raw=true)
 
-**Press 1, wait for it to install. This is a very large file for the system so give it some time. Once done and it says tailscaled is started press 2 to configure it.**
+**Press 1, wait for it to install. This is a very large file for the system so give it some time.**
+
+**Once done and it says Tailscale installed successfully press 2/enter to configure it.**
 
 ![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/tailscaleconfig.png?raw=true)
 
+If you want to, enable the Tailscale Web UI on port 8088 for configuration from the browser later by **pressing 1/enter**.
+
+To do it in the toolkit:
 First time connecting you'll be given a link to login with
- - Press 1 to just connect only.
- - Press 2 to connect and enable SSH access (remote command line) over tailscale.
- - Press 3 to reconnect with SSH off while connected with SSH on
- - Press 4 to disconnect
- - Press 5 to Logout
-
-**Important**
-
-**You will want to go to your Tailscale DNS settings at https://login.tailscale.com/admin/dns and turn on Override local DNS and add a DNS provider to avoid loosing internet connectivity on your modem.** 
-
-This happens because the Tailscale binary creates  `/etc/reslov.conf` to override the modems DNS to use the one from your Tailnet instead. If you don't have a public DNS you won't be able to use the internet. I use Cloudflare and Google. I will add an option to the Toolkit to connect with DNS off later, its on the hit list.
+ - Press 3 to just connect only.
+ - Press 4 to connect and enable SSH access (remote command line) over tailscale.
+ - Press 5 to reconnect with SSH off while connected with SSH on
+ - Press 6 to disconnect
+ - Press 7 to Logout
 
 That's it! From another device running tailscale you should be able to access your modem through the IP assigned to it by your tailnet. To access SSH from another device on the tailnet, open a terminal/command prompt and type
 
@@ -70,18 +84,13 @@ IP or Hostname being the IP or hostname assigned to it in your tailnet
 ## Advanced/Beta
 
 ### Entware/OPKG installation
-Recently I was able to successfully install opkg, the same package manager that OpenWRT has! This was acheved through [Entware!](https://github.com/Entware/Entware/wiki) 
-I modified [this](https://bin.entware.net/armv7sf-k3.2/installer/generic.sh)  generic installer to include a few tweaks to make it more compatible and automated for Quectel modems. In my testing I used the RM521F-GL and RM502Q-AE but it should work for others as long as you have enough space and a /usrdata mount point to work with.
 
-#### To install Entware/OPKG
-Simply run this command from adb shell or SSH shell
 
-    wget -O- https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/installentware.sh | sh
-
-It isn't perfect yet so here's what you gotta know about going into it
+It isn't perfect yet so it goes here under Advanced/Beta for now. 
+Here's what you gotta know about going into it:
 
  - After installing, the `opkg` command will work
- - You can run `opkg list` to see a list of installable packages
+ - You can run `opkg list` to see a list of installable packages, or head over to  https://bin.entware.net/armv7sf-k3.2/Packages.html
  - Everything opkg does is installed to /opt
  - `/opt` is actually located at `/usrdata/opt` to save space but is   
    mounted at `/opt`
@@ -104,11 +113,35 @@ For example, if you were to install zerotier:
 
 Now you can run those 3 binaries from the shell anytime since they are linked in a place already part of the system path.
 
-## Acknowledgements
-Thanks to the work of [Nate Carlson](https://github.com/natecarlson) (Telnet Deamon, Original RGMII Notes), [aesthernr](https://github.com/aesthernr) (Original simpleadmin), and [rbflurry](https://github.com/rbflurry/) (Fixing simpleadmin not functioning) we can install these! The Telnet Deamon is a Telnet to AT command server. With it, you can connect with a Telenet client like PuTTY on port 5000 to the modems gateway IP (Normally 192.168.225.1) and send AT commands over Telnet! Simpleadmin is a simple web interface you'll be able to access using the modems gateway IP address. You can see some basic signal stats, send AT commands from the browser, and change your TTL directly on the modem. By default this will be on port 8080 so if you didn't change the gateway IP address you'd go to http://192.168.225.1:8080/ and you'd find what you see in the [Screenshots](#screenshots) section.
+I plan to create a watchdog service for /opt/bin and /opt/sbin that will automaticly link new packages to /bin or /sbin later on in order to combat this.
 
-Simpleadmin heavily uses the AT Command Parsing Scripts (Basically a copy with minor tweaks) of Dairyman's Rooter Source https://github.com/ofmodemsandmen/ROOterSource2203
+### TTYd installation
+
+It isn't perfect yet so it goes here under Advanced/Beta for now. 
+Here's what you gotta know about going into it:
+
+ - This listens on port 443 for http requests (no SSL/TLS yet)
+ - This will automaticly install entware and patch the login and passwd binaries with ones from entware
+ - It will ask you to set a password for the `root` user account
+ - TTYd doesn't seem to be too mobile friendly for now but I optimized it the best i could for now so it is at least usable through a smartphone browser. Hopefully the startup script can be improved even more later. 
+
+## Acknowledgements
+### GitHub Users/Individuals:
+Thank You to: 
+
+[Nate Carlson](https://github.com/natecarlson) for the Original Telnet Deamon/socat bridge usage and the Original RGMII Notes
+
+[aesthernr](https://github.com/aesthernr)  for creating the Original Simple Admin
+
+[rbflurry](https://github.com/rbflurry/) for inital Simple Admin fixes
+
+[dr-dolomite](https://github.com/dr-dolomite) for some major stat page improvements and this repos first approved external PR!
+
+### Existing projects:
+Simpleadmin heavily uses the AT Command Parsing Scripts (Basically a copy with new changes and tweaks) of Dairyman's Rooter Source https://github.com/ofmodemsandmen/ROOterSource2203
 
 Tailscale was obtained through Tailscale's static build page. Since these modems have a 32-bit ARM processor on-board I used the arm package. https://pkgs.tailscale.com/stable/#static
 
-Entware/opkg was obtained through [Entware's wiki](https://github.com/Entware/Entware/wiki/Alternative-install-vs-standard)
+Entware/opkg was obtained through [Entware's wiki](https://github.com/Entware/Entware/wiki/Alternative-install-vs-standard) and the installer heavily modified by [iamromulan](https://github.com/iamromulan) for use with Quectel modems
+
+TTYd was obtained from the [TTYd Project](https://github.com/tsl0922/ttyd)

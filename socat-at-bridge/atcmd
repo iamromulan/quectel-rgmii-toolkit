@@ -1,0 +1,55 @@
+#!/bin/bash
+
+DEVICE=/dev/ttyOUT2
+BAUD=115200
+
+# Function to setup device communication parameters
+setup_device() {
+    stty -F $DEVICE cs8 $BAUD ignbrk -brkint -icrnl -imaxbel \
+        -opost -onlcr -isig -icanon -iexten -echo -echoe -echok \
+        -echoctl -echoke noflsh -ixon -crtscts
+}
+
+# Prepare the device for communication
+setup_device
+
+echo -e "\033[0;36mType 'exit' to end the session.\033[0m"
+while true; do
+    echo -en "\033[0;36mEnter AT Command: \033[0m"
+    read user_input
+
+    if [[ "$user_input" == "exit" ]]; then
+        echo -e "\033[0;32mExiting...\033[0m"
+        break
+    fi
+
+    # Clear the device buffer before sending a new command
+    echo -n > $DEVICE
+
+    # Send the AT command
+    echo -e "$user_input\r" > $DEVICE
+
+    # Use a temporary file to capture the command output
+    tmpfile=$(mktemp)
+    
+    # Start reading the device output to the temporary file
+    cat $DEVICE > "$tmpfile" &
+    CAT_PID=$!
+
+    # Monitor the output file for "OK" or "ERROR"
+    while ! grep -qe "OK" -e "ERROR" "$tmpfile"; do
+        sleep 1
+    done
+
+    # Kill the `cat` process after capturing the response
+    kill $CAT_PID
+    wait $CAT_PID 2>/dev/null
+
+    # Display the response
+    cat "$tmpfile" | while IFS= read -r line; do
+        echo -e "\033[0;32m$line\033[0m"
+    done
+
+    # Clean up
+    rm "$tmpfile"
+done

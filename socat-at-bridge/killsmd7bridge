@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Look for the process by its command and kill it so socat can have smd7 instead
+pkill -f "/usr/bin/port_bridge smd7 at_usb2 1"
