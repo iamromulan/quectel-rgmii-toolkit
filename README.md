@@ -1,5 +1,13 @@
 # RGMII Toolkit
 Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2 to RJ45 adapter (RGMII)
+
+Current Branch: **Development**
+
+Please PR to this branch instead of main :)
+
+Fork development, and PR development to development :)
+
+
 #### [JUMP TO HOW TO USE](#how-to-use)
 **Currently:** This will allow you to install or if already installed, update, remove, or modify:
  - Simple Admin: A simple web interface for managing your Quectel m.2 modem through it's gateway address
@@ -26,6 +34,7 @@ Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2
 ![TTL](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulansimpleTTL.png?raw=true)
 ![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulantoolkit.png?raw=true)
 
+# Devleopment Branch: the below commands will download the beta/work in progress toolkit 
 
 ## How to Use
 **To run the Toolkit:**
@@ -36,7 +45,7 @@ Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2
  - If you don't get an error you should be getting replies back endlessly, press `CTRL-C` to stop it.
  - Simply Copy/Paste this into your Command Prompt/Shell 
 ```bash
-adb shell "cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh" && cd /
+adb shell "cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh" && cd /
 ```
 
 **Or, if you want to stay in the modems shell when you are done**
@@ -46,7 +55,7 @@ adb shell
 ```
 Then run
 ```
-cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh && cd /
+cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh && cd /
 ```
 **You should see:**
 ![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulantoolkit.png?raw=true)
@@ -136,6 +145,8 @@ Thank You to:
 [rbflurry](https://github.com/rbflurry/) for inital Simple Admin fixes
 
 [dr-dolomite](https://github.com/dr-dolomite) for some major stat page improvements and this repos first approved external PR!
+
+[tarunVreddy](https://github.com/tarunVreddy) for helping with the SA band aggregation parse
 
 ### Existing projects:
 Simpleadmin heavily uses the AT Command Parsing Scripts (Basically a copy with new changes and tweaks) of Dairyman's Rooter Source https://github.com/ofmodemsandmen/ROOterSource2203
