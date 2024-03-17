@@ -97,9 +97,9 @@
                   <div class="content">
                     <textarea
                       class="textarea"
-                      x-bind:placeholder="isLoading ? 'Fetching response, please wait...' : 'Please send only 1 AT command at a time'"
+                      placeholder="Please send only 1 AT command at a time"
                       rows="10"
-                      x-text="atCommandResponse"
+                      x-text="isLoading ? 'Fetching response, please wait...' : atCommandResponse"
                     ></textarea>
                   </div>
                 </div>
@@ -120,6 +120,18 @@
             </header>
             <div class="card-content">
               <div class="content">
+                <!-- <div class="field" style="margin-bottom: 1rem">
+                  <p class="control">
+                    <button
+                      class="button is-danger"
+                      click="sendRebootCommand()"
+                      :disabled="isRebootClicked"
+
+                    >
+                      Reboot
+                    </button>
+                  </p>
+                </div> -->
                 <!-- Add your useful commands content here -->
                 <p>Here are some useful commands:</p>
                 <ul>
@@ -240,7 +252,7 @@
         return {
           isLoading: false,
           atcmd: null,
-          atCommandResponse: '',
+          atCommandResponse: "",
           sendAtCommand() {
             this.isLoading = true;
             fetch(
@@ -264,6 +276,27 @@
             this.atCommandResponse = "";
           },
         };
+      }
+
+      function sendRebootCommand() {
+        var isRebootClicked = true;
+        console.log("Reboot command triggered");
+        var atcmd = "AT+CFUN=1,1";
+        fetch(
+          "/cgi-bin/get_atcommand?" +
+            new URLSearchParams({
+              atcmd: atcmd,
+            })
+        )
+          .then((res) => {
+            return res.text();
+          })
+          .then((data) => {
+            console.log(data); // Logging the response for debugging purposes
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
       }
     </script>
   </body>
