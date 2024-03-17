@@ -42,7 +42,7 @@ get_secondary_bands() {
 	SCC_BANDS=$(echo "$OX" | grep '+QCAINFO: "SCC"' | grep -o '"LTE BAND [0-9]\+"' | tr -d '"' | sed '1d')
 	
 	# Extract NR5G BANDs from SCC lines
-	NR_BAND=$(echo "$OX" | grep '+QCAINFO: "SCC"' | grep -o '"NR5G BAND [0-9]\+"' | tr -d '"')
+	NR_BAND=$(echo "$OX" | grep '+QCAINFO: "SCC"' | grep -o '"NR5G BAND [0-9]\+"' | tr -d '"' | sed '1d')
 	
 	# Check if both SCC and NR bands are non-empty
 	if [ -n "$SCC_BANDS" ] && [ -n "$NR_BAND" ]; then
