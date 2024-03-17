@@ -19,6 +19,13 @@ while IFS='=' read -r key value || [[ -n "$key" ]]; do
     key=$(echo "$key" | awk '{$1=$1};1')
     value=$(echo "$value" | awk '{$1=$1};1')
 
+    # Check if value includes double quotes inside it like: "value,"value"". If there is, remove the inner double quotes.
+    if [[ "$value" == *\"* ]]; then
+        value=$(echo "$value" | sed 's/\"//g')
+        # enclose the value in double quotes again
+        value="\"$value\""
+    fi
+
     # Print key-value pair in JSON format without surrounding double quotes on value
     printf ' "%s" : %s' "$key" "$value"
 
