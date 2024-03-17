@@ -437,31 +437,37 @@ uninstall_simpleadmin_components() {
 
     # Uninstall socat-at-bridge
     echo -e "\e[1;32mDo you want to uninstall socat-at-bridge?\e[0m"
-    echo -e "\e[1;31mIf you do, AT commands and the stat page will no longer work.\e[0m"
+    echo -e "\e[1;31mIf you do, AT commands and the stat page will no longer work. atcmd won't either.\e[0m"
     echo -e "\e[1;32m1) Yes\e[0m"
     echo -e "\e[1;31m2) No\e[0m"
     read -p "Enter your choice (1 or 2): " choice_socat_at_bridge
     if [ "$choice_socat_at_bridge" -eq 1 ]; then
-        echo "Uninstalling socat-at-bridge..."
-	systemctl stop at-telnet-daemon
-        systemctl stop socat-smd11
-        systemctl stop socat-smd11-to-ttyIN
-        systemctl stop socat-smd11-from-ttyIN
-        systemctl stop socat-smd7
-        systemctl stop socat-smd7-to-ttyIN
-        systemctl stop socat-smd7-from-ttyIN
-        rm -f /lib/systemd/system/socat-smd11.service
-        rm -f /lib/systemd/system/socat-smd11-to-ttyIN.service
-        rm -f /lib/systemd/system/socat-smd11-from-ttyIN.service
-        rm -f /lib/systemd/system/socat-smd7.service
-        rm -f /lib/systemd/system/socat-smd7-to-ttyIN.service
-        rm -f /lib/systemd/system/socat-smd7-from-ttyIN.service
-	rm -f /lib/systemd/system/at-telnet-daemon.service
-        systemctl daemon-reload
-        rm -rf "$SOCAT_AT_DIR"
-	rm -rf "/usrdata/micropython"
- 	rm -rf "/usrdata/at-telnet"
-        echo "socat-at-bridge uninstalled."
+        echo -e "\033[0;32mRemoving installed AT Socat Bridge services...\033[0m"
+	systemctl stop at-telnet-daemon > /dev/null 2>&1
+	systemctl disable at-telnet-daemon > /dev/null 2>&1
+	systemctl stop socat-smd11 > /dev/null 2>&1
+	systemctl stop socat-smd11-to-ttyIN > /dev/null 2>&1
+	systemctl stop socat-smd11-from-ttyIN > /dev/null 2>&1
+	systemctl stop socat-smd7 > /dev/null 2>&1
+	systemctl stop socat-smd7-to-ttyIN2 > /dev/null 2>&1
+	systemctl stop socat-smd7-to-ttyIN > /dev/null 2>&1
+	systemctl stop socat-smd7-from-ttyIN2 > /dev/null 2>&1
+	systemctl stop socat-smd7-from-ttyIN > /dev/null 2>&1
+	rm /lib/systemd/system/at-telnet-daemon.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd11.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd11-to-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd11-from-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-to-ttyIN2.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-to-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-from-ttyIN.service > /dev/null 2>&1
+	rm /lib/systemd/system/socat-smd7-from-ttyIN2.service > /dev/null 2>&1
+	systemctl daemon-reload > /dev/null 2>&1
+	rm -rf "$SOCAT_AT_DIR" > /dev/null 2>&1
+        rm -rf "$SOCAT_AT_DIR" > /dev/null 2>&1
+	rm -rf "/usrdata/micropython" > /dev/null 2>&1
+ 	rm -rf "/usrdata/at-telnet" > /dev/null 2>&1
+        echo -e "\033[0;32mAT Socat Bridge services removed!...\033[0m"
     fi
 
     # Uninstall the rest of Simpleadmin
@@ -791,48 +797,57 @@ WantedBy=multi-user.target" > "$cfun_service_path"
 
 # Function for TTYd install
 install_ttyd() {
-    while true; do
-    echo -e "\e[1;31mMake sure to replace the default Quectel /bin/login\e[0m"
-    echo -e "\e[1;31mInstall Entware then run opkg install shadow-login\e[0m"
-    echo -e "\e[1;31mRemount as read-write: mount -o remount,rw /\e[0m"
-    echo -e "\e[1;31mThen delete the existing login binary: rm /bin/login \e[0m"
-    echo -e "\e[1;31mMake a symbolic link to the new one: ln -sf /opt/bin/login /bin \e[0m"
-    echo -e "\e[1;31mSet your password: passwd \e[0m"
-    echo "============================================================================="
-    echo -e "\e[92m5) Proceed with install?\e[0m" # Light Green
-    echo -e "\033[0;32m1) Yes\033[0m"
-    echo -e "\033[0;31m2) No\033[0m"
-    read -p "Enter your choice: " choice
+    echo -e "\e[1;34mStarting ttyd installation process...\e[0m"
 
-        case $choice in
-        1)
-            remount_rw
-	    mkdir /usrdata/ttyd/
-     	    cd /usrdata/ttyd/
-	    mkdir scripts
-	    mkdir systemd
-	    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/ttyd
-	    chmod +x ttyd
-	    cd scripts
-	    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/scripts/ttyd.bash
-	    chmod +x ttyd.bash
-	    cd /usrdata/ttyd/systemd
-	    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/systemd/ttyd.service
-     	    cd /lib/systemd/system/
-	    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/systemd/ttyd.service
-	    ln -sf /lib/systemd/system/ttyd.service /lib/systemd/system/multi-user.target.wants
-	    systemctl daemon-reload
-	    systemctl start ttyd
-     	    cd /
-	    echo -e "\e[1;31mInstall Complete! Server up on port 443. No TLS/SSL enabled yet. \e[0m"
-     	    break
-            ;;
-        2)
-            break
-            ;;
-    esac
-done
+    if [ ! -f "/opt/bin/opkg" ]; then
+        echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
+        cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
+        if [ "$?" -ne 0 ]; then
+            echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
+            exit 1
+        fi
+        cd /
+    else
+        echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
+    fi
+
+    mount -o remount,rw /
+    opkg update && opkg install shadow-login shadow-passwd
+    if [ "$?" -ne 0 ]; then
+        echo -e "\e[1;31mPackage installation failed. Please check your internet connection and try again.\e[0m"
+        exit 1
+    fi
+
+    # Replacing the login and passwd binaries
+    rm /opt/etc/shadow
+    cp /etc/shadow /opt/etc/
+    rm /bin/login /usr/bin/passwd
+    ln -sf /opt/bin/login /bin
+    ln -sf /opt/bin/passwd /usr/bin/
+    echo -e "\e[1;31mPlease set your system login password.\e[0m"
+    /usr/bin/passwd
+
+    # Setting up ttyd
+    mkdir -p /usrdata/ttyd/scripts /usrdata/ttyd/systemd
+    cd /usrdata/ttyd/
+    wget -O ttyd "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/ttyd" && chmod +x ttyd
+    wget -O scripts/ttyd.bash "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/scripts/ttyd.bash" && chmod +x scripts/ttyd.bash
+    wget -O systemd/ttyd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/systemd/ttyd.service"
+    cp systemd/ttyd.service /lib/systemd/system/
+    ln -sf /lib/systemd/system/ttyd.service /etc/systemd/system/multi-user.target.wants/
+    
+    # Enabling and starting ttyd service
+    systemctl daemon-reload
+    systemctl enable ttyd
+    systemctl start ttyd
+    if [ "$?" -ne 0 ]; then
+        echo -e "\e[1;31mFailed to start ttyd service. Please check the systemd service file and ttyd binary.\e[0m"
+        exit 1
+    fi
+
+    echo -e "\e[1;32mInstall Complete! ttyd server is up on port 443. Note: No TLS/SSL enabled yet.\e[0m"
 }
+
 
 # Main menu
 while true; do
