@@ -1,5 +1,5 @@
 # RGMII Toolkit
-Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2 to RJ45 adapter (RGMII)
+## Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2 to RJ45 adapter (RGMII)
 
 Current Branch: **Main**
 
@@ -11,7 +11,7 @@ Fork development, and PR development to development :)
 
 
 
-## Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2 to RJ45 adapter (RGMII)
+
 #### [JUMP TO HOW TO USE](#how-to-use)
 **Currently:** This will allow you to install or if already installed, update, remove, or modify:
  - Simple Admin: A simple web interface for managing your Quectel m.2 modem through it's gateway address
