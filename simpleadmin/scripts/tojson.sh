@@ -8,6 +8,7 @@ file_name="$1"
 
 echo "{"
 last_line=$(wc -l < "$file_name")
+first_line=true
 
 while IFS='=' read -r key value || [[ -n "$key" ]]; do
     # Skip empty lines and comments
@@ -26,13 +27,20 @@ while IFS='=' read -r key value || [[ -n "$key" ]]; do
         value="\"$value\""
     fi
 
-    # Print key-value pair in JSON format without surrounding double quotes on value
-    printf ' "%s" : %s' "$key" "$value"
+    # Check if value is empty, if so, skip printing this key-value pair
+    if [[ -z "$value" ]]; then
+        continue
+    fi
 
-    # Check if not the last line, add comma
-    if [ $((++current_line)) -lt "$last_line" ]; then
+    # Print comma before each pair except for the first one
+    if $first_line; then
+        first_line=false
+    else
         printf ','
     fi
+
+    # Print key-value pair in JSON format without surrounding double quotes on value
+    printf ' "%s" : %s' "$key" "$value"
 
     printf '\n'
 done < "$file_name"
