@@ -8,6 +8,7 @@ file_name="$1"
 
 echo "{"
 last_line=$(wc -l < "$file_name")
+first_line=true
 
 while IFS='=' read -r key value || [[ -n "$key" ]]; do
     # Skip empty lines and comments
@@ -19,13 +20,27 @@ while IFS='=' read -r key value || [[ -n "$key" ]]; do
     key=$(echo "$key" | awk '{$1=$1};1')
     value=$(echo "$value" | awk '{$1=$1};1')
 
-    # Print key-value pair in JSON format without surrounding double quotes on value
-    printf ' "%s" : %s' "$key" "$value"
+    # Check if value includes double quotes inside it like: "value,"value"". If there is, remove the inner double quotes.
+    if [[ "$value" == *\"* ]]; then
+        value=$(echo "$value" | sed 's/\"//g')
+        # enclose the value in double quotes again
+        value="\"$value\""
+    fi
 
-    # Check if not the last line, add comma
-    if [ $((++current_line)) -lt "$last_line" ]; then
+    # Check if value is empty, if so, skip printing this key-value pair
+    if [[ -z "$value" ]]; then
+        continue
+    fi
+
+    # Print comma before each pair except for the first one
+    if $first_line; then
+        first_line=false
+    else
         printf ','
     fi
+
+    # Print key-value pair in JSON format without surrounding double quotes on value
+    printf ' "%s" : %s' "$key" "$value"
 
     printf '\n'
 done < "$file_name"

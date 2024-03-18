@@ -1,179 +1,303 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>RM5xxx AT Commands</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AT Commands</title>
 
     <script src="/js/alpinejs.min.js" defer></script>
-    <link rel="stylesheet" href="/css/bulma.css">
-    <link rel="stylesheet" type="text/css" href="/css/admin.css">
-</head>
+    <link rel="stylesheet" href="/css/bulma.css" />
+    <link rel="stylesheet" type="text/css" href="/css/admin.css" />
+  </head>
 
-<body>
-
+  <body>
     <!-- START NAV -->
     <nav class="navbar is-black" x-data="{ isOpen: false }">
-        <div class="container">
-            <div class="navbar-brand">
-                <a class="navbar-item brand-text" href="/">
-                    Quectel Simple Admin
-                </a>
-                <a role="button" class="navbar-burger burger" @click="isOpen = !isOpen">
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                </a>
-            </div>
-            <div id="navMenu" class="navbar-menu" :class="isOpen ? 'is-active' : ''">
-                <div class="navbar-start">
-                    <a class="navbar-item" href="/">
-                        Connection Info
-                    </a>
-                    <a class="navbar-item" href="/atcommander.html">
-                        AT Commands
-                    </a>
-                    <a class="navbar-item" href="/ttl.html">
-                        TTL Changer
-                    </a>
-                </div>
-
-            </div>
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item brand-text" href="/"> Simple Admin </a>
+          <a
+            role="button"
+            class="navbar-burger burger"
+            @click="isOpen = !isOpen"
+          >
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
         </div>
+        <div
+          id="navMenu"
+          class="navbar-menu"
+          :class="isOpen ? 'is-active' : ''"
+        >
+          <div class="navbar-start">
+            <a class="navbar-item" href="/"> Connection Info </a>
+            <a class="navbar-item" href="/atcommander.html"> AT Commands </a>
+            <a class="navbar-item" href="/ttl.html"> TTL Changer </a>
+          </div>
+        </div>
+      </div>
     </nav>
     <!-- END NAV -->
     <div class="container" x-data="atCommands()">
-        <div class="columns">
-            <div class="column is-12">
-                <div class="columns">
-                    <div class="column is-4">
-                        <div class="card">
-                            <header class="card-header">
-                                <p class="card-header-title">
-                                    AT Command
-                                </p>
-                            </header>
-                            <div class="card-content">
-                                <div class="content">
-                                    <div class="field">
-                                        <label class="label">AT Command</label>
-                                        <div class="control">
-                                            <input class="input" type="text" placeholder="ATI" x-model="atcmd">
-                                        </div>
-                                    </div>
-                                    <div class="field">
-                                        <p class="control">
-                                            <button class="button is-success" @click="sendAtCommand()">
-                                                Send AT Command
-                                            </button>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+      <div class="columns">
+        <div class="column is-12">
+          <div class="columns">
+            <div class="column is-4">
+              <div class="card">
+                <header class="card-header">
+                  <p class="card-header-title">AT Command</p>
+                </header>
+                <div class="card-content">
+                  <div class="content">
+                    <div class="field">
+                      <label class="label">AT Command</label>
+                      <div class="control">
+                        <input
+                          class="input"
+                          type="text"
+                          placeholder="ATI"
+                          x-model="atcmd"
+                          x-ref="atCmdInput"
+                          @keydown.enter="sendAtCommand()"
+                        />
+                      </div>
                     </div>
-                    <div class="column is-8">
-                        <div class="card">
-                            <header class="card-header">
-                                <p class="card-header-title">
-                                    ATI Response
-                                </p>
-                            </header>
-                            <div class="card-content">
-                                <div class="content">
-                                    <textarea class="textarea" placeholder="ATI Responses Will Appear Here" rows="10"
-                                        x-text="atCommandResponse"></textarea>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="field">
+                      <p class="control">
+                        <button
+                          class="button is-success"
+                          @click="sendAtCommand()"
+                          :disabled="isLoading"
+                        >
+                          Send AT Command
+                        </button>
+
+                        <button
+                          class="button is-danger"
+                          @click="clearResponses()"
+                          :disabled="atCommandResponse === ''"
+                        >
+                          Clear
+                        </button>
+                      </p>
                     </div>
+                  </div>
                 </div>
-
+              </div>
             </div>
-
+            <div class="column is-8">
+              <div class="card">
+                <header class="card-header">
+                  <p class="card-header-title">ATI Response</p>
+                </header>
+                <div class="card-content">
+                  <div class="content">
+                    <textarea
+                      class="textarea"
+                      placeholder="Please send only 1 AT command at a time"
+                      rows="10"
+                      x-text="isLoading ? 'Fetching response, please wait...' : atCommandResponse"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- START Useful Commands Section -->
     <div class="container">
-        <div class="columns">
-            <div class="column is-12">
-                <div class="card">
-                    <header class="card-header">
-                        <p class="card-header-title">
-                            Useful Commands
-                        </p>
-                    </header>
-                    <div class="card-content">
-                        <div class="content">
-                            <!-- Add your useful commands content here -->
-                            <p>Here are some useful commands:</p>
-                            <ul>
-                                <li>See https://github.com/iamromulan/RM520N-GL#at-commands for more </li>
-								<li>AT+CFUN=1,1 (reboot)</li>
-                                <li>AT+QMAPWAC? (get current status of auto connect, 0=disabled 1=enabled)</li>
-                                <li>AT+QMAPWAC=1 (enable auto connect internet for ethernet)</li>
-								<li>AT+QMAPWAC=0 (disable auto connect for ethernet; use when you want internet over usb to work; IPPT must be disabled)</li>
-								<li>AT+QUIMSLOT? (get active sim slot; 1=Slot 1; 2=Slot 2)</li>
-								<li>AT+QUIMSLOT=1 (switch to sim slot 1)</li>
-								<li>AT+QUIMSLOT=2 (switch to sim slot 2)</li>
-								<li>AT+CGDCONT? (Get active APN profle list 1 through 8)</li>
-								<li>AT+CGDCONT=1,"IPV4V6","APNHERE" (Sets APN profle 1 to APNHERE using both IPV4 and IPV6)</li>
-								<li>AT+GSN (Show current IMEI)</li>
-								<li>AT+EGMR=1,7,"IMEIGOESHERE" (sets/repairs IMEI)</li>
-								<li>AT+QCAINFO (Show all connected bands/CA info)</li>
-								<li>AT+QNWPREFCFG="mode_pref" (Check what the current network search mode is set to)</li>
-								<li>AT+QNWPREFCFG="mode_pref",AUTO (Set network search mode to automatic)</li>
-								<li>AT+QNWPREFCFG="mode_pref",NR5G:LTE (Set network search mode to 5G/NR and 4G/LTE only)</li>
-								<li>AT+QNWPREFCFG="mode_pref",NR5G (Set network search mode to 5G/NR only)</li>
-								<li>AT+QNWPREFCFG="mode_pref",LTE (Set network search mode to 4G/LTE only)</li>
-								<li>AT+QNWPREFCFG="nr5g_disable_mode" (Check to see if SA or NSA NR5G is disabled)</li>
-								<li>AT+QNWPREFCFG="nr5g_disable_mode",0 (Enable Both SA and NSA 5G/NR)</li>
-								<li>AT+QNWPREFCFG="nr5g_disable_mode",1 (Disable SA 5G/NR only)</li>
-								<li>AT+QNWPREFCFG="nr5g_disable_mode",2 (Disable NSA 5G/NR only)</li>
-								<li>AT+QNWPREFCFG="nr5g_band" (Get current 5G/NR bandlock settings)</li>
-								<li>AT+QNWPREFCFG="nr5g_band",1:2:3:4:5:6 (Example: Lock to 5G/NR bands n1,n2,n3,n4,n5, and n6)</li>
-								<li>AT+QNWPREFCFG="lte_band" (Get current 4G/LTE bandlock settings)</li>
-								<li>AT+QNWPREFCFG="lte_band",1:2:3:4:5:6 (Example: Lock to 4G/LTE bands 1,2,3,4,5, and 6)</li>
-								<li>AT+QMAP="WWAN" (Show currently assigned IPv4 and IPv6 from the provider)</li>
-								<li>AT+QMAP="LANIP" (Show current DHCP range and Gateway address for VLAN0)</li>
-								<li>AT+QMAP="LANIP",IP_start_range,IP_end_range,Gateway_IP (Set IPv4 Start/End range and Gateway IP of DHCP for VLAN0)</li>
-								<li>AT+QMAP="DHCPV4DNS","disable" (disable the onboard DNS proxy; recommended for IPPT)</li>
-								<li>AT+QMAP="MPDN_rule",0,1,0,1,1,"FF:FF:FF:FF:FF:FF" (Turn on IP Passthrough for Ethernet)</li>
-								<li>AT+QMAP="MPDN_rule",0 (turn off IPPT/clear MPDN rule 0; Remember to run AT+QMAPWAC=1 and reboot after)</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+      <div class="columns">
+        <div class="column is-12">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">Useful Commands</p>
+            </header>
+            <div class="card-content">
+              <div class="content">
+                <!-- <div class="field" style="margin-bottom: 1rem">
+                  <p class="control">
+                    <button
+                      class="button is-danger"
+                      click="sendRebootCommand()"
+                      :disabled="isRebootClicked"
+
+                    >
+                      Reboot
+                    </button>
+                  </p>
+                </div> -->
+                <!-- Add your useful commands content here -->
+                <p>Here are some useful commands:</p>
+                <ul>
+                  <li>
+                    See https://github.com/iamromulan/RM520N-GL#at-commands for
+                    more
+                  </li>
+                  <li>AT+CFUN=1,1 (reboot)</li>
+                  <li>
+                    AT+QMAPWAC? (get current status of auto connect, 0=disabled
+                    1=enabled)
+                  </li>
+                  <li>
+                    AT+QMAPWAC=1 (enable auto connect internet for ethernet)
+                  </li>
+                  <li>
+                    AT+QMAPWAC=0 (disable auto connect for ethernet; use when
+                    you want internet over usb to work; IPPT must be disabled)
+                  </li>
+                  <li>
+                    AT+QUIMSLOT? (get active sim slot; 1=Slot 1; 2=Slot 2)
+                  </li>
+                  <li>AT+QUIMSLOT=1 (switch to sim slot 1)</li>
+                  <li>AT+QUIMSLOT=2 (switch to sim slot 2)</li>
+                  <li>AT+CGDCONT? (Get active APN profle list 1 through 8)</li>
+                  <li>
+                    AT+CGDCONT=1,"IPV4V6","APNHERE" (Sets APN profle 1 to
+                    APNHERE using both IPV4 and IPV6)
+                  </li>
+                  <li>AT+GSN (Show current IMEI)</li>
+                  <li>AT+EGMR=1,7,"IMEIGOESHERE" (sets/repairs IMEI)</li>
+                  <li>AT+QCAINFO (Show all connected bands/CA info)</li>
+                  <li>
+                    AT+QNWPREFCFG="mode_pref" (Check what the current network
+                    search mode is set to)
+                  </li>
+                  <li>
+                    AT+QNWPREFCFG="mode_pref",AUTO (Set network search mode to
+                    automatic)
+                  </li>
+                  <li>
+                    AT+QNWPREFCFG="mode_pref",NR5G:LTE (Set network search mode
+                    to 5G/NR and 4G/LTE only)
+                  </li>
+                  <li>
+                    AT+QNWPREFCFG="mode_pref",NR5G (Set network search mode to
+                    5G/NR only)
+                  </li>
+                  <li>
+                    AT+QNWPREFCFG="mode_pref",LTE (Set network search mode to
+                    4G/LTE only)
+                  </li>
+                  <li>
+                    AT+QNWPREFCFG="nr5g_disable_mode" (Check to see if SA or NSA
+                    NR5G is disabled)
+                  </li>
+                  <li>
+                    AT+QNWPREFCFG="nr5g_disable_mode",0 (Enable Both SA and NSA
+                    5G/NR)
+                  </li>
+                  <li>
+                    AT+QNWPREFCFG="nr5g_disable_mode",1 (Disable SA 5G/NR only)
+                  </li>
+                  <li>
+                    AT+QNWPREFCFG="nr5g_disable_mode",2 (Disable NSA 5G/NR only)
+                  </li>
+                  <li>
+                    AT+QNWPREFCFG="nr5g_band" (Get current 5G/NR bandlock
+                    settings)
+                  </li>
+                  <li>
+                    AT+QNWPREFCFG="nr5g_band",1:2:3:4:5:6 (Example: Lock to
+                    5G/NR bands n1,n2,n3,n4,n5, and n6)
+                  </li>
+                  <li>
+                    AT+QNWPREFCFG="lte_band" (Get current 4G/LTE bandlock
+                    settings)
+                  </li>
+                  <li>
+                    AT+QNWPREFCFG="lte_band",1:2:3:4:5:6 (Example: Lock to
+                    4G/LTE bands 1,2,3,4,5, and 6)
+                  </li>
+                  <li>
+                    AT+QMAP="WWAN" (Show currently assigned IPv4 and IPv6 from
+                    the provider)
+                  </li>
+                  <li>
+                    AT+QMAP="LANIP" (Show current DHCP range and Gateway address
+                    for VLAN0)
+                  </li>
+                  <li>
+                    AT+QMAP="LANIP",IP_start_range,IP_end_range,Gateway_IP (Set
+                    IPv4 Start/End range and Gateway IP of DHCP for VLAN0)
+                  </li>
+                  <li>
+                    AT+QMAP="DHCPV4DNS","disable" (disable the onboard DNS
+                    proxy; recommended for IPPT)
+                  </li>
+                  <li>
+                    AT+QMAP="MPDN_rule",0,1,0,1,1,"FF:FF:FF:FF:FF:FF" (Turn on
+                    IP Passthrough for Ethernet)
+                  </li>
+                  <li>
+                    AT+QMAP="MPDN_rule",0 (turn off IPPT/clear MPDN rule 0;
+                    Remember to run AT+QMAPWAC=1 and reboot after)
+                  </li>
+                </ul>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     </div>
     <!-- END Useful Commands Section -->
 
     <script>
+      function atCommands() {
+        return {
+          isLoading: false,
+          atcmd: null,
+          atCommandResponse: "",
+          sendAtCommand() {
+            this.isLoading = true;
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: this.atcmd,
+                })
+            )
+              .then((res) => {
+                return res.text();
+              })
+              .then((data) => {
+                this.atCommandResponse = data;
+                this.isLoading = false;
+              })
+              .finally(() => {
+                this.isLoading = false;
+              });
+          },
+          clearResponses() {
+            this.atCommandResponse = "";
+          },
+        };
+      }
 
-        function atCommands() {
-            return {
-                isLoading: false,
-                atcmd: null,
-                atCommandResponse: null,
-                sendAtCommand() {
-                    fetch('/cgi-bin/get_atcommand?' + new URLSearchParams({
-                        atcmd: this.atcmd,
-                    }))
-                        .then((res) => {
-                            return res.text();
-                        })
-                        .then((data) => {
-                            this.atCommandResponse = data;
-                            this.isLoading = false;
-                        })
-                },
-            }
-        }
+      function sendRebootCommand() {
+        var isRebootClicked = true;
+        console.log("Reboot command triggered");
+        var atcmd = "AT+CFUN=1,1";
+        fetch(
+          "/cgi-bin/get_atcommand?" +
+            new URLSearchParams({
+              atcmd: atcmd,
+            })
+        )
+          .then((res) => {
+            return res.text();
+          })
+          .then((data) => {
+            console.log(data); // Logging the response for debugging purposes
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
     </script>
-</body>
-
+  </body>
 </html>

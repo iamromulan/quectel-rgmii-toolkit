@@ -36,13 +36,15 @@ nr_bw() {
 	esac
 }
 
-# Function to get the secondary LTE bands
+# Function to get the secondary LTE & NR5G bands
+# Now conditionally calls the functions to get the secondary bands
+# Only apply  | sed '1d' to NR_BAND when network mode is SA
 get_secondary_bands() {
 	# Extract LTE BANDs from SCC lines
 	SCC_BANDS=$(echo "$OX" | grep '+QCAINFO: "SCC"' | grep -o '"LTE BAND [0-9]\+"' | tr -d '"' | sed '1d')
 	
 	# Extract NR5G BANDs from SCC lines
-	NR_BAND=$(echo "$OX" | grep '+QCAINFO: "SCC"' | grep -o '"NR5G BAND [0-9]\+"' | tr -d '"' | sed '1d')
+	NR_BAND=$(echo "$OX" | grep '+QCAINFO: "SCC"' | grep -o '"NR5G BAND [0-9]\+"' | tr -d '"')
 	
 	# Check if both SCC and NR bands are non-empty
 	if [ -n "$SCC_BANDS" ] && [ -n "$NR_BAND" ]; then
@@ -52,9 +54,6 @@ get_secondary_bands() {
 		# Set SC_BANDS to the non-empty variable or empty if both are empty
 		SC_BANDS="${SCC_BANDS}${NR_BAND}"
 	fi
-
-	# Get the PCI value. For example: 264 based on this +QCAINFO: "PCC",1775,75,"LTE BAND 3",1,264,-103,-13,-71,0
-	MAIN_PCI=$(echo "$OX" | grep '+QCAINFO: "PCC"' | grep -o ',[0-9]\{1,5\},' | tr -d ',')
 }
 
 # Get the modem model from /tmp/modemmodel.txt and parse it
@@ -63,8 +62,7 @@ MODEM_MODEL=$(</tmp/modemmodel.txt)
 MODEM_MODEL=$(echo "$MODEM_MODEL" | grep -o "RG[^ ]\+\|RM[^ ]\+")
 
 # Get the APN from /tmp/apn.txt and parse it
-APN=$(</tmp/apn.txt)
-APN=$(echo "$APN" | grep -o '"[^"]*"' | head -n1 | tr -d '"')
+APN=$(grep "^+CGCONTRDP" /tmp/apn.txt | awk -F',' '{gsub(/"/, "", $3); print $3}')
 
 # Get the SIM slot from /tmp/simslot.txt and parse it
 # simslot.txt looks like this: +QUIMSLOT: 1
@@ -115,8 +113,7 @@ else
 	CSQ_PER="-"
 	CSQ_RSSI="-"
 fi
-get_secondary_bands
-# End of QCAINFO 
+
 NR_NSA=$(echo $OX | grep -o "+QENG:[ ]\?\"NR5G-NSA\",")
 NR_SA=$(echo $OX | grep -o "+QENG: \"SERVINGCELL\",[^,]\+,\"NR5G-SA\",\"[DFT]\{3\}\",")
 if [ -n "$NR_NSA" ]; then
@@ -173,6 +170,7 @@ case $RAT in
 		else
 			MODE="$RAT"
 		fi
+		get_secondary_bands
 		PCI=$(echo $QENG | cut -d, -f9)
 		CHANNEL=$(echo $QENG | cut -d, -f10)
 		LBAND=$(echo $QENG | cut -d, -f11 | grep -o "[0-9]\{1,3\}")
@@ -218,11 +216,13 @@ case $RAT in
 			fi
 		fi
 		if [ -n "$NR_NSA" ]; then
-			MODE="LTE/NR EN-DC"
+			# Changed network mode to NR5G NSA for easy identification 
+			MODE="NR5G NSA"
 			echo "0" > /tmp/modnetwork
 			if [ -n "$QENG5" ]; then
 				QENG5=$QENG5",,"
 				# Append the initial PCI value rather than overwriting it
+				get_secondary_bands
 				PCI="$PCI, "$(echo $QENG5 | cut -d, -f4)
 				SCHV=$(echo $QENG5 | cut -d, -f8)
 				SLBV=$(echo $QENG5 | cut -d, -f9) # Now correctly captures the NR band
@@ -305,6 +305,9 @@ case $RAT in
 		if [ -n "$QENG5" ]; then
 			MODE="$RAT $(echo $QENG5 | cut -d, -f4)"
 			PCI=$(echo $QENG5 | cut -d, -f8)
+			get_secondary_bands
+			# Apply  | sed '1d' to NR_BAND
+			NR_BAND=$(echo $NR_BAND | sed '1d')
 			CHANNEL=$(echo $QENG5 | cut -d, -f10)
 			LBAND=$(echo $QENG5 | cut -d, -f11)
 			PC_BAND="NR5G BAND "$LBAND
