@@ -62,8 +62,7 @@ MODEM_MODEL=$(</tmp/modemmodel.txt)
 MODEM_MODEL=$(echo "$MODEM_MODEL" | grep -o "RG[^ ]\+\|RM[^ ]\+")
 
 # Get the APN from /tmp/apn.txt and parse it
-APN=$(</tmp/apn.txt)
-APN=$(echo "$APN" | grep -o '"[^"]*"' | head -n1 | tr -d '"')
+APN=$(grep "^+CGCONTRDP" /tmp/apn.txt | awk -F',' '{gsub(/"/, "", $3); print $3}')
 
 # Get the SIM slot from /tmp/simslot.txt and parse it
 # simslot.txt looks like this: +QUIMSLOT: 1
