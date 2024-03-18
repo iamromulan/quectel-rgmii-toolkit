@@ -1,11 +1,10 @@
-<!-- !Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>RM5xxx AT Commands</title>
+    <title>AT Commands</title>
 
     <script src="/js/alpinejs.min.js" defer></script>
     <link rel="stylesheet" href="/css/bulma.css" />
@@ -62,6 +61,8 @@
                           type="text"
                           placeholder="ATI"
                           x-model="atcmd"
+                          x-ref="atCmdInput"
+                          @keydown.enter="sendAtCommand()"
                         />
                       </div>
                     </div>
