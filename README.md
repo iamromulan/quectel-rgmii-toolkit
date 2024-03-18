@@ -3,7 +3,7 @@
 
 Current Branch: **Main**
 
-Please Fork and PR with/to [Development](https://github.com/iamromulan/quectel-rgmii-toolkit/tree/development) instead of main, it has the latest chnages and is meant to be commits ahead of main for testing. :)
+Please Fork and PR with/to [Development](https://github.com/iamromulan/quectel-rgmii-toolkit/tree/development) instead of main, it has the latest changes and is meant to be commits ahead of main for testing. :)
 
 "Don't push to production 😂"
 
