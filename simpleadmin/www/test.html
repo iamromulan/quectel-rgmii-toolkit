@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AT Commands</title>
+
+    <script src="/js/alpinejs.min.js" defer></script>
+    <link rel="stylesheet" href="/css/bulma.css" />
+    <link rel="stylesheet" type="text/css" href="/css/admin.css" />
+  </head>
+
+  <body>
+    <!-- START NAV -->
+    <!-- Your navigation code -->
+    <!-- END NAV -->
+    <div class="container" x-data="atCommands()">
+      <!-- Your form and command display code -->
+    </div>
+
+    <!-- Your useful commands section code -->
+
+    <script>
+      function atCommands() {
+        const autofillOptions = [
+          "ATI", "AT+GMI", "AT+GMM", "AT+GMR", "AT+CGMI", "AT+CGMM", "AT+CGMR", "AT+GSN", "AT+CGSN", "AT&F", "AT+CFUN=1,1", "AT+QMAPWAC?", "AT+QMAPWAC=1", "AT+QMAPWAC=0", "AT+QUIMSLOT?", "AT+QUIMSLOT=1", "AT+QUIMSLOT=2", "AT+CGDCONT?", "AT+CGDCONT=1,", "AT+EGMR=1,7,", "AT+QCAINFO", "AT+QNWPREFCFG=", "AT+QNWPREFCFG=,AUTO", "AT+QNWPREFCFG=,NR5G:LTE", "AT+QNWPREFCFG=,NR5G", "AT+QNWPREFCFG=,LTE", 'AT+QNWPREFCFG="nr5g_disable_mode"', 'AT+QNWPREFCFG="nr5g_disable_mode",0', 'AT+QNWPREFCFG="nr5g_disable_mode",1', 'AT+QNWPREFCFG="nr5g_disable_mode",2', 'AT+QNWPREFCFG="nr5g_band"', 'AT+QNWPREFCFG="nr5g_band",1:2:3:4:5:6', 'AT+QNWPREFCFG="lte_band"', 'AT+QNWPREFCFG="lte_band",1:2:3:4:5:6', 'AT+QMAP="WWAN"', 'AT+QMAP="LANIP"', 'AT+QMAP="LANIP",', 'AT+QMAP="DHCPV4DNS","disable"', 'AT+QMAP="MPDN_rule",0,1,0,1,1,"FF:FF:FF:FF:FF:FF"', 'AT+QMAP="MPDN_rule",0'
+        ];
+
+        return {
+          atcmd: null,
+          sendAtCommand() {
+            // Your sendAtCommand function as before
+          },
+          clearResponses() {
+            // Your clearResponses function as before
+          },
+          updateAutofill(event) {
+            if (event.key === "Tab") {
+              event.preventDefault(); // Prevent default tab behavior
+
+              const input = this.atcmd.toUpperCase();
+              let bestMatch = null;
+              let bestMatchIndex = -1;
+
+              autofillOptions.forEach((option, index) => {
+                if (option.toUpperCase().startsWith(input)) {
+                  if (bestMatch === null || option.length < bestMatch.length) {
+                    bestMatch = option;
+                    bestMatchIndex = index;
+                  }
+                }
+              });
+
+              if (bestMatch !== null) {
+                this.atcmd = bestMatch;
+                // Set the cursor position to the end of the input to prevent auto-selection
+                const inputElement = event.target;
+                inputElement.setSelectionRange(bestMatch.length, bestMatch.length);
+              }
+            }
+          },
+        };
+      }
+    </script>
+  </body>
+</html>

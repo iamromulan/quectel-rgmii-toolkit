@@ -218,28 +218,65 @@
     </div>
 
     <script>
-      function getSignalData() {
+      function signalInfo() {
         return {
-          csqData: {},
-          lastUpdate: new Date().toLocaleString(),
-          getcsq() {
-            fetch("/cgi-bin/get_csq")
-              .then((res) => res.json())
+          isLoading: false,
+          atcmd: 'AT+QSPN;+CEREG=2;+CEREG?;+CEREG=0;+C5GREG=2;+C5GREG?;+C5GREG=0;+CSQ;+QENG=\"servingcell\";+QRSRP;+QCAINFO;+QNWPREFCFG=\"mode_pref\";+QTEMP\r\n',
+          atCommandResponse: null,
+          refreshSignal() {
+            this.isLoading = true; // Set loading state to true before fetching data
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: this.atcmd,
+                })
+            )
+              .then((res) => {
+                return res.text();
+              })
               .then((data) => {
-                this.csqData = data;
-                this.lastUpdate = new Date(
-                  data.LASTUPDATE * 1000
-                ).toLocaleString();
+                this.atCommandResponse = data;
+                // Split the response into individual messages
+                const messages = data.trim().split("\n\n");
+
+                // Convert the messages into a JSON file
+                //TODO: Add the JSON conversion here
+
+
+                // Log the parsed messages array as JSON to the console
+                console.log(JSON.stringify(parsedMessages, null, 2));
+              })
+              .catch((error) => {
+                console.error("Something went wrong", error);
+              })
+              .finally(() => {
+                this.isLoading = false; // Set loading state to false after fetching data
               });
-          },
-          init() {
-            this.getcsq();
-            setInterval(() => {
-              this.getcsq();
-            }, 30000);
           },
         };
       }
+      // function getSignalData() {
+      //   return {
+      //     csqData: {},
+      //     lastUpdate: new Date().toLocaleString(),
+      //     getcsq() {
+      //       fetch("/cgi-bin/get_csq")
+      //         .then((res) => res.json())
+      //         .then((data) => {
+      //           this.csqData = data;
+      //           this.lastUpdate = new Date(
+      //             data.LASTUPDATE * 1000
+      //           ).toLocaleString();
+      //         });
+      //     },
+      //     init() {
+      //       this.getcsq();
+      //       setInterval(() => {
+      //         this.getcsq();
+      //       }, 30000);
+      //     },
+      //   };
+      // }
     </script>
   </body>
 </html>
