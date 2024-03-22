@@ -307,8 +307,7 @@ case $RAT in
 			PCI=$(echo $QENG5 | cut -d, -f8)
 			get_secondary_bands
 			# Apply  | sed '1d' to NR_BAND
-			# Temporarily removed the sed command for testing
-			NR_BAND=$(echo $NR_BAND)
+			NR_BAND=$(echo $NR_BAND | sed '1d')
 			CHANNEL=$(echo $QENG5 | cut -d, -f10)
 			LBAND=$(echo $QENG5 | cut -d, -f11)
 			PC_BAND="NR5G BAND "$LBAND
