@@ -99,60 +99,19 @@
       function atCommands() {
         return {
           isLoading: false,
-          atcmd: 'AT+CMGL="ALL"',
-          atCommandResponse: null,
+          atCommandResponse: "",
+          // get the SMS list through cgi-bin/get_sms
           sendAtCommand() {
-            this.isLoading = true; // Set loading state to true before fetching data
-            fetch(
-              "/cgi-bin/get_atcommand?" +
-                new URLSearchParams({
-                  atcmd: this.atcmd,
-                })
-            )
-              .then((res) => {
-                return res.text();
-              })
+            this.isLoading = true;
+            fetch("/cgi-bin/get_sms")
+              .then((response) => response.text())
               .then((data) => {
                 this.atCommandResponse = data;
-                // Split the response into individual messages
-                const messages = data.trim().split("\n\n");
-
-                // Parse each message and construct an array of objects
-                const parsedMessages = messages.map((message) => {
-                  const lines = message.split("\n");
-                  const sender = decodeHexString(
-                    lines[1].split(",")[2].slice(1, -1)
-                  );
-                  const time = lines[2].split(',"')[1];
-                  const messageText = decodeHexString(lines[3]);
-                  return {
-                    "Người gửi": sender,
-                    "Thời gian": time,
-                    "Tin nhắn": messageText,
-                  };
-                });
-
-                // Log the parsed messages array as JSON to the console
-                console.log(JSON.stringify(parsedMessages, null, 2));
-              })
-              .catch((error) => {
-                console.error("Không thể tìm thấy dữ liệu:", error);
-              })
-              .finally(() => {
-                this.isLoading = false; // Set loading state to false after fetching data
+                console.log(data);
+                this.isLoading = false;
               });
           },
         };
-      }
-      // Hàm giải mã chuỗi hex sang văn bản
-      function decodeHexString(hexString) {
-        let decodedString = "";
-        for (let i = 0; i < hexString.length; i += 4) {
-          let hex = hexString.substr(i, 4);
-          let intValue = parseInt(hex, 16);
-          decodedString += String.fromCharCode(intValue);
-        }
-        return decodedString;
       }
     </script>
   </body>
