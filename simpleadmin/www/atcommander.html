@@ -122,18 +122,6 @@
             </header>
             <div class="card-content">
               <div class="content">
-                <!-- <div class="field" style="margin-bottom: 1rem">
-                  <p class="control">
-                    <button
-                      class="button is-danger"
-                      click="sendRebootCommand()"
-                      :disabled="isRebootClicked"
-
-                    >
-                      Reboot
-                    </button>
-                  </p>
-                </div> -->
                 <!-- Add your useful commands content here -->
                 <p>Here are some useful commands:</p>
                 <ul>
@@ -254,8 +242,14 @@
         return {
           isLoading: false,
           atcmd: null,
+          defaultAtCommand: 'ATI',
           atCommandResponse: "",
           sendAtCommand() {
+            if (!this.atcmd) {
+              // Use ATI as default command
+              this.atcmd = "ATI";
+              console.log("AT Command is empty, using ATI as default command: ", this.atcmd);
+            }
             this.isLoading = true;
             fetch(
               "/cgi-bin/get_atcommand?" +
@@ -278,27 +272,6 @@
             this.atCommandResponse = "";
           },
         };
-      }
-
-      function sendRebootCommand() {
-        var isRebootClicked = true;
-        console.log("Reboot command triggered");
-        var atcmd = "AT+CFUN=1,1";
-        fetch(
-          "/cgi-bin/get_atcommand?" +
-            new URLSearchParams({
-              atcmd: atcmd,
-            })
-        )
-          .then((res) => {
-            return res.text();
-          })
-          .then((data) => {
-            console.log(data); // Logging the response for debugging purposes
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
       }
     </script>
   </body>
