@@ -56,6 +56,17 @@ get_secondary_bands() {
 	fi
 }
 
+get_secondary_bands_sa() {
+    # Extract the NR5G SA BANDs from SCC lines from /tmp/qa.txt.
+    # If there are multiple bands, they will be concatenated with <br/> tags.
+    SC_BANDS=$(grep -o '"NR5G BAND [0-9]\+"' /tmp/modemstatus.txt | tr -d '"' | sed '1d' | sed ':a;N;$!ba;s/\n/<br\/>/g')
+
+    # If there are no NR5G SA bands, set SC_BANDS to empty
+    if [ -z "$SC_BANDS" ]; then
+        SC_BANDS="-"
+    fi
+}
+
 # Get the modem model from /tmp/modemmodel.txt and parse it
 MODEM_MODEL=$(</tmp/modemmodel.txt)
 # Get the model name from the modem model (they either start with RG or RM)
@@ -305,10 +316,9 @@ case $RAT in
 		if [ -n "$QENG5" ]; then
 			MODE="$RAT $(echo $QENG5 | cut -d, -f4)"
 			PCI=$(echo $QENG5 | cut -d, -f8)
-			get_secondary_bands
+			get_secondary_bands_sa
 			# Apply  | sed '1d' to NR_BAND
 			# Temporarily removed the sed command for testing
-			NR_BAND=$(echo $NR_BAND)
 			CHANNEL=$(echo $QENG5 | cut -d, -f10)
 			LBAND=$(echo $QENG5 | cut -d, -f11)
 			PC_BAND="NR5G BAND "$LBAND
