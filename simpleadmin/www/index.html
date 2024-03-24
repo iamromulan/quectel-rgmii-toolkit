@@ -256,28 +256,28 @@
           },
         };
       }
-      // function getSignalData() {
-      //   return {
-      //     csqData: {},
-      //     lastUpdate: new Date().toLocaleString(),
-      //     getcsq() {
-      //       fetch("/cgi-bin/get_csq")
-      //         .then((res) => res.json())
-      //         .then((data) => {
-      //           this.csqData = data;
-      //           this.lastUpdate = new Date(
-      //             data.LASTUPDATE * 1000
-      //           ).toLocaleString();
-      //         });
-      //     },
-      //     init() {
-      //       this.getcsq();
-      //       setInterval(() => {
-      //         this.getcsq();
-      //       }, 30000);
-      //     },
-      //   };
-      // }
+       function getSignalData() {
+         return {
+           csqData: {},
+           lastUpdate: new Date().toLocaleString(),
+           getcsq() {
+             fetch("/cgi-bin/get_csq")
+               .then((res) => res.json())
+               .then((data) => {
+                 this.csqData = data;
+                 this.lastUpdate = new Date(
+                   data.LASTUPDATE * 1000
+                 ).toLocaleString();
+               });
+           },
+           init() {
+             this.getcsq();
+             setInterval(() => {
+               this.getcsq();
+             }, 30000);
+           },
+         };
+       }
     </script>
   </body>
 </html>
