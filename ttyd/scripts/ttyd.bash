@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Read the serial number
-serial_number=$(atcmd 'AT+EGMR=0,5' | grep '+EGMR:' | cut -d '"' -f2)
+serial_number=$(/usrdata/socat-at-bridge/atcmd 'AT+EGMR=0,5' | grep '+EGMR:' | cut -d '"' -f2)
 # Read the firmware revision
-firmware_revision=$(atcmd 'AT+CGMR' | grep -o 'RM[0-9A-Z]*' | head -1)
+firmware_revision=$(/usrdata/socat-at-bridge/atcmd 'AT+CGMR' | grep -o 'RM[0-9A-Z]*' | head -1)
 
 echo "=============================================================="
 echo "=============================================================="
