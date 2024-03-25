@@ -834,7 +834,7 @@ install_ttyd() {
     wget -O scripts/ttyd.bash "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/scripts/ttyd.bash" && chmod +x scripts/ttyd.bash
     wget -O systemd/ttyd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/systemd/ttyd.service"
     cp systemd/ttyd.service /lib/systemd/system/
-    ln -sf /lib/systemd/system/ttyd.service /etc/systemd/system/multi-user.target.wants/
+    ln -sf /lib/systemd/system/ttyd.service /lib/systemd/system/multi-user.target.wants/
     
     # Enabling and starting ttyd service
     systemctl daemon-reload
