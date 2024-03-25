@@ -934,7 +934,8 @@ echo "                                           :+##+.            "
     echo -e "\e[91m6) Install/Uninstall CFUN 0 Fix\e[0m" # Light Red
     echo -e "\e[96m7) Install Entware/OPKG (BETA/Advanced)\e[0m" # Cyan (repeated color for additional options)
     echo -e "\e[96m8) Install TTYd (BETA,443,No TLS/SSL)\e[0m" # Cyan
-    echo -e "\e[93m9) Exit\e[0m" # Yellow (repeated color for exit option)
+    echo -e "\e[92m9) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
+    echo -e "\e[93m10) Exit\e[0m" # Yellow (repeated color for exit option)
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -979,6 +980,23 @@ echo "                                           :+##+.            "
  	    install_ttyd
       	    ;;
 	9) 
+	    echo -e "\e[1;32mInstalling Speedtest CLI (speedtest command)\e[0m"
+     	    remount_rw
+	    mkdir /usrdata/root
+     	    mkdir /usrdata/root/bin
+	    cd /usrdata/root/bin
+     	    wget https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-armhf.tgz
+	    tar -xzf ookla-speedtest-1.2.0-linux-armhf.tgz
+     	    rm ookla-speedtest-1.2.0-linux-armhf.tgz
+	    rm speedtest.md
+     	    cd /
+	    ln -sf /usrdata/root/bin/speedtest /bin
+     	    remount_ro
+	    echo -e "\e[1;32mSpeedtest CLI (speedtest command) installed!!\e[0m"
+     	    echo -e "\e[1;32mTry running the command 'speedtest'\e[0m"
+     	    break
+            ;;
+	10) 
 	    echo -e "\e[1;32mGoodbye!\e[0m"
      	    break
             ;;    
