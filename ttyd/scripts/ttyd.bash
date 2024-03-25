@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Read the serial number and remove the last two digits
-serial_number=$(cat /sys/devices/soc0/serial_number | sed 's/..$//')
+# Read the serial number
+serial_number=$(atcmd 'AT+EGMR=0,5' | grep '+EGMR:' | cut -d '"' -f2)
+# Read the firmware revision
+firmware_revision=$(atcmd 'AT+CGMR' | grep -o 'RM[0-9A-Z]*' | head -1)
 
 echo "=============================================================="
 echo "=============================================================="
@@ -82,8 +84,9 @@ echo "                                    :@@@@@*.                 "
 echo "                                      .=@@@@@-               "
 echo "                                           :+##+.            "
 echo "=============================================================="
-echo "Test ttyd startup file by iamromulan V0.1"
-echo "quectel-ID: $serial_number"
+echo "TTYd session file by iamromulan v1.0"
+echo "Firmware Revision: $firmware_revision"
+echo "Serial Number: $serial_number"
 echo "=============================================================="
 
 # Start a login session
