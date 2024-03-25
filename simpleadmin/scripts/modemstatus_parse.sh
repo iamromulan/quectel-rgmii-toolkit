@@ -37,27 +37,33 @@ nr_bw() {
 }
 
 # Function to get the secondary LTE & NR5G bands
-# Now conditionally calls the functions to get the secondary bands
-# Only apply  | sed '1d' to NR_BAND when network mode is SA
-get_secondary_bands() {
-	# Extract LTE BANDs from SCC lines
-	SCC_BANDS=$(echo "$OX" | grep '+QCAINFO: "SCC"' | grep -o '"LTE BAND [0-9]\+"' | tr -d '"' | sed '1d')
-	
-	# Extract NR5G BANDs from SCC lines
-	NR_BAND=$(echo "$OX" | grep '+QCAINFO: "SCC"' | grep -o '"NR5G BAND [0-9]\+"' | tr -d '"')
-	
-	# Check if both SCC and NR bands are non-empty
-	if [ -n "$SCC_BANDS" ] && [ -n "$NR_BAND" ]; then
-		# Concatenate LTE BANDs with NR5G BANDs
-		SC_BANDS="$SCC_BANDS<br />$NR_BAND"
-	else
-		# Set SC_BANDS to the non-empty variable or empty if both are empty
-		SC_BANDS="${SCC_BANDS}${NR_BAND}"
+get_secondary_bands_lte() {
+	# Extract the LTE BANDs from SCC lines from /tmp/modemstatus.txt.
+	# If there are multiple bands, they will be concatenated with <br/> tags.
+	SC_BANDS=$(grep -o '"LTE BAND [0-9]\+"' /tmp/modemstatus.txt | tr -d '"' | sed '1d' | sed ':a;N;$!ba;s/\n/<br\/>/g')
+
+	# If there are no LTE bands or NR5G bands, set SC_BANDS to empty
+	if [ -z "$SC_BANDS" ]; then
+		SC_BANDS="-"
+	fi
+
+}
+
+# Function to get the secondary NR5G bands for NR5G NSA
+get_secondary_bands_nsa() {
+	# Extract the NR5G NSA BANDs from SCC lines from /tmp/modemstatus.txt.
+	# If there are multiple bands, they will be concatenated with <br/> tags.
+	SC_BANDS_NSA=$(grep -o '"NR5G BAND [0-9]\+"' /tmp/modemstatus.txt | tr -d '"' | sed ':a;N;$!ba;s/\n/<br\/>/g')
+	echo $SC_BANDS_NSA > /tmp/scbands.txt
+
+	# If there are no NR5G NSA bands, set SC_BANDS_NSA to empty
+	if [ -z "$SC_BANDS_NSA" ]; then
+		SC_BANDS_NSA="-"
 	fi
 }
 
 get_secondary_bands_sa() {
-    # Extract the NR5G SA BANDs from SCC lines from /tmp/qa.txt.
+    # Extract the NR5G SA BANDs from SCC lines from /tmp/modemstatus.txt.
     # If there are multiple bands, they will be concatenated with <br/> tags.
     SC_BANDS=$(grep -o '"NR5G BAND [0-9]\+"' /tmp/modemstatus.txt | tr -d '"' | sed '1d' | sed ':a;N;$!ba;s/\n/<br\/>/g')
 
@@ -181,7 +187,7 @@ case $RAT in
 		else
 			MODE="$RAT"
 		fi
-		get_secondary_bands
+		get_secondary_bands_lte
 		PCI=$(echo $QENG | cut -d, -f9)
 		CHANNEL=$(echo $QENG | cut -d, -f10)
 		LBAND=$(echo $QENG | cut -d, -f11 | grep -o "[0-9]\{1,3\}")
@@ -232,8 +238,9 @@ case $RAT in
 			echo "0" > /tmp/modnetwork
 			if [ -n "$QENG5" ]; then
 				QENG5=$QENG5",,"
-				# Append the initial PCI value rather than overwriting it
-				get_secondary_bands
+				get_secondary_bands_nsa
+				# Append the SC_BANDS_NSA to SC_BANDS with <br /> tags
+				SC_BANDS=$SC_BANDS"<br />"$SC_BANDS_NSA
 				PCI="$PCI, "$(echo $QENG5 | cut -d, -f4)
 				SCHV=$(echo $QENG5 | cut -d, -f8)
 				SLBV=$(echo $QENG5 | cut -d, -f9) # Now correctly captures the NR band
