@@ -818,8 +818,17 @@ install_ttyd() {
         exit 1
     fi
 
-    # Replacing the login and passwd binaries
+    # Replacing the login and passwd binaries and set home for root to a writable directory
     rm /opt/etc/shadow
+    rm /opt/etc/passwd
+    cp /etc/passwd /opt/etc
+    mkdir /usrdata/root
+    mkdir /usrdata/root/bin
+    touch /usrdata/root/.profile
+    echo "# Set PATH for all shells" > /usrdata/root/.profile
+    echo "export PATH=/bin:/usr/sbin:/usr/bin:/sbin:/opt/sbin:/opt/bin:/usrdata/root/bin" >> /usrdata/root/.profile
+    chmod +x /usrdata/root/.profile
+    sed -i '1s|/home/root:/bin/sh|/usrdata/root:/bin/bash|' /opt/etc/passwd
     cp /etc/shadow /opt/etc/
     rm /bin/login /usr/bin/passwd
     ln -sf /opt/bin/login /bin
