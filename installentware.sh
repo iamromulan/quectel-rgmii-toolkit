@@ -236,5 +236,15 @@ opkg update && opkg install shadow-login shadow-passwd
     ln -sf /opt/bin/passwd /usr/bin/
     echo -e "\e[1;31mPlease set your system login password.\e[0m"
     /usr/bin/passwd
+
+    # Install basic and useful utilites
+    opkg install mc
+    ln -sf /opt/bin/mc /bin
+    opkg install htop
+    ln -sf /opt/bin/htop /bin
+    opkg install dfc
+    ln -sf /opt/bin/dfc /bin
+    opkg install lsof
+    ln -sf /opt/bin/lsof /bin
 # Remount filesystem as read-only
 mount -o remount,ro /
