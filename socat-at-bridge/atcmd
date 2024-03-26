@@ -10,24 +10,15 @@ setup_device() {
         -echoctl -echoke noflsh -ixon -crtscts
 }
 
-# Prepare the device for communication
-setup_device
-
-echo -e "\033[0;36mType 'exit' to end the session.\033[0m"
-while true; do
-    echo -en "\033[0;36mEnter AT Command: \033[0m"
-    read user_input
-
-    if [[ "$user_input" == "exit" ]]; then
-        echo -e "\033[0;32mExiting...\033[0m"
-        break
-    fi
-
+# Function to send AT command and capture the output
+send_at_command() {
+    local command="$1"
+    
     # Clear the device buffer before sending a new command
     echo -n > $DEVICE
 
-    # Send the AT command
-    echo -e "$user_input\r" > $DEVICE
+    # Send the AT command, preserving the integrity of the input
+    echo -e "$command\r" > $DEVICE
 
     # Use a temporary file to capture the command output
     tmpfile=$(mktemp)
@@ -52,4 +43,27 @@ while true; do
 
     # Clean up
     rm "$tmpfile"
-done
+}
+
+# Prepare the device for communication
+setup_device
+
+# Check if an AT command is provided as an argument
+if [ $# -gt 0 ]; then
+    # Concatenate all arguments to handle commands with spaces and/or quotes correctly
+    FULL_CMD="$*"
+    send_at_command "$FULL_CMD"
+else
+    echo -e "\033[0;36mType 'exit' to end the session.\033[0m"
+    while true; do
+        echo -en "\033[0;36mEnter AT Command: \033[0m"
+        read user_input
+
+        if [[ "$user_input" == "exit" ]]; then
+            echo -e "\033[0;32mExiting...\033[0m"
+            break
+        fi
+
+        send_at_command "$user_input"
+    done
+fi

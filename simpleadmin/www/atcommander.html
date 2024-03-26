@@ -9,6 +9,7 @@
     <script src="/js/alpinejs.min.js" defer></script>
     <link rel="stylesheet" href="/css/bulma.css" />
     <link rel="stylesheet" type="text/css" href="/css/admin.css" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body>
@@ -36,6 +37,7 @@
             <a class="navbar-item" href="/"> Connection Info </a>
             <a class="navbar-item" href="/atcommander.html"> AT Commands </a>
             <a class="navbar-item" href="/ttl.html"> TTL Changer </a>
+            <a class="navbar-item" href="/speedtest.html"> Speedtest </a>
           </div>
         </div>
       </div>
@@ -120,23 +122,40 @@
             </header>
             <div class="card-content">
               <div class="content">
-                <!-- <div class="field" style="margin-bottom: 1rem">
+                <div
+                  class="field"
+                  style="margin-bottom: 1rem"
+                  x-data="atCommands()"
+                >
                   <p class="control">
                     <button
                       class="button is-danger"
-                      click="sendRebootCommand()"
-                      :disabled="isRebootClicked"
-
+                      @click="sendRebootCommand()"
+                      :disabled="isRebooting"
                     >
                       Reboot
                     </button>
                   </p>
-                </div> -->
+
+                  <!-- Loading modal -->
+                  <div x-show="isRebooting" class="modal-overlay">
+                    <div class="loading-modal">
+                      <div class="spinner"></div>
+                      <div class="loading-text" style="display: flex; flex-direction: column;">
+                        <h3>Rebooting...</h3> 
+                        <p style="margin-top: 0.5rem;">Please wait for
+                          <span x-text="countdown" style="font-weight: 500;"></span> seconds before
+                          refreshing the page.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <!-- Add your useful commands content here -->
                 <p>Here are some useful commands:</p>
                 <ul>
                   <li>
-                    See https://github.com/iamromulan/RM520N-GL#at-commands for
+                    <!-- Open to another tab -->
+                    See <a href="https://github.com/iamromulan/RM520N-GL#at-commands" target="_blank" style="cursor: pointer;">https://github.com/iamromulan/RM520N-GL#at-commands</a> for
                     more
                   </li>
                   <li>AT+CFUN=1,1 (reboot)</li>
@@ -245,15 +264,25 @@
         </div>
       </div>
     </div>
-    <!-- END Useful Commands Section -->
 
     <script>
       function atCommands() {
         return {
           isLoading: false,
+          isRebooting: false,
+          countdown: 40, // Total waiting time in seconds
           atcmd: null,
+          defaultAtCommand: "ATI",
           atCommandResponse: "",
           sendAtCommand() {
+            if (!this.atcmd) {
+              // Use ATI as default command
+              this.atcmd = "ATI";
+              console.log(
+                "AT Command is empty, using ATI as default command: ",
+                this.atcmd
+              );
+            }
             this.isLoading = true;
             fetch(
               "/cgi-bin/get_atcommand?" +
@@ -275,28 +304,34 @@
           clearResponses() {
             this.atCommandResponse = "";
           },
+          sendRebootCommand() {
+            this.atcmd = "AT+CFUN=1,1";
+            this.isRebooting = true;
+            console.log("Reboot command sent: ", this.atcmd);
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: this.atcmd,
+                })
+            )
+              .then((res) => {
+                return res.text();
+              })
+              .then((data) => {
+                this.atCommandResponse =
+                  "Rebooting... Please wait a few seconds before refreshing the page.";
+              })
+              .finally(() => {
+                let timer = setInterval(() => {
+                  this.countdown--;
+                  if (this.countdown <= 0) {
+                    clearInterval(timer);
+                    this.isRebooting = false;
+                  }
+                }, 1000); // Update countdown every second
+              });
+          },
         };
-      }
-
-      function sendRebootCommand() {
-        var isRebootClicked = true;
-        console.log("Reboot command triggered");
-        var atcmd = "AT+CFUN=1,1";
-        fetch(
-          "/cgi-bin/get_atcommand?" +
-            new URLSearchParams({
-              atcmd: atcmd,
-            })
-        )
-          .then((res) => {
-            return res.text();
-          })
-          .then((data) => {
-            console.log(data); // Logging the response for debugging purposes
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
       }
     </script>
   </body>
