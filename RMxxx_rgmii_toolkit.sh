@@ -795,10 +795,9 @@ WantedBy=multi-user.target" > "$cfun_service_path"
     fi
 }
 
-# Function for TTYd install
 install_ttyd() {
     echo -e "\e[1;34mStarting ttyd installation process...\e[0m"
-
+    # Check for existing Entware/opkg installation, install if not installed
     if [ ! -f "/opt/bin/opkg" ]; then
         echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
         cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
@@ -812,50 +811,67 @@ install_ttyd() {
     fi
 
     mount -o remount,rw /
-    opkg update && opkg install shadow-login shadow-passwd
-    if [ "$?" -ne 0 ]; then
-        echo -e "\e[1;31mPackage installation failed. Please check your internet connection and try again.\e[0m"
-        exit 1
+
+    if [ -d "/usrdata/ttyd" ]; then
+        echo -e "\e[1;34mttyd is already installed. Choose an option:\e[0m"
+        echo -e "\e[1;34m1.) Update to ttyd 1.7.4 (DO NOT UPDATE WHILE USING ttyd! Use ADB or SSH instead)\e[0m"
+        echo -e "\e[1;31m2.) Uninstall ttyd\e[0m"
+        read -p "Enter your choice (1/2): " choice
+        case $choice in
+            1)
+                echo -e "\e[1;34mUpdating ttyd...\e[0m"
+                systemctl stop ttyd
+		wget -O /usrdata/ttyd/ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.4/ttyd.armhf && chmod +x /usrdata/ttyd/ttyd
+  		systemctl start ttyd
+                echo -e "\e[1;32mttyd has been updated.\e[0m"
+                ;;
+            2)
+                echo -e "\e[1;34mUninstalling ttyd...\e[0m"
+                systemctl stop ttyd
+                rm -rf /usrdata/ttyd
+                rm /lib/systemd/system/ttyd.service
+                rm /lib/systemd/system/multi-user.target.wants/ttyd.service
+                rm /bin/ttyd
+                echo -e "\e[1;32mttyd has been uninstalled.\e[0m"
+                ;;
+            *)
+                echo -e "\e[1;31mInvalid option. Exiting.\e[0m"
+                exit 1
+                ;;
+        esac
+        return
     fi
 
-    # Replacing the login and passwd binaries and set home for root to a writable directory
-    rm /opt/etc/shadow
-    rm /opt/etc/passwd
-    cp /etc/passwd /opt/etc
-    mkdir /usrdata/root
-    mkdir /usrdata/root/bin
-    touch /usrdata/root/.profile
-    echo "# Set PATH for all shells" > /usrdata/root/.profile
-    echo "export PATH=/bin:/usr/sbin:/usr/bin:/sbin:/opt/sbin:/opt/bin:/usrdata/root/bin" >> /usrdata/root/.profile
-    chmod +x /usrdata/root/.profile
-    sed -i '1s|/home/root:/bin/sh|/usrdata/root:/bin/bash|' /opt/etc/passwd
-    cp /etc/shadow /opt/etc/
-    rm /bin/login /usr/bin/passwd
-    ln -sf /opt/bin/login /bin
-    ln -sf /opt/bin/passwd /usr/bin/
-    echo -e "\e[1;31mPlease set your system login password.\e[0m"
-    /usr/bin/passwd
-
-    # Setting up ttyd
+    # Continue with installation if ttyd is not already installed.
+    # Check for /usrdata/socat-at-bridge/atcmd, install if not installed
+    if [ ! -f "/usrdata/socat-at-bridge/atcmd" ]; then
+        echo -e "\e[1;34mDependency: atcmd command does not exist. Installing socat-at-bridge...\e[0m"
+        install_update_at_socat
+        if [ "$?" -ne 0 ]; then
+            echo -e "\e[1;31mFailed to install/update atcmd. Please check the process.\e[0m"
+            exit 1
+        fi
+    fi
     mkdir -p /usrdata/ttyd/scripts /usrdata/ttyd/systemd
     cd /usrdata/ttyd/
-    wget -O ttyd "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/ttyd" && chmod +x ttyd
+    wget -O ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.4/ttyd.armhf && chmod +x ttyd
     wget -O scripts/ttyd.bash "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/scripts/ttyd.bash" && chmod +x scripts/ttyd.bash
     wget -O systemd/ttyd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/systemd/ttyd.service"
     cp systemd/ttyd.service /lib/systemd/system/
-    ln -sf /lib/systemd/system/ttyd.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /usrdata/ttyd/ttyd /bin
     
     # Enabling and starting ttyd service
     systemctl daemon-reload
-    systemctl enable ttyd
+    ln -sf /lib/systemd/system/ttyd.service /lib/systemd/system/multi-user.target.wants/
     systemctl start ttyd
     if [ "$?" -ne 0 ]; then
         echo -e "\e[1;31mFailed to start ttyd service. Please check the systemd service file and ttyd binary.\e[0m"
         exit 1
     fi
 
-    echo -e "\e[1;32mInstall Complete! ttyd server is up on port 443. Note: No TLS/SSL enabled yet.\e[0m"
+    echo -e "\e[1;32mInstallation Complete! ttyd server is up on port 443. Note: No TLS/SSL enabled yet.\e[0m"
 }
+
 
 
 # Main menu
@@ -932,10 +948,11 @@ echo "                                           :+##+.            "
     echo -e "\e[94m4) Tailscale Management\e[0m" # Light Blue
     echo -e "\e[92m5) Install/Change or remove Daily Reboot Timer\e[0m" # Light Green
     echo -e "\e[91m6) Install/Uninstall CFUN 0 Fix\e[0m" # Light Red
-    echo -e "\e[96m7) Install Entware/OPKG (BETA/Advanced)\e[0m" # Cyan (repeated color for additional options)
-    echo -e "\e[96m8) Install TTYd (BETA,443,No TLS/SSL)\e[0m" # Cyan
+    echo -e "\e[96m7) Install/Uninstall Entware/OPKG\e[0m" # Cyan (repeated color for additional options)
+    echo -e "\e[96m8) Install/Update/Uninstall TTYd 1.7.4 (Uses port 443, No TLS/SSL)\e[0m" # Cyan
     echo -e "\e[92m9) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
-    echo -e "\e[93m10) Exit\e[0m" # Yellow (repeated color for exit option)
+    echo -e "\e[92m10) Install Fast.com CLI app (fast command)(tops out at 40Mbps)\e[0m" # Light Green
+    echo -e "\e[93m11) Exit\e[0m" # Yellow (repeated color for exit option)
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -973,14 +990,13 @@ echo "                                           :+##+.            "
             ;;	    
         7) 
 	    echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
-	    cd /tmp && wget -O installentware.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh && chmod +x installentware.sh && ./installentware.sh
-     	    cd /
+	    cd /tmp && wget -O installentware.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh && chmod +x installentware.sh && ./installentware.sh && cd /
             ;;
 	8)  
  	    install_ttyd
       	    ;;
 	9) 
-	    echo -e "\e[1;32mInstalling Speedtest CLI (speedtest command)\e[0m"
+	    echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
      	    remount_rw
 	    mkdir /usrdata/root
      	    mkdir /usrdata/root/bin
@@ -997,6 +1013,21 @@ echo "                                           :+##+.            "
      	    break
             ;;
 	10) 
+	    echo -e "\e[1;32mInstalling fast.com CLI (fast command)\e[0m"
+     	    remount_rw
+	    mkdir /usrdata/root
+     	    mkdir /usrdata/root/bin
+	    cd /usrdata/root/bin
+     	    wget -O fast https://github.com/ddo/fast/releases/download/v0.0.4/fast_linux_arm && chmod +x fast
+     	    cd /
+	    ln -sf /usrdata/root/bin/fast /bin
+     	    remount_ro
+	    echo -e "\e[1;32mFast.com CLI (speedtest command) installed!!\e[0m"
+     	    echo -e "\e[1;32mTry running the command 'fast'\e[0m"
+	    echo -e "\e[1;32mThe fast.com test tops out at 40Mbps on the modem\e[0m"
+     	    break
+            ;;
+	11) 
 	    echo -e "\e[1;32mGoodbye!\e[0m"
      	    break
             ;;    
