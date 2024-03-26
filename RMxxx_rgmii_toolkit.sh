@@ -1010,7 +1010,6 @@ echo "                                           :+##+.            "
      	    remount_ro
 	    echo -e "\e[1;32mSpeedtest CLI (speedtest command) installed!!\e[0m"
      	    echo -e "\e[1;32mTry running the command 'speedtest'\e[0m"
-     	    break
             ;;
 	10) 
 	    echo -e "\e[1;32mInstalling fast.com CLI (fast command)\e[0m"
@@ -1025,7 +1024,6 @@ echo "                                           :+##+.            "
 	    echo -e "\e[1;32mFast.com CLI (speedtest command) installed!!\e[0m"
      	    echo -e "\e[1;32mTry running the command 'fast'\e[0m"
 	    echo -e "\e[1;32mThe fast.com test tops out at 40Mbps on the modem\e[0m"
-     	    break
             ;;
 	11) 
 	    echo -e "\e[1;32mGoodbye!\e[0m"
