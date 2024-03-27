@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AT Commands</title>
+
+    <script src="/js/alpinejs.min.js" defer></script>
+    <link rel="stylesheet" href="/css/bulma.css" />
+    <link rel="stylesheet" type="text/css" href="/css/admin.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .container {
+        display: flex;
+        justify-content: center;
+      }
+      .card-column {
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- START NAV -->
+    <nav class="navbar is-black" x-data="{ isOpen: false }">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item brand-text" href="/"> Simple Admin </a>
+          <a
+            role="button"
+            class="navbar-burger burger"
+            @click="isOpen = !isOpen"
+          >
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+        <div
+          id="navMenu"
+          class="navbar-menu"
+          :class="isOpen ? 'is-active' : ''"
+        >
+          <div class="navbar-start">
+            <a class="navbar-item" href="/"> Connection Info </a>
+            <a class="navbar-item" href="/atcommander.html"> AT Commands </a>
+            <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
+            <a class="navbar-item" href="/sms.html"> SMS </a>
+            <a class="navbar-item" href="/ttl.html"> TTL Changer </a>
+            <a class="navbar-item" href="/speedtest.html"> Speedtest </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <!-- END NAV -->
+    <div class="container" x-data="atCommands()">
+      <div class="columns is-multiline">
+        <div class="column is-8-tablet is-6-desktop card-column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">Band Locking</p>
+            </header>
+            <div class="card-content">
+              <!-- Create a drop down -->
+              <div class="select is-primary">
+                <select x-model="networkMode">
+                  <option>Select Network Mode</option>
+                  <option>LTE</option>
+                  <option>NR5G-NSA</option>
+                  <option>NR5G-SA</option>
+                </select>
+              </div>
+              <input
+                class="input is-primary"
+                type="text"
+                placeholder="Example: 1,3,41"
+                style="margin-top: 1rem"
+                x-model="bandNumbers"
+              />
+
+              <div style="margin-top: 1rem; display: flex; flex-direction: row">
+                <button
+                  class="button is-primary"
+                  @click="lockBands()"
+                  :disabled="isLocking"
+                >
+                  Lock Bands
+                </button>
+
+                <button
+                  class="button is-warning"
+                  style="margin-left: 1rem"
+                  @click="restoreBands()"
+                  :disabled="isLocking"
+                >
+                  Restore Bands
+                </button>
+              </div>
+            </div>
+            <div class="card-footer" style="padding: 0.25rem">
+              <p class="card-footer-item">
+                Please first select your desired network band from the dropdown
+                menu. To lock onto specific bands, please type the band numbers
+                separated by commas (,) and then click the lock button.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="column is-8-tablet is-6-desktop card-column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">Cell Locking</p>
+            </header>
+            <div class="card-content">
+              <div style="display: flex; flex-direction: row">
+                <div class="select is-info">
+                  <select id="networkModeSelect">
+                    <option>Select Network Mode</option>
+                    <option>LTE</option>
+                    <option>NR5G-SA</option>
+                  </select>
+                </div>
+
+                <div class="select is-info" style="margin-left: 1rem">
+                  <select id="numFreqSelect" onchange="showInputs()">
+                    <option>Number of Freq</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="inputsContainer" style="margin-top: 1.5rem"></div>
+
+              <div style="margin-top: 1rem; display: flex; flex-direction: row">
+                <button class="button is-info">Lock Cell</button>
+
+                <button class="button is-warning" style="margin-left: 1rem">
+                  Restore Cell
+                </button>
+              </div>
+            </div>
+            <div class="card-footer" style="padding: 0.25rem">
+              <p class="card-footer-item">
+                To utilize cell locking, ensure you first select the network
+                mode, followed by specifying the number of frequencies you wish
+                to lock onto. Then, input the EARFCN and PCI values for each
+                frequency before clicking the lock button.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Modal for Locking Band -->
+      <div x-show="isLocking" class="modal-overlay">
+        <div class="loading-modal">
+          <div class="spinner"></div>
+          <div
+            class="loading-text"
+            style="display: flex; flex-direction: column"
+          >
+            <h3>Initializing Network...</h3>
+            <p style="margin-top: 0.5rem">
+              Please wait for
+              <span x-text="countdown" style="font-weight: 500"></span> seconds.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div x-show="isError" class="modal-overlay">
+        <div class="loading-modal">
+          <div class="spinner"></div>
+          <div
+            class="loading-text"
+            style="display: flex; flex-direction: column"
+          >
+            <h3>Request Error</h3>
+            <p style="margin-top: 0.5rem">
+              Please follow the instructions properly. Exiting in
+              <span x-text="countdown" style="font-weight: 500"></span> seconds.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function showInputs() {
+        const numFreq = document.getElementById("numFreqSelect").value;
+        const container = document.getElementById("inputsContainer");
+        container.innerHTML = ""; // Clear previous inputs
+
+        for (let i = 1; i <= numFreq; i++) {
+          const div = document.createElement("div");
+          div.style.marginTop = "0.5rem";
+          div.style.display = "flex";
+          div.style.flexDirection = "row";
+
+          const earfcnInput = document.createElement("input");
+          earfcnInput.className = "input is-info";
+          earfcnInput.type = "text";
+          earfcnInput.placeholder = "EARFCN";
+
+          const pciInput = document.createElement("input");
+          pciInput.className = "input is-info";
+          pciInput.type = "text";
+          pciInput.placeholder = "PCI";
+          pciInput.style.marginLeft = "0.5rem";
+
+          div.appendChild(earfcnInput);
+          div.appendChild(pciInput);
+
+          container.appendChild(div);
+        }
+      }
+
+      function atCommands() {
+        return {
+          isLoading: false,
+          isLocking: false,
+          isError: false,
+          countdown: 3, // Initial countdown value
+          networkMode: null,
+          bandNumbers: null,
+          atCommandResponse: "",
+          lockBands() {
+            if (!this.networkMode || !this.bandNumbers) {
+              this.isError = true;
+              this.startCountdown();
+              console.error("Network mode and band numbers are required.");
+              return;
+            }
+
+            // Remove commas and replace with colons
+            const parsedBandNumbers = this.bandNumbers.replace(/,/g, ":");
+
+            // Construct the atcmd based on the selected network mode
+            let atcmd;
+            switch (this.networkMode) {
+              case "LTE":
+                atcmd = `AT+QNWPREFCFG="lte_band",${parsedBandNumbers}`;
+                console.log(atcmd);
+                break;
+              case "NR5G-NSA":
+                atcmd = `AT+QNWPREFCFG="nsa_nr5g_band",${parsedBandNumbers}`;
+                console.log(atcmd);
+                break;
+              case "NR5G-SA":
+                atcmd = `AT+QNWPREFCFG="nr5g_band",${parsedBandNumbers}`;
+                console.log(atcmd);
+                break;
+              default:
+                console.error("Invalid network mode.");
+                return;
+            }
+
+            this.isLoading = true;
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: atcmd,
+                })
+            )
+              .then((res) => res.text())
+              .then((data) => {
+                this.atCommandResponse = data;
+                this.isLocking = true;
+                this.startCountdown();
+              })
+              .catch((error) => {
+                this.isError = true;
+                this.startCountdown();
+                console.error("Error sending AT command:", error);
+              })
+              .finally(() => {
+                this.isLoading = false;
+              });
+          },
+          restoreBands() {
+            const restoreCmd = 'AT+QNWPREFCFG="restore_band"';
+            this.sendAtCommand(restoreCmd);
+          },
+          sendAtCommand(atcmd) {
+            this.isLocking = true;
+            this.startCountdown();
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: atcmd,
+                })
+            )
+              .then((res) => res.text())
+              .then((data) => {
+                this.atCommandResponse = data;
+                this.isLocking = true;
+                this.startCountdown();
+              })
+              .catch((error) => {
+                this.isError = true;
+                this.startCountdown();
+                console.error("Error sending AT command:", error);
+              })
+              .finally(() => {
+                this.isLoading = false;
+              });
+          },
+          startCountdown() {
+            // Decrease countdown every second
+            const interval = setInterval(() => {
+              this.countdown--;
+              if (this.countdown === 0) {
+                clearInterval(interval);
+                // Reset values
+                this.isLocking = false;
+                this.isError = false;
+                this.countdown = 3;
+                // Optionally refresh the page here
+              }
+            }, 1000);
+          },
+        };
+      }
+    </script>
+  </body>
+</html>

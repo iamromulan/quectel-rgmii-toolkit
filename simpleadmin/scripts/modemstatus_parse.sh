@@ -71,7 +71,7 @@ get_secondary_bands_sa() {
     if [ -z "$SC_BANDS" ]; then
         SC_BANDS="-"
     fi
-}
+}``
 
 # Get the modem model from /tmp/modemmodel.txt and parse it
 MODEM_MODEL=$(</tmp/modemmodel.txt)
