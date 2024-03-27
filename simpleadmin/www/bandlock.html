@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AT Commands</title>
+    <title>Band Locking</title>
 
     <script src="/js/alpinejs.min.js" defer></script>
     <link rel="stylesheet" href="/css/bulma.css" />
@@ -54,7 +54,7 @@
       </div>
     </nav>
     <!-- END NAV -->
-    <div class="container" x-data="atCommands()">
+    <div class="container" x-data="atCommands()" x-init="atCommands()">
       <div class="columns is-multiline">
         <div class="column is-8-tablet is-6-desktop card-column">
           <div class="card">
@@ -115,16 +115,21 @@
             <div class="card-content">
               <div style="display: flex; flex-direction: row">
                 <div class="select is-info">
-                  <select id="networkModeSelect">
+                  <select id="networkModeSelect" x-model="networkMode2">
                     <option>Select Network Mode</option>
                     <option>LTE</option>
                     <option>NR5G-SA</option>
                   </select>
                 </div>
 
-                <div class="select is-info" style="margin-left: 1rem">
-                  <select id="numFreqSelect" onchange="showInputs()">
-                    <option>Number of Freq</option>
+                <div
+                  class="select is-info"
+                  id="numFreqContainer"
+                  style="margin-left: 1rem"
+                  x-show="networkMode2 == 'LTE'"
+                >
+                  <select id="numFreqSelect" x-model="cellNum">
+                    <option>Number of Cells</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -132,22 +137,131 @@
                 </div>
               </div>
 
-              <div id="inputsContainer" style="margin-top: 1.5rem"></div>
+              <!-- For LTE Freq Number 1 -->
+              <div
+                style="margin-top: 1rem"
+                x-show="cellNum >= 1  && networkMode2 == 'LTE'"
+              >
+                <div style="display: flex; flex-direction: row">
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="EARFCN"
+                    x-model="earfcn1"
+                  />
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="PCI"
+                    x-model="pci1"
+                    style="margin-left: 1rem"
+                  />
+                </div>
+              </div>
+
+              <!-- For LTE Freq Number 2 -->
+              <div
+                style="margin-top: 1rem"
+                x-show="cellNum >= 2 && networkMode2 == 'LTE'"
+              >
+                <div style="display: flex; flex-direction: row">
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="EARFCN"
+                    x-model="earfcn2"
+                  />
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="PCI"
+                    x-model="pci2"
+                    style="margin-left: 1rem"
+                  />
+                </div>
+              </div>
+
+              <!-- For LTE Freq Number 3 -->
+              <div
+                style="margin-top: 1rem"
+                x-show="cellNum == 3 && networkMode2 == 'LTE'"
+              >
+                <div style="display: flex; flex-direction: row">
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="EARFCN"
+                    x-model="earfcn3"
+                  />
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="PCI"
+                    x-model="pci3"
+                    style="margin-left: 1rem"
+                  />
+                </div>
+              </div>
+
+              <!-- For NR5G-SA -->
+              <div style="margin-top: 1rem" x-show="networkMode2 == 'NR5G-SA'">
+                <div style="display: flex; flex-direction: row">
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="EARFCN"
+                    x-model="earfcn1"
+                  />
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="PCI"
+                    x-model="pci1"
+                    style="margin-left: 1rem"
+                  />
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="SCS"
+                    x-model="scs"
+                    style="margin-left: 1rem"
+                  />
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="BAND"
+                    x-model="band"
+                    style="margin-left: 1rem"
+                  />
+                </div>
+              </div>
 
               <div style="margin-top: 1rem; display: flex; flex-direction: row">
-                <button class="button is-info">Lock Cell</button>
+                <button
+                  class="button is-info"
+                  @click="cellLock()"
+                  :disabled="isLoading"
+                >
+                  Lock Cell
+                </button>
 
-                <button class="button is-warning" style="margin-left: 1rem">
+                <button
+                  class="button is-warning"
+                  style="margin-left: 1rem"
+                  @click="restoreCell()"
+                  :disabled="isLoading"
+                >
                   Restore Cell
                 </button>
               </div>
             </div>
             <div class="card-footer" style="padding: 0.25rem">
               <p class="card-footer-item">
-                To utilize cell locking, ensure you first select the network
-                mode, followed by specifying the number of frequencies you wish
-                to lock onto. Then, input the EARFCN and PCI values for each
-                frequency before clicking the lock button.
+                To utilize cell locking, first, select the network mode, then
+                specify the number of frequencies you wish to lock onto if you
+                are using LTE. Next, input the EARFCN and PCI values for each
+                cell number. If you are locking through NR5G-SA instead, simply
+                fill up all the required parameters.
               </p>
             </div>
           </div>
@@ -189,43 +303,24 @@
     </div>
 
     <script>
-      function showInputs() {
-        const numFreq = document.getElementById("numFreqSelect").value;
-        const container = document.getElementById("inputsContainer");
-        container.innerHTML = ""; // Clear previous inputs
-
-        for (let i = 1; i <= numFreq; i++) {
-          const div = document.createElement("div");
-          div.style.marginTop = "0.5rem";
-          div.style.display = "flex";
-          div.style.flexDirection = "row";
-
-          const earfcnInput = document.createElement("input");
-          earfcnInput.className = "input is-info";
-          earfcnInput.type = "text";
-          earfcnInput.placeholder = "EARFCN";
-
-          const pciInput = document.createElement("input");
-          pciInput.className = "input is-info";
-          pciInput.type = "text";
-          pciInput.placeholder = "PCI";
-          pciInput.style.marginLeft = "0.5rem";
-
-          div.appendChild(earfcnInput);
-          div.appendChild(pciInput);
-
-          container.appendChild(div);
-        }
-      }
-
       function atCommands() {
         return {
           isLoading: false,
           isLocking: false,
           isError: false,
-          countdown: 3, // Initial countdown value
+          countdown: 5, // Initial countdown value
           networkMode: null,
+          networkMode2: null,
           bandNumbers: null,
+          cellNum: null,
+          earfcn1: null,
+          pci1: null,
+          earfcn2: null,
+          pci2: null,
+          earfcn3: null,
+          pci3: null,
+          band: null,
+          scs: null,
           atCommandResponse: "",
           lockBands() {
             if (!this.networkMode || !this.bandNumbers) {
@@ -280,9 +375,62 @@
                 this.isLoading = false;
               });
           },
+          cellLock() {
+            // Error handlers
+            if (!this.networkMode2) {
+              this.isError = true;
+              this.startCountdown();
+              console.error("Network mode is required.");
+              return;
+            }
+
+            // Construct the atcmd based on the selected network mode
+            // LTE: AT+QNWLOCK="common/4g",<1-3>,<EARFCN>,<PCI>
+            // NR5G-SA: AT+QNWLOCK="common/5g",<PCI>,<EARFCN>,<SCS>,<BAND>
+            let atcmd;
+
+            if (this.networkMode2 === "LTE") {
+              switch (this.cellNum) {
+                case "1":
+                  atcmd = `AT+QNWLOCK="common/4g",1,${this.earfcn1},${this.pci1}`;
+                  console.log(atcmd);
+                  break;
+                case "2":
+                  atcmd = `AT+QNWLOCK="common/4g",2,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2}`;
+                  console.log(atcmd);
+                  break;
+                case "3":
+                  atcmd = `AT+QNWLOCK="common/4g",3,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2},${this.earfcn3},${this.pci3}`;
+                  console.log(atcmd);
+                  break;
+                default:
+                  console.log(atcmd);
+                  this.isError = true;
+                  this.startCountdown();
+                  console.error("Invalid frequency number.");
+                  return;
+              }
+            }
+
+            if (this.networkMode2 === "NR5G-SA") {
+              atcmd = `AT+QNWLOCK="common/5g",${this.pci1},${this.earfcn1},${this.scs},${this.band}`;
+              console.log(atcmd);
+            }
+
+            this.isLoading = true;
+            this.sendAtCommand(atcmd);
+          },
           restoreBands() {
             const restoreCmd = 'AT+QNWPREFCFG="restore_band"';
             this.sendAtCommand(restoreCmd);
+          },
+          restoreCell() {
+            const restoreCmd = 'AT+QNWLOCK="common/4g",0';
+            this.sendAtCommand(restoreCmd);
+          },
+          showSupportedBands() {
+            const supportedCmd = 'AT+QNWPREFCFG="policy_band"';
+            this.sendAtCommand(supportedCmd);
           },
           sendAtCommand(atcmd) {
             this.isLocking = true;
@@ -317,7 +465,8 @@
                 // Reset values
                 this.isLocking = false;
                 this.isError = false;
-                this.countdown = 3;
+                this.isLoading = false;
+                this.countdown = 5;
                 // Optionally refresh the page here
               }
             }, 1000);
