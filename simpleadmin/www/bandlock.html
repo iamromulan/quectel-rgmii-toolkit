@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Band Locking</title>
+
+    <script src="/js/alpinejs.min.js" defer></script>
+    <link rel="stylesheet" href="/css/bulma.css" />
+    <link rel="stylesheet" type="text/css" href="/css/admin.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .container {
+        display: flex;
+        justify-content: center;
+      }
+      .card-column {
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- START NAV -->
+    <nav class="navbar is-black" x-data="{ isOpen: false }">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item brand-text" href="/"> Simple Admin </a>
+          <a
+            role="button"
+            class="navbar-burger burger"
+            @click="isOpen = !isOpen"
+          >
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+        <div
+          id="navMenu"
+          class="navbar-menu"
+          :class="isOpen ? 'is-active' : ''"
+        >
+          <div class="navbar-start">
+            <a class="navbar-item" href="/"> Connection Info </a>
+            <a class="navbar-item" href="/atcommander.html"> AT Commands </a>
+            <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
+            <a class="navbar-item" href="/sms.html"> SMS </a>
+            <a class="navbar-item" href="/ttl.html"> TTL Changer </a>
+            <a class="navbar-item" href="/speedtest.html"> Speedtest </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <!-- END NAV -->
+    <div class="container" x-data="atCommands()" x-init="atCommands()">
+      <div class="columns is-multiline">
+        <div class="column is-8-tablet is-6-desktop card-column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">Band Locking</p>
+            </header>
+            <div class="card-content">
+              <!-- Create a drop down -->
+              <div class="select is-primary">
+                <select x-model="networkMode">
+                  <option>Select Network Mode</option>
+                  <option>LTE</option>
+                  <option>NR5G-NSA</option>
+                  <option>NR5G-SA</option>
+                </select>
+              </div>
+              <input
+                class="input is-primary"
+                type="text"
+                placeholder="Example: 1,3,41"
+                style="margin-top: 1rem"
+                x-model="bandNumbers"
+              />
+
+              <div style="margin-top: 1rem; display: flex; flex-direction: row">
+                <button
+                  class="button is-primary"
+                  @click="lockBands()"
+                  :disabled="isLocking"
+                >
+                  Lock Bands
+                </button>
+
+                <button
+                  class="button is-warning"
+                  style="margin-left: 1rem"
+                  @click="restoreBands()"
+                  :disabled="isLocking"
+                >
+                  Restore Bands
+                </button>
+              </div>
+            </div>
+            <div class="card-footer" style="padding: 0.25rem">
+              <p class="card-footer-item">
+                Please first select your desired network band from the dropdown
+                menu. To lock onto specific bands, please type the band numbers
+                separated by commas (,) and then click the lock button.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="column is-8-tablet is-6-desktop card-column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">Cell Locking</p>
+            </header>
+            <div class="card-content">
+              <div style="display: flex; flex-direction: row">
+                <div class="select is-info">
+                  <select id="networkModeSelect" x-model="networkMode2">
+                    <option>Select Network Mode</option>
+                    <option>LTE</option>
+                    <option>NR5G-SA</option>
+                  </select>
+                </div>
+
+                <div
+                  class="select is-info"
+                  id="numFreqContainer"
+                  style="margin-left: 1rem"
+                  x-show="networkMode2 == 'LTE'"
+                >
+                  <select id="numFreqSelect" x-model="cellNum">
+                    <option>Number of Cells</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- For LTE Freq Number 1 -->
+              <div
+                style="margin-top: 1rem"
+                x-show="cellNum >= 1  && networkMode2 == 'LTE'"
+              >
+                <div style="display: flex; flex-direction: row">
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="EARFCN"
+                    x-model="earfcn1"
+                  />
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="PCI"
+                    x-model="pci1"
+                    style="margin-left: 1rem"
+                  />
+                </div>
+              </div>
+
+              <!-- For LTE Freq Number 2 -->
+              <div
+                style="margin-top: 1rem"
+                x-show="cellNum >= 2 && networkMode2 == 'LTE'"
+              >
+                <div style="display: flex; flex-direction: row">
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="EARFCN"
+                    x-model="earfcn2"
+                  />
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="PCI"
+                    x-model="pci2"
+                    style="margin-left: 1rem"
+                  />
+                </div>
+              </div>
+
+              <!-- For LTE Freq Number 3 -->
+              <div
+                style="margin-top: 1rem"
+                x-show="cellNum == 3 && networkMode2 == 'LTE'"
+              >
+                <div style="display: flex; flex-direction: row">
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="EARFCN"
+                    x-model="earfcn3"
+                  />
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="PCI"
+                    x-model="pci3"
+                    style="margin-left: 1rem"
+                  />
+                </div>
+              </div>
+
+              <!-- For NR5G-SA -->
+              <div style="margin-top: 1rem" x-show="networkMode2 == 'NR5G-SA'">
+                <div style="display: flex; flex-direction: row">
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="EARFCN"
+                    x-model="earfcn1"
+                  />
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="PCI"
+                    x-model="pci1"
+                    style="margin-left: 1rem"
+                  />
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="SCS"
+                    x-model="scs"
+                    style="margin-left: 1rem"
+                  />
+                  <input
+                    class="input is-info"
+                    type="text"
+                    placeholder="BAND"
+                    x-model="band"
+                    style="margin-left: 1rem"
+                  />
+                </div>
+              </div>
+
+              <div style="margin-top: 1rem; display: flex; flex-direction: row">
+                <button
+                  class="button is-info"
+                  @click="cellLock()"
+                  :disabled="isLoading"
+                >
+                  Lock Cell
+                </button>
+
+                <button
+                  class="button is-warning"
+                  style="margin-left: 1rem"
+                  @click="restoreCell()"
+                  :disabled="isLoading"
+                >
+                  Restore Cell
+                </button>
+              </div>
+            </div>
+            <div class="card-footer" style="padding: 0.25rem">
+              <p class="card-footer-item">
+                To utilize cell locking, first, select the network mode, then
+                specify the number of frequencies you wish to lock onto if you
+                are using LTE. Next, input the EARFCN and PCI values for each
+                cell number. If you are locking through NR5G-SA instead, simply
+                fill up all the required parameters.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Modal for Locking Band -->
+      <div x-show="isLocking" class="modal-overlay">
+        <div class="loading-modal">
+          <div class="spinner"></div>
+          <div
+            class="loading-text"
+            style="display: flex; flex-direction: column"
+          >
+            <h3>Initializing Network...</h3>
+            <p style="margin-top: 0.5rem">
+              Please wait for
+              <span x-text="countdown" style="font-weight: 500"></span> seconds.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div x-show="isError" class="modal-overlay">
+        <div class="loading-modal">
+          <div class="spinner"></div>
+          <div
+            class="loading-text"
+            style="display: flex; flex-direction: column"
+          >
+            <h3>Request Error</h3>
+            <p style="margin-top: 0.5rem">
+              Please follow the instructions properly. Exiting in
+              <span x-text="countdown" style="font-weight: 500"></span> seconds.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function atCommands() {
+        return {
+          isLoading: false,
+          isLocking: false,
+          isError: false,
+          countdown: 5, // Initial countdown value
+          networkMode: null,
+          networkMode2: null,
+          bandNumbers: null,
+          cellNum: null,
+          earfcn1: null,
+          pci1: null,
+          earfcn2: null,
+          pci2: null,
+          earfcn3: null,
+          pci3: null,
+          band: null,
+          scs: null,
+          atCommandResponse: "",
+          lockBands() {
+            if (!this.networkMode || !this.bandNumbers) {
+              this.isError = true;
+              this.startCountdown();
+              console.error("Network mode and band numbers are required.");
+              return;
+            }
+
+            // Remove commas and replace with colons
+            const parsedBandNumbers = this.bandNumbers.replace(/,/g, ":");
+
+            // Construct the atcmd based on the selected network mode
+            let atcmd;
+            switch (this.networkMode) {
+              case "LTE":
+                atcmd = `AT+QNWPREFCFG="lte_band",${parsedBandNumbers}`;
+                console.log(atcmd);
+                break;
+              case "NR5G-NSA":
+                atcmd = `AT+QNWPREFCFG="nsa_nr5g_band",${parsedBandNumbers}`;
+                console.log(atcmd);
+                break;
+              case "NR5G-SA":
+                atcmd = `AT+QNWPREFCFG="nr5g_band",${parsedBandNumbers}`;
+                console.log(atcmd);
+                break;
+              default:
+                console.error("Invalid network mode.");
+                return;
+            }
+
+            this.isLoading = true;
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: atcmd,
+                })
+            )
+              .then((res) => res.text())
+              .then((data) => {
+                this.atCommandResponse = data;
+                this.isLocking = true;
+                this.startCountdown();
+              })
+              .catch((error) => {
+                this.isError = true;
+                this.startCountdown();
+                console.error("Error sending AT command:", error);
+              })
+              .finally(() => {
+                this.isLoading = false;
+              });
+          },
+          cellLock() {
+            // Error handlers
+            if (!this.networkMode2) {
+              this.isError = true;
+              this.startCountdown();
+              console.error("Network mode is required.");
+              return;
+            }
+
+            // Construct the atcmd based on the selected network mode
+            // LTE: AT+QNWLOCK="common/4g",<1-3>,<EARFCN>,<PCI>
+            // NR5G-SA: AT+QNWLOCK="common/5g",<PCI>,<EARFCN>,<SCS>,<BAND>
+            let atcmd;
+
+            if (this.networkMode2 === "LTE") {
+              switch (this.cellNum) {
+                case "1":
+                  atcmd = `AT+QNWLOCK="common/4g",1,${this.earfcn1},${this.pci1}`;
+                  console.log(atcmd);
+                  break;
+                case "2":
+                  atcmd = `AT+QNWLOCK="common/4g",2,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2}`;
+                  console.log(atcmd);
+                  break;
+                case "3":
+                  atcmd = `AT+QNWLOCK="common/4g",3,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2},${this.earfcn3},${this.pci3}`;
+                  console.log(atcmd);
+                  break;
+                default:
+                  console.log(atcmd);
+                  this.isError = true;
+                  this.startCountdown();
+                  console.error("Invalid frequency number.");
+                  return;
+              }
+            }
+
+            if (this.networkMode2 === "NR5G-SA") {
+              atcmd = `AT+QNWLOCK="common/5g",${this.pci1},${this.earfcn1},${this.scs},${this.band}`;
+              console.log(atcmd);
+            }
+
+            this.isLoading = true;
+            this.sendAtCommand(atcmd);
+          },
+          restoreBands() {
+            const restoreCmd = 'AT+QNWPREFCFG="restore_band"';
+            this.sendAtCommand(restoreCmd);
+          },
+          restoreCell() {
+            const restoreCmd = 'AT+QNWLOCK="common/4g",0';
+            this.sendAtCommand(restoreCmd);
+          },
+          showSupportedBands() {
+            const supportedCmd = 'AT+QNWPREFCFG="policy_band"';
+            this.sendAtCommand(supportedCmd);
+          },
+          sendAtCommand(atcmd) {
+            this.isLocking = true;
+            this.startCountdown();
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: atcmd,
+                })
+            )
+              .then((res) => res.text())
+              .then((data) => {
+                this.atCommandResponse = data;
+                this.isLocking = true;
+                this.startCountdown();
+              })
+              .catch((error) => {
+                this.isError = true;
+                this.startCountdown();
+                console.error("Error sending AT command:", error);
+              })
+              .finally(() => {
+                this.isLoading = false;
+              });
+          },
+          startCountdown() {
+            // Decrease countdown every second
+            const interval = setInterval(() => {
+              this.countdown--;
+              if (this.countdown === 0) {
+                clearInterval(interval);
+                // Reset values
+                this.isLocking = false;
+                this.isError = false;
+                this.isLoading = false;
+                this.countdown = 5;
+                // Optionally refresh the page here
+              }
+            }, 1000);
+          },
+        };
+      }
+    </script>
+  </body>
+</html>
