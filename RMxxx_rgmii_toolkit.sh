@@ -849,14 +849,14 @@ install_ttyd() {
 
     if [ -d "/usrdata/ttyd" ]; then
         echo -e "\e[1;34mttyd is already installed. Choose an option:\e[0m"
-        echo -e "\e[1;34m1.) Update to ttyd 1.7.4 (DO NOT UPDATE WHILE USING ttyd! Use ADB or SSH instead)\e[0m"
+        echo -e "\e[1;34m1.) Update to ttyd 1.7.5 (DO NOT UPDATE WHILE USING ttyd! Use ADB or SSH instead)\e[0m"
         echo -e "\e[1;31m2.) Uninstall ttyd\e[0m"
         read -p "Enter your choice (1/2): " choice
         case $choice in
             1)
                 echo -e "\e[1;34mUpdating ttyd...\e[0m"
                 systemctl stop ttyd
-		wget -O /usrdata/ttyd/ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.4/ttyd.armhf && chmod +x /usrdata/ttyd/ttyd
+		wget -O /usrdata/ttyd/ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.5/ttyd.armhf && chmod +x /usrdata/ttyd/ttyd
   		systemctl start ttyd
                 echo -e "\e[1;32mttyd has been updated.\e[0m"
                 ;;
