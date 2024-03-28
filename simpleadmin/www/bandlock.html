@@ -410,63 +410,62 @@
                   rows="5"
                   placeholder="Query Response"
                   x-text=" isLoading ? 'Getting Response...' : queryCommandResponse"
-                >
-                </textarea>
+                ></textarea>
 
-                <div
-                  style="margin-top: 1rem; display: flex; flex-direction: row"
-                >
-                  <div>
-                    <p>Check Locked Bands</p>
-                    <div style="display: flex; flex-direction: row">
-                      <div class="select is-info">
-                        <select id="lockedBands" x-model="lockedBands">
-                          <option>Locked Bands</option>
-                          <option>LTE</option>
-                          <option>NSA</option>
-                          <option>SA</option>
-                        </select>
+                <div class="columns is-variable is-multiline" style="margin-top: 1rem">
+                  <div class="column is-half-desktop">
+                    <div>
+                      <p>Check Locked Bands</p>
+                      <div class="is-flex-wrap-wrap">
+                        <div class="select is-info">
+                          <select id="lockedBands" x-model="lockedBands">
+                            <option>Locked Bands</option>
+                            <option>LTE</option>
+                            <option>NSA</option>
+                            <option>SA</option>
+                          </select>
+                        </div>
+
+                        <button
+                          class="button is-link"
+                          style="margin-left: 1rem"
+                          @click="showLockedBands()"
+                          :disabled="isLoading"
+                        >
+                          Check Bands
+                        </button>
                       </div>
-
-                      <button
-                        class="button is-link"
-                        style="margin-left: 1rem"
-                        @click="showLockedBands()"
-                        :disabled="isLoading"
-                      >
-                        Check Bands
-                      </button>
                     </div>
                   </div>
 
-                  <div style="margin-left: 2rem">
-                    <p>Check Cell Lock</p>
-                    <div style="display: flex; flex-direction: row">
-                      <div class="select is-info">
-                        <select id="cellState" x-model="cellState">
-                          <option>Cell Lock</option>
-                          <option>LTE</option>
-                          <option>NR5G-SA</option>
-                        </select>
-                      </div>
+                  <div class="column is-half-desktop">
+                    <div>
+                      <p>Check Cell Lock</p>
+                      <div class="is-flex-wrap-wrap">
+                        <div class="select is-info">
+                          <select id="cellState" x-model="cellState">
+                            <option>Cell Lock</option>
+                            <option>LTE</option>
+                            <option>NR5G-SA</option>
+                          </select>
+                        </div>
 
-                      <button
-                        class="button is-link"
-                        style="margin-left: 1rem"
-                        @click="showCellState()"
-                        :disabled="isLoading"
-                      >
-                        Check Cell
-                      </button>
+                        <button
+                          class="button is-link"
+                          style="margin-left: 1rem"
+                          @click="showCellState()"
+                          :disabled="isLoading"
+                        >
+                          Check Cell
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div
-                  style="margin-top: 2rem; display: flex; flex-direction: row"
-                >
+                <div class="buttons" style="margin-top: 1rem">
                   <button
-                    class="button is-link"
+                    class="button is-link mr-2"
                     @click="showSupportedBands()"
                     :disabled="isLoading"
                   >
@@ -474,8 +473,7 @@
                   </button>
 
                   <button
-                    class="button is-link"
-                    style="margin-left: 1rem"
+                    class="button is-link mr-2"
                     @click="showCurrentSim()"
                     :disabled="isLoading"
                   >
@@ -484,7 +482,6 @@
 
                   <button
                     class="button is-link"
-                    style="margin-left: 1rem"
                     @click="showPrefNetwork()"
                     :disabled="isLoading"
                   >
