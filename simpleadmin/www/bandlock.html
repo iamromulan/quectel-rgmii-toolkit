@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Band Locking</title>
+    <title>Simple Network</title>
 
     <script src="/js/alpinejs.min.js" defer></script>
     <link rel="stylesheet" href="/css/bulma.css" />
@@ -45,7 +45,7 @@
           <div class="navbar-start">
             <a class="navbar-item" href="/"> Connection Info </a>
             <a class="navbar-item" href="/atcommander.html"> AT Commands </a>
-            <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
+            <a class="navbar-item" href="/bandlock.html"> Simple Network </a>
             <a class="navbar-item" href="/sms.html"> SMS </a>
             <a class="navbar-item" href="/ttl.html"> TTL Changer </a>
             <a class="navbar-item" href="/speedtest.html"> Speedtest </a>
@@ -54,8 +54,14 @@
       </div>
     </nav>
     <!-- END NAV -->
-    <div class="container" x-data="atCommands()" x-init="atCommands()">
+    <div
+      class="container"
+      style="margin: auto"
+      x-data="atCommands()"
+      x-init="atCommands()"
+    >
       <div class="columns is-multiline">
+        <!-- First Box -->
         <div class="column is-8-tablet is-6-desktop card-column">
           <div class="card">
             <header class="card-header">
@@ -64,7 +70,7 @@
             <div class="card-content">
               <!-- Create a drop down -->
               <div class="select is-primary">
-                <select x-model="networkMode">
+                <select id="networkMode" x-model="networkMode">
                   <option>Select Network Mode</option>
                   <option>LTE</option>
                   <option>NR5G-NSA</option>
@@ -107,10 +113,11 @@
             </div>
           </div>
         </div>
+        <!-- Second Box -->
         <div class="column is-8-tablet is-6-desktop card-column">
           <div class="card">
             <header class="card-header">
-              <p class="card-header-title">Cell Locking</p>
+              <p class="card-header-title">LTE and NR5G Cell Locking</p>
             </header>
             <div class="card-content">
               <div style="display: flex; flex-direction: row">
@@ -266,6 +273,231 @@
             </div>
           </div>
         </div>
+
+        <!-- Third Box -->
+
+        <div class="column is-8-tablet is-6-desktop card-column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">Network Utilities</p>
+            </header>
+            <div class="card-content">
+              <div style="display: flex; flex-direction: column">
+                <div>
+                  <p>Set Network APN</p>
+                  <div
+                    style="
+                      display: flex;
+                      flex-direction: row;
+                      margin-top: 0.5rem;
+                    "
+                  >
+                    <input
+                      class="input is-link"
+                      type="text"
+                      placeholder="APN"
+                      x-model="apnInput"
+                    />
+                    <button
+                      class="button is-link"
+                      style="margin-left: 1rem"
+                      @click="setAPN()"
+                      :disabled="isLoading"
+                    >
+                      Set APN
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top: 1rem">
+                <p>Set Preferred Network Mode</p>
+                <div
+                  style="display: flex; flex-direction: row; margin-top: 0.5rem"
+                >
+                  <div class="select is-info">
+                    <select id="prefNetworkMode" x-model="prefNetworkMode">
+                      <option>Select Network</option>
+                      <option>AUTO</option>
+                      <option>WCDMA</option>
+                      <option>LTE ONLY</option>
+                      <option>NR5G-NSA</option>
+                      <option>NR5G-SA</option>
+                    </select>
+                  </div>
+
+                  <button
+                    class="button is-link"
+                    style="margin-left: 1rem"
+                    @click="setPrefNetwork()"
+                    :disabled="isLoading"
+                  >
+                    Set Network
+                  </button>
+                </div>
+              </div>
+
+              <div style="margin-top: 1rem">
+                <p>Set Sim Slot</p>
+                <div
+                  style="display: flex; flex-direction: row; margin-top: 0.5rem"
+                >
+                  <div class="select is-info">
+                    <select id="simSlot" x-model="simSlot">
+                      <option>Select Sim</option>
+                      <option>1</option>
+                      <option>2</option>
+                    </select>
+                  </div>
+
+                  <button
+                    class="button is-link"
+                    style="margin-left: 1rem"
+                    @click="setSimSlot()"
+                    :disabled="isLoading"
+                  >
+                    Set Sim
+                  </button>
+                </div>
+              </div>
+
+              <div style="margin-top: 1rem">
+                <p>NR5G Mode Control</p>
+                <div
+                  style="display: flex; flex-direction: row; margin-top: 0.5rem"
+                >
+                  <div class="select is-info">
+                    <select id="nrMode" x-model="nrMode">
+                      <option>Select NR5G Mode</option>
+                      <option>Enable All</option>
+                      <option>Disable NSA</option>
+                      <option>Disable SA</option>
+                    </select>
+                  </div>
+
+                  <button
+                    class="button is-link"
+                    style="margin-left: 1rem"
+                    @click="nr5GMode()"
+                    :disabled="isLoading"
+                  >
+                    Set Mode
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer" style="padding: 0.25rem">
+              <p class="card-footer-item">
+                This section allows you to set the APN, preferred network mode,
+                and sim slot. Simply input the desired values and click the
+                respective buttons to apply the changes. (Sim slot is only
+                applicable for dual sim devices.)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fourth Box -->
+        <div class="column is-8-tablet is-6-desktop card-column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">Query Network Parameters</p>
+            </header>
+            <div class="card-content">
+              <div class="content">
+                <textarea
+                  class="textarea"
+                  rows="5"
+                  placeholder="Query Response"
+                  x-text=" isLoading ? 'Getting Response...' : queryCommandResponse"
+                ></textarea>
+
+                <div class="columns is-variable is-multiline" style="margin-top: 1rem">
+                  <div class="column is-half-desktop">
+                    <div>
+                      <p>Check Locked Bands</p>
+                      <div class="is-flex-wrap-wrap">
+                        <div class="select is-info">
+                          <select id="lockedBands" x-model="lockedBands">
+                            <option>Locked Bands</option>
+                            <option>LTE</option>
+                            <option>NSA</option>
+                            <option>SA</option>
+                          </select>
+                        </div>
+
+                        <button
+                          class="button is-link"
+                          style="margin-left: 1rem"
+                          @click="showLockedBands()"
+                          :disabled="isLoading"
+                        >
+                          Check Bands
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="column is-half-desktop">
+                    <div>
+                      <p>Check Cell Lock</p>
+                      <div class="is-flex-wrap-wrap">
+                        <div class="select is-info">
+                          <select id="cellState" x-model="cellState">
+                            <option>Cell Lock</option>
+                            <option>LTE</option>
+                            <option>NR5G-SA</option>
+                          </select>
+                        </div>
+
+                        <button
+                          class="button is-link"
+                          style="margin-left: 1rem"
+                          @click="showCellState()"
+                          :disabled="isLoading"
+                        >
+                          Check Cell
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="buttons" style="margin-top: 1rem">
+                  <button
+                    class="button is-link mr-2"
+                    @click="showSupportedBands()"
+                    :disabled="isLoading"
+                  >
+                    Show Supported Bands
+                  </button>
+
+                  <button
+                    class="button is-link mr-2"
+                    @click="showCurrentSim()"
+                    :disabled="isLoading"
+                  >
+                    Show Current Sim
+                  </button>
+
+                  <button
+                    class="button is-link"
+                    @click="showPrefNetwork()"
+                    :disabled="isLoading"
+                  >
+                    Show Pref Network
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer" style="padding: 0.25rem">
+              <p class="card-footer-item">
+                This section allows you to query the network parameters. Simply
+                click the respective buttons to view the network parameters.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Loading Modal for Locking Band -->
@@ -321,7 +553,14 @@
           pci3: null,
           band: null,
           scs: null,
+          apnInput: null,
+          prefNetworkMode: null,
+          simSlot: null,
+          nrMode: null,
+          lockedBands: null,
+          cellState: null,
           atCommandResponse: "",
+          queryCommandResponse: "",
           lockBands() {
             if (!this.networkMode || !this.bandNumbers) {
               this.isError = true;
@@ -428,13 +667,129 @@
             const restoreCmd = 'AT+QNWLOCK="common/4g",0';
             this.sendAtCommand(restoreCmd);
           },
+          setAPN() {
+            const apnCmd = `AT+CGDCONT=1,"IPV4V6","${this.apnInput}"`;
+            this.sendAtCommand(apnCmd);
+          },
+          setPrefNetwork() {
+            // AT+QNWPREFCFG="mode_pref",<mode>
+            let prefCmd;
+            switch (this.prefNetworkMode) {
+              case "AUTO":
+                prefCmd = 'AT+QNWPREFCFG="mode_pref",AUTO';
+                break;
+              case "WCDMA":
+                prefCmd = 'AT+QNWPREFCFG="mode_pref",WCDMA';
+                break;
+              case "LTE ONLY":
+                prefCmd = 'AT+QNWPREFCFG="mode_pref",LTE';
+                break;
+              case "NR5G-NSA":
+                prefCmd = 'AT+QNWPREFCFG="mode_pref",LTE:NR5G';
+                break;
+              case "NR5G-SA":
+                prefCmd = 'AT+QNWPREFCFG="mode_pref",NR5G';
+                break;
+              default:
+                console.error("Invalid network mode.");
+                return;
+            }
+            this.sendAtCommand(prefCmd);
+          },
+          setSimSlot() {
+            const simCmd = `AT+QUIMSLOT=${this.simSlot}`;
+            this.sendAtCommand(simCmd);
+          },
+          nr5GMode() {
+            let nrCmd;
+            switch (this.nrMode) {
+              case "Enable All":
+                nrCmd = 'AT+QNWPREFCFG="nr5g_disable_mode",0';
+                break;
+              case "Disable NSA":
+                nrCmd = 'AT+QNWPREFCFG="nr5g_disable_mode",2';
+                break;
+              case "Disable SA":
+                nrCmd = 'AT+QNWPREFCFG="nr5g_disable_mode",1';
+                break;
+              default:
+                console.error("Invalid NR5G mode.");
+                return;
+            }
+            this.queryATCommand(nrCmd);
+          },
+          showLockedBands() {
+            let lockedCmd;
+            switch (this.lockedBands) {
+              case "LTE":
+                lockedCmd = 'AT+QNWPREFCFG="lte_band"';
+                break;
+              case "NSA":
+                lockedCmd = 'AT+QNWPREFCFG="nsa_nr5g_band"';
+                break;
+              case "SA":
+                lockedCmd = 'AT+QNWPREFCFG="nr5g_band"';
+                break;
+              default:
+                console.error("Invalid network mode.");
+                return;
+            }
+            this.queryATCommand(lockedCmd);
+          },
+
+          showCellState() {
+            let cellCmd;
+            switch (this.cellState) {
+              case "LTE":
+                cellCmd = 'AT+QNWLOCK="common/4g"';
+                break;
+              case "NR5G-SA":
+                cellCmd = 'AT+QNWLOCK="common/5g"';
+                break;
+              default:
+                console.error("Invalid network mode.");
+                return;
+            }
+            this.queryATCommand(cellCmd);
+          },
           showSupportedBands() {
             const supportedCmd = 'AT+QNWPREFCFG="policy_band"';
-            this.sendAtCommand(supportedCmd);
+            this.queryATCommand(supportedCmd);
+          },
+          showCurrentSim() {
+            const simCmd = "AT+QUIMSLOT?";
+            this.queryATCommand(simCmd);
+          },
+          showPrefNetwork() {
+            const prefCmd = 'AT+QNWPREFCFG="mode_pref"';
+            this.queryATCommand(prefCmd);
+          },
+          queryATCommand(atcmd) {
+            this.isLoading = true;
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: atcmd,
+                })
+            )
+              .then((res) => res.text())
+              .then((data) => {
+                this.queryCommandResponse = data;
+                console.log(data);
+              })
+              .catch((error) => {
+                this.isError = true;
+                this.startCountdown();
+                console.error("Error sending AT command:", error);
+              })
+              .finally(() => {
+                this.isLoading = false;
+              });
           },
           sendAtCommand(atcmd) {
             this.isLocking = true;
             this.startCountdown();
+            console.log(atcmd);
             fetch(
               "/cgi-bin/get_atcommand?" +
                 new URLSearchParams({
@@ -444,8 +799,7 @@
               .then((res) => res.text())
               .then((data) => {
                 this.atCommandResponse = data;
-                this.isLocking = true;
-                this.startCountdown();
+                console.log(data);
               })
               .catch((error) => {
                 this.isError = true;
@@ -460,14 +814,13 @@
             // Decrease countdown every second
             const interval = setInterval(() => {
               this.countdown--;
-              if (this.countdown === 0) {
+              if (this.countdown <= 0) {
                 clearInterval(interval);
                 // Reset values
                 this.isLocking = false;
                 this.isError = false;
                 this.isLoading = false;
                 this.countdown = 5;
-                // Optionally refresh the page here
               }
             }, 1000);
           },
