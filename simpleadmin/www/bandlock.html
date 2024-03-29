@@ -187,7 +187,7 @@
                 <button
                   class="button is-info"
                   @click="cellLock()"
-                  :disabled="isLoading"
+                  :disabled="isLocking"
                 >
                   Lock Cell
                 </button>
@@ -196,7 +196,7 @@
                   class="button is-warning"
                   style="margin-left: 1rem"
                   @click="restoreCell()"
-                  :disabled="isLoading"
+                  :disabled="isLocking"
                 >
                   Restore Cell
                 </button>
@@ -205,10 +205,10 @@
             <div class="card-footer" style="padding: 0.25rem">
               <p class="card-footer-item">
                 To utilize cell locking, first, select the network mode, then
-                specify the number of cells you wish to lock onto (max 10) if you
-                are using LTE. Next, input the EARFCN and PCI values for each
-                cell number. If you are locking through NR5G-SA instead, simply
-                fill up all the required parameters.
+                specify the number of cells you wish to lock onto (max 10) if
+                you are using LTE. Next, input the EARFCN and PCI values for
+                each cell number. If you are locking through NR5G-SA instead,
+                simply fill up all the required parameters.
               </p>
             </div>
           </div>
@@ -429,36 +429,36 @@
                 </button>
 
                 <button
-                class="button is-link"
-                @click="servingCellInfo()"
-                :disabled="isLoading"
-              >
-                Serving Cell Info
-              </button>
+                  class="button is-link"
+                  @click="servingCellInfo()"
+                  :disabled="isLoading"
+                >
+                  Serving Cell Info
+                </button>
 
                 <button
-                class="button is-link"
-                @click="scanNeighbourCells()"
-                :disabled="isLoading"
-              >
-                Scan Neighbour Cells
-              </button>
+                  class="button is-link"
+                  @click="scanNeighbourCells()"
+                  :disabled="isLoading"
+                >
+                  Scan Neighbour Cells
+                </button>
 
-              <button
-              class="button is-link"
-              @click="scanNsaCells()"
-              :disabled="isLoading"
-            >
-              Scan NSA Cells
-            </button>
+                <button
+                  class="button is-link"
+                  @click="scanNsaCells()"
+                  :disabled="isLoading"
+                >
+                  Scan NSA Cells
+                </button>
 
-              <button
-              class="button is-link"
-              @click="fullNetworkScan()"
-              :disabled="isLoading"
-            >
-              Full Network Scan
-            </button>
+                <button
+                  class="button is-link"
+                  @click="fullNetworkScan()"
+                  :disabled="isLoading"
+                >
+                  Full Network Scan
+                </button>
               </div>
             </div>
             <div class="card-footer" style="padding: 0.25rem">
@@ -609,66 +609,29 @@
               return;
             }
 
-            // Construct the atcmd based on the selected network mode
-            // LTE: AT+QNWLOCK="common/4g",<1-3>,<EARFCN>,<PCI>
-            // NR5G-SA: AT+QNWLOCK="common/5g",<PCI>,<EARFCN>,<SCS>,<BAND>
+            // Construct the AT command based on the selected network mode
             let atcmd;
 
             if (this.networkMode2 === "LTE") {
-              switch (this.cellNum) {
-                case "1":
-                  atcmd = `AT+QNWLOCK="common/4g",1,${this.earfcn1},${this.pci1}`;
-                  console.log(atcmd);
-                  break;
-                case "2":
-                  atcmd = `AT+QNWLOCK="common/4g",2,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2}`;
-                  console.log(atcmd);
-                  break;
-                case "3":
-                  atcmd = `AT+QNWLOCK="common/4g",3,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2},${this.earfcn3},${this.pci3}`;
-                  console.log(atcmd);
-                  break;
-                case "4":
-                  atcmd = `AT+QNWLOCK="common/4g",4,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2},${this.earfcn3},${this.pci3},${this.earfcn4},${this.pci4}`;
-                  console.log(atcmd);
-                  break;
-                case "5":
-                  atcmd = `AT+QNWLOCK="common/4g",5,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2},${this.earfcn3},${this.pci3},${this.earfcn4},${this.pci4},${this.earfcn5},${this.pci5}`;
-                  console.log(atcmd);
-                  break;
-                case "6":
-                  atcmd = `AT+QNWLOCK="common/4g",6,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2},${this.earfcn3},${this.pci3},${this.earfcn4},${this.pci4},${this.earfcn5},${this.pci5},${this.earfcn6},${this.pci6}`;
-                  console.log(atcmd);
-                  break;
-                case "7":
-                  atcmd = `AT+QNWLOCK="common/4g",7,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2},${this.earfcn3},${this.pci3},${this.earfcn4},${this.pci4},${this.earfcn5},${this.pci5},${this.earfcn6},${this.pci6},${this.earfcn7},${this.pci7}`;
-                  console.log(atcmd);
-                  break;
-                case "8":
-                  atcmd = `AT+QNWLOCK="common/4g",8,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2},${this.earfcn3},${this.pci3},${this.earfcn4},${this.pci4},${this.earfcn5},${this.pci5},${this.earfcn6},${this.pci6},${this.earfcn7},${this.pci7},${this.earfcn8},${this.pci8}`;
-                  console.log(atcmd);
-                  break;
-                case "9":
-                  atcmd = `AT+QNWLOCK="common/4g",9,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2},${this.earfcn3},${this.pci3},${this.earfcn4},${this.pci4},${this.earfcn5},${this.pci5},${this.earfcn6},${this.pci6},${this.earfcn7},${this.pci7},${this.earfcn8},${this.pci8},${this.earfcn9},${this.pci9}`;
-                  console.log(atcmd);
-                  break;
-                case "10":
-                  atcmd = `AT+QNWLOCK="common/4g",10,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2},${this.earfcn3},${this.pci3},${this.earfcn4},${this.pci4},${this.earfcn5},${this.pci5},${this.earfcn6},${this.pci6},${this.earfcn7},${this.pci7},${this.earfcn8},${this.pci8},${this.earfcn9},${this.pci9},${this.earfcn10},${this.pci10}`;
-                  console.log(atcmd);
-                  break;
-                default:
-                  console.log(atcmd);
-                  this.isError = true;
-                  this.startCountdown();
-                  console.error("Invalid frequency number.");
-                  return;
+              if (parseInt(this.cellNum) > 10) {
+                this.isError = true;
+                this.startCountdown();
+                console.error("Invalid frequency number.");
+                return;
               }
-            }
 
-            if (this.networkMode2 === "NR5G-SA") {
+              this.isLocking = true;
+              atcmd = `AT+QNWLOCK="common/4g",${this.cellNum}`;
+              for (let i = 1; i <= parseInt(this.cellNum); i++) {
+                atcmd += `,${this["earfcn" + i]},${this["pci" + i]}`;
+              }
+              console.log(atcmd);
+            } else if (this.networkMode2 === "NR5G-SA") {
+              this.isLocking = true;
               atcmd = `AT+QNWLOCK="common/5g",${this.pci1},${this.earfcn1},${this.scs},${this.band}`;
               console.log(atcmd);
             }
+
             this.sendAtCommand(atcmd);
           },
           restoreBands() {
@@ -799,7 +762,7 @@
                 })
             )
               .then(() => {
-                console.log("Enable Success.")
+                console.log("Enable Success.");
                 // Show a temporary loading query message
                 this.queryCommandResponse =
                   "Enabling NSA cell scan. Please wait...";
