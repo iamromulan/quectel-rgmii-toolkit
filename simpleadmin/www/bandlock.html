@@ -205,7 +205,7 @@
             <div class="card-footer" style="padding: 0.25rem">
               <p class="card-footer-item">
                 To utilize cell locking, first, select the network mode, then
-                specify the number of frequencies you wish to lock onto if you
+                specify the number of frequencies you wish to lock onto (max 10) if you
                 are using LTE. Next, input the EARFCN and PCI values for each
                 cell number. If you are locking through NR5G-SA instead, simply
                 fill up all the required parameters.
@@ -429,12 +429,36 @@
                 </button>
 
                 <button
-                  class="button is-link"
-                  @click="fullNetworkScan()"
-                  :disabled="isLoading"
-                >
-                  Full Network Scan
-                </button>
+                class="button is-link"
+                @click="servingCellInfo()"
+                :disabled="isLoading"
+              >
+                Serving Cell Info
+              </button>
+
+                <button
+                class="button is-link"
+                @click="scanNeighbourCells()"
+                :disabled="isLoading"
+              >
+                Scan Neighbour Cells
+              </button>
+
+              <button
+              class="button is-link"
+              @click="scanNsaCells()"
+              :disabled="isLoading"
+            >
+              Scan NSA Cells
+            </button>
+
+              <button
+              class="button is-link"
+              @click="fullNetworkScan()"
+              :disabled="isLoading"
+            >
+              Full Network Scan
+            </button>
               </div>
             </div>
             <div class="card-footer" style="padding: 0.25rem">
@@ -755,6 +779,40 @@
           showCaInfo() {
             const caCmd = "AT+QCAINFO";
             this.queryATCommand(caCmd);
+          },
+          servingCellInfo() {
+            const servingCmd = 'AT+QENG="servingcell"';
+            this.queryATCommand(servingCmd);
+          },
+          scanNeighbourCells() {
+            const scanCmd = 'AT+QENG="neighbourcell"';
+            this.queryATCommand(scanCmd);
+          },
+          scanNsaCells() {
+            const enableCmd = 'AT+QNWCFG="nr5g_meas_info",1';
+            const queryScanCmd = 'AT+QNWCFG="nr5g_meas_info"';
+            // Send the enable command first without getting the response
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: enableCmd,
+                })
+            )
+              .then(() => {
+                // Show a temporary loading query message
+                this.queryCommandResponse =
+                  "Enabling NSA cell scan. Please wait...";
+                this.queryATCommand(queryScanCmd);
+              })
+              .catch((error) => {
+                this.isError = true;
+                this.startCountdown();
+                console.error("Error sending AT command:", error);
+              });
+            
+              // Query the scan command after enabling
+              this.queryATCommand(queryScanCmd);
+            
           },
           fullNetworkScan() {
             const scanCmd = "AT+QSCAN=3,1";
