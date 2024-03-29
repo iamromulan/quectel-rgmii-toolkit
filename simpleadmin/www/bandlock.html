@@ -809,10 +809,6 @@
                 this.startCountdown();
                 console.error("Error sending AT command:", error);
               });
-            
-              // Query the scan command after enabling
-              this.queryATCommand(queryScanCmd);
-            
           },
           fullNetworkScan() {
             const scanCmd = "AT+QSCAN=3,1";
