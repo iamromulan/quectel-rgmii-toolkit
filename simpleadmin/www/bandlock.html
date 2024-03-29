@@ -545,6 +545,7 @@
           nrMode: null,
           lockedBands: null,
           cellState: null,
+          invalidCellNum: "",
           atCommandResponse: "",
           queryCommandResponse: "",
           lockBands() {
@@ -614,6 +615,7 @@
 
             if (this.networkMode2 === "LTE") {
               if (parseInt(this.cellNum) > 10) {
+                this.invalidCellNum = "Invalid";
                 this.isError = true;
                 this.startCountdown();
                 console.error("Invalid frequency number.");
@@ -804,7 +806,6 @@
               });
           },
           sendAtCommand(atcmd) {
-            this.isLocking = true;
             this.isLoading = true;
             this.startCountdown();
             console.log(atcmd);
@@ -852,13 +853,14 @@
 
       function generateFreqNumberInputs(num) {
         let html = "";
-        for (let i = 1; i <= num; i++) {
+        const maxFields = Math.min(num, 10); // Limit to a maximum of 10 fields
+        for (let i = 1; i <= maxFields; i++) {
           html += `
         <div style="margin-top: 1rem" x-show="cellNum >= ${i} && networkMode2 == 'LTE'">
-          <div style="display: flex; flex-direction: row">
-            <input class="input is-info" type="text" placeholder="EARFCN" x-model="earfcn${i}" />
-            <input class="input is-info" type="text" placeholder="PCI" x-model="pci${i}" style="margin-left: 1rem" />
-          </div>
+            <div style="display: flex; flex-direction: row">
+                <input class="input is-info" type="text" placeholder="EARFCN" x-model="earfcn${i}" />
+                <input class="input is-info" type="text" placeholder="PCI" x-model="pci${i}" style="margin-left: 1rem" />
+            </div>
         </div>
       `;
         }
