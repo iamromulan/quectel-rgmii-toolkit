@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AT Commands</title>
+    <title>Simple Settings</title>
 
     <script src="/js/alpinejs.min.js" defer></script>
     <link rel="stylesheet" href="/css/bulma.css" />
@@ -35,7 +35,9 @@
         >
           <div class="navbar-start">
             <a class="navbar-item" href="/"> Connection Info </a>
-            <a class="navbar-item" href="/atcommander.html"> AT Commands </a>
+            <a class="navbar-item" href="/atcommander.html">
+              Simple Settings
+            </a>
             <a class="navbar-item" href="/bandlock.html"> Simple Network </a>
             <a class="navbar-item" href="/sms.html"> SMS </a>
             <a class="navbar-item" href="/ttl.html"> TTL Changer </a>
@@ -95,13 +97,13 @@
             <div class="column is-8">
               <div class="card">
                 <header class="card-header">
-                  <p class="card-header-title">ATI Response</p>
+                  <p class="card-header-title">AT Command Response</p>
                 </header>
                 <div class="card-content">
                   <div class="content">
                     <textarea
                       class="textarea"
-                      placeholder="Please send only 1 AT command at a time"
+                      placeholder="Multiple commands should be separated by a semicolon. Example: AT+CGMR;+GSN"
                       rows="10"
                       x-text="isLoading ? 'Fetching response, please wait...' : atCommandResponse"
                     ></textarea>
@@ -115,153 +117,60 @@
     </div>
 
     <!-- START Useful Commands Section -->
-    <div class="container">
+    <div class="container" x-data="atCommands()">
       <div class="columns">
         <div class="column is-12">
           <div class="card">
             <header class="card-header">
-              <p class="card-header-title">Useful Commands</p>
+              <p class="card-header-title">Useful One Click Commands</p>
             </header>
             <div class="card-content">
               <div class="content">
-                <div
-                  class="field"
-                  style="margin-bottom: 1rem"
-                  x-data="atCommands()"
-                >
-                  <p class="control">
-                    <button
-                      class="button is-danger"
-                      @click="sendRebootCommand()"
-                      :disabled="isRebooting"
-                    >
-                      Reboot
-                    </button>
-                  </p>
+                <div style="display: flex; flex-direction: row; flex-wrap: wrap; margin-top: 1rem; justify-content: space-between;">
+                  <div class="field">
+                    <div class="control">
+                      <button
+                        class="button is-danger"
+                        @click="sendRebootCommand()"
+                        :disabled="isRebooting"
+                      >
+                        Reboot
+                      </button>
+                    </div>
+                  </div>
 
-                  <!-- Loading modal -->
-                  <div x-show="isRebooting" class="modal-overlay">
-                    <div class="loading-modal">
-                      <div class="spinner"></div>
-                      <div class="loading-text" style="display: flex; flex-direction: column;">
-                        <h3>Rebooting...</h3> 
-                        <p style="margin-top: 0.5rem;">Please wait for
-                          <span x-text="countdown" style="font-weight: 500;"></span> seconds before
-                          refreshing the page.</p>
-                      </div>
+                  <div class="field">
+                    <div class="control">
+                      <button
+                        class="button is-danger"
+                        @click="sendRebootCommand()"
+                        :disabled="isRebooting"
+                      >
+                        Reboot
+                      </button>
                     </div>
                   </div>
                 </div>
-                <!-- Add your useful commands content here -->
-                <p>Here are some useful commands:</p>
-                <ul>
-                  <li>
-                    <!-- Open to another tab -->
-                    See <a href="https://github.com/iamromulan/RM520N-GL#at-commands" target="_blank" style="cursor: pointer;">https://github.com/iamromulan/RM520N-GL#at-commands</a> for
-                    more
-                  </li>
-                  <li>AT+CFUN=1,1 (reboot)</li>
-                  <li>
-                    AT+QMAPWAC? (get current status of auto connect, 0=disabled
-                    1=enabled)
-                  </li>
-                  <li>
-                    AT+QMAPWAC=1 (enable auto connect internet for ethernet)
-                  </li>
-                  <li>
-                    AT+QMAPWAC=0 (disable auto connect for ethernet; use when
-                    you want internet over usb to work; IPPT must be disabled)
-                  </li>
-                  <li>
-                    AT+QUIMSLOT? (get active sim slot; 1=Slot 1; 2=Slot 2)
-                  </li>
-                  <li>AT+QUIMSLOT=1 (switch to sim slot 1)</li>
-                  <li>AT+QUIMSLOT=2 (switch to sim slot 2)</li>
-                  <li>AT+CGDCONT? (Get active APN profle list 1 through 8)</li>
-                  <li>
-                    AT+CGDCONT=1,"IPV4V6","APNHERE" (Sets APN profle 1 to
-                    APNHERE using both IPV4 and IPV6)
-                  </li>
-                  <li>AT+GSN (Show current IMEI)</li>
-                  <li>AT+EGMR=1,7,"IMEIGOESHERE" (sets/repairs IMEI)</li>
-                  <li>AT+QCAINFO (Show all connected bands/CA info)</li>
-                  <li>
-                    AT+QNWPREFCFG="mode_pref" (Check what the current network
-                    search mode is set to)
-                  </li>
-                  <li>
-                    AT+QNWPREFCFG="mode_pref",AUTO (Set network search mode to
-                    automatic)
-                  </li>
-                  <li>
-                    AT+QNWPREFCFG="mode_pref",NR5G:LTE (Set network search mode
-                    to 5G/NR and 4G/LTE only)
-                  </li>
-                  <li>
-                    AT+QNWPREFCFG="mode_pref",NR5G (Set network search mode to
-                    5G/NR only)
-                  </li>
-                  <li>
-                    AT+QNWPREFCFG="mode_pref",LTE (Set network search mode to
-                    4G/LTE only)
-                  </li>
-                  <li>
-                    AT+QNWPREFCFG="nr5g_disable_mode" (Check to see if SA or NSA
-                    NR5G is disabled)
-                  </li>
-                  <li>
-                    AT+QNWPREFCFG="nr5g_disable_mode",0 (Enable Both SA and NSA
-                    5G/NR)
-                  </li>
-                  <li>
-                    AT+QNWPREFCFG="nr5g_disable_mode",1 (Disable SA 5G/NR only)
-                  </li>
-                  <li>
-                    AT+QNWPREFCFG="nr5g_disable_mode",2 (Disable NSA 5G/NR only)
-                  </li>
-                  <li>
-                    AT+QNWPREFCFG="nr5g_band" (Get current 5G/NR bandlock
-                    settings)
-                  </li>
-                  <li>
-                    AT+QNWPREFCFG="nr5g_band",1:2:3:4:5:6 (Example: Lock to
-                    5G/NR bands n1,n2,n3,n4,n5, and n6)
-                  </li>
-                  <li>
-                    AT+QNWPREFCFG="lte_band" (Get current 4G/LTE bandlock
-                    settings)
-                  </li>
-                  <li>
-                    AT+QNWPREFCFG="lte_band",1:2:3:4:5:6 (Example: Lock to
-                    4G/LTE bands 1,2,3,4,5, and 6)
-                  </li>
-                  <li>
-                    AT+QMAP="WWAN" (Show currently assigned IPv4 and IPv6 from
-                    the provider)
-                  </li>
-                  <li>
-                    AT+QMAP="LANIP" (Show current DHCP range and Gateway address
-                    for VLAN0)
-                  </li>
-                  <li>
-                    AT+QMAP="LANIP",IP_start_range,IP_end_range,Gateway_IP (Set
-                    IPv4 Start/End range and Gateway IP of DHCP for VLAN0)
-                  </li>
-                  <li>
-                    AT+QMAP="DHCPV4DNS","disable" (disable the onboard DNS
-                    proxy; recommended for IPPT)
-                  </li>
-                  <li>
-                    AT+QMAP="MPDN_rule",0,1,0,1,1,"FF:FF:FF:FF:FF:FF" (Turn on
-                    IP Passthrough for Ethernet)
-                  </li>
-                  <li>
-                    AT+QMAP="MPDN_rule",0 (turn off IPPT/clear MPDN rule 0;
-                    Remember to run AT+QMAPWAC=1 and reboot after)
-                  </li>
-                </ul>
+
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+      <!-- Loading modal -->
+      <div x-show="isRebooting" class="modal-overlay">
+        <div class="loading-modal">
+          <div class="spinner"></div>
+          <div
+            class="loading-text"
+            style="display: flex; flex-direction: column"
+          >
+            <h3>Rebooting...</h3>
+            <p style="margin-top: 0.5rem">
+              Please wait for
+              <span x-text="countdown" style="font-weight: 500"></span> seconds
+              before refreshing the page.
+            </p>
           </div>
         </div>
       </div>
