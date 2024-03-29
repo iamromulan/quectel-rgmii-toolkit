@@ -205,7 +205,7 @@
             <div class="card-footer" style="padding: 0.25rem">
               <p class="card-footer-item">
                 To utilize cell locking, first, select the network mode, then
-                specify the number of frequencies you wish to lock onto (max 10) if you
+                specify the number of cells you wish to lock onto (max 10) if you
                 are using LTE. Next, input the EARFCN and PCI values for each
                 cell number. If you are locking through NR5G-SA instead, simply
                 fill up all the required parameters.
@@ -799,6 +799,7 @@
                 })
             )
               .then(() => {
+                console.log("Enable Success.")
                 // Show a temporary loading query message
                 this.queryCommandResponse =
                   "Enabling NSA cell scan. Please wait...";
