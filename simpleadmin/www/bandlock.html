@@ -44,7 +44,9 @@
         >
           <div class="navbar-start">
             <a class="navbar-item" href="/"> Connection Info </a>
-            <a class="navbar-item" href="/atcommander.html"> AT Commands </a>
+            <a class="navbar-item" href="/atcommander.html">
+              Simple Settings
+            </a>
             <a class="navbar-item" href="/bandlock.html"> Simple Network </a>
             <a class="navbar-item" href="/sms.html"> SMS </a>
             <a class="navbar-item" href="/ttl.html"> TTL Changer </a>
@@ -130,85 +132,23 @@
                 </div>
 
                 <div
-                  class="select is-info"
                   id="numFreqContainer"
                   style="margin-left: 1rem"
                   x-show="networkMode2 == 'LTE'"
                 >
-                  <select id="numFreqSelect" x-model="cellNum">
-                    <option>Number of Cells</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- For LTE Freq Number 1 -->
-              <div
-                style="margin-top: 1rem"
-                x-show="cellNum >= 1  && networkMode2 == 'LTE'"
-              >
-                <div style="display: flex; flex-direction: row">
                   <input
                     class="input is-info"
-                    type="text"
-                    placeholder="EARFCN"
-                    x-model="earfcn1"
-                  />
-                  <input
-                    class="input is-info"
-                    type="text"
-                    placeholder="PCI"
-                    x-model="pci1"
-                    style="margin-left: 1rem"
+                    type="number"
+                    id="numFreqInput"
+                    min="1"
+                    max="10"
+                    placeholder="1-10"
+                    x-model="cellNum"
                   />
                 </div>
               </div>
 
-              <!-- For LTE Freq Number 2 -->
-              <div
-                style="margin-top: 1rem"
-                x-show="cellNum >= 2 && networkMode2 == 'LTE'"
-              >
-                <div style="display: flex; flex-direction: row">
-                  <input
-                    class="input is-info"
-                    type="text"
-                    placeholder="EARFCN"
-                    x-model="earfcn2"
-                  />
-                  <input
-                    class="input is-info"
-                    type="text"
-                    placeholder="PCI"
-                    x-model="pci2"
-                    style="margin-left: 1rem"
-                  />
-                </div>
-              </div>
-
-              <!-- For LTE Freq Number 3 -->
-              <div
-                style="margin-top: 1rem"
-                x-show="cellNum == 3 && networkMode2 == 'LTE'"
-              >
-                <div style="display: flex; flex-direction: row">
-                  <input
-                    class="input is-info"
-                    type="text"
-                    placeholder="EARFCN"
-                    x-model="earfcn3"
-                  />
-                  <input
-                    class="input is-info"
-                    type="text"
-                    placeholder="PCI"
-                    x-model="pci3"
-                    style="margin-left: 1rem"
-                  />
-                </div>
-              </div>
+              <div id="freqNumbersContainer"></div>
 
               <!-- For NR5G-SA -->
               <div style="margin-top: 1rem" x-show="networkMode2 == 'NR5G-SA'">
@@ -247,7 +187,7 @@
                 <button
                   class="button is-info"
                   @click="cellLock()"
-                  :disabled="isLoading"
+                  :disabled="isLocking"
                 >
                   Lock Cell
                 </button>
@@ -256,7 +196,7 @@
                   class="button is-warning"
                   style="margin-left: 1rem"
                   @click="restoreCell()"
-                  :disabled="isLoading"
+                  :disabled="isLocking"
                 >
                   Restore Cell
                 </button>
@@ -265,10 +205,10 @@
             <div class="card-footer" style="padding: 0.25rem">
               <p class="card-footer-item">
                 To utilize cell locking, first, select the network mode, then
-                specify the number of frequencies you wish to lock onto if you
-                are using LTE. Next, input the EARFCN and PCI values for each
-                cell number. If you are locking through NR5G-SA instead, simply
-                fill up all the required parameters.
+                specify the number of cells you wish to lock onto (max 10) if
+                you are using LTE. Next, input the EARFCN and PCI values for
+                each cell number. If you are locking through NR5G-SA instead,
+                simply fill up all the required parameters.
               </p>
             </div>
           </div>
@@ -404,90 +344,121 @@
               <p class="card-header-title">Query Network Parameters</p>
             </header>
             <div class="card-content">
-              <div class="content">
-                <textarea
-                  class="textarea"
-                  rows="5"
-                  placeholder="Query Response"
-                  x-text=" isLoading ? 'Getting Response...' : queryCommandResponse"
-                ></textarea>
+              <textarea
+                class="textarea"
+                rows="5"
+                placeholder="Query Response"
+                x-text=" isLoading ? 'Getting Response...' : queryCommandResponse"
+              ></textarea>
 
-                <div class="columns is-variable is-multiline" style="margin-top: 1rem">
-                  <div class="column is-half-desktop">
-                    <div>
-                      <p>Check Locked Bands</p>
-                      <div class="is-flex-wrap-wrap">
-                        <div class="select is-info">
-                          <select id="lockedBands" x-model="lockedBands">
-                            <option>Locked Bands</option>
-                            <option>LTE</option>
-                            <option>NSA</option>
-                            <option>SA</option>
-                          </select>
-                        </div>
-
-                        <button
-                          class="button is-link"
-                          style="margin-left: 1rem"
-                          @click="showLockedBands()"
-                          :disabled="isLoading"
-                        >
-                          Check Bands
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="column is-half-desktop">
-                    <div>
-                      <p>Check Cell Lock</p>
-                      <div class="is-flex-wrap-wrap">
-                        <div class="select is-info">
-                          <select id="cellState" x-model="cellState">
-                            <option>Cell Lock</option>
-                            <option>LTE</option>
-                            <option>NR5G-SA</option>
-                          </select>
-                        </div>
-
-                        <button
-                          class="button is-link"
-                          style="margin-left: 1rem"
-                          @click="showCellState()"
-                          :disabled="isLoading"
-                        >
-                          Check Cell
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+              <div style="margin-top: 1.5rem">
+                <p>Check Locked Bands</p>
+                <div class="select is-info" style="margin-top: 0.5rem">
+                  <select id="lockedBands" x-model="lockedBands">
+                    <option>Locked Bands</option>
+                    <option>LTE</option>
+                    <option>NSA</option>
+                    <option>SA</option>
+                  </select>
                 </div>
 
-                <div class="buttons" style="margin-top: 1rem">
-                  <button
-                    class="button is-link mr-2"
-                    @click="showSupportedBands()"
-                    :disabled="isLoading"
-                  >
-                    Show Supported Bands
-                  </button>
+                <button
+                  class="button is-link"
+                  style="margin-left: 1rem; margin-top: 0.5rem"
+                  @click="showLockedBands()"
+                  :disabled="isLoading"
+                >
+                  Check Bands
+                </button>
+              </div>
 
-                  <button
-                    class="button is-link mr-2"
-                    @click="showCurrentSim()"
-                    :disabled="isLoading"
-                  >
-                    Show Current Sim
-                  </button>
-
-                  <button
-                    class="button is-link"
-                    @click="showPrefNetwork()"
-                    :disabled="isLoading"
-                  >
-                    Show Pref Network
-                  </button>
+              <div style="margin-top: 1rem">
+                <p>Check Cell Lock</p>
+                <div class="select is-info" style="margin-top: 0.5rem">
+                  <select id="cellState" x-model="cellState">
+                    <option>Cell Lock</option>
+                    <option>LTE</option>
+                    <option>NR5G-SA</option>
+                  </select>
                 </div>
+
+                <button
+                  class="button is-link"
+                  style="margin-left: 1rem; margin-top: 0.5rem"
+                  @click="showCellState()"
+                  :disabled="isLoading"
+                >
+                  Check Cell
+                </button>
+              </div>
+
+              <div style="margin-top: 2rem">
+                <p>Other Network Query</p>
+              </div>
+              <div class="buttons" style="margin-top: 0.5rem">
+                <button
+                  class="button is-link mr-2"
+                  @click="showSupportedBands()"
+                  :disabled="isLoading"
+                >
+                  Show Supported Bands
+                </button>
+
+                <button
+                  class="button is-link mr-2"
+                  @click="showCurrentSim()"
+                  :disabled="isLoading"
+                >
+                  Show Current Sim
+                </button>
+
+                <button
+                  class="button is-link"
+                  @click="showPrefNetwork()"
+                  :disabled="isLoading"
+                >
+                  Show Pref Network
+                </button>
+
+                <button
+                  class="button is-link"
+                  @click="showCaInfo()"
+                  :disabled="isLoading"
+                >
+                  Carrier Aggregation Info
+                </button>
+
+                <button
+                  class="button is-link"
+                  @click="servingCellInfo()"
+                  :disabled="isLoading"
+                >
+                  Serving Cell Info
+                </button>
+
+                <button
+                  class="button is-link"
+                  @click="scanNeighbourCells()"
+                  :disabled="isLoading"
+                >
+                  Scan Neighbour Cells
+                </button>
+
+                <button
+                  class="button is-link"
+                  @click="scanNsaCells()"
+                  :disabled="isLoading"
+                >
+                  Scan NSA Cells
+                </button>
+
+                <button
+                  class="button is-link"
+                  @click="fullNetworkScan()"
+                  :disabled="isLoading"
+                >
+                  Full Network Scan
+                </button>
               </div>
             </div>
             <div class="card-footer" style="padding: 0.25rem">
@@ -538,6 +509,7 @@
       function atCommands() {
         return {
           isLoading: false,
+          isQuerying: false,
           isLocking: false,
           isError: false,
           countdown: 5, // Initial countdown value
@@ -551,6 +523,20 @@
           pci2: null,
           earfcn3: null,
           pci3: null,
+          earfcn4: null,
+          pci4: null,
+          earfcn5: null,
+          pci5: null,
+          earfcn6: null,
+          pci6: null,
+          earfcn7: null,
+          pci7: null,
+          earfcn8: null,
+          pci8: null,
+          earfcn9: null,
+          pci9: null,
+          earfcn10: null,
+          pci10: null,
           band: null,
           scs: null,
           apnInput: null,
@@ -559,6 +545,7 @@
           nrMode: null,
           lockedBands: null,
           cellState: null,
+          invalidCellNum: "",
           atCommandResponse: "",
           queryCommandResponse: "",
           lockBands() {
@@ -623,40 +610,30 @@
               return;
             }
 
-            // Construct the atcmd based on the selected network mode
-            // LTE: AT+QNWLOCK="common/4g",<1-3>,<EARFCN>,<PCI>
-            // NR5G-SA: AT+QNWLOCK="common/5g",<PCI>,<EARFCN>,<SCS>,<BAND>
+            // Construct the AT command based on the selected network mode
             let atcmd;
 
             if (this.networkMode2 === "LTE") {
-              switch (this.cellNum) {
-                case "1":
-                  atcmd = `AT+QNWLOCK="common/4g",1,${this.earfcn1},${this.pci1}`;
-                  console.log(atcmd);
-                  break;
-                case "2":
-                  atcmd = `AT+QNWLOCK="common/4g",2,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2}`;
-                  console.log(atcmd);
-                  break;
-                case "3":
-                  atcmd = `AT+QNWLOCK="common/4g",3,${this.earfcn1},${this.pci1},${this.earfcn2},${this.pci2},${this.earfcn3},${this.pci3}`;
-                  console.log(atcmd);
-                  break;
-                default:
-                  console.log(atcmd);
-                  this.isError = true;
-                  this.startCountdown();
-                  console.error("Invalid frequency number.");
-                  return;
+              if (parseInt(this.cellNum) > 10) {
+                this.invalidCellNum = "Invalid";
+                this.isError = true;
+                this.startCountdown();
+                console.error("Invalid frequency number.");
+                return;
               }
-            }
 
-            if (this.networkMode2 === "NR5G-SA") {
+              this.isLocking = true;
+              atcmd = `AT+QNWLOCK="common/4g",${this.cellNum}`;
+              for (let i = 1; i <= parseInt(this.cellNum); i++) {
+                atcmd += `,${this["earfcn" + i]},${this["pci" + i]}`;
+              }
+              console.log(atcmd);
+            } else if (this.networkMode2 === "NR5G-SA") {
+              this.isLocking = true;
               atcmd = `AT+QNWLOCK="common/5g",${this.pci1},${this.earfcn1},${this.scs},${this.band}`;
               console.log(atcmd);
             }
 
-            this.isLoading = true;
             this.sendAtCommand(atcmd);
           },
           restoreBands() {
@@ -764,8 +741,50 @@
             const prefCmd = 'AT+QNWPREFCFG="mode_pref"';
             this.queryATCommand(prefCmd);
           },
+          showCaInfo() {
+            const caCmd = "AT+QCAINFO";
+            this.queryATCommand(caCmd);
+          },
+          servingCellInfo() {
+            const servingCmd = 'AT+QENG="servingcell"';
+            this.queryATCommand(servingCmd);
+          },
+          scanNeighbourCells() {
+            const scanCmd = 'AT+QENG="neighbourcell"';
+            this.queryATCommand(scanCmd);
+          },
+          scanNsaCells() {
+            const enableCmd = 'AT+QNWCFG="nr5g_meas_info",1';
+            const queryScanCmd = 'AT+QNWCFG="nr5g_meas_info"';
+            // Send the enable command first without getting the response
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: enableCmd,
+                })
+            )
+              .then(() => {
+                console.log("Enable Success.");
+                // Show a temporary loading query message
+                this.queryCommandResponse =
+                  "Enabling NSA cell scan. Please wait...";
+                this.queryATCommand(queryScanCmd);
+              })
+              .catch((error) => {
+                this.isError = true;
+                this.startCountdown();
+                console.error("Error sending AT command:", error);
+              });
+          },
+          fullNetworkScan() {
+            const scanCmd = "AT+QSCAN=3,1";
+            // Show a temporary loading query message
+            this.queryCommandResponse =
+              "Full network scan initiated. This takes about a minute. Please wait...";
+            this.queryATCommand(scanCmd);
+          },
           queryATCommand(atcmd) {
-            this.isLoading = true;
+            this.isQuerying = true;
             fetch(
               "/cgi-bin/get_atcommand?" +
                 new URLSearchParams({
@@ -783,11 +802,11 @@
                 console.error("Error sending AT command:", error);
               })
               .finally(() => {
-                this.isLoading = false;
+                this.isQuerying = false;
               });
           },
           sendAtCommand(atcmd) {
-            this.isLocking = true;
+            this.isLoading = true;
             this.startCountdown();
             console.log(atcmd);
             fetch(
@@ -820,12 +839,40 @@
                 this.isLocking = false;
                 this.isError = false;
                 this.isLoading = false;
+                this.isQuerying = false;
                 this.countdown = 5;
               }
             }, 1000);
           },
         };
       }
+
+      const freqNumbersContainer = document.getElementById(
+        "freqNumbersContainer"
+      );
+
+      function generateFreqNumberInputs(num) {
+        let html = "";
+        const maxFields = Math.min(num, 10); // Limit to a maximum of 10 fields
+        for (let i = 1; i <= maxFields; i++) {
+          html += `
+        <div style="margin-top: 1rem" x-show="cellNum >= ${i} && networkMode2 == 'LTE'">
+            <div style="display: flex; flex-direction: row">
+                <input class="input is-info" type="text" placeholder="EARFCN" x-model="earfcn${i}" />
+                <input class="input is-info" type="text" placeholder="PCI" x-model="pci${i}" style="margin-left: 1rem" />
+            </div>
+        </div>
+      `;
+        }
+        return html;
+      }
+
+      document
+        .getElementById("numFreqInput")
+        .addEventListener("input", function () {
+          const cellNum = parseInt(this.value);
+          freqNumbersContainer.innerHTML = generateFreqNumberInputs(cellNum);
+        });
     </script>
   </body>
 </html>
