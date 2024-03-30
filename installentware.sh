@@ -1,7 +1,8 @@
 #!/bin/sh
-
+# Modified by iamromlan to set up a proper entware environment for Quectel RM5xx series m.2 modems
 TYPE='generic'
 #|---------|-----------------|
+#| TARGET  | Quectel Modem   |
 #| ARCH    | armv7sf-k3.2    | 
 #| LOADER  | ld-linux.so.3   | 
 #| GLIBC   | 2.27            | 
@@ -41,7 +42,9 @@ uninstall_entware() {
     systemctl daemon-reload
 
     # Optionally, clean up any modifications to /etc/profile or other system files
-    # This step depends on the specific changes made by the user or the installation script
+    # Restore original link to login binary compiled by Quectel
+    rm /bin/login
+    ln /bin/login.shadow /bin/login
 
     echo -e '\033[32mInfo: Entware/OPKG has been uninstalled successfully.\033[0m'
 }
@@ -49,6 +52,7 @@ uninstall_entware() {
 # Check if /opt exists
 if [ -d /opt ]; then
     echo -e "\033[32mDo you want to uninstall Entware/OPKG first? It is already installed.\033[0m"
+    echo -e "\033[32mThis will also resore your login process to Quectel Stock\033[0m"
     echo -e "\033[32m1) Yes\033[0m"
     echo -e "\033[32m2) No\033[0m"
     echo -e "\033[32m3) Cancel\033[0m"
@@ -209,6 +213,38 @@ echo -e '\033[32mInfo: Add /opt/bin & /opt/sbin to $PATH variable\033[0m'
 echo -e '\033[32mInfo: Run export PATH=/opt/bin:/opt/sbin:$PATH to do it for this session only\033[0m'
 echo -e '\033[32mInfo: opkg at /opt/bin will be linked to /bin but any package you install with opkg will not be automatically.\033[0m'
 ln -sf /opt/bin/opkg /bin
-opkg update
+opkg update && opkg install shadow-login shadow-passwd
+    if [ "$?" -ne 0 ]; then
+        echo -e "\e[1;31mPackage installation failed. Please check your internet connection and try again.\e[0m"
+        exit 1
+    fi
+
+    # Replace the login and passwd binaries and set home for root to a writable directory
+    rm /opt/etc/shadow
+    rm /opt/etc/passwd
+    cp /etc/shadow /opt/etc/
+    cp /etc/passwd /opt/etc
+    mkdir /usrdata/root
+    mkdir /usrdata/root/bin
+    touch /usrdata/root/.profile
+    echo "# Set PATH for all shells" > /usrdata/root/.profile
+    echo "export PATH=/bin:/usr/sbin:/usr/bin:/sbin:/opt/sbin:/opt/bin:/usrdata/root/bin" >> /usrdata/root/.profile
+    chmod +x /usrdata/root/.profile
+    sed -i '1s|/home/root:/bin/sh|/usrdata/root:/bin/bash|' /opt/etc/passwd
+    rm /bin/login /usr/bin/passwd
+    ln -sf /opt/bin/login /bin
+    ln -sf /opt/bin/passwd /usr/bin/
+    echo -e "\e[1;31mPlease set your system login password.\e[0m"
+    /usr/bin/passwd
+
+    # Install basic and useful utilites
+    opkg install mc
+    ln -sf /opt/bin/mc /bin
+    opkg install htop
+    ln -sf /opt/bin/htop /bin
+    opkg install dfc
+    ln -sf /opt/bin/dfc /bin
+    opkg install lsof
+    ln -sf /opt/bin/lsof /bin
 # Remount filesystem as read-only
 mount -o remount,ro /

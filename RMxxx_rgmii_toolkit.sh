@@ -310,97 +310,134 @@ configure_simple_firewall() {
 install_simple_admin() {
     while true; do
 	echo -e "\e[1;32mWhat version of Simple Admin do you want to install? This will start a webserver on port 8080\e[0m"
-        echo -e "\e[1;32m1) Full Install\e[0m"
-	echo -e "\e[1;34m2) No AT Commands, List only\e[0m"
-	echo -e "\e[1;33m3) TTL Only\e[0m"
-	echo -e "\e[1;31m4) Install Test Build (work in progress/not ready yet)\e[0m"
-	echo -e "\e[0;33m5) Return to Main Menu\e[0m"
+        echo -e "\e[1;32m1) Stable current version, (Main Branch)\e[0m"
+	echo -e "\e[1;31m2) Install Test Build (Development Branch)\e[0m"
+	echo -e "\e[0;33m3) Return to Main Menu\e[0m"
  	echo -e "\e[1;32mSelect your choice: \e[0m"
         read choice
 
         case $choice in
             1)
-		install_update_at_socat
+		echo -e "\e[1;32mInstalling simpleadmin from the main stable branch\e[0m"
+  		install_update_at_socat
+  		sleep 1
 		install_simple_firewall
+  		sleep 1
                 remount_rw
-                cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_FULL_URL -O simpleadminfull.zip
-                unzip -o simpleadminfull.zip
-                cp -Rf quectel-rgmii-toolkit-simpleadminfull/simpleadmin/ $USRDATA_DIR
+		sleep 1
+		mkdir $SIMPLE_ADMIN_DIR
+  		mkdir $SIMPLE_ADMIN_DIR/systemd
+    		mkdir $SIMPLE_ADMIN_DIR/scripts
+      		mkdir $SIMPLE_ADMIN_DIR/www
+		mkdir $SIMPLE_ADMIN_DIR/www/cgi-bin
+  		mkdir $SIMPLE_ADMIN_DIR/www/css
+    		mkdir $SIMPLE_ADMIN_DIR/www/js
+                cd $SIMPLE_ADMIN_DIR/systemd
+                wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/systemd/simpleadmin_generate_status.service
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/systemd/simpleadmin_httpd.service
+  		sleep 1
+  		cd $SIMPLE_ADMIN_DIR/scripts
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/scripts/build_modem_status
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/scripts/modemstatus_parse.sh
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/scripts/tojson.sh
+		sleep 1
+		cd $SIMPLE_ADMIN_DIR/www
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/atcommander.html
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/index.html
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/speedtest.html
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/styles.css
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/ttl.html
+  		sleep 1
+  		cd $SIMPLE_ADMIN_DIR/www/js
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/js/alpinejs.min.js
+    		sleep 1
+    		cd $SIMPLE_ADMIN_DIR/www/css
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/css/admin.css
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/css/bulma.css
+		sleep 1
+		cd $SIMPLE_ADMIN_DIR/www/cgi-bin
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/cgi-bin/get_atcommand
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/cgi-bin/get_csq
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/cgi-bin/get_ttl_status
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/cgi-bin/set_ttl
+		sleep 1
+  		cd /
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
                 chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
                 cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
+		sleep 1
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
                 systemctl start simpleadmin_generate_status
+		sleep 1
                 systemctl start simpleadmin_httpd
                 remount_ro
-                echo "Cleaning up..."
-		rm /tmp/simpleadminfull.zip
-		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminfull/
+                echo -e "\e[1;32msimpleadmin has been installed and is now ready for use!\e[0m"
                 break
                 ;;
             2)
-		install_update_at_socat
+		echo -e "\e[1;31m2) Installing simpleadmin from the development test branch\e[0m"
+  		install_update_at_socat
+  		sleep 1
 		install_simple_firewall
+  		sleep 1
                 remount_rw
-                cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_NOCMD_URL -O simpleadminnoatcmds.zip
-                unzip -o simpleadminnoatcmds.zip
-                cp -Rf quectel-rgmii-toolkit-simpleadminnoatcmds/simpleadmin/ $USRDATA_DIR
+		sleep 1
+		mkdir $SIMPLE_ADMIN_DIR
+  		mkdir $SIMPLE_ADMIN_DIR/systemd
+    		mkdir $SIMPLE_ADMIN_DIR/scripts
+      		mkdir $SIMPLE_ADMIN_DIR/www
+		mkdir $SIMPLE_ADMIN_DIR/www/cgi-bin
+  		mkdir $SIMPLE_ADMIN_DIR/www/css
+    		mkdir $SIMPLE_ADMIN_DIR/www/js
+                cd $SIMPLE_ADMIN_DIR/systemd
+                wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/systemd/simpleadmin_generate_status.service
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/systemd/simpleadmin_httpd.service
+  		sleep 1
+  		cd $SIMPLE_ADMIN_DIR/scripts
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/build_modem_status
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/modemstatus_parse.sh
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/tojson.sh
+		sleep 1
+		cd $SIMPLE_ADMIN_DIR/www
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/atcommander.html
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/index.html
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/speedtest.html
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/styles.css
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/ttl.html
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/sms.html
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/bandlock.html
+  		sleep 1
+  		cd $SIMPLE_ADMIN_DIR/www/js
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/js/alpinejs.min.js
+    		sleep 1
+    		cd $SIMPLE_ADMIN_DIR/www/css
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/css/admin.css
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/css/bulma.css
+		sleep 1
+		cd $SIMPLE_ADMIN_DIR/www/cgi-bin
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_atcommand
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_csq
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_ttl_status
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/set_ttl
+		sleep 1
+  		cd /
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
                 chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
                 cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
+		sleep 1
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
                 systemctl start simpleadmin_generate_status
+		sleep 1
                 systemctl start simpleadmin_httpd
                 remount_ro
-		echo "Cleaning up..."
-		rm /tmp/simpleadminnoatcmds.zip
-		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminnoatcmds/
+                echo -e "\e[1;32msimpleadmin has been installed and is now ready for use!\e[0m"
                 break
                 ;;
-            3)
-		install_simple_firewall
-                remount_rw
-                cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_TTL_URL -O simpleadminttlonly.zip
-                unzip -o simpleadminttlonly.zip
-                cp -Rf quectel-rgmii-toolkit-simpleadminttlonly/simpleadmin/ $USRDATA_DIR
-		chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
-                systemctl daemon-reload
-                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
-                systemctl start simpleadmin_httpd
-                remount_ro
-		echo "Cleaning up..."
-		rm /tmp/simpleadminttlonly.zip
-		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminttlonly/
-                break
-                ;;
-            4)
-		install_update_at_socat
-		install_simple_firewall
-                remount_rw
-                cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_TEST_URL -O simpleadmintest.zip
-                unzip -o simpleadmintest.zip
-                cp -Rf quectel-rgmii-toolkit-simpleadmintest/simpleadmin/ $USRDATA_DIR
-                chmod +x $SIMPLE_ADMIN_DIR/scripts/*
-                chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
-                systemctl daemon-reload
-                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
-                ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
-                systemctl start simpleadmin_generate_status
-                systemctl start simpleadmin_httpd
-                remount_ro
-                break
-                ;;
-	    5)
+	    3)
                 echo "Returning to main menu..."
                 break
                 ;;
@@ -542,11 +579,15 @@ install_update_remove_tailscale() {
 	echo "Creating /usrdata/tailscale/"
 	mkdir $TAILSCALE_DIR
 	mkdir $TAILSCALE_SYSD_DIR
+ 	echo "Downloading binary files..."
+ 	cd /usrdata
+  	wget https://pkgs.tailscale.com/stable/tailscale_1.62.1_arm.tgz
+   	tar -xzf tailscale_1.62.1_arm.tgz
+    	cd /usrdata/tailscale_1.62.1_arm
+     	mv tailscale $TAILSCALE_DIR/tailscale
+	mv tailscaled $TAILSCALE_DIR/tailscaled
         cd $TAILSCALE_DIR
-	echo "Downloading binary: /usrdata/tailscale/tailscaled"
-        wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/tailscaled
-	echo "Downloading binary: /usrdata/tailscale/tailscale"
-	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/tailscale
+	rm -rf /usrdata/tailscale_1.62.1_arm
     	echo "Downloading systemd files..."
      	cd $TAILSCALE_SYSD_DIR
       	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
@@ -795,10 +836,9 @@ WantedBy=multi-user.target" > "$cfun_service_path"
     fi
 }
 
-# Function for TTYd install
 install_ttyd() {
     echo -e "\e[1;34mStarting ttyd installation process...\e[0m"
-
+    # Check for existing Entware/opkg installation, install if not installed
     if [ ! -f "/opt/bin/opkg" ]; then
         echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
         cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
@@ -812,41 +852,67 @@ install_ttyd() {
     fi
 
     mount -o remount,rw /
-    opkg update && opkg install shadow-login shadow-passwd
-    if [ "$?" -ne 0 ]; then
-        echo -e "\e[1;31mPackage installation failed. Please check your internet connection and try again.\e[0m"
-        exit 1
+
+    if [ -d "/usrdata/ttyd" ]; then
+        echo -e "\e[1;34mttyd is already installed. Choose an option:\e[0m"
+        echo -e "\e[1;34m1.) Update to ttyd 1.7.5 (DO NOT UPDATE WHILE USING ttyd! Use ADB or SSH instead)\e[0m"
+        echo -e "\e[1;31m2.) Uninstall ttyd\e[0m"
+        read -p "Enter your choice (1/2): " choice
+        case $choice in
+            1)
+                echo -e "\e[1;34mUpdating ttyd...\e[0m"
+                systemctl stop ttyd
+		wget -O /usrdata/ttyd/ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.5/ttyd.armhf && chmod +x /usrdata/ttyd/ttyd
+  		systemctl start ttyd
+                echo -e "\e[1;32mttyd has been updated.\e[0m"
+                ;;
+            2)
+                echo -e "\e[1;34mUninstalling ttyd...\e[0m"
+                systemctl stop ttyd
+                rm -rf /usrdata/ttyd
+                rm /lib/systemd/system/ttyd.service
+                rm /lib/systemd/system/multi-user.target.wants/ttyd.service
+                rm /bin/ttyd
+                echo -e "\e[1;32mttyd has been uninstalled.\e[0m"
+                ;;
+            *)
+                echo -e "\e[1;31mInvalid option. Exiting.\e[0m"
+                exit 1
+                ;;
+        esac
+        return
     fi
 
-    # Replacing the login and passwd binaries
-    rm /opt/etc/shadow
-    cp /etc/shadow /opt/etc/
-    rm /bin/login /usr/bin/passwd
-    ln -sf /opt/bin/login /bin
-    ln -sf /opt/bin/passwd /usr/bin/
-    echo -e "\e[1;31mPlease set your system login password.\e[0m"
-    /usr/bin/passwd
-
-    # Setting up ttyd
+    # Continue with installation if ttyd is not already installed.
+    # Check for /usrdata/socat-at-bridge/atcmd, install if not installed
+    if [ ! -f "/usrdata/socat-at-bridge/atcmd" ]; then
+        echo -e "\e[1;34mDependency: atcmd command does not exist. Installing socat-at-bridge...\e[0m"
+        install_update_at_socat
+        if [ "$?" -ne 0 ]; then
+            echo -e "\e[1;31mFailed to install/update atcmd. Please check the process.\e[0m"
+            exit 1
+        fi
+    fi
     mkdir -p /usrdata/ttyd/scripts /usrdata/ttyd/systemd
     cd /usrdata/ttyd/
-    wget -O ttyd "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/ttyd" && chmod +x ttyd
+    wget -O ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.4/ttyd.armhf && chmod +x ttyd
     wget -O scripts/ttyd.bash "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/scripts/ttyd.bash" && chmod +x scripts/ttyd.bash
     wget -O systemd/ttyd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/systemd/ttyd.service"
     cp systemd/ttyd.service /lib/systemd/system/
-    ln -sf /lib/systemd/system/ttyd.service /lib/systemd/system/multi-user.target.wants/
+    ln -sf /usrdata/ttyd/ttyd /bin
     
     # Enabling and starting ttyd service
     systemctl daemon-reload
-    systemctl enable ttyd
+    ln -sf /lib/systemd/system/ttyd.service /lib/systemd/system/multi-user.target.wants/
     systemctl start ttyd
     if [ "$?" -ne 0 ]; then
         echo -e "\e[1;31mFailed to start ttyd service. Please check the systemd service file and ttyd binary.\e[0m"
         exit 1
     fi
 
-    echo -e "\e[1;32mInstall Complete! ttyd server is up on port 443. Note: No TLS/SSL enabled yet.\e[0m"
+    echo -e "\e[1;32mInstallation Complete! ttyd server is up on port 443. Note: No TLS/SSL enabled yet.\e[0m"
 }
+
 
 
 # Main menu
@@ -923,9 +989,11 @@ echo "                                           :+##+.            "
     echo -e "\e[94m4) Tailscale Management\e[0m" # Light Blue
     echo -e "\e[92m5) Install/Change or remove Daily Reboot Timer\e[0m" # Light Green
     echo -e "\e[91m6) Install/Uninstall CFUN 0 Fix\e[0m" # Light Red
-    echo -e "\e[96m7) Install Entware/OPKG (BETA/Advanced)\e[0m" # Cyan (repeated color for additional options)
-    echo -e "\e[96m8) Install TTYd (BETA,443,No TLS/SSL)\e[0m" # Cyan
-    echo -e "\e[93m9) Exit\e[0m" # Yellow (repeated color for exit option)
+    echo -e "\e[96m7) Install/Uninstall Entware/OPKG\e[0m" # Cyan (repeated color for additional options)
+    echo -e "\e[96m8) Install/Update/Uninstall TTYd 1.7.4 (Uses port 443, No TLS/SSL)\e[0m" # Cyan
+    echo -e "\e[92m9) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
+    echo -e "\e[92m10) Install Fast.com CLI app (fast command)(tops out at 40Mbps)\e[0m" # Light Green
+    echo -e "\e[93m11) Exit\e[0m" # Yellow (repeated color for exit option)
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -963,13 +1031,42 @@ echo "                                           :+##+.            "
             ;;	    
         7) 
 	    echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
-	    cd /tmp && wget -O installentware.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh && chmod +x installentware.sh && ./installentware.sh
-     	    cd /
+	    cd /tmp && wget -O installentware.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh && chmod +x installentware.sh && ./installentware.sh && cd /
             ;;
 	8)  
  	    install_ttyd
       	    ;;
 	9) 
+	    echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
+     	    remount_rw
+	    mkdir /usrdata/root
+     	    mkdir /usrdata/root/bin
+	    cd /usrdata/root/bin
+     	    wget https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-armhf.tgz
+	    tar -xzf ookla-speedtest-1.2.0-linux-armhf.tgz
+     	    rm ookla-speedtest-1.2.0-linux-armhf.tgz
+	    rm speedtest.md
+     	    cd /
+	    ln -sf /usrdata/root/bin/speedtest /bin
+     	    remount_ro
+	    echo -e "\e[1;32mSpeedtest CLI (speedtest command) installed!!\e[0m"
+     	    echo -e "\e[1;32mTry running the command 'speedtest'\e[0m"
+            ;;
+	10) 
+	    echo -e "\e[1;32mInstalling fast.com CLI (fast command)\e[0m"
+     	    remount_rw
+	    mkdir /usrdata/root
+     	    mkdir /usrdata/root/bin
+	    cd /usrdata/root/bin
+     	    wget -O fast https://github.com/ddo/fast/releases/download/v0.0.4/fast_linux_arm && chmod +x fast
+     	    cd /
+	    ln -sf /usrdata/root/bin/fast /bin
+     	    remount_ro
+	    echo -e "\e[1;32mFast.com CLI (speedtest command) installed!!\e[0m"
+     	    echo -e "\e[1;32mTry running the command 'fast'\e[0m"
+	    echo -e "\e[1;32mThe fast.com test tops out at 40Mbps on the modem\e[0m"
+            ;;
+	11) 
 	    echo -e "\e[1;32mGoodbye!\e[0m"
      	    break
             ;;    
