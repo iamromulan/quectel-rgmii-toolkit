@@ -33,10 +33,15 @@ Fork development, and PR development to development :)
 **My goal** is for this to also include any new useful scripts or software for this modem and others that support RGMII mode.
 ## Screenshots
 
+![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulantoolkit.png?raw=true)
 ![Home Page](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulansimpleindex.png?raw=true)
 ![AT Commands](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulanatcommands.png?raw=true)
+
+![AT Commands](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulansimplenetwork.png?raw=true)
 ![TTL](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulansimpleTTL.png?raw=true)
-![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulantoolkit.png?raw=true)
+
+![TTL](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulanspeedtest.png?raw=true)
+
 
 
 ## How to Use
@@ -95,49 +100,22 @@ That's it! From another device running tailscale you should be able to access yo
 IP or Hostname being the IP or hostname assigned to it in your tailnet
 
  - Note that your SSH client must be able to give you a link to sign in with upon connecting. That's how the session is authorized. Works fine in Windows CMD or on Android use JuiceSSH.
-## Advanced/Beta
-
 ### Entware/OPKG installation
-
-
-It isn't perfect yet so it goes here under Advanced/Beta for now. 
-Here's what you gotta know about going into it:
 
  - After installing, the `opkg` command will work
  - You can run `opkg list` to see a list of installable packages, or head over to  https://bin.entware.net/armv7sf-k3.2/Packages.html
  - Everything opkg does is installed to /opt
  - `/opt` is actually located at `/usrdata/opt` to save space but is   
    mounted at `/opt`
- - Anything `opkg` installs will not be available in the system path by 
-   default but you can get around this either:
-
-#### Temporarily:
- Run this at the start of each adb shell or SSH shell session
-
-    export PATH=/opt/bin:/opt/sbin:$PATH
-
-#### Permanently:
-Symbolic linking each binary installed by the package to `/bin` and `/sbin` from `/opt/bin` and `/opt/sbin`
-For example, if you were to install zerotier:
-
-    opkg install zerotier
-    ln -sf /opt/bin/zerotier-one /bin
-    ln -sf /opt/bin/zerotier-cli /bin
-    ln -sf /opt/bin/zerotier-idtool /bin
-
-Now you can run those 3 binaries from the shell anytime since they are linked in a place already part of the system path.
-
-I plan to create a watchdog service for /opt/bin and /opt/sbin that will automaticly link new packages to /bin or /sbin later on in order to combat this.
+ - To properly use entware/opkg run the `login` command first if using adb to use stufff installed by entware/opkg
+ - Be aware of space and CPU limits, run `dfc` to see what the available space in `/opt` is. Run `htop` to see CPU usage and memory usage
 
 ### TTYd installation
 
-It isn't perfect yet so it goes here under Advanced/Beta for now. 
-Here's what you gotta know about going into it:
-
  - This listens on port 443 for http requests (no SSL/TLS yet)
- - This will automaticly install entware and patch the login and passwd binaries with ones from entware
+ - This will automaticly install entware and patch the login and passwd binaries with ones from entware\so you can login
  - It will ask you to set a password for the `root` user account
- - TTYd doesn't seem to be too mobile friendly for now but I optimized it the best i could for now so it is at least usable through a smartphone browser. Hopefully the startup script can be improved even more later. 
+ - TTYd doesn't seem to be too mobile friendly for now but I optimized it the best i could for now so it is at least usable through a smartphone browser. Hopefully the startup script can be improved even more later. Some people have a better experience depending on mobile browser
 
 ## Acknowledgements
 ### GitHub Users/Individuals:
