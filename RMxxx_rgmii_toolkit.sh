@@ -11,12 +11,6 @@ SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 SIMPLE_FIREWALL_DIR="/usrdata/simplefirewall"
 SIMPLE_FIREWALL_SCRIPT="$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
 SIMPLE_FIREWALL_SYSTEMD_DIR="$SIMPLE_FIREWALL_DIR/systemd"
-SIMPLE_FIREWALL_SERVICE="/lib/systemd/system/simplefirewall.service"
-GITHUB_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/$GITTREE.zip"
-GITHUB_SIMPADMIN_FULL_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadminfull.zip"
-GITHUB_SIMPADMIN_NOCMD_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadminnoatcmds.zip"
-GITHUB_SIMPADMIN_TTL_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadminttlonly.zip"
-GITHUB_SIMPADMIN_TEST_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadmintest.zip"
 TAILSCALE_DIR="/usrdata/tailscale/"
 TAILSCALE_SYSD_DIR="/usrdata/tailscale/systemd"
 # AT Command Script Variables and Functions
@@ -1037,7 +1031,20 @@ echo "                                           :+##+.            "
  	    install_ttyd
       	    ;;
 	9) 
-	    echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
+	        echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
+			# Check for existing Entware/opkg installation, install if not installed
+			if [ ! -f "/opt/bin/opkg" ]; then
+				echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
+				cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
+				if [ "$?" -ne 0 ]; then
+					echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
+					exit 1
+				fi
+				cd /
+			else
+				echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
+			fi
+		echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
      	    remount_rw
 	    mkdir /usrdata/root
      	    mkdir /usrdata/root/bin
@@ -1051,6 +1058,9 @@ echo "                                           :+##+.            "
      	    remount_ro
 	    echo -e "\e[1;32mSpeedtest CLI (speedtest command) installed!!\e[0m"
      	    echo -e "\e[1;32mTry running the command 'speedtest'\e[0m"
+		echo -e "\e[1;32mNote that it will not work unless you login to the root account first\e[0m"
+		echo -e "\e[1;32mNormaly only an issue in adb, ttyd and ssh you are forced to login\e[0m"
+		echo -e "\e[1;32mIf in adb just type login and then try to run the speedtest command\e[0m"
             ;;
 	10) 
 	    echo -e "\e[1;32mInstalling fast.com CLI (fast command)\e[0m"
