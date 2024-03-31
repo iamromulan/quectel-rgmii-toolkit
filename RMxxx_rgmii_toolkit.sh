@@ -11,12 +11,6 @@ SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 SIMPLE_FIREWALL_DIR="/usrdata/simplefirewall"
 SIMPLE_FIREWALL_SCRIPT="$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
 SIMPLE_FIREWALL_SYSTEMD_DIR="$SIMPLE_FIREWALL_DIR/systemd"
-SIMPLE_FIREWALL_SERVICE="/lib/systemd/system/simplefirewall.service"
-GITHUB_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/$GITTREE.zip"
-GITHUB_SIMPADMIN_FULL_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadminfull.zip"
-GITHUB_SIMPADMIN_NOCMD_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadminnoatcmds.zip"
-GITHUB_SIMPADMIN_TTL_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadminttlonly.zip"
-GITHUB_SIMPADMIN_TEST_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadmintest.zip"
 TAILSCALE_DIR="/usrdata/tailscale/"
 TAILSCALE_SYSD_DIR="/usrdata/tailscale/systemd"
 # AT Command Script Variables and Functions
@@ -310,97 +304,134 @@ configure_simple_firewall() {
 install_simple_admin() {
     while true; do
 	echo -e "\e[1;32mWhat version of Simple Admin do you want to install? This will start a webserver on port 8080\e[0m"
-        echo -e "\e[1;32m1) Full Install\e[0m"
-	echo -e "\e[1;34m2) No AT Commands, List only\e[0m"
-	echo -e "\e[1;33m3) TTL Only\e[0m"
-	echo -e "\e[1;31m4) Install Test Build (work in progress/not ready yet)\e[0m"
-	echo -e "\e[0;33m5) Return to Main Menu\e[0m"
+        echo -e "\e[1;32m1) Stable current version, (Main Branch)\e[0m"
+	echo -e "\e[1;31m2) Install Test Build (Development Branch)\e[0m"
+	echo -e "\e[0;33m3) Return to Main Menu\e[0m"
  	echo -e "\e[1;32mSelect your choice: \e[0m"
         read choice
 
         case $choice in
             1)
-		install_update_at_socat
+		echo -e "\e[1;32mInstalling simpleadmin from the main stable branch\e[0m"
+  		install_update_at_socat
+  		sleep 1
 		install_simple_firewall
+  		sleep 1
                 remount_rw
-                cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_FULL_URL -O simpleadminfull.zip
-                unzip -o simpleadminfull.zip
-                cp -Rf quectel-rgmii-toolkit-simpleadminfull/simpleadmin/ $USRDATA_DIR
+		sleep 1
+		mkdir $SIMPLE_ADMIN_DIR
+  		mkdir $SIMPLE_ADMIN_DIR/systemd
+    		mkdir $SIMPLE_ADMIN_DIR/scripts
+      		mkdir $SIMPLE_ADMIN_DIR/www
+		mkdir $SIMPLE_ADMIN_DIR/www/cgi-bin
+  		mkdir $SIMPLE_ADMIN_DIR/www/css
+    		mkdir $SIMPLE_ADMIN_DIR/www/js
+                cd $SIMPLE_ADMIN_DIR/systemd
+                wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/systemd/simpleadmin_generate_status.service
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/systemd/simpleadmin_httpd.service
+  		sleep 1
+  		cd $SIMPLE_ADMIN_DIR/scripts
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/scripts/build_modem_status
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/scripts/modemstatus_parse.sh
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/scripts/tojson.sh
+		sleep 1
+		cd $SIMPLE_ADMIN_DIR/www
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/atcommander.html
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/index.html
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/speedtest.html
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/styles.css
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/ttl.html
+  		sleep 1
+  		cd $SIMPLE_ADMIN_DIR/www/js
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/js/alpinejs.min.js
+    		sleep 1
+    		cd $SIMPLE_ADMIN_DIR/www/css
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/css/admin.css
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/css/bulma.css
+		sleep 1
+		cd $SIMPLE_ADMIN_DIR/www/cgi-bin
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/cgi-bin/get_atcommand
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/cgi-bin/get_csq
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/cgi-bin/get_ttl_status
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/cgi-bin/set_ttl
+		sleep 1
+  		cd /
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
                 chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
                 cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
+		sleep 1
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
                 systemctl start simpleadmin_generate_status
+		sleep 1
                 systemctl start simpleadmin_httpd
                 remount_ro
-                echo "Cleaning up..."
-		rm /tmp/simpleadminfull.zip
-		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminfull/
+                echo -e "\e[1;32msimpleadmin has been installed and is now ready for use!\e[0m"
                 break
                 ;;
             2)
-		install_update_at_socat
+		echo -e "\e[1;31m2) Installing simpleadmin from the development test branch\e[0m"
+  		install_update_at_socat
+  		sleep 1
 		install_simple_firewall
+  		sleep 1
                 remount_rw
-                cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_NOCMD_URL -O simpleadminnoatcmds.zip
-                unzip -o simpleadminnoatcmds.zip
-                cp -Rf quectel-rgmii-toolkit-simpleadminnoatcmds/simpleadmin/ $USRDATA_DIR
+		sleep 1
+		mkdir $SIMPLE_ADMIN_DIR
+  		mkdir $SIMPLE_ADMIN_DIR/systemd
+    		mkdir $SIMPLE_ADMIN_DIR/scripts
+      		mkdir $SIMPLE_ADMIN_DIR/www
+		mkdir $SIMPLE_ADMIN_DIR/www/cgi-bin
+  		mkdir $SIMPLE_ADMIN_DIR/www/css
+    		mkdir $SIMPLE_ADMIN_DIR/www/js
+                cd $SIMPLE_ADMIN_DIR/systemd
+                wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/systemd/simpleadmin_generate_status.service
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/systemd/simpleadmin_httpd.service
+  		sleep 1
+  		cd $SIMPLE_ADMIN_DIR/scripts
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/build_modem_status
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/modemstatus_parse.sh
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/tojson.sh
+		sleep 1
+		cd $SIMPLE_ADMIN_DIR/www
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/atcommander.html
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/index.html
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/speedtest.html
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/styles.css
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/ttl.html
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/sms.html
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/bandlock.html
+  		sleep 1
+  		cd $SIMPLE_ADMIN_DIR/www/js
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/js/alpinejs.min.js
+    		sleep 1
+    		cd $SIMPLE_ADMIN_DIR/www/css
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/css/admin.css
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/css/bulma.css
+		sleep 1
+		cd $SIMPLE_ADMIN_DIR/www/cgi-bin
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_atcommand
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_csq
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_ttl_status
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/set_ttl
+		sleep 1
+  		cd /
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
                 chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
                 cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
+		sleep 1
                 ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
                 systemctl start simpleadmin_generate_status
+		sleep 1
                 systemctl start simpleadmin_httpd
                 remount_ro
-		echo "Cleaning up..."
-		rm /tmp/simpleadminnoatcmds.zip
-		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminnoatcmds/
+                echo -e "\e[1;32msimpleadmin has been installed and is now ready for use!\e[0m"
                 break
                 ;;
-            3)
-		install_simple_firewall
-                remount_rw
-                cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_TTL_URL -O simpleadminttlonly.zip
-                unzip -o simpleadminttlonly.zip
-                cp -Rf quectel-rgmii-toolkit-simpleadminttlonly/simpleadmin/ $USRDATA_DIR
-		chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
-                systemctl daemon-reload
-                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
-                systemctl start simpleadmin_httpd
-                remount_ro
-		echo "Cleaning up..."
-		rm /tmp/simpleadminttlonly.zip
-		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminttlonly/
-                break
-                ;;
-            4)
-		install_update_at_socat
-		install_simple_firewall
-                remount_rw
-                cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_TEST_URL -O simpleadmintest.zip
-                unzip -o simpleadmintest.zip
-                cp -Rf quectel-rgmii-toolkit-simpleadmintest/simpleadmin/ $USRDATA_DIR
-                chmod +x $SIMPLE_ADMIN_DIR/scripts/*
-                chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
-                systemctl daemon-reload
-                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
-                ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
-                systemctl start simpleadmin_generate_status
-                systemctl start simpleadmin_httpd
-                remount_ro
-                break
-                ;;
-	    5)
+	    3)
                 echo "Returning to main menu..."
                 break
                 ;;
@@ -542,11 +573,15 @@ install_update_remove_tailscale() {
 	echo "Creating /usrdata/tailscale/"
 	mkdir $TAILSCALE_DIR
 	mkdir $TAILSCALE_SYSD_DIR
+ 	echo "Downloading binary files..."
+ 	cd /usrdata
+  	wget https://pkgs.tailscale.com/stable/tailscale_1.62.1_arm.tgz
+   	tar -xzf tailscale_1.62.1_arm.tgz
+    	cd /usrdata/tailscale_1.62.1_arm
+     	mv tailscale $TAILSCALE_DIR/tailscale
+	mv tailscaled $TAILSCALE_DIR/tailscaled
         cd $TAILSCALE_DIR
-	echo "Downloading binary: /usrdata/tailscale/tailscaled"
-        wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/tailscaled
-	echo "Downloading binary: /usrdata/tailscale/tailscale"
-	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/tailscale
+	rm -rf /usrdata/tailscale_1.62.1_arm
     	echo "Downloading systemd files..."
      	cd $TAILSCALE_SYSD_DIR
       	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
@@ -996,7 +1031,20 @@ echo "                                           :+##+.            "
  	    install_ttyd
       	    ;;
 	9) 
-	    echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
+	        echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
+			# Check for existing Entware/opkg installation, install if not installed
+			if [ ! -f "/opt/bin/opkg" ]; then
+				echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
+				cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
+				if [ "$?" -ne 0 ]; then
+					echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
+					exit 1
+				fi
+				cd /
+			else
+				echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
+			fi
+		echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
      	    remount_rw
 	    mkdir /usrdata/root
      	    mkdir /usrdata/root/bin
@@ -1010,6 +1058,9 @@ echo "                                           :+##+.            "
      	    remount_ro
 	    echo -e "\e[1;32mSpeedtest CLI (speedtest command) installed!!\e[0m"
      	    echo -e "\e[1;32mTry running the command 'speedtest'\e[0m"
+		echo -e "\e[1;32mNote that it will not work unless you login to the root account first\e[0m"
+		echo -e "\e[1;32mNormaly only an issue in adb, ttyd and ssh you are forced to login\e[0m"
+		echo -e "\e[1;32mIf in adb just type login and then try to run the speedtest command\e[0m"
             ;;
 	10) 
 	    echo -e "\e[1;32mInstalling fast.com CLI (fast command)\e[0m"
