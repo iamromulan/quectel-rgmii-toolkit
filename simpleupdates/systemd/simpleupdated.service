@@ -1,0 +1,10 @@
+[Unit]
+Description=Simple Update Daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usrdata/simpleupdates/simpleupdated
+
+[Install]
+WantedBy=multi-user.target

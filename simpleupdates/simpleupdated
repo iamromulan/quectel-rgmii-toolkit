@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Define the configuration and directories
+CONFIG_FILE="/usrdata/simpleupdate/simpleupdate.conf"
+GITUSER="iamromulan"
+GITTREE="main"
+DIRECTORIES=("simpleadmin" "socat-at-bridge" "simplefirewall" "tailscale" "ttyd")
+BASE_URL="https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE"
+
+# Wait for the system to fully start
+sleep 60
+# Load configuration
+if [[ -f "$CONFIG_FILE" ]]; then
+    source "$CONFIG_FILE"
+else
+    echo "Configuration file not found."
+    exit 1
+fi
+
+# Function to check for updates
+check_for_updates() {
+    echo "Checking for updates..."
+    for dir in "${DIRECTORIES[@]}"; do
+        local remote_rev=$(wget -qO- "$BASE_URL/$dir/.rev")
+        local local_rev_file="/usrdata/$dir/.rev"
+        
+        if [[ ! -f "$local_rev_file" ]]; then
+            echo "No local revision file found for $dir, skipping."
+            continue
+        fi
+
+        local local_rev=$(cat "$local_rev_file")
+        
+        if [[ "$remote_rev" -gt "$local_rev" ]]; then
+            echo "Update available for $dir, updating..."
+            wget -qO "/tmp/update_${dir}.sh" "$BASE_URL/simpleupdates/scripts/update_${dir}.sh"
+            chmod +x "/tmp/update_${dir}.sh"
+            "/tmp/update_${dir}.sh"
+        else
+            echo "$dir is up to date."
+        fi
+    done
+}
+
+# Function to wait and trigger updates based on scheduling
+wait_to_update() {
+    echo "Waiting for the next update check according to schedule..."
+    while true; do
+        sleep 60  # Check every 60 seconds
+        local current_time=$(date "+%H:%M")
+        local current_day=$(date "+%a")
+        local current_date=$(date "+%d")
+
+        case $UPDATE_FREQUENCY in
+            daily)
+                if [[ "$current_time" == "$SCHEDULED_TIME" ]]; then
+                    check_for_updates
+                fi
+                ;;
+            weekly)
+                if [[ "$current_day" == "$WEEKLY_DAY" && "$current_time" == "$SCHEDULED_TIME" ]]; then
+                    check_for_updates
+                fi
+                ;;
+            monthly)
+                if [[ "$current_date" == "$MONTHLY_DATE" && "$current_time" == "$SCHEDULED_TIME" ]]; then
+                    check_for_updates
+                fi
+                ;;
+            none)
+                echo "Update checking is disabled by frequency setting."
+                exit 0
+                ;;
+        esac
+    done
+}
+
+# Main logic
+if [[ "$CONF_ENABLED" == "no" ]]; then
+    echo "Updates are disabled in the configuration."
+    exit 0
+fi
+
+if [[ "$CHECK_AT_BOOT" == "yes" ]]; then
+    check_for_updates
+else
+    wait_to_update
+fi
