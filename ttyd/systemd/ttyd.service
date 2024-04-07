@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 ExecStartPre=/bin/sleep 5
-ExecStart=/usrdata/ttyd/ttyd -p 443 -t 'theme={"foreground":"white","background":"black"}' -t fontSize=25 --writable /usrdata/ttyd/scripts/ttyd.bash
+ExecStart=/usrdata/ttyd/ttyd -i 127.0.0.1 -p 8088 -t 'theme={"foreground":"white","background":"black"}' -t fontSize=25 --writable /usrdata/ttyd/scripts/ttyd.bash
 Restart=on-failure
 
 [Install]

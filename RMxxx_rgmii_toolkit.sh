@@ -302,6 +302,18 @@ configure_simple_firewall() {
 
 # Function to install/update Simple Admin
 install_simple_admin() {
+    # Check for existing Entware/opkg installation, install if not installed
+    if [ ! -f "/opt/bin/opkg" ]; then
+        echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
+        cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
+        if [ "$?" -ne 0 ]; then
+            echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
+            exit 1
+        fi
+        cd /
+    else
+        echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
+    fi
     while true; do
 	echo -e "\e[1;32mWhat version of Simple Admin do you want to install? This will start a webserver on port 8080\e[0m"
         echo -e "\e[1;32m1) Stable current version, (Main Branch)\e[0m"
@@ -328,7 +340,6 @@ install_simple_admin() {
     		mkdir $SIMPLE_ADMIN_DIR/www/js
                 cd $SIMPLE_ADMIN_DIR/systemd
                 wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/systemd/simpleadmin_generate_status.service
-		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/systemd/simpleadmin_httpd.service
   		sleep 1
   		cd $SIMPLE_ADMIN_DIR/scripts
   		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/scripts/build_modem_status
@@ -361,11 +372,9 @@ install_simple_admin() {
                 cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
 		sleep 1
-                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
                 systemctl start simpleadmin_generate_status
 		sleep 1
-                systemctl start simpleadmin_httpd
                 remount_ro
                 echo -e "\e[1;32msimpleadmin has been installed and is now ready for use!\e[0m"
                 break
@@ -387,7 +396,6 @@ install_simple_admin() {
     		mkdir $SIMPLE_ADMIN_DIR/www/js
                 cd $SIMPLE_ADMIN_DIR/systemd
                 wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/systemd/simpleadmin_generate_status.service
-		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/systemd/simpleadmin_httpd.service
   		sleep 1
   		cd $SIMPLE_ADMIN_DIR/scripts
   		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/build_modem_status
@@ -422,11 +430,9 @@ install_simple_admin() {
                 cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
                 systemctl daemon-reload
 		sleep 1
-                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
                 ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
                 systemctl start simpleadmin_generate_status
 		sleep 1
-                systemctl start simpleadmin_httpd
                 remount_ro
                 echo -e "\e[1;32msimpleadmin has been installed and is now ready for use!\e[0m"
                 break
@@ -508,9 +514,7 @@ uninstall_simpleadmin_components() {
     read -p "Enter your choice (1 or 2): " choice_simpleadmin
     if [ "$choice_simpleadmin" -eq 1 ]; then
         echo "Uninstalling the rest of Simpleadmin..."
-        systemctl stop simpleadmin_httpd
         systemctl stop simpleadmin_generate_status
-        rm -f /lib/systemd/system/simpleadmin_httpd.service
         rm -f /lib/systemd/system/simpleadmin_generate_status.service
         systemctl daemon-reload
         rm -rf "$SIMPLE_ADMIN_DIR"
