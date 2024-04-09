@@ -431,34 +431,34 @@ install_simple_admin() {
   		mkdir $SIMPLE_ADMIN_DIR/www/css
     		mkdir $SIMPLE_ADMIN_DIR/www/js
                 cd $SIMPLE_ADMIN_DIR/systemd
-                wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/systemd/simpleadmin_generate_status.service
+                wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/systemd/simpleadmin_generate_status.service
   		sleep 1
   		cd $SIMPLE_ADMIN_DIR/scripts
-  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/build_modem_status
-    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/modemstatus_parse.sh
-      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/tojson.sh
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/scripts/build_modem_status
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/scripts/modemstatus_parse.sh
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/scripts/tojson.sh
 		sleep 1
 		cd $SIMPLE_ADMIN_DIR/www
-		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/atcommander.html
-  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/index.html
-    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/speedtest.html
-      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/styles.css
-		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/ttl.html
-  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/sms.html
-    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/bandlock.html
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/atcommander.html
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/index.html
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/speedtest.html
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/styles.css
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/ttl.html
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/sms.html
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/bandlock.html
   		sleep 1
   		cd $SIMPLE_ADMIN_DIR/www/js
-  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/js/alpinejs.min.js
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/js/alpinejs.min.js
     		sleep 1
     		cd $SIMPLE_ADMIN_DIR/www/css
-    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/css/admin.css
-      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/css/bulma.css
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/css/admin.css
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/css/bulma.css
 		sleep 1
 		cd $SIMPLE_ADMIN_DIR/www/cgi-bin
-		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_atcommand
-  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_csq
-    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_ttl_status
-      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/set_ttl
+		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/cgi-bin/get_atcommand
+  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/cgi-bin/get_csq
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/cgi-bin/get_ttl_status
+      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/cgi-bin/set_ttl
 		sleep 1
   		cd /
                 chmod +x $SIMPLE_ADMIN_DIR/scripts/*
@@ -1017,7 +1017,8 @@ echo "                                           :+##+.            "
     echo -e "\e[96m8) Install/Update/Uninstall TTYd 1.7.4 (Uses port 443, No TLS/SSL)\e[0m" # Cyan
     echo -e "\e[92m9) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
     echo -e "\e[92m10) Install Fast.com CLI app (fast command)(tops out at 40Mbps)\e[0m" # Light Green
-    echo -e "\e[93m11) Exit\e[0m" # Yellow (repeated color for exit option)
+    echo -e "\e[92m11) Install OpenSSH Server\e[0m" # Light Green
+    echo -e "\e[93m12) Exit\e[0m" # Yellow (repeated color for exit option)
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -1094,6 +1095,27 @@ echo "                                           :+##+.            "
 	    echo -e "\e[1;32mThe fast.com test tops out at 40Mbps on the modem\e[0m"
             ;;
 	11) 
+	    echo -e "\e[1;32mOpenSSH Server\e[0m"
+        remount_rw
+
+	    mkdir /usrdata/sshd
+        wget -O /usrdata/sshd/sshd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/sshd/sshd.service"
+    	ln -sf "/usrdata/sshd/sshd.service" "/lib/systemd/system/sshd.service"
+        
+        opkg install openssh-server-pam
+        /opt/bin/ssh-keygen -A
+        systemctl daemon-reload
+        systemctl enable sshd
+
+        sed -i "s/^.*UsePAM .*/UsePAM yes/" "/opt/etc/ssh/sshd_config"
+        sed -i "s/^.*PermitRootLogin .*/PermitRootLogin yes/" "/opt/etc/ssh/sshd_config"
+        adduser -u 106 -G nogroup -h /opt/var/run -s /bin/nologin -S -D -H  sshd
+
+        systemctl start sshd
+
+	    echo -e "\e[1;32mOpenSSH installed!!\e[0m"
+        ;;
+	12) 
 	    echo -e "\e[1;32mGoodbye!\e[0m"
      	    break
             ;;    

@@ -4,9 +4,9 @@ Documentation=man:sshd(8) man:sshd_config(5)
 After=network.target
 
 [Service]
-ExecStartPre=/opt/usr/sbin/sshd -t
-ExecStart=/opt/usr/sbin/sshd -D
-ExecReload=/opt/usr/sbin/sshd -t
+ExecStartPre=/opt/sbin/sshd -t
+ExecStart=/opt/sbin/sshd -D
+ExecReload=/opt/sbin/sshd -t
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
 Restart=on-failure
