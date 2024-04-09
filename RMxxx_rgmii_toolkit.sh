@@ -1095,6 +1095,7 @@ echo "                                           :+##+.            "
 	    echo -e "\e[1;32mThe fast.com test tops out at 40Mbps on the modem\e[0m"
             ;;
 	11) 
+        ensure_entware_installed
 	    echo -e "\e[1;32mOpenSSH Server\e[0m"
         remount_rw
 

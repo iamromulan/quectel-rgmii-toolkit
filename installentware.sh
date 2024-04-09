@@ -83,6 +83,7 @@ create_opt_mount() {
     echo -e '\033[32mInfo: Setting up /opt mount to /usrdata/opt...\033[0m'
     cat <<EOF > /lib/systemd/system/opt.mount
 [Unit]
+Description=Bind /usrdata/opt to /opt
 After=systemrw.mount sockets.target
 Before=basic.target
 RequiresMountsFor=/usrdata
@@ -205,10 +206,10 @@ opkg update && opkg install shadow-login shadow-passwd
     fi
 
     # Replace the login and passwd binaries and set home for root to a writable directory
-    mv /etc/shadow /opt/etc/shadow
-    mv /etc/passwd /opt/etc/passwd
-    ln -s /opt/etc/shadow /etc/shadow
-    ln -s /opt/etc/passwd /etc/passwd
+    rm /opt/etc/shadow
+    rm /opt/etc/passwd
+    cp /etc/shadow /opt/etc/
+    cp /etc/passwd /opt/etc
     mkdir /usrdata/root
     mkdir /usrdata/root/bin
     touch /usrdata/root/.profile
@@ -224,9 +225,13 @@ opkg update && opkg install shadow-login shadow-passwd
 
     # Install basic and useful utilites
     opkg install mc
+    ln -sf /opt/bin/mc /bin
     opkg install htop
+    ln -sf /opt/bin/htop /bin
     opkg install dfc
+    ln -sf /opt/bin/dfc /bin
     opkg install lsof
+    ln -sf /opt/bin/lsof /bin
 
 # Remount filesystem as read-only
 mount -o remount,ro /
