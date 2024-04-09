@@ -99,6 +99,7 @@ WantedBy=basic.target local-fs.target
 EOF
     
     systemctl daemon-reload
+    ln -s /lib/systemd/system/opt.mount /lib/systemd/system/local-fs.target.wants/opt.mount
     systemctl enable opt.mount
     systemctl start opt.mount
 }

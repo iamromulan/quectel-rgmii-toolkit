@@ -5,3 +5,5 @@ lighttpd-mod-cgi
 lighttpd-mod-openssl
 lighttpd-mod-proxy
 printf "USER:$(openssl passwd -crypt PASSWORD)\n" >> .htpasswd
+
+

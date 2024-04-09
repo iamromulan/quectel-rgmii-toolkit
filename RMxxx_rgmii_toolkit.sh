@@ -329,8 +329,9 @@ install_lighttpd() {
     mount -o remount,rw /
     mkdir -p "$LIGHTTPD_DIR"
     wget -O "$LIGHTTPD_DIR/lighttpd.conf" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/lighttpd/lighttpd.conf
-    wget -O "$LIGHTTPD_DIR/lighttpd.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/lighttpd/lighttpd.service
-    ln -sf "$LIGHTTPD_DIR/lighttpd.service" "/lib/systemd/system/lighttpd.service"
+    wget -O "/lib/systemd/system/lighttpd.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/lighttpd/lighttpd.service
+    ln -sf "/lib/systemd/system/lighttpd.service" "/lib/systemd/system/multi-user.target.wants/"
+
     openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
         -subj "/C=US/ST=MI/L=Romulus/O=RMIITools/CN=localhost" \
         -keyout $LIGHTTPD_DIR/server.key -out $LIGHTTPD_DIR/server.crt
@@ -1100,8 +1101,8 @@ echo "                                           :+##+.            "
         remount_rw
 
 	    mkdir /usrdata/sshd
-        wget -O /usrdata/sshd/sshd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/sshd/sshd.service"
-    	ln -sf "/usrdata/sshd/sshd.service" "/lib/systemd/system/sshd.service"
+        wget -O /lib/systemd/system/sshd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/sshd/sshd.service"
+    	ln -sf "/lib/systemd/system/sshd.service" "/lib/systemd/system/multi-user.target.wants/"
         
         opkg install openssh-server-pam
         /opt/bin/ssh-keygen -A
