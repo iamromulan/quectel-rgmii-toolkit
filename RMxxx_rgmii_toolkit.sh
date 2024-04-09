@@ -1,12 +1,15 @@
 #!/bin/sh
 
 # Define toolkit paths
-GITUSER="iamromulan"
-GITTREE="development"
+GITUSER="snowzach"
+GITTREE="lighttpd"
+# GITUSER="iamromulan"
+# GITTREE="development"
 TMP_DIR="/tmp"
 USRDATA_DIR="/usrdata"
 SOCAT_AT_DIR="/usrdata/socat-at-bridge"
 SOCAT_AT_SYSD_DIR="/usrdata/socat-at-bridge/systemd_units"
+LIGHTTPD_DIR="/usrdata/lighttpd"
 SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 SIMPLE_FIREWALL_DIR="/usrdata/simplefirewall"
 SIMPLE_FIREWALL_SCRIPT="$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
@@ -94,6 +97,21 @@ send_at_commands() {
         done
     else
         echo -e "\e[1;31mError: Device $DEVICE_FILE does not exist!\e[0m"
+    fi
+}
+
+# Check for existing Entware/opkg installation, install if not installed
+ensure_entware_installed() {
+    if [ ! -f "/opt/bin/opkg" ]; then
+        echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
+        cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
+        if [ "$?" -ne 0 ]; then
+            echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
+            exit 1
+        fi
+        cd /
+    else
+        echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
     fi
 }
 
@@ -300,20 +318,38 @@ configure_simple_firewall() {
     echo -e "\e[1;32mFirewall configuration updated.\e[0m"
 }
 
+# Function to install Lighttpd
+install_lighttpd() {
+    ensure_entware_installed
+
+    /opt/bin/opkg install lighttpd lighttpd-mod-auth lighttpd-mod-authn_file lighttpd-mod-cgi lighttpd-mod-openssl lighttpd-mod-proxy
+    
+    systemctl stop lighttpd
+    echo -e "\033[0;32mInstalling/Updating Lighttpd...\033[0m"
+    mount -o remount,rw /
+    mkdir -p "$LIGHTTPD_DIR"
+    wget -O "$LIGHTTPD_DIR/lighttpd.conf" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/lighttpd/lighttpd.conf
+    wget -O "$LIGHTTPD_DIR/lighttpd.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/lighttpd/lighttpd.service
+    ln -sf "$LIGHTTPD_DIR/lighttpd.service" "/lib/systemd/system/lighttpd.service"
+    openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
+        -subj "/C=US/ST=MI/L=Romulus/O=RMIITools/CN=localhost" \
+        -keyout $LIGHTTPD_DIR/server.key -out $LIGHTTPD_DIR/server.crt
+    systemctl daemon-reload
+    systemctl enable lighttpd
+    systemctl start lighttpd
+    remount_ro
+    echo -e "\033[0;32mSimple Firewall installation/update complete.\033[0m"
+
+    echo -e "\e[1;31mPlease set your system login password.\e[0m"
+    #printf "USER:$(openssl passwd -crypt PASSWORD)\n" >> .htpasswd
+}
+
+
 # Function to install/update Simple Admin
 install_simple_admin() {
-    # Check for existing Entware/opkg installation, install if not installed
-    if [ ! -f "/opt/bin/opkg" ]; then
-        echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
-        cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
-        if [ "$?" -ne 0 ]; then
-            echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
-            exit 1
-        fi
-        cd /
-    else
-        echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
-    fi
+
+    install_lighttpd
+
     while true; do
 	echo -e "\e[1;32mWhat version of Simple Admin do you want to install? This will start a webserver on port 8080\e[0m"
         echo -e "\e[1;32m1) Stable current version, (Main Branch)\e[0m"
@@ -836,18 +872,8 @@ WantedBy=multi-user.target" > "$cfun_service_path"
 
 install_ttyd() {
     echo -e "\e[1;34mStarting ttyd installation process...\e[0m"
-    # Check for existing Entware/opkg installation, install if not installed
-    if [ ! -f "/opt/bin/opkg" ]; then
-        echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
-        cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
-        if [ "$?" -ne 0 ]; then
-            echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
-            exit 1
-        fi
-        cd /
-    else
-        echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
-    fi
+
+    ensure_entware_installed
 
     mount -o remount,rw /
 
@@ -1020,34 +1046,21 @@ echo "                                           :+##+.            "
         
         4)  
 	    tailscale_menu
-	    ;;
+	        ;;
 	5)
-            manage_reboot_timer
+        manage_reboot_timer
             ;;
 	6)
-            manage_cfun_fix
+        manage_cfun_fix
             ;;	    
-        7) 
-	    echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
-	    cd /tmp && wget -O installentware.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh && chmod +x installentware.sh && ./installentware.sh && cd /
+    7) 
+	    ensure_entware_installed
             ;;
 	8)  
  	    install_ttyd
-      	    ;;
+            ;;
 	9) 
-	        echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
-			# Check for existing Entware/opkg installation, install if not installed
-			if [ ! -f "/opt/bin/opkg" ]; then
-				echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
-				cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
-				if [ "$?" -ne 0 ]; then
-					echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
-					exit 1
-				fi
-				cd /
-			else
-				echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
-			fi
+        ensure_entware_installed
 		echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
      	    remount_rw
 	    mkdir /usrdata/root
@@ -1084,8 +1097,8 @@ echo "                                           :+##+.            "
 	    echo -e "\e[1;32mGoodbye!\e[0m"
      	    break
             ;;    
-        *)
-            echo -e "\e[1;31mInvalid option\e[0m"
+    *)
+        echo -e "\e[1;31mInvalid option\e[0m"
             ;;
     esac
 done

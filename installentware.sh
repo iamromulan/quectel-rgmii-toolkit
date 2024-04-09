@@ -92,29 +92,12 @@ Type=none
 Options=bind
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=local-fs.target
 EOF
     
     systemctl daemon-reload
+    systemctl enable opt.mount
     systemctl start opt.mount
-    
-    # Additional systemd service to ensure opt.mount starts at boot
-    echo -e '\033[32mInfo: Creating service to start opt.mount at boot...\033[0m'
-    cat <<EOF > /lib/systemd/system/start-opt-mount.service
-[Unit]
-Description=Ensure opt.mount is started at boot
-After=network.target
-
-[Service]
-Type=oneshot
-ExecStart=/bin/systemctl start opt.mount
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    systemctl daemon-reload
-    ln -s /lib/systemd/system/start-opt-mount.service /lib/systemd/system/multi-user.target.wants/start-opt-mount.service
 }
 
 if [ -n "$PRE_OPKG_PATH" ]; then
@@ -222,8 +205,8 @@ opkg update && opkg install shadow-login shadow-passwd
     # Replace the login and passwd binaries and set home for root to a writable directory
     rm /opt/etc/shadow
     rm /opt/etc/passwd
-    cp /etc/shadow /opt/etc/
-    cp /etc/passwd /opt/etc
+    ln -s /etc/shadow /opt/etc/
+    ln -s /etc/passwd /opt/etc
     mkdir /usrdata/root
     mkdir /usrdata/root/bin
     touch /usrdata/root/.profile
@@ -239,12 +222,9 @@ opkg update && opkg install shadow-login shadow-passwd
 
     # Install basic and useful utilites
     opkg install mc
-    ln -sf /opt/bin/mc /bin
     opkg install htop
-    ln -sf /opt/bin/htop /bin
     opkg install dfc
-    ln -sf /opt/bin/dfc /bin
     opkg install lsof
-    ln -sf /opt/bin/lsof /bin
+
 # Remount filesystem as read-only
 mount -o remount,ro /
