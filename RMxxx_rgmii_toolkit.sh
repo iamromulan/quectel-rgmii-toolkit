@@ -336,15 +336,13 @@ install_lighttpd() {
         -subj "/C=US/ST=MI/L=Romulus/O=RMIITools/CN=localhost" \
         -keyout $LIGHTTPD_DIR/server.key -out $LIGHTTPD_DIR/server.crt
     systemctl daemon-reload
-    systemctl enable lighttpd
     systemctl start lighttpd
-    remount_ro
+    
     echo -e "\033[0;32mSimple Firewall installation/update complete.\033[0m"
 
     echo -e "\e[1;31mPlease set your system login password.\e[0m"
-    #printf "USER:$(openssl passwd -crypt PASSWORD)\n" >> .htpasswd
+    printf "USER:$(openssl passwd -crypt PASSWORD)\n" >> $LIGHTTPD_DIR/.htpasswd
 }
-
 
 # Function to install/update Simple Admin
 install_simple_admin() {
@@ -389,6 +387,7 @@ install_simple_admin() {
     		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/speedtest.html
       		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/styles.css
 		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/ttl.html
+        wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/bandlock.html
   		sleep 1
   		cd $SIMPLE_ADMIN_DIR/www/js
   		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/simpleadmin/www/js/alpinejs.min.js
