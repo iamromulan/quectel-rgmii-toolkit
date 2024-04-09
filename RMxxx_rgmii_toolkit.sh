@@ -1103,14 +1103,14 @@ echo "                                           :+##+.            "
         wget -O /lib/systemd/system/sshd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/sshd/sshd.service"
     	ln -sf "/lib/systemd/system/sshd.service" "/lib/systemd/system/multi-user.target.wants/"
         
-        opkg install openssh-server-pam
+        opkg install openssh-server-pam shadow-useradd
         /opt/bin/ssh-keygen -A
         systemctl daemon-reload
         systemctl enable sshd
 
         sed -i "s/^.*UsePAM .*/UsePAM yes/" "/opt/etc/ssh/sshd_config"
         sed -i "s/^.*PermitRootLogin .*/PermitRootLogin yes/" "/opt/etc/ssh/sshd_config"
-        adduser -u 106 -G nogroup -h /opt/var/run -s /bin/nologin -S -D -H  sshd
+        useradd -u 106 -g nogroup -d /opt/var/run -s /bin/nologin -r -N -M sshd
 
         systemctl start sshd
 
