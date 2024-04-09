@@ -84,9 +84,6 @@ create_opt_mount() {
     cat <<EOF > /lib/systemd/system/opt.mount
 [Unit]
 Description=Bind /usrdata/opt to /opt
-After=systemrw.mount sockets.target
-Before=basic.target
-RequiresMountsFor=/usrdata
 
 [Mount]
 What=/usrdata/opt
@@ -95,13 +92,29 @@ Type=none
 Options=bind
 
 [Install]
-WantedBy=basic.target local-fs.target
+WantedBy=multi-user.target
 EOF
     
     systemctl daemon-reload
-    ln -s /lib/systemd/system/opt.mount /lib/systemd/system/local-fs.target.wants/opt.mount
-    systemctl enable opt.mount
     systemctl start opt.mount
+    
+    # Additional systemd service to ensure opt.mount starts at boot
+    echo -e '\033[32mInfo: Creating service to start opt.mount at boot...\033[0m'
+    cat <<EOF > /lib/systemd/system/start-opt-mount.service
+[Unit]
+Description=Ensure opt.mount is started at boot
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl start opt.mount
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    systemctl daemon-reload
+    ln -s /lib/systemd/system/start-opt-mount.service /lib/systemd/system/multi-user.target.wants/start-opt-mount.service
 }
 
 if [ -n "$PRE_OPKG_PATH" ]; then
@@ -233,6 +246,5 @@ opkg update && opkg install shadow-login shadow-passwd
     ln -sf /opt/bin/dfc /bin
     opkg install lsof
     ln -sf /opt/bin/lsof /bin
-
 # Remount filesystem as read-only
 mount -o remount,ro /
