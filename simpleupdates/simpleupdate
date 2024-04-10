@@ -225,24 +225,24 @@ setup() {
 # Command operations: status, enable, disable, update, setup
 case "$1" in
     d)
-		daemon_mode
+	daemon_mode
         ;;
     update)
         load_config
         force_check_for_updates
         ;;
     status)
-		status
-		;;
-	enable)
-		enable_updates
-		;;
-	disable)
-		disable_updates
-		;;
-	setup)
-		setup
-		;;
+	status
+	;;
+    enable)
+	enable_updates
+	;;
+    disable)
+	disable_updates
+	;;
+    setup)
+	setup
+	;;
     *)
         echo "Usage:"
         echo "d: Run as a background check daemon"
