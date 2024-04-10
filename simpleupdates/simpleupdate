@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration and directories
-CONFIG_FILE="/usrdata/simpleupdate/simpleupdate.conf"
+CONFIG_FILE="/usrdata/simpleupdates/simpleupdate.conf"
 GITUSER="iamromulan"
 GITTREE="main"
 DIRECTORIES=("simpleadmin" "socat-at-bridge" "simplefirewall" "tailscale" "ttyd")
