@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usrdata/simpleupdates/simpleupdated
+ExecStart=/usrdata/simpleupdates/simpleupdate d
 
 [Install]
 WantedBy=multi-user.target
