@@ -345,9 +345,8 @@ install_lighttpd() {
         read password
         if [ -z "$password" ]; then
             echo -e "\e[1;32mNo password provided.\e[0m"
-            
         else
-            printf "root:$(openssl passwd -crypt \"$password\")\n" >> $LIGHTTPD_DIR/.htpasswd
+            printf "root:$(openssl passwd -crypt $password)\n" >> $LIGHTTPD_DIR/.htpasswd
             echo -e "\e[1;32mPassword set.\e[0m"
             break
         fi
