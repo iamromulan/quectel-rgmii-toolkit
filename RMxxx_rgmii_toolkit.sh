@@ -323,6 +323,7 @@ install_lighttpd() {
     ensure_entware_installed
 
     /opt/bin/opkg install lighttpd lighttpd-mod-auth lighttpd-mod-authn_file lighttpd-mod-cgi lighttpd-mod-openssl lighttpd-mod-proxy
+    rm /opt/etc/init.d/S80lighttpd # Ensure rc.unslung doesn't try to start it
     
     systemctl stop lighttpd
     echo -e "\033[0;32mInstalling/Updating Lighttpd...\033[0m"
@@ -342,11 +343,12 @@ install_lighttpd() {
 
     while true; do
         echo -e "\e[1;31mPlease set your root web login password.\e[0m"
-        read password
+        read -s password
         if [ -z "$password" ]; then
             echo -e "\e[1;32mNo password provided.\e[0m"
         else
-            printf "root:$(openssl passwd -crypt $password)\n" >> $LIGHTTPD_DIR/.htpasswd
+            echo -n "root:" > $LIGHTTPD_DIR/.htpasswd
+            openssl passwd -crypt "$password" >> $LIGHTTPD_DIR/.htpasswd
             echo -e "\e[1;32mPassword set.\e[0m"
             break
         fi
@@ -1113,14 +1115,17 @@ echo "                                           :+##+.            "
     	ln -sf "/lib/systemd/system/sshd.service" "/lib/systemd/system/multi-user.target.wants/"
         
         opkg install openssh-server-pam shadow-useradd
+        rm /opt/etc/init.d/S40sshd # Ensure rc.unslung doesn't try to start it
         /opt/bin/ssh-keygen -A
         systemctl daemon-reload
         systemctl enable sshd
 
+        # Enable PAM and PermitRootLogin
         sed -i "s/^.*UsePAM .*/UsePAM yes/" "/opt/etc/ssh/sshd_config"
         sed -i "s/^.*PermitRootLogin .*/PermitRootLogin yes/" "/opt/etc/ssh/sshd_config"
-        useradd -u 106 -g nogroup -d /opt/var/run -s /bin/nologin -r -N -M sshd
 
+        # Ensure the sshd user exists in the /opt/etc/passwd file
+        grep "sshd:x:106" /opt/etc/passwd || echo "sshd:x:106:65534:Linux User,,,:/opt/run/sshd:/bin/nologin" >> /opt/etc/passwd
         systemctl start sshd
 
 	    echo -e "\e[1;32mOpenSSH installed!!\e[0m"
