@@ -361,7 +361,7 @@ install_simple_admin() {
     install_lighttpd
 
     while true; do
-	echo -e "\e[1;32mWhat version of Simple Admin do you want to install? This will start a webserver on port 8080\e[0m"
+	echo -e "\e[1;32mWhat version of Simple Admin do you want to install? This will start a webserver on port 80/443\e[0m"
         echo -e "\e[1;32m1) Stable current version, (Main Branch)\e[0m"
 	echo -e "\e[1;31m2) Install Test Build (Development Branch)\e[0m"
 	echo -e "\e[0;33m3) Return to Main Menu\e[0m"
@@ -887,6 +887,10 @@ install_ttyd() {
     ensure_entware_installed
 
     mount -o remount,rw /
+
+    if [ ! -d "/usrdata/lighttpd" ]; then
+        install_lighttpd
+    fi
 
     if [ -d "/usrdata/ttyd" ]; then
         echo -e "\e[1;34mttyd is already installed. Choose an option:\e[0m"
