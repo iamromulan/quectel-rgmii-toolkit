@@ -338,10 +338,19 @@ install_lighttpd() {
     systemctl daemon-reload
     systemctl start lighttpd
     
-    echo -e "\033[0;32mSimple Firewall installation/update complete.\033[0m"
+    echo -e "\033[0;32mLighttpd installation/update complete.\033[0m"
 
-    echo -e "\e[1;31mPlease set your system login password.\e[0m"
-    printf "USER:$(openssl passwd -crypt PASSWORD)\n" >> $LIGHTTPD_DIR/.htpasswd
+    while true; do
+        echo -e "\e[1;31mPlease set your root web login password.\e[0m"
+        read password
+        if [ -z "$password" ]; then
+            echo -e "\e[1;32mNo password provided.\e[0m"
+        else
+            printf "root:$(openssl passwd -crypt \"$password\")\n" >> $LIGHTTPD_DIR/.htpasswd
+            echo -e "\e[1;32mPassword set.\e[0m"
+            break
+        fi
+    done
 }
 
 # Function to install/update Simple Admin
