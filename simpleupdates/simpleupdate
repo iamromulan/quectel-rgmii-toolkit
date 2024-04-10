@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# Configuration file path
+CONFIG_FILE="/usrdata/simpleupdate/simpleupdate.conf"
+
+# Helper function to load and update the configuration
+update_config() {
+    local key="$1"
+    local value="$2"
+    if grep -q "^$key=" "$CONFIG_FILE"; then
+        sed -i "s|^$key=.*|$key=$value|" "$CONFIG_FILE"
+    else
+        echo "$key=$value" >> "$CONFIG_FILE"
+    fi
+}
+
+# Display the current configuration status
+status() {
+    echo "Current Configuration Status:"
+    if [[ -f "$CONFIG_FILE" ]]; then
+        while IFS= read -r line; do
+            echo "$line"
+        done < "$CONFIG_FILE"
+    else
+        echo "Configuration file not found."
+    fi
+}
+
+# Enable automatic updates
+enable_updates() {
+    update_config "CONF_ENABLED" "yes"
+    echo "Automatic updates have been enabled."
+}
+
+# Disable automatic updates
+disable_updates() {
+    update_config "CONF_ENABLED" "no"
+    echo "Automatic updates have been disabled."
+}
+
+# Manually start the update process
+start_update() {
+    /usrdata/simpleupdate/simpleupdated &
+    echo "The update process has been started manually."
+}
+
+# Interactive setup for the update configuration
+setup() {
+    read -p "Enable automatic updates? [yes/no]: " enable_updates
+    if [[ "$enable_updates" == "yes" ]]; then
+        enable_updates
+    else
+        disable_updates
+    fi
+
+    read -p "Check for updates at boot? [yes/no]: " check_boot
+    update_config "CHECK_AT_BOOT" "$check_boot"
+
+    read -p "Update frequency (none, daily, weekly, monthly): " frequency
+    update_config "UPDATE_FREQUENCY" "$frequency"
+
+    case $frequency in
+        daily)
+            read -p "Scheduled time (HH:MM in 24-hour format): " time
+            update_config "SCHEDULED_TIME" "$time"
+            ;;
+        weekly)
+            echo "Please enter the day of the week."
+            read -p "Day (full name or abbreviation, e.g., Monday or Mon): " day_input
+            # Normalize input to abbreviated form
+            day_abbr=$(date -d "$day_input" +%a 2>/dev/null)
+            if [[ $? -ne 0 ]]; then
+                echo "Invalid day of the week. Please try again."
+                return 1
+            fi
+            update_config "WEEKLY_DAY" "$day_abbr"
+            read -p "Scheduled time (HH:MM in 24-hour format): " time
+            update_config "SCHEDULED_TIME" "$time"
+            ;;
+        monthly)
+            read -p "Date of the month (1-31): " date
+            update_config "MONTHLY_DATE" "$date"
+            read -p "Scheduled time (HH:MM in 24-hour format): " time
+            update_config "SCHEDULED_TIME" "$time"
+            ;;
+        *)
+            echo "No scheduling will be set."
+            ;;
+    esac
+
+    echo "Update configuration has been set."
+}
+
+# Parse command-line arguments
+case "$1" in
+    status) status ;;
+    enable) enable_updates ;;
+    disable) disable_updates ;;
+    start) start_update ;;
+    setup) setup ;;
+    *)
+        echo "Usage: $0 {status|enable|disable|start|setup}"
+        exit 1
+        ;;
+esac
