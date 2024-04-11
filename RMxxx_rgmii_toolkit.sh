@@ -438,10 +438,11 @@ install_ttyd() {
         case $choice in
             1)
                 echo -e "\e[1;34mUpdating ttyd...\e[0m"
-				echo -e "\e[1;34mIf you are using ttyd you will temporarly loose connection ...\e[0m"
-				mkdir /usrdata/simpleupdates/scripts
-				wget -O /usrdata/simpleupdates/scripts/update_ttyd.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_ttyd.sh && chmod +x /usrdata/simpleupdates/scripts/update_ttyd.sh
-				/usrdata/simpleupdates/scripts/update_ttyd.sh
+		echo -e "\e[1;34mIf you are using ttyd you will temporarly loose connection ...\e[0m"
+  		mkdir /usrdata/simpleupdates
+		mkdir /usrdata/simpleupdates/scripts
+		wget -O /usrdata/simpleupdates/scripts/update_ttyd.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_ttyd.sh && chmod +x /usrdata/simpleupdates/scripts/update_ttyd.sh
+		/usrdata/simpleupdates/scripts/update_ttyd.sh
                 echo -e "\e[1;32mttyd has been updated.\e[0m"
                 ;;
             2)
