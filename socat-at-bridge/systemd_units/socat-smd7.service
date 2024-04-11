@@ -3,7 +3,7 @@ Description=Socat Serial Emulation for smd7
 After=ql-netd.service
 
 [Service]
-ExecStart=/usrdata/socat-at-bridge/socat-armel-static -d -d pty,link=/dev/ttyIN2,raw,echo=0 pty,link=/dev/ttyOUT2,raw,echo=1
+ExecStart=/usrdata/socat-at-bridge/socat-armel-static -d -d pty,link=/dev/ttyIN2,raw,echo=0,group=20,perm=660 pty,link=/dev/ttyOUT2,raw,echo=1,group=20,perm=660
 # Add a delay to prevent the clients from starting too early
 ExecStartPost=/bin/sleep 2s
 Restart=always

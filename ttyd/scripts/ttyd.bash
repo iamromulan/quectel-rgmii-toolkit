@@ -1,9 +1,15 @@
 #!/bin/bash
 
-# Read the serial number
-serial_number=$(/usrdata/socat-at-bridge/atcmd 'AT+EGMR=0,5' | grep '+EGMR:' | cut -d '"' -f2)
-# Read the firmware revision
-firmware_revision=$(/usrdata/socat-at-bridge/atcmd 'AT+CGMR' | grep -o 'RM[0-9A-Z]*' | head -1)
+# Check if /usrdata/socat-at-bridge/atcmd exists
+if [ -f "/usrdata/socat-at-bridge/atcmd" ]; then
+    # Read the serial number
+    serial_number=$(/usrdata/socat-at-bridge/atcmd 'AT+EGMR=0,5' | grep '+EGMR:' | cut -d '"' -f2)
+    # Read the firmware revision
+    firmware_revision=$(/usrdata/socat-at-bridge/atcmd 'AT+CGMR' | grep -o 'RM[0-9A-Z]*' | head -1)
+else
+    serial_number="UNKNOWN"
+    firmware_revision="UNKNOWN"
+fi
 
 echo "=============================================================="
 echo "=============================================================="
@@ -84,7 +90,7 @@ echo "                                    :@@@@@*.                 "
 echo "                                      .=@@@@@-               "
 echo "                                           :+##+.            "
 echo "=============================================================="
-echo "TTYd session file by iamromulan v1.0"
+echo "TTYd session file by iamromulan v1.1"
 echo "Firmware Revision: $firmware_revision"
 echo "Serial Number: $serial_number"
 echo "=============================================================="

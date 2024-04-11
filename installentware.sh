@@ -1,5 +1,5 @@
 #!/bin/sh
-# Modified by iamromlan to set up a proper entware environment for Quectel RM5xx series m.2 modems
+# Modified by iamromulan to set up a proper entware environment for Quectel RM5xx series m.2 modems
 TYPE='generic'
 #|---------|-----------------|
 #| TARGET  | Quectel Modem   |
@@ -213,7 +213,7 @@ echo -e '\033[32mInfo: Add /opt/bin & /opt/sbin to $PATH variable\033[0m'
 echo -e '\033[32mInfo: Run export PATH=/opt/bin:/opt/sbin:$PATH to do it for this session only\033[0m'
 echo -e '\033[32mInfo: opkg at /opt/bin will be linked to /bin but any package you install with opkg will not be automatically.\033[0m'
 ln -sf /opt/bin/opkg /bin
-opkg update && opkg install shadow-login shadow-passwd
+opkg update && opkg install shadow-login shadow-passwd shadow-useradd
     if [ "$?" -ne 0 ]; then
         echo -e "\e[1;31mPackage installation failed. Please check your internet connection and try again.\e[0m"
         exit 1
@@ -234,17 +234,15 @@ opkg update && opkg install shadow-login shadow-passwd
     rm /bin/login /usr/bin/passwd
     ln -sf /opt/bin/login /bin
     ln -sf /opt/bin/passwd /usr/bin/
-    echo -e "\e[1;31mPlease set your system login password.\e[0m"
+	ln -sf /opt/bin/useradd /usr/bin/
+    echo -e "\e[1;31mPlease set the root password.\e[0m"
     /usr/bin/passwd
 
     # Install basic and useful utilites
-    opkg install mc
+    opkg install mc htop dfc lsof
     ln -sf /opt/bin/mc /bin
-    opkg install htop
     ln -sf /opt/bin/htop /bin
-    opkg install dfc
     ln -sf /opt/bin/dfc /bin
-    opkg install lsof
     ln -sf /opt/bin/lsof /bin
 # Remount filesystem as read-only
 mount -o remount,ro /
