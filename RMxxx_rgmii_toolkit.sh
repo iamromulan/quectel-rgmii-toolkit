@@ -490,7 +490,7 @@ check_and_install_ttyd() {
 	remount_rw
     local service_file="/lib/systemd/system/ttyd.service"
     local exec_start_expected1="/usrdata/ttyd/ttyd -p 443 -t 'theme={\"foreground\":\"white\",\"background\":\"black\"}' -t fontSize=25 --writable /usrdata/ttyd/scripts/ttyd.bash"
-    local exec_start_expected2="/usrdata/ttyd/ttyd -i 127.0.0.1 -p 8088 -t 'theme={\"foreground\":\"white\",\"background\":\"black\"}' -t fontSize=25 --writable /usrdata/ttyd/scripts/ttyd.bash"
+    local exec_start_expected2="/usrdata/ttyd/ttyd -i 127.0.0.1 -p 8080 -t 'theme={\"foreground\":\"white\",\"background\":\"black\"}' -t fontSize=25 --writable /usrdata/ttyd/scripts/ttyd.bash"
 
     if [ -f "$service_file" ]; then
         # Extract ExecStart line from ttyd.service
