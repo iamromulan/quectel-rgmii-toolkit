@@ -2,7 +2,7 @@
 
 # Define constants
 GITUSER="iamromulan"
-GITTREE="main"
+GITTREE="development"
 SERVICE_FILE="/lib/systemd/system/install_ttyd.service"
 TMP_SCRIPT="/tmp/install_ttyd.sh"
 
