@@ -372,66 +372,7 @@ install_simple_admin() {
                 break
                 ;;
             2)
-		echo -e "\e[1;31m2) Installing simpleadmin from the development test branch\e[0m"
-  		install_update_at_socat
-  		sleep 1
-		install_simple_firewall
-  		sleep 1
-                remount_rw
-		sleep 1
-		mkdir $SIMPLE_ADMIN_DIR
-  		mkdir $SIMPLE_ADMIN_DIR/systemd
-    		mkdir $SIMPLE_ADMIN_DIR/scripts
-      		mkdir $SIMPLE_ADMIN_DIR/www
-		mkdir $SIMPLE_ADMIN_DIR/www/cgi-bin
-  		mkdir $SIMPLE_ADMIN_DIR/www/css
-    		mkdir $SIMPLE_ADMIN_DIR/www/js
-                cd $SIMPLE_ADMIN_DIR/systemd
-                wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/systemd/simpleadmin_generate_status.service
-		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/systemd/simpleadmin_httpd.service
-  		sleep 1
-  		cd $SIMPLE_ADMIN_DIR/scripts
-  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/build_modem_status
-    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/modemstatus_parse.sh
-      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/scripts/tojson.sh
-		sleep 1
-		cd $SIMPLE_ADMIN_DIR/www
-		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/atcommander.html
-  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/index.html
-    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/speedtest.html
-      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/styles.css
-		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/ttl.html
-  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/sms.html
-    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/bandlock.html
-  		sleep 1
-  		cd $SIMPLE_ADMIN_DIR/www/js
-  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/js/alpinejs.min.js
-    		sleep 1
-    		cd $SIMPLE_ADMIN_DIR/www/css
-    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/css/admin.css
-      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/css/bulma.css
-		sleep 1
-		cd $SIMPLE_ADMIN_DIR/www/cgi-bin
-		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_atcommand
-  		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_csq
-    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_ttl_status
-      		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/set_ttl
-	 	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/development/simpleadmin/www/cgi-bin/get_sms
-		sleep 1
-  		cd /
-                chmod +x $SIMPLE_ADMIN_DIR/scripts/*
-                chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
-                systemctl daemon-reload
-		sleep 1
-                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
-                ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
-                systemctl start simpleadmin_generate_status
-		sleep 1
-                systemctl start simpleadmin_httpd
-                remount_ro
-                echo -e "\e[1;32msimpleadmin has been installed and is now ready for use!\e[0m"
-                break
+		echo -e "\e[1;31m2) Development Branch is currently not ready. Major updates coming soon!!\e[0m"
                 ;;
 	    3)
                 echo "Returning to main menu..."
