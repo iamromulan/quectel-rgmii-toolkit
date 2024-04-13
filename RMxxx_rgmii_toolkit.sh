@@ -393,7 +393,7 @@ install_lighttpd() {
     echo -e "\033[0;32mInstalling/Updating Lighttpd...\033[0m"
     mkdir -p "$SIMPLE_ADMIN_DIR"
     wget -O "$SIMPLE_ADMIN_DIR/lighttpd.conf" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/lighttpd.conf
-    wget -O "/lib/systemd/system/lighttpd.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/lighttpd.service
+    wget -O "/lib/systemd/system/lighttpd.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/systemd/lighttpd.service
     ln -sf "/lib/systemd/system/lighttpd.service" "/lib/systemd/system/multi-user.target.wants/"
 
     openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
