@@ -736,7 +736,7 @@ uninstall_simpleadmin_components() {
 	if [ -f "/lib/systemd/system/lighttpd.service" ]; then
 		echo "Lighttpd detected, uninstalling Lighttpd and its modules..."
 		systemctl stop lighttpd
-		opkg --force-remove remove lighttpd-mod-auth lighttpd-mod-authn_file lighttpd-mod-cgi lighttpd-mod-openssl lighttpd-mod-proxy lighttpd
+		opkg --force-remove --force-removal-of-dependent-packages remove lighttpd-mod-auth lighttpd-mod-authn_file lighttpd-mod-cgi lighttpd-mod-openssl lighttpd-mod-proxy lighttpd
 		rm -rf $LIGHTTPD_DIR
 	fi
 
