@@ -882,6 +882,7 @@ install_ttyd() {
             exit 1
         fi
     fi
+    mount -o remount,rw /
     mkdir -p /usrdata/ttyd/scripts /usrdata/ttyd/systemd
     cd /usrdata/ttyd/
     wget -O ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.4/ttyd.armhf && chmod +x ttyd
