@@ -391,27 +391,27 @@ install_lighttpd() {
     done
     systemctl stop lighttpd
     echo -e "\033[0;32mInstalling/Updating Lighttpd...\033[0m"
-    mkdir -p "$LIGHTTPD_DIR"
-    wget -O "$LIGHTTPD_DIR/lighttpd.conf" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/lighttpd/lighttpd.conf
-    wget -O "/lib/systemd/system/lighttpd.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/lighttpd/lighttpd.service
+    mkdir -p "$SIMPLE_ADMIN_DIR"
+    wget -O "$SIMPLE_ADMIN_DIR/lighttpd.conf" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/lighttpd.conf
+    wget -O "/lib/systemd/system/lighttpd.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/lighttpd.service
     ln -sf "/lib/systemd/system/lighttpd.service" "/lib/systemd/system/multi-user.target.wants/"
 
     openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
         -subj "/C=US/ST=MI/L=Romulus/O=RMIITools/CN=localhost" \
-        -keyout $LIGHTTPD_DIR/server.key -out $LIGHTTPD_DIR/server.crt
+        -keyout $SIMPLE_ADMIN_DIR/server.key -out $SIMPLE_ADMIN_DIR/server.crt
     systemctl daemon-reload
     systemctl start lighttpd
     
     echo -e "\033[0;32mLighttpd installation/update complete.\033[0m"
 
     while true; do
-        echo -e "\e[1;31mPlease set your root web login password.\e[0m"
+        echo -e "\e[1;31mPlease set your simpleadmin (User: admin) web login password.\e[0m"
         read -s password
         if [ -z "$password" ]; then
             echo -e "\e[1;32mNo password provided.\e[0m"
         else
-            echo -n "root:" > $LIGHTTPD_DIR/.htpasswd
-            openssl passwd -crypt "$password" >> $LIGHTTPD_DIR/.htpasswd
+            echo -n "admin:" > $SIMPLE_ADMIN_DIR/.htpasswd
+            openssl passwd -crypt "$password" >> $SIMPLE_ADMIN_DIR/.htpasswd
             echo -e "\e[1;32mPassword set.\e[0m"
             break
         fi
@@ -432,7 +432,7 @@ install_ttyd() {
 
     if [ -d "/usrdata/ttyd" ]; then
         echo -e "\e[1;34mttyd is already installed. Choose an option:\e[0m"
-        echo -e "\e[1;34m1.) Update to ttyd 1.7.7 (If you are using ttyd you will temporarly loose connection ...)\e[0m"
+        echo -e "\e[1;34m1.) Update to ttyd 1.7.7 (If you are using ttyd you will temporarly loose connection, update will continue ...)\e[0m"
         echo -e "\e[1;31m2.) Skip Update (Chose this if you already updated)\e[0m"
         read -p "Enter your choice (1/2): " choice
         case $choice in
@@ -486,6 +486,7 @@ install_ttyd() {
     echo -e "\e[1;32mInstallation Complete! ttyd server is up on port 443. Note: No TLS/SSL enabled yet.\e[0m"
 }
 
+# Function to handle ttyd upgrade
 check_and_install_ttyd() {
 	remount_rw
     local service_file="/lib/systemd/system/ttyd.service"
@@ -1060,7 +1061,36 @@ WantedBy=multi-user.target" > "$cfun_service_path"
     fi
 }
 
+install_sshd() {
+        ensure_entware_installed
+	    echo -e "\e[1;32mOpenSSH Server\e[0m"
+        remount_rw
 
+	    mkdir /usrdata/sshd
+        wget -O /lib/systemd/system/sshd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/sshd/sshd.service"
+    	ln -sf "/lib/systemd/system/sshd.service" "/lib/systemd/system/multi-user.target.wants/"
+        
+        opkg install openssh-server-pam
+        for script in /opt/etc/init.d/*sshd*; do
+        if [ -f "$script" ]; then
+            echo "Removing existing sshd init script: $script"
+            rm "$script" # Remove the script if it contains 'sshd' in its name
+        fi
+		done
+        /opt/bin/ssh-keygen -A
+        systemctl daemon-reload
+        systemctl enable sshd
+
+        # Enable PAM and PermitRootLogin
+        sed -i "s/^.*UsePAM .*/UsePAM yes/" "/opt/etc/ssh/sshd_config"
+        sed -i "s/^.*PermitRootLogin .*/PermitRootLogin yes/" "/opt/etc/ssh/sshd_config"
+
+        # Ensure the sshd user exists in the /opt/etc/passwd file
+        grep "sshd:x:106" /opt/etc/passwd || echo "sshd:x:106:65534:Linux User,,,:/opt/run/sshd:/bin/nologin" >> /opt/etc/passwd
+        systemctl start sshd
+
+	    echo -e "\e[1;32mOpenSSH installed!!\e[0m"
+}
 
 # Main menu
 while true; do
@@ -1214,34 +1244,7 @@ echo "                                           :+##+.            "
 	    echo -e "\e[1;32mThe fast.com test tops out at 40Mbps on the modem\e[0m"
             ;;
 	10) 
-        ensure_entware_installed
-	    echo -e "\e[1;32mOpenSSH Server\e[0m"
-        remount_rw
-
-	    mkdir /usrdata/sshd
-        wget -O /lib/systemd/system/sshd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/sshd/sshd.service"
-    	ln -sf "/lib/systemd/system/sshd.service" "/lib/systemd/system/multi-user.target.wants/"
-        
-        opkg install openssh-server-pam
-        for script in /opt/etc/init.d/*sshd*; do
-        if [ -f "$script" ]; then
-            echo "Removing existing sshd init script: $script"
-            rm "$script" # Remove the script if it contains 'sshd' in its name
-        fi
-		done
-        /opt/bin/ssh-keygen -A
-        systemctl daemon-reload
-        systemctl enable sshd
-
-        # Enable PAM and PermitRootLogin
-        sed -i "s/^.*UsePAM .*/UsePAM yes/" "/opt/etc/ssh/sshd_config"
-        sed -i "s/^.*PermitRootLogin .*/PermitRootLogin yes/" "/opt/etc/ssh/sshd_config"
-
-        # Ensure the sshd user exists in the /opt/etc/passwd file
-        grep "sshd:x:106" /opt/etc/passwd || echo "sshd:x:106:65534:Linux User,,,:/opt/run/sshd:/bin/nologin" >> /opt/etc/passwd
-        systemctl start sshd
-
-	    echo -e "\e[1;32mOpenSSH installed!!\e[0m"
+		install_sshd
         ;;
 	11) 
 	    echo -e "\e[1;32mGoodbye!\e[0m"
