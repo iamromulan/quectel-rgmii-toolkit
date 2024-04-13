@@ -97,6 +97,70 @@ send_at_commands() {
     fi
 }
 
+ensure_entware_installed() {
+	remount_rw
+    if [ ! -f "/opt/bin/opkg" ]; then
+        echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
+        cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
+        if [ "$?" -ne 0 ]; then
+            echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
+            exit 1
+        fi
+        cd /
+    else
+        echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
+        if [ "$(readlink /bin/login)" != "/opt/bin/login" ]; then
+            opkg update && opkg install shadow-login shadow-passwd shadow-useradd
+            if [ "$?" -ne 0 ]; then
+                echo -e "\e[1;31mPackage installation failed. Please check your internet connection and try again.\e[0m"
+                exit 1
+            fi
+
+            # Replace the login and passwd binaries and set home for root to a writable directory
+            rm /opt/etc/shadow
+            rm /opt/etc/passwd
+            cp /etc/shadow /opt/etc/
+            cp /etc/passwd /opt/etc
+            mkdir -p /usrdata/root/bin
+            touch /usrdata/root/.profile
+            echo "# Set PATH for all shells" > /usrdata/root/.profile
+            echo "export PATH=/bin:/usr/sbin:/usr/bin:/sbin:/opt/sbin:/opt/bin:/usrdata/root/bin" >> /usrdata/root/.profile
+            chmod +x /usrdata/root/.profile
+            sed -i '1s|/home/root:/bin/sh|/usrdata/root:/bin/bash|' /opt/etc/passwd
+            rm /bin/login /usr/bin/passwd
+            ln -sf /opt/bin/login /bin
+            ln -sf /opt/bin/passwd /usr/bin/
+			ln -sf /opt/bin/useradd /usr/bin/
+            echo -e "\e[1;31mPlease set the root password.\e[0m"
+            /usr/bin/passwd
+
+            # Install basic and useful utilities
+            opkg install mc htop dfc lsof
+            ln -sf /opt/bin/mc /bin
+            ln -sf /opt/bin/htop /bin
+            ln -sf /opt/bin/dfc /bin
+            ln -sf /opt/bin/lsof /bin
+        fi
+
+        if [ ! -f "/usrdata/root/.profile" ]; then
+            opkg update && opkg install shadow-useradd
+            mkdir -p /usrdata/root/bin
+            touch /usrdata/root/.profile
+            echo "# Set PATH for all shells" > /usrdata/root/.profile
+            echo "export PATH=/bin:/usr/sbin:/usr/bin:/sbin:/opt/sbin:/opt/bin:/usrdata/root/bin" >> /usrdata/root/.profile
+            chmod +x /usrdata/root/.profile
+            sed -i '1s|/home/root:/bin/sh|/usrdata/root:/bin/bash|' /opt/etc/passwd
+        fi
+    fi
+	if [ ! -f "/opt/sbin/useradd" ]; then
+		echo "useradd does not exist. Installing shadow-useradd..."
+		opkg install shadow-useradd
+		else
+		echo "useradd already exists. Continuing..."
+	fi
+
+}
+
 # Check if Simple Admin is installed
 is_simple_admin_installed() {
     [ -d "$SIMPLE_ADMIN_DIR" ] && return 0 || return 1
@@ -775,20 +839,8 @@ WantedBy=multi-user.target" > "$cfun_service_path"
 
 install_ttyd() {
     echo -e "\e[1;34mStarting ttyd installation process...\e[0m"
-    # Check for existing Entware/opkg installation, install if not installed
-    if [ ! -f "/opt/bin/opkg" ]; then
-        echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
-        cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
-        if [ "$?" -ne 0 ]; then
-            echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
-            exit 1
-        fi
-        cd /
-    else
-        echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
-    fi
-
-    mount -o remount,rw /
+    remount_rw
+    ensure_entware_installed
 
     if [ -d "/usrdata/ttyd" ]; then
         echo -e "\e[1;34mttyd is already installed. Choose an option:\e[0m"
