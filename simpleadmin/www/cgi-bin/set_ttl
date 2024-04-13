@@ -22,28 +22,28 @@ setTTL=$(printf '%b\n' "${ttlvalue//%/\\x}")
 
 if [ -n "${setTTL}" ]; then
     # Stop Service To Remove Rules
-    /usrdata/simplefirewall/ttl-override stop
+    /opt/bin/sudo /usrdata/simplefirewall/ttl-override stop
 
     # Check iptables is still set
-    ttlcheck=$(iptables -t mangle -vnL | grep TTL | awk '{print $13}')
+    ttlcheck=$(/opt/bin/sudo /usr/sbin/iptables -w 5 -t mangle -vnL | grep TTL | awk '{print $13}')
 
     # If TTL is still set manually remove values
     if [ !-z "${ttlcheck}" ]; then
-        iptables -t mangle -D POSTROUTING -o rmnet+ -j TTL --ttl-set ${ttlcheck} &>/dev/null || true
-        ip6tables -t mangle -D POSTROUTING -o rmnet+ -j HL --hl-set ${ttlcheck} &>/dev/null || true
+        /opt/bin/sudo /usr/sbin/iptables -w 5 -t mangle -D POSTROUTING -o rmnet+ -j TTL --ttl-set ${ttlcheck} &>/dev/null || true
+        /opt/bin/sudo /usr/sbin/ip6tables -w 5 -t mangle -D POSTROUTING -o rmnet+ -j HL --hl-set ${ttlcheck} &>/dev/null || true
     fi
 
     # Echo TTL to file
     echo $setTTL > /usrdata/simplefirewall/ttlvalue
 
     # Set Start Service
-    /usrdata/simplefirewall/ttl-override start
+    /opt/bin/sudo /usrdata/simplefirewall/ttl-override start
 fi
 
 
 
 # Check iptables for ttlvalue
-ttlvalue=$(iptables -t mangle -vnL | grep TTL | awk '{print $13}')
+ttlvalue=$(/opt/bin/sudo /usr/sbin/iptables -w 5 -t mangle -vnL | grep TTL | awk '{print $13}')
 ttlenabled=true;
 
 # Set Variables
@@ -59,3 +59,4 @@ cat <<EOT
     "isEnabled": $ttlenabled,
     "ttl": $ttlvalue
 }
+EOT
