@@ -426,10 +426,6 @@ install_ttyd() {
 
     mount -o remount,rw /
 
-    if [ ! -d "/usrdata/lighttpd" ]; then
-        install_lighttpd
-    fi
-
     if [ -d "/usrdata/ttyd" ]; then
         echo -e "\e[1;34mttyd is already installed. Choose an option:\e[0m"
         echo -e "\e[1;34m1.) Update to ttyd 1.7.7 (If you are using ttyd you will temporarly loose connection, update will continue ...)\e[0m"
