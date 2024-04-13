@@ -379,7 +379,7 @@ install_lighttpd() {
         rm /lib/systemd/system/multi-user.target.wants/simpleadmin_httpd.service
     fi
 
-    /opt/bin/opkg install lighttpd lighttpd-mod-auth lighttpd-mod-authn_file lighttpd-mod-cgi lighttpd-mod-openssl lighttpd-mod-proxy
+    /opt/bin/opkg install sudo lighttpd lighttpd-mod-auth lighttpd-mod-authn_file lighttpd-mod-cgi lighttpd-mod-openssl lighttpd-mod-proxy
     # Ensure rc.unslung doesn't try to start it
     # Dynamically find and remove any Lighttpd-related init script
     for script in /opt/etc/init.d/*lighttpd*; do
@@ -394,6 +394,7 @@ install_lighttpd() {
     wget -O "$SIMPLE_ADMIN_DIR/lighttpd.conf" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/lighttpd.conf
     wget -O "/lib/systemd/system/lighttpd.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/systemd/lighttpd.service
     ln -sf "/lib/systemd/system/lighttpd.service" "/lib/systemd/system/multi-user.target.wants/"
+    echo "www-data ALL = (root) NOPASSWD: /usr/sbin/iptables, /usr/sbin/ip6tables, /usrdata/simplefirewall/ttl-override" > /opt/etc/sudoers.d/www-data
 
     openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
         -subj "/C=US/ST=MI/L=Romulus/O=RMIITools/CN=localhost" \
