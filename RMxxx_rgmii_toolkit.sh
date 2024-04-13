@@ -479,7 +479,7 @@ install_ttyd() {
         exit 1
     fi
 
-    echo -e "\e[1;32mInstallation Complete! ttyd server is up on port 443. Note: No TLS/SSL enabled yet.\e[0m"
+    echo -e "\e[1;32mInstallation Complete! ttyd server is up.\e[0m"
 }
 
 # Function to handle ttyd upgrade
