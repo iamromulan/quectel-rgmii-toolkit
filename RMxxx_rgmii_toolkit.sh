@@ -290,15 +290,15 @@ configure_simple_firewall() {
 }
 
 set_simpleadmin_passwd(){
+			ensure_entware_installed
 			while true; do
 				echo -e "\e[1;31mPlease set your simpleadmin (User: admin) web login password.\e[0m"
 				read -s password
 				if [ -z "$password" ]; then
 					echo -e "\e[1;32mNo password provided.\e[0m"
 				else
-					mkdir $SIMPLE_ADMIN_DIR > /dev/null 2>&1
-					echo -n "admin:" > $SIMPLE_ADMIN_DIR/.htpasswd
-					openssl passwd -crypt "$password" >> $SIMPLE_ADMIN_DIR/.htpasswd
+					echo -n "admin:" > /opt/etc/.htpasswd
+					openssl passwd -crypt "$password" >> /opt/etc/.htpasswd
 					echo -e "\e[1;32mPassword set.\e[0m"
 					break
 				fi
