@@ -53,7 +53,7 @@ remount_rw() {
 remount_ro() {
     mount -o remount,ro /
 }
-
+remount_rw
 uninstall_at_socat() {
 	echo -e "\033[0;32mRemoving installed AT Socat Bridge services...\033[0m"
 	systemctl stop at-telnet-daemon > /dev/null 2>&1
@@ -80,7 +80,6 @@ uninstall_at_socat() {
 }
 
 install_at_socat() {
-    remount_rw
 	# Install service units
 	echo -e "\033[0;32mInstalling AT Socat Bridge services...\033[0m"
 	mkdir $SOCAT_AT_DIR

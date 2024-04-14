@@ -51,7 +51,7 @@ remount_rw() {
 remount_ro() {
     mount -o remount,ro /
 }
-
+remount_rw
 uninstall_simpleadmin() {
 	echo "Uninstalling Simpleadmin..."
 		
@@ -77,7 +77,6 @@ uninstall_simpleadmin() {
     rm /lib/systemd/system/multi-user.target.wants/ttyd.service
     rm /bin/ttyd
     echo -e "\e[1;32mttyd has been uninstalled.\e[0m"
-	remount_ro
 
     echo "Uninstallation process completed."
 }

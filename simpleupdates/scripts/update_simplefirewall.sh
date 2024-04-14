@@ -56,7 +56,7 @@ remount_rw() {
 remount_ro() {
     mount -o remount,ro /
 }
-
+remount_rw
 # Function to remove Simple Firewall
 uninstall_simple_firewall() {
 	echo "Uninstalling Simplefirewall..."
