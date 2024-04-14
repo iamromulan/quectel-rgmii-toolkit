@@ -725,8 +725,47 @@ echo -e "\e[1;31m2) Installing sshd from the $GITTREE branch\e[0m"
 		    echo -e "\e[1;32mInstalling/updating: SSHd\e[0m"
 			echo -e "\e[1;32mPlease Wait....\e[0m"
 			/usrdata/simpleupdates/scripts/update_sshd.sh
-			echo -e "\e[1;32m SSHd has been updated/installed.\e[0m"	    
+			echo -e "\e[1;32m SSHd has been updated/installed.\e[0m"
 }
+
+install_sshd() {
+    if [ -d "/usrdata/sshd" ]; then
+        echo -e "\e[1;31mSSHD is currently installed.\e[0m"
+        echo -e "Do you want to update or uninstall?"
+        echo -e "1.) Update"
+        echo -e "2.) Uninstall"
+        read -p "Select an option (1 or 2): " sshd_choice
+
+        case $sshd_choice in
+            1)
+                echo -e "\e[1;31mUpdating SSHD from the $GITTREE branch...\e[0m"
+                ;;
+            2)
+                echo -e "\e[1;31mUninstalling SSHD...\e[0m"
+                systemctl stop sshd
+                rm /lib/systemd/system/sshd.service
+                opkg remove openssh-server-pam
+                echo -e "\e[1;32mSSHD has been uninstalled successfully.\e[0m"
+                return 0
+                ;;
+            *)
+                echo -e "\e[1;31mInvalid option. Please select 1 or 2.\e[0m"
+                return 1
+                ;;
+        esac
+    fi
+
+    # Proceed with installation or updating if not uninstalling
+	ensure_entware_installed
+    mkdir /usrdata/simpleupdates > /dev/null 2>&1
+	mkdir /usrdata/simpleupdates/scripts > /dev/null 2>&1
+	wget -O /usrdata/simpleupdates/scripts/update_sshd.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_sshd.sh && chmod +x /usrdata/simpleupdates/scripts/update_sshd.sh
+	echo -e "\e[1;32mInstalling/updating: SSHd\e[0m"
+	echo -e "\e[1;32mPlease Wait....\e[0m"
+	/usrdata/simpleupdates/scripts/update_sshd.sh
+	echo -e "\e[1;32m SSHd has been updated/installed.\e[0m"
+}
+
 
 # Main menu
 while true; do
