@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Get query
-QUERY_STRING=$(echo "${QUERY_STRING}" | sed 's/;//g')
+QUERY_STRING=$(/opt/bin/sudo echo "${QUERY_STRING}" | sed 's/;//g')
 
 if [ "${QUERY_STRING}" ]; then
 
