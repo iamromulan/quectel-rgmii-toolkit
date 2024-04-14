@@ -343,7 +343,7 @@ install_simple_admin() {
 			echo -e "\e[1;32m Dependency: simplefirewall has been updated/installed.\e[0m"
 			sleep 1
 			set_simpleadmin_passwd
-		    wget -O /usrdata/simpleupdates/scripts/update_simpeadmin.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_simpleadmin.sh && chmod +x /usrdata/simpleupdates/scripts/update_simpleadmin.sh
+		    wget -O /usrdata/simpleupdates/scripts/update_simpleadmin.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_simpleadmin.sh && chmod +x /usrdata/simpleupdates/scripts/update_simpleadmin.sh
 			echo -e "\e[1;32mInstalling/updating: Simpleadmin content\e[0m"
 			echo -e "\e[1;32mPlease Wait....\e[0m"
 			/usrdata/simpleupdates/scripts/update_simpleadmin.sh
