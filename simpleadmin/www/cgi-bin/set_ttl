@@ -52,8 +52,8 @@ if [ -z "${ttlvalue}" ]; then
     ttlenabled=false
 fi
 
-/opt/bin/sudo echo "Content-type: text/json" 
-/opt/bin/sudo echo ""
+echo "Content-type: text/json" 
+echo ""
 /opt/bin/sudo cat <<EOT
 {
     "isEnabled": $ttlenabled,

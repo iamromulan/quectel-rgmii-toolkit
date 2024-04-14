@@ -79,6 +79,7 @@ install_simple_firewall() {
     wget -O "$SIMPLE_FIREWALL_DIR/simplefirewall.sh" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/simplefirewall.sh
     wget -O "$SIMPLE_FIREWALL_DIR/ttl-override" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttl-override
     wget -O "$SIMPLE_FIREWALL_DIR/ttlvalue" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttlvalue
+	chmod 666 $SIMPLE_FIREWALL_DIR/ttlvalue
     chmod +x "$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
     chmod +x "$SIMPLE_FIREWALL_DIR/ttl-override"	
     wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/simplefirewall.service
