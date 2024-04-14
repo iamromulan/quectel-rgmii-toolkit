@@ -1,0 +1,5 @@
+#/bin/bash
+
+echo -e "\e[1;31mPlease set your simpleadmin (User: admin) web login password.\e[0m"
+/usrdata/root/bin/htpasswd -c /opt/etc/.htpasswd admin
+echo -e "\e[1;32mPassword set.\e[0m"
