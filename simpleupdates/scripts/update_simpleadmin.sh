@@ -73,9 +73,9 @@ uninstall_simpleadmin() {
     systemctl stop ttyd
     rm -rf /usrdata/ttyd
 	rm -rf "$SIMPLE_ADMIN_DIR"
-    rm /lib/systemd/system/ttyd.service
-    rm /lib/systemd/system/multi-user.target.wants/ttyd.service
-    rm /bin/ttyd
+    rm -f /lib/systemd/system/ttyd.service
+    rm -f /lib/systemd/system/multi-user.target.wants/ttyd.service
+    rm -rf /bin/ttyd
     echo -e "\e[1;32mttyd has been uninstalled.\e[0m"
 
     echo "Uninstallation process completed."
@@ -169,11 +169,11 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 }
 install_ttyd() {
     echo -e "\e[1;34mStarting ttyd installation process...\e[0m"
-    cd /usrdata/simpleadmin/
+    cd $SIMPLE_ADMIN_DIR
     wget -O ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.armhf && chmod +x ttyd
-    wget -O scripts/ttyd.bash "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/scripts/ttyd.bash" && chmod +x scripts/ttyd.bash
-    wget -O systemd/ttyd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/systemd/ttyd.service"
-    cp systemd/ttyd.service /lib/systemd/system/
+    wget -O $SIMPLE_ADMIN_DIR/scripts/ttyd.bash "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/scripts/ttyd.bash" && chmod +x scripts/ttyd.bash
+    wget -O $SIMPLE_ADMIN_DIR/systemd/ttyd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/systemd/ttyd.service"
+    cp -f $SIMPLE_ADMIN_DIR/systemd/ttyd.service /lib/systemd/system/
     ln -sf /usrdata/simpleadmin/ttyd /bin
     
     # Enabling and starting ttyd service
