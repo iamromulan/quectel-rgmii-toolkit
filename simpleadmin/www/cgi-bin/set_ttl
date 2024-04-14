@@ -28,7 +28,7 @@ if [ -n "${setTTL}" ]; then
     ttlcheck=$(/opt/bin/sudo /usr/sbin/iptables -w 5 -t mangle -vnL | grep TTL | awk '{print $13}')
 
     # If TTL is still set manually remove values
-    if [ !-z "${ttlcheck}" ]; then
+    if [ ! -z "${ttlcheck}" ]; then
         /opt/bin/sudo /usr/sbin/iptables -w 5 -t mangle -D POSTROUTING -o rmnet+ -j TTL --ttl-set ${ttlcheck} &>/dev/null || true
         /opt/bin/sudo /usr/sbin/ip6tables -w 5 -t mangle -D POSTROUTING -o rmnet+ -j HL --hl-set ${ttlcheck} &>/dev/null || true
     fi
