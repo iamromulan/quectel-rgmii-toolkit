@@ -34,7 +34,7 @@ if [ -n "${setTTL}" ]; then
     fi
 
     # Echo TTL to file
-    echo $setTTL > /usrdata/simplefirewall/ttlvalue
+    /opt/bin/sudo echo $setTTL > /usrdata/simplefirewall/ttlvalue
 
     # Set Start Service
     /opt/bin/sudo /usrdata/simplefirewall/ttl-override start
@@ -52,9 +52,9 @@ if [ -z "${ttlvalue}" ]; then
     ttlenabled=false
 fi
 
-echo "Content-type: text/json" 
-echo ""
-cat <<EOT
+/opt/bin/sudo echo "Content-type: text/json" 
+/opt/bin/sudo echo ""
+/opt/bin/sudo cat <<EOT
 {
     "isEnabled": $ttlenabled,
     "ttl": $ttlvalue
