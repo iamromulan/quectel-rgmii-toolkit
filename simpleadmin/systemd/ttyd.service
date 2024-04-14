@@ -1,0 +1,12 @@
+[Unit]
+Description=TTYD Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStartPre=/bin/sleep 5
+ExecStart=/usrdata/simpleadmin/ttyd -i 127.0.0.1 -p 8080 -t 'theme={"foreground":"white","background":"black"}' -t fontSize=25 --writable /usrdata/simpleadmin/scripts/ttyd.bash
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
