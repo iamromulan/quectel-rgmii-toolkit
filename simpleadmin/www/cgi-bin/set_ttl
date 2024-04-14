@@ -1,5 +1,5 @@
 #!/bin/bash
-
+PATH=/bin:/usr/sbin:/usr/bin:/sbin:/opt/sbin:/opt/bin:/usrdata/root/bin
 # Get query
 QUERY_STRING=$(/opt/bin/sudo echo "${QUERY_STRING}" | sed 's/;//g')
 
