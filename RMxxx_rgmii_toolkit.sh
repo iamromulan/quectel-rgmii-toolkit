@@ -290,24 +290,18 @@ configure_simple_firewall() {
 }
 
 set_simpleadmin_passwd(){
-			ensure_entware_installed
-			while true; do
-				echo -e "\e[1;31mPlease set your simpleadmin (User: admin) web login password.\e[0m"
-				read -s password
-				if [ -z "$password" ]; then
-					echo -e "\e[1;32mNo password provided.\e[0m"
-				else
-					echo -n "admin:" > /opt/etc/.htpasswd
-					openssl passwd -crypt "$password" >> /opt/etc/.htpasswd
-					echo -e "\e[1;32mPassword set.\e[0m"
-					break
-				fi
-			done
+	ensure_entware_installed
+	wget -O /usrdata/root/bin/htpasswd https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/htpasswd && chmod +x /usrdata/root/bin/htpasswd
+	wget -O /usrdata/root/bin/simplepasswd https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/simplepasswd && chmod +x /usrdata/root/bin/simplepasswd
+	echo -e "\e[1;32mTo change your simpleadmin (admin) password in the future...\e[0m"
+	echo -e "\e[1;32mIn the console type simplepasswd and press enter\e[0m"
+	/usrdata/root/bin/simplepasswd
+	
 }
 
 set_root_passwd() {
-echo -e "\e[1;31mPlease set the root/console password.\e[0m"
-/opt/bin/passwd
+	echo -e "\e[1;31mPlease set the root/console password.\e[0m"
+	/opt/bin/passwd
 }
 
 # Function to install/update Simple Admin
@@ -716,17 +710,6 @@ WantedBy=multi-user.target" > "$cfun_service_path"
     fi
 }
 
-install_sshd() {
-ensure_entware_installed
-echo -e "\e[1;31m2) Installing sshd from the $GITTREE branch\e[0m"
-			mkdir /usrdata/simpleupdates > /dev/null 2>&1
-		    mkdir /usrdata/simpleupdates/scripts > /dev/null 2>&1
-		    wget -O /usrdata/simpleupdates/scripts/update_sshd.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_sshd.sh && chmod +x /usrdata/simpleupdates/scripts/update_sshd.sh
-		    echo -e "\e[1;32mInstalling/updating: SSHd\e[0m"
-			echo -e "\e[1;32mPlease Wait....\e[0m"
-			/usrdata/simpleupdates/scripts/update_sshd.sh
-			echo -e "\e[1;32m SSHd has been updated/installed.\e[0m"
-}
 
 install_sshd() {
     if [ -d "/usrdata/sshd" ]; then
@@ -738,7 +721,7 @@ install_sshd() {
 
         case $sshd_choice in
             1)
-                echo -e "\e[1;31mUpdating SSHD from the $GITTREE branch...\e[0m"
+				echo -e "\e[1;31m2) Installing sshd from the $GITTREE branch\e[0m"
                 ;;
             2)
                 echo -e "\e[1;31mUninstalling SSHD...\e[0m"
