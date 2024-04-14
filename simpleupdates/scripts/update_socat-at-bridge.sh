@@ -12,7 +12,16 @@ LOG_FILE="/tmp/install_socat-at-bridge.log"
 # Tmp Script dependent constants 
 SOCAT_AT_DIR="/usrdata/socat-at-bridge"
 SOCAT_AT_SYSD_DIR="/usrdata/socat-at-bridge/systemd_units"
+# Function to remount file system as read-write
+remount_rw() {
+    mount -o remount,rw /
+}
 
+# Function to remount file system as read-only
+remount_ro() {
+    mount -o remount,ro /
+}
+remount_rw
 # Create the systemd service file
 cat <<EOF > "$SERVICE_FILE"
 [Unit]
@@ -127,6 +136,7 @@ install_at_socat() {
 }
 uninstall_at_socat
 install_at_socat
+remount_ro
 exit 0
 EOF
 

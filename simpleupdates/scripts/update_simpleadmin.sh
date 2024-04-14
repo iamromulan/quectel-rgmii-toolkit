@@ -20,7 +20,7 @@ remount_rw() {
 remount_ro() {
     mount -o remount,ro /
 }
-
+remount_rw
 # Create the systemd service file
 cat <<EOF > "$SERVICE_FILE"
 [Unit]
@@ -188,7 +188,6 @@ install_ttyd() {
 
     echo -e "\e[1;32mInstallation Complete! ttyd server is up.\e[0m"
 }
-remount_rw
 uninstall_simpleadmin
 install_lighttpd
 install_simpleadmin

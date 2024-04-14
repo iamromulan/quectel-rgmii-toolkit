@@ -14,6 +14,16 @@ SIMPLE_FIREWALL_DIR="/usrdata/simplefirewall"
 SIMPLE_FIREWALL_SCRIPT="$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
 SIMPLE_FIREWALL_SYSTEMD_DIR="$SIMPLE_FIREWALL_DIR/systemd"
 
+# Function to remount file system as read-write
+remount_rw() {
+    mount -o remount,rw /
+}
+
+# Function to remount file system as read-only
+remount_ro() {
+    mount -o remount,ro /
+}
+remount_rw
 # Create the systemd service file
 cat <<EOF > "$SERVICE_FILE"
 [Unit]
@@ -81,7 +91,6 @@ install_simple_firewall() {
     systemctl start ttl-override
     echo -e "\033[0;32mSimple Firewall installation/update complete.\033[0m"
 	}
-remount_rw
 uninstall_simple_firewall
 install_simple_firewall
 remount_ro
