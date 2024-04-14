@@ -289,6 +289,27 @@ configure_simple_firewall() {
     echo -e "\e[1;32mFirewall configuration updated.\e[0m"
 }
 
+set_simpleadmin_passwd(){
+			while true; do
+				echo -e "\e[1;31mPlease set your simpleadmin (User: admin) web login password.\e[0m"
+				read -s password
+				if [ -z "$password" ]; then
+					echo -e "\e[1;32mNo password provided.\e[0m"
+				else
+					mkdir $SIMPLE_ADMIN_DIR > /dev/null 2>&1
+					echo -n "admin:" > $SIMPLE_ADMIN_DIR/.htpasswd
+					openssl passwd -crypt "$password" >> $SIMPLE_ADMIN_DIR/.htpasswd
+					echo -e "\e[1;32mPassword set.\e[0m"
+					break
+				fi
+			done
+}
+
+set_root_passwd() {
+echo -e "\e[1;31mPlease set the root/console password.\e[0m"
+/opt/bin/passwd
+}
+
 # Function to install/update Simple Admin
 install_simple_admin() {
     while true; do
@@ -321,24 +342,13 @@ install_simple_admin() {
 			/usrdata/simpleupdates/scripts/update_simplefirewall.sh
 			echo -e "\e[1;32m Dependency: simplefirewall has been updated/installed.\e[0m"
 			sleep 1
-		    wget -O /usrdata/simpleupdates/scripts/update_simpeadmin.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_simpeadmin.sh && chmod +x /usrdata/simpleupdates/scripts/update_simpeadmin.sh
+			set_simpleadmin_passwd
+		    wget -O /usrdata/simpleupdates/scripts/update_simpeadmin.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_simpleadmin.sh && chmod +x /usrdata/simpleupdates/scripts/update_simpleadmin.sh
 			echo -e "\e[1;32mInstalling/updating: Simpleadmin content\e[0m"
 			echo -e "\e[1;32mPlease Wait....\e[0m"
-			/usrdata/simpleupdates/scripts/update_simpeadmin.sh
+			/usrdata/simpleupdates/scripts/update_simpleadmin.sh
             echo -e "\e[1;32mSimpleadmin content has been updated/installed.\e[0m"
 			sleep 1
-			while true; do
-				echo -e "\e[1;31mPlease set your simpleadmin (User: admin) web login password.\e[0m"
-				read -s password
-				if [ -z "$password" ]; then
-					echo -e "\e[1;32mNo password provided.\e[0m"
-				else
-					echo -n "admin:" > $SIMPLE_ADMIN_DIR/.htpasswd
-					openssl passwd -crypt "$password" >> $SIMPLE_ADMIN_DIR/.htpasswd
-					echo -e "\e[1;32mPassword set.\e[0m"
-					break
-				fi
-			done
             break
             ;;
 	    3)
@@ -788,16 +798,18 @@ echo "                                           :+##+.            "
     echo -e "\e[0m"
     echo -e "\e[96m1) Send AT Commands\e[0m" # Cyan
     echo -e "\e[93m2) Install Simple Admin\e[0m" # Yellow
-    echo -e "\e[91m3) Uninstall Simple Admin\e[0m" # Light Red	
-    echo -e "\e[95m4) Simple Firewall Management\e[0m" # Light Purple
-    echo -e "\e[94m5) Tailscale Management\e[0m" # Light Blue
-    echo -e "\e[92m6) Install/Change or remove Daily Reboot Timer\e[0m" # Light Green
-    echo -e "\e[96m7) Install/Uninstall CFUN 0 Fix\e[0m" # Cyan (repeated color for additional options)
-    echo -e "\e[91m8) Uninstall Entware/OPKG\e[0m" # Light Red
-    echo -e "\e[92m9) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
-    echo -e "\e[92m10) Install Fast.com CLI app (fast command)(tops out at 40Mbps)\e[0m" # Light Green
-    echo -e "\e[92m11) Install OpenSSH Server\e[0m" # Light Green
-    echo -e "\e[93m12) Exit\e[0m" # Yellow (repeated color for exit option)
+	echo -e "\e[95m3) Set Simpleadmin (admin) password\e[0m" # Light Purple
+	echo -e "\e[94m4) Set Console/ttyd (root) password\e[0m" # Light Blue
+    echo -e "\e[91m5) Uninstall Simple Admin\e[0m" # Light Red	
+    echo -e "\e[95m6) Simple Firewall Management\e[0m" # Light Purple
+    echo -e "\e[94m7) Tailscale Management\e[0m" # Light Blue
+    echo -e "\e[92m8) Install/Change or remove Daily Reboot Timer\e[0m" # Light Green
+    echo -e "\e[96m9) Install/Uninstall CFUN 0 Fix\e[0m" # Cyan (repeated color for additional options)
+    echo -e "\e[91m10) Uninstall Entware/OPKG\e[0m" # Light Red
+    echo -e "\e[92m11) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
+    echo -e "\e[92m12) Install Fast.com CLI app (fast command)(tops out at 40Mbps)\e[0m" # Light Green
+    echo -e "\e[92m13) Install OpenSSH Server\e[0m" # Light Green
+    echo -e "\e[93m14) Exit\e[0m" # Yellow (repeated color for exit option)
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -807,23 +819,28 @@ echo "                                           :+##+.            "
         2)
             install_simple_admin
             ;;
-		3)
-			uninstall_simpleadmin_components
+		3)	set_simpleadmin_passwd
 			;;
 		4)
+			set_root_passwd
+			;;
+		5)
+			uninstall_simpleadmin_components
+			;;
+		6)
 			configure_simple_firewall
             ;;
         
-        5)  
+        7)  
 			tailscale_menu
 	        ;;
-		6)
+		8)
 			manage_reboot_timer
             ;;
-		7)
+		9)
 			manage_cfun_fix
             ;;	    
-		8)
+		10)
 			echo -e "\033[31mAre you sure you want to uninstall entware?\033[0m"
 			echo -e "\033[31m1) Yes\033[0m"
 			echo -e "\033[31m2) No\033[0m"
@@ -848,7 +865,7 @@ echo "                                           :+##+.            "
 			esac
 			;;
 
-		9) 
+		11) 
 			ensure_entware_installed
 			echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
      	    remount_rw
@@ -868,7 +885,7 @@ echo "                                           :+##+.            "
 			echo -e "\e[1;32mNormaly only an issue in adb, ttyd and ssh you are forced to login\e[0m"
 			echo -e "\e[1;32mIf in adb just type login and then try to run the speedtest command\e[0m"
             ;;
-		10) 
+		12) 
 			echo -e "\e[1;32mInstalling fast.com CLI (fast command)\e[0m"
      	    remount_rw
 			mkdir /usrdata/root
@@ -882,10 +899,10 @@ echo "                                           :+##+.            "
      	    echo -e "\e[1;32mTry running the command 'fast'\e[0m"
 			echo -e "\e[1;32mThe fast.com test tops out at 40Mbps on the modem\e[0m"
             ;;
-		11) 
+		13) 
 			install_sshd
 			;;
-		12) 
+		14) 
 			echo -e "\e[1;32mGoodbye!\e[0m"
      	    break
             ;;    
