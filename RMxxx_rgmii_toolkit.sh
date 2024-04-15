@@ -291,6 +291,8 @@ configure_simple_firewall() {
 
 set_simpleadmin_passwd(){
 	ensure_entware_installed
+ 	opkg update
+  	opkg install libaprutil
 	wget -O /usrdata/root/bin/htpasswd https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/htpasswd && chmod +x /usrdata/root/bin/htpasswd
 	wget -O /usrdata/root/bin/simplepasswd https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/simplepasswd && chmod +x /usrdata/root/bin/simplepasswd
 	echo -e "\e[1;32mTo change your simpleadmin (admin) password in the future...\e[0m"
