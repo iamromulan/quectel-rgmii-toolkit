@@ -557,7 +557,9 @@ install_update_remove_tailscale() {
         case $tailscale_update_remove_choice in
             1) 
 		echo "Updating Tailscale..."
-		/usrdata/tailscale/tailscale update			
+  		remount_rw
+		/usrdata/tailscale/tailscale update
+  		remount_ro
                 ;;
             2) 
                 echo "Removing Tailscale..."
