@@ -480,7 +480,8 @@ echo -e "\e[1;31m2) Installing tailscale from the $GITTREE branch\e[0m"
 		    wget -O /usrdata/simpleupdates/scripts/update_tailscale.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_tailscale.sh && chmod +x /usrdata/simpleupdates/scripts/update_tailscale.sh
 		    echo -e "\e[1;32mInstalling/updating: Tailscale\e[0m"
 			echo -e "\e[1;32mPlease Wait....\e[0m"
-			/usrdata/simpleupdates/scripts/update_tailscale.sh
+			remount_rw
+   			/usrdata/simpleupdates/scripts/update_tailscale.sh
 			echo -e "\e[1;32m Tailscale has been updated/installed.\e[0m"
 }
 
