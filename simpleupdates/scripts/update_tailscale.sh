@@ -42,6 +42,7 @@ install_update_tailscale() {
         ln -sf "$TAILSCALE_DIR/tailscale" "/usrdata/root/bin/tailscale"
         echo y | $TAILSCALE_DIR/tailscale update
         echo -e "\e[32mTailscale updated!\e[0m"
+	remount_ro
         exit 0
     else
         echo "Installing Tailscale..."
