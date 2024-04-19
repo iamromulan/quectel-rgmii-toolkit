@@ -11,6 +11,7 @@ display_red() {
     echo -e "\033[0;31m$1\033[0m"
 }
 
+# Check and Install xml binary if not present
 check_and_install_xml() {
     if [ ! -f "/opt/bin/xml" ]; then
         echo "xml binary not found. Attempting to install xmlstarlet..."
@@ -24,16 +25,17 @@ check_and_install_xml() {
     fi
     echo "xml binary is available."
 }
+
 # Edit XML Value
 edit_xml_value() {
     local node="$1"
     local new_value="$2"
-    xml ed -L -u "$node" -v "$new_value" "$CONFIG_FILE"
+    /opt/bin/xml ed -L -u "$node" -v "$new_value" "$CONFIG_FILE"
 }
 
 # Get Current XML Value
 get_current_value() {
-    xml sel -t -v "$1" "$CONFIG_FILE"
+    /opt/bin/xml sel -t -v "$1" "$CONFIG_FILE"
 }
 
 # Enable/Disable Menu
@@ -60,6 +62,26 @@ edit_simple_value() {
     display_green "After making changes, please reboot to have them take effect."
 }
 
+# Edit DHCP IP Range
+edit_dhcp_range() {
+    local start_ip=$(get_current_value "//MobileAPLanCfg/DHCPCfg/StartIP")
+    local end_ip=$(get_current_value "//MobileAPLanCfg/DHCPCfg/EndIP")
+    echo "Current Start IP: $start_ip"
+    echo "Current End IP: $end_ip"
+    read -p "Enter new Start IP: " new_start_ip
+    read -p "Enter new End IP: " new_end_ip
+    edit_xml_value "//MobileAPLanCfg/DHCPCfg/StartIP" "$new_start_ip"
+    edit_xml_value "//MobileAPLanCfg/DHCPCfg/EndIP" "$new_end_ip"
+    display_green "After making changes, please reboot to have them take effect."
+}
+
+# Reboot the system
+reboot_system() {
+    echo "Rebooting system..."
+    atcmd 'AT+CFUN=1,1'  # Ensure this command is correct for your system
+    echo "System reboot initiated. Good luck."
+}
+
 # Main Menu
 main_menu() {
     while true; do
@@ -67,25 +89,25 @@ main_menu() {
         display_red "Warning, these changes can break access over the network. Know what you are doing, and be prepared to use ADB to fix this just in case."
         echo "Configuration Menu"
         echo "------------------"
-        echo "1. Edit Gateway IPV4 Address"
-        echo "2. Edit Gateway URL"
-        echo "3. Edit LAN DHCP Start/End Range"
-        echo "4. Edit LAN Subnet Mask"
-        echo "5. Edit DHCPv6 Base address"
-        echo "6. Toggle IPv4 NAT"
-        echo "7. Toggle IPv6 NAT"
-        echo "8. Toggle DHCP Server"
-        echo "9. Toggle DHCPv4"
-        echo "10. Toggle DHCPv6"
-        echo "11. Toggle WAN Autoconnect"
-        echo "12. Toggle WAN AutoReconnect"
-        echo "13. Toggle Roaming"
-        echo "14. Toggle WAN DNSv4 Passthrough"
-        echo "15. Toggle WAN DNSv6 Passthrough"
-        echo "16. Toggle IPPT NAT/Ability to access gateway while in IPPT mode"
-        echo "17. Toggle UPnP"
-        echo "18. Reboot System"
-        echo "19. Exit"
+        display_green "1. Edit Gateway IPV4 Address"
+        display_green "2. Edit Gateway URL"
+        display_green "3. Edit LAN DHCP Start/End Range"
+        display_green "4. Edit LAN Subnet Mask"
+        display_green "5. Edit DHCPv6 Base address"
+        display_green "6. Toggle IPv4 NAT"
+        display_green "7. Toggle IPv6 NAT"
+        display_green "8. Toggle DHCP Server"
+        display_green "9. Toggle DHCPv4"
+        display_green "10. Toggle DHCPv6"
+        display_green "11. Toggle WAN Autoconnect"
+        display_green "12. Toggle WAN AutoReconnect"
+        display_green "13. Toggle Roaming"
+        display_green "14. Toggle WAN DNSv4 Passthrough"
+        display_green "15. Toggle WAN DNSv6 Passthrough"
+        display_green "16. Toggle IPPT NAT/Ability to access gateway while in IPPT mode"
+        display_green "17. Toggle UPnP"
+        display_green "18. Reboot System"
+        display_green "19. Exit"
         echo
         read -p "Select an option (1-19): " option
 
@@ -114,27 +136,7 @@ main_menu() {
     done
 }
 
-# Function to Edit DHCP IP Range
-edit_dhcp_range() {
-    local start_ip=$(get_current_value "//MobileAPLanCfg/DHCPCfg/StartIP")
-    local end_ip=$(get_current_value "//MobileAPLanCfg/DHCPCfg/EndIP")
-    echo "Current Start IP: $start_ip"
-    echo "Current End IP: $end_ip"
-    read -p "Enter new Start IP: " new_start_ip
-    read -p "Enter new End IP: " new_end_ip
-    edit_xml_value "//MobileAPLanCfg/DHCPCfg/StartIP" "$new_start_ip"
-    edit_xml_value "//MobileAPLanCfg/DHCPCfg/EndIP" "$new_end_ip"
-    display_green "After making changes, please reboot to have them take effect."
-}
-
-# Reboot the system
-reboot_system() {
-    echo "Rebooting system..."
-    atcmd 'AT+CFUN=1,1'
-    echo "Good Luck."
-}
-
-# Run the main menu
+# Start by checking and installing xml if necessary, then mount filesystem as rw and run the menu
 mount -o remount,rw /
 check_and_install_xml
 main_menu
