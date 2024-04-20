@@ -36,7 +36,8 @@
             <a class="navbar-item" href="/sms.html"> SMS </a>
             <a class="navbar-item" href="/ttl.html"> TTL Changer </a>
             <a class="navbar-item" href="/speedtest.html"> OpenSpeedtest </a>
-			<a class="navbar-item" href="/console"> Console </a>
+            <a class="navbar-item" href="/console"> Console </a>
+            <a class="navbar-item" href="/logout.html"> Logout </a>
                 </div>
 
             </div>
@@ -117,18 +118,28 @@
                             this.ttldata = data
                         });
                 },
-                setTTL() {
+                setTTL() {                                           
                     fetch('/cgi-bin/set_ttl?' + new URLSearchParams({
-                        ttlvalue: this.newTTL,
-                    }))
-                        .then((res) => res.json())
-                        .then((data) => {
-                            this.ttldata = data
-                        })
-                }
-            }
-        }
-    </script>
-</body>
-
+                        ttlvalue: this.newTTL,      
+                    }))                                                                 
+                        .then((res) => res.json())  
+                        .then((data) => {           
+                            this.ttldata = data     
+                        })                             
+                    sleep(1000)                                                    
+                    fetch('/cgi-bin/get_ttl_status')                                 
+                        .then((res) => res.json())                                 
+                        .then((data) => {                                          
+                            this.ttldata = data                                    
+                        });                                                        
+                }                                                                  
+            }                                                                      
+        function sleep(miliseconds) {                                              
+                var currentTime = new Date().getTime();                            
+                        while (currentTime + miliseconds >= new Date().getTime()) {
+                        }             
+                }                 
+        }                     
+    </script>             
+ </body>
 </html>
