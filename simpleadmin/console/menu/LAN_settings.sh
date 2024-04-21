@@ -3,6 +3,14 @@
 CONFIG_FILE="/etc/data/mobileap_cfg.xml"
 
 # Display Messages in Colors
+display_random_color() {
+    local msg="$1"
+    local colors=(33 34 35 36 37)  # ANSI color codes for yellow, blue, magenta, cyan, white
+    local num_colors=${#colors[@]}
+    local random_color_index=$(($RANDOM % num_colors))  # Pick a random index from the colors array
+    echo -e "\033[${colors[$random_color_index]}m$msg\033[0m"
+}
+
 display_green() {
     echo -e "\033[0;32m$1\033[0m"
 }
