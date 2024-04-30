@@ -1,0 +1,14 @@
+[Unit]
+Description=Ping Watchdog Service
+Wants=network.target
+After=network.target
+
+[Service]
+Type=simple
+ExecStartPre=/bin/sleep 60  # Sleep for 60 seconds to ensure the network is ready
+ExecStart=/usrdata/simpleadmin/console/services/ping_watchdog.sh
+Restart=on-failure
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target
