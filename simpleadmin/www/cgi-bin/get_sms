@@ -5,10 +5,6 @@ SMS_MESSAGE_INDICATION="AT+CNMI=2,1"
 SMS_FORMAT="AT+CMGF=1"
 SMS_LIST="AT+CMGL=\"ALL\""
 
-# Send the all the AT commands 1 by 1 with 2 seconds waiting time for each command
-runcmd=$(echo -en "$SMS_MESSAGE_INDICATION\r\n" | microcom -t 1000 /dev/ttyOUT2)
-runcmd=$(echo -en "$SMS_FORMAT\r\n" | microcom -t 1000 /dev/ttyOUT2)
-
 while true; do
     runcmd=$(echo -en "$SMS_LIST\r\n" | microcom -t 2000 /dev/ttyOUT2)
     if [[ $runcmd =~ "OK" ]] || [[ $runcmd =~ "ERROR" ]]; then

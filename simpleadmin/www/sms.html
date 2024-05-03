@@ -1,118 +1,291 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-bs-theme="light">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- change to a much simpler tab title -->
-    <title>SMS Viewer</title>
+    <title>Simple Admin</title>
+    <!-- <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    /> -->
+    <!-- Import all the bootstrap css files from css folder -->
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
 
+    <!--  Import BootStrap Javascript -->
+    <script src="/js/bootstrap.bundle.min.js"></script>
     <script src="/js/alpinejs.min.js" defer></script>
-    <link rel="stylesheet" href="/css/bulma.css" />
-    <link rel="stylesheet" type="text/css" href="/css/admin.css" />
-    <link rel="stylesheet" href="styles.css" />
+    <script src="/js/auth.js"></script>
   </head>
-
-  <body>
-    <!-- START NAV -->
-    <nav class="navbar is-black" x-data="{ isOpen: false }">
-      <div class="container">
-        <div class="navbar-brand">
-          <a class="navbar-item brand-text" href="/"> Simple Admin </a>
-          <a
-            role="button"
-            class="navbar-burger burger"
-            @click="isOpen = !isOpen"
-          >
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-          </a>
-        </div>
-        <div
-          id="navMenu"
-          class="navbar-menu"
-          :class="isOpen ? 'is-active' : ''"
-        >
-          <div class="navbar-start">
-            <a class="navbar-item" href="/"> Connection Info </a>
-            <a class="navbar-item" href="/atcommander.html"> AT Commands </a>
-            <a class="navbar-item" href="/bandlock.html"> Simple Network </a>
-            <a class="navbar-item" href="/sms.html"> SMS </a>
-            <a class="navbar-item" href="/ttl.html"> TTL Changer </a>
-            <a class="navbar-item" href="/speedtest.html"> OpenSpeedtest </a>
-            <a class="navbar-item" href="/console"> Console </a>
-            <a class="navbar-item" href="/logout.html"> Logout </a>
+  <body onload="isAuthenticated()">
+    <main>
+      <div class="container my-4" x-data="fetchSMS()">
+        <nav class="navbar navbar-expand-lg mt-2">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="/"
+              ><span class="mb-0 h4">Simple Admin</span></a
+            >
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarText"
+              aria-controls="navbarText"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarText">
+              <ul class="navbar-nav me-auto mb-2 ml-4 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/network.html">Simple Network</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/settings.html">Simple Settings</a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link active"
+                    href="/sms.html"
+                    aria-current="page"
+                    >SMS</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/deviceinfo.html"
+                    >Device Information</a
+                  >
+                </li>
+              </ul>
+              <span class="navbar-text">
+                <button class="btn btn-link text-reset" id="darkModeToggle">
+                  Dark Mode
+                </button>
+              </span>
+            </div>
           </div>
-        </div>
-      </div>
-    </nav>
-    <!-- END NAV -->
-    <div class="container" x-data="atCommands()">
-      <div class="columns">
-        <div class="column is-12">
-          <div class="columns">
-            <div class="column is-8">
-              <div class="card">
-                <header class="card-header">
-                  <p class="card-header-title">SMS Viewer</p>
-                  <div class="field">
-                    <p class="control">
+        </nav>
+
+        <div class="row mt-5 mb-4">
+          <div class="col">
+            <div class="card">
+              <div class="card-header">SMS Manager</div>
+              <div class="card-body">
+                <div class="card-text">
+                  <div class="col">
+                    <div
+                      style="
+                        max-height: 400px;
+                        overflow-y: scroll;
+                        overflow-x: hidden;
+                      "
+                    >
+                      <table class="table table-hover border-success">
+                        <tbody>
+                          <div class="card-subtitle" x-show="isLoading">
+                            <h4>Fetching SMS...</h4>
+                          </div>
+                          <!-- Only show template if isLoading is False -->
+                          <template x-if="messages.length === 0 && isLoading === false" >
+                            <div>
+                              <p>Message Empty</p>
+                            </div>
+                          </template>
+                          <template
+                            x-for="(message, index) in messages"
+                            :key="index"
+                          >
+                            <tr class="">
+                              <td>
+                                <div class="row column-gap-1 mb-2">
+                                  <div class="col-md-3">
+                                    <p x-text="'Sender: ' + senders[index]"></p>
+                                  </div>
+                                  <div class="col">
+                                    <p
+                                      x-text="'Date and Time: ' + dates[index]"
+                                    ></p>
+                                  </div>
+                                </div>
+                                <div class="col-md-9">
+                                  <p x-text="message"></p>
+                                </div>
+                              </td>
+                            </tr>
+                          </template>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <form>
+                    <div class="col-md-4 my-4">
+                      <label for="PhoneNumber" class="form-label"
+                        >Send SMS</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Phone Number"
+                        aria-label="Phone Number"
+                        x-model="phoneNumber"
+                      />
+                    </div>
+
+                    <div class="col-md-8 mb-3">
+                      <!-- Text Area Here for SMS Input -->
+                      <textarea
+                        class="form-control"
+                        id="smsInputBox"
+                        rows="5"
+                        placeholder="Enter SMS here (!!!CURRENTLY UNDER DEVELOPMENT!!!)"
+                        x-model="messageToSend"
+                      ></textarea>
+                    </div>
+                    <div
+                      class="d-grid gap-2 d-md-flex justify-content-md-start"
+                    >
+                      <button class="btn btn-primary me-md-2" type="button" @click="sendSMS()" :disabled="true" >
+                        Send SMS
+                      </button>
                       <button
-                        class="button is-success"
-                        @click="sendAtCommand()"
-                        :disabled="isLoading"
+                        class="btn btn-success"
+                        type="button"
+                        @click="init()"
                       >
                         Refresh
                       </button>
-                    </p>
-                  </div>
-                  <div class="field">
-                    <p class="control">
                       <button
-                        class="button is-danger"
-                        @click="sendAtCommand()"
-                        :disabled="isLoading"
+                        class="btn btn-danger"
+                        type="button"
+                        @click="deleteAllSMS()"
                       >
-                        Delete
+                        Delete All SMS
                       </button>
-                    </p>
-                  </div>
-                </header>
-                <div class="card-content">
-                  <div class="content">
-                    <textarea
-                      class="textarea"
-                      placeholder="SMS Viewer (Make sure to run: AT+CMGF=1 first)"
-                      readonly
-                      rows="10"
-                      cols="50"
-                      x-model="atCommandResponse"
-                      :disabled="isLoading"
-                    ></textarea>
-                  </div>
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-
+    </main>
+    <script src="/js/dark-mode.js"></script>
     <script>
-      function atCommands() {
+      function fetchSMS() {
         return {
           isLoading: false,
           atCommandResponse: "",
-          // get the SMS list through cgi-bin/get_sms
-          sendAtCommand() {
+          messageToSend: "",
+          phoneNumber: "",
+          messages: [],
+          senders: [],
+          dates: [],
+          requestSMS() {
             this.isLoading = true;
+            this.atCommandResponse = "Loading...";
+            // Expect a text response from the server
             fetch("/cgi-bin/get_sms")
               .then((response) => response.text())
               .then((data) => {
-                this.atCommandResponse = data;
-                console.log(data);
                 this.isLoading = false;
+                this.atCommandResponse = data;
+              })
+              .finally(() => {
+                this.parseSMSData(this.atCommandResponse);
+              });
+          },
+
+          parseSMSData(data) {
+            const cmglRegex =
+              /^\s*\+CMGL:\s*(\d+),"[^"]*","([^"]*)"[^"]*,"([^"]*)"/gm;
+
+            let match;
+            while ((match = cmglRegex.exec(data)) !== null) {
+              const index = parseInt(match[1]);
+              const sender = match[2];
+              let date = match[3];
+
+              // remove +32 from the date
+              date = date.replace("+32", "");
+
+              // Find the start and end positions of the message
+              const startIndex = cmglRegex.lastIndex;
+              let endIndex = data.indexOf("+CMGL:", startIndex + 1);
+              if (endIndex === -1) {
+                // If no more +CMGL lines, set end index to end of string
+                endIndex = data.length;
+              }
+
+              // Extract the message from start to end index
+              const message = data.substring(startIndex, endIndex).trim();
+
+              this.messages.push(message);
+              this.senders.push(sender);
+              this.dates.push(date);
+            }
+          },
+
+          deleteAllSMS() {
+            const atcmd = "AT+CMGD=,4";
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: atcmd,
+                })
+            )
+              .then((response) => response.text())
+              .then((data) => {
+                console.log(data);
+              })
+              .finally(() => {
+                this.requestSMS();
+              });
+          },
+
+          sendSMS() {
+            this.isLoading = true;
+            fetch(
+              "/cgi-bin/send_sms?" +
+                new URLSearchParams({
+                  phone_number: this.phoneNumber,
+                  message: this.messageToSend,
+                })
+            )
+              .then((response) => response.text())
+              .then((data) => {
+                console.log(data);
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              })
+              .finally(() => {
+                this.isLoading = false;
+                this.requestSMS();
+              });
+          },
+
+          init() {
+            // Send AT+CMGF=1 once to set the modem to text mode
+            const atcmd = "AT+CMGF=1";
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: atcmd,
+                })
+            )
+              .then((response) => response.text())
+              .then((data) => {
+                console.log(data);
+              })
+              .finally(() => {
+                this.requestSMS();
               });
           },
         };

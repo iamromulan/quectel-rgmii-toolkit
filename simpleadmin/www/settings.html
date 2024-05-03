@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simple Admin</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+
+    <!--  Import BootStrap Javascript -->
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/alpinejs.min.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <div class="container my-4" x-data="simpleSettings()">
+        <nav class="navbar navbar-expand-lg mt-2">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="/"
+              ><span class="mb-0 h4">Simple Admin</span></a
+            >
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarText"
+              aria-controls="navbarText"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarText">
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/network.html">Simple Network</a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link active"
+                    href="/settings.html"
+                    aria-current="page"
+                    >Simple Settings</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/sms.html">SMS</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/deviceinfo.html"
+                    >Device Information</a
+                  >
+                </li>
+              </ul>
+              <span class="navbar-text">
+                <button class="btn btn-link text-reset" id="darkModeToggle">
+                  Dark Mode
+                </button>
+              </span>
+            </div>
+          </div>
+        </nav>
+
+        <div class="row mt-5 mb-4">
+          <div class="col">
+            <div class="card">
+              <div class="card-header">AT Terminal</div>
+              <div class="card-body">
+                <div class="card-text">
+                  <div class="form-floating mb-4">
+                    <!-- At commands output here -->
+                    <textarea
+                      class="form-control"
+                      placeholder="ATI"
+                      id="atOutputBox"
+                      style="height: 220px"
+                      x-text="atCommandResponse"
+                      readonly
+                    >
+                    <label for="floatingTextarea">ATI</label>
+                    </textarea>
+                  </div>
+                  <div>
+                    <div class="col-md-4 mb-3">
+                      <label for="exampleInputEmail1" class="form-label"
+                        >AT Command</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="atCommandInput"
+                        placeholder="ATI"
+                        aria-describedby="atCommandInput"
+                        x-model="atcmd"
+                        @keydown.enter = "sendATCommand()"
+                      />
+                      <div id="atCommandInputHelper" class="form-text">
+                        Seperate multiple commands with comma (,).
+                      </div>
+                    </div>
+                    <div
+                      class="d-grid gap-2 d-md-flex justify-content-md-start"
+                    >
+                      <button
+                        class="btn btn-primary me-md-2"
+                        type="button"
+                        @click="sendATCommand()"
+                        :disabled="isLoading"
+                      >
+                        Submit
+                      </button>
+                      <button
+                        class="btn btn-danger"
+                        type="button"
+                        @click="clearResponses()"
+                        :disabled="isClean"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <div class="card">
+              <div class="card-header">One Click Utilities</div>
+              <div class="card-body">
+                <div class="card-text">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <tbody>
+                        <tr>
+                          <th scope="row">Reboot</th>
+                          <td>
+                            <button
+                              type="submit"
+                              class="btn btn-danger"
+                              @click="showRebootModal()"
+                              :disabled="isLoading"
+                            >
+                              Reboot
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Reset AT Commands Settings</th>
+                          <td>
+                            <button
+                              type="submit"
+                              class="btn btn-danger"
+                              @click="resetATCommands()"
+                              :disabled="isLoading"
+                            >
+                              Reset
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="row">ETH IP Passthrough</th>
+                          <td>
+                            <button
+                              type="submit"
+                              class="btn btn-primary"
+                              @click="ethPassthroughEnable()"
+                              x-show="ethPassStatus === false"
+                              :disabled="isLoading"
+                            >
+                              Enable
+                            </button>
+                            <button
+                              type="submit"
+                              class="btn btn-danger"
+                              @click="ethPassthroughDisable()"
+                              x-show="ethPassStatus === true"
+                              :disabled="isLoading"
+                            >
+                              Disable
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Onboard DNS Proxy</th>
+                          <td>
+                            <button
+                              type="submit"
+                              class="btn btn-primary"
+                              @click="onBoardDNSProxyEnable()"
+                              x-show="DNSProxyStatus === false"
+                              :disabled="isLoading"
+                            >
+                              Enable
+                            </button>
+                            <button
+                              type="submit"
+                              class="btn btn-danger"
+                              @click="onBoardDNSProxyDisable()"
+                              x-show="DNSProxyStatus === true"
+                              :disabled="isLoading"
+                            >
+                              Disable
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="row">USB Mode</th>
+                          <td>
+                            <button
+                              type="submit"
+                              class="btn btn-primary"
+                              @click="usbModeEnable()"
+                              x-show="USBModeStatus === true"
+                              :disabled="isLoading"
+                            >
+                              Enable
+                            </button>
+                            <button
+                              type="submit"
+                              class="btn btn-danger"
+                              @click="usbModeDisable()"
+                              x-show="USBModeStatus === false"
+                              :disabled="isLoading"
+                            >
+                              Disable
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Scan Neighbour LTE</th>
+                          <td>
+                            <button
+                              type="submit"
+                              class="btn btn-primary"
+                              @click="scanLTE()"
+                              :disabled="isLoading"
+                            >
+                              Scan LTE
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Scan Neighbour NSA</th>
+                          <td>
+                            <button
+                              type="submit"
+                              class="btn btn-primary"
+                              @click="scanNSA()"
+                              :disabled="isLoading"
+                            >
+                              Scan NSA
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card mb-3">
+              <div class="card-header">TTL and Network Scan Settings</div>
+              <div class="card-body">
+                <label for="TTLState" class="form-label"
+                  >TTL State and Value</label
+                >
+                <div class="row">
+                  <div class="col">
+                    <div
+                      class="p-3 text-primary-emphasis bg-primary-subtle border border-primary-subtle rounded-3"
+                      x-show="ttlStatus === true"
+                    >
+                      TTL is Active
+                    </div>
+
+                    <div
+                      class="p-3 text-danger-emphasis bg-danger-subtle border border-danger-subtle rounded-3"
+                      x-show="ttlStatus === false"
+                    >
+                      TTL is Inactive
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div
+                      class="p-3 text-info-emphasis bg-info-subtle border border-info-subtle rounded-3 mb-4"
+                      x-text="ttlvalue"
+                    ></div>
+                  </div>
+                </div>
+                <div class="card-text mb-3">
+                  <div class="mb-4">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="ttlInput"
+                      placeholder="TTL Value"
+                      x-model="newTTL"
+                    />
+                    <div id="ttlValueHelper" class="form-text">
+                      Set TTL Value to 0 to disable.
+                    </div>
+                  </div>
+                  <div class="d-grid gap-2">
+                    <button
+                      class="btn btn-primary"
+                      type="button"
+                      @click="setTTL()"
+                    >
+                      Update
+                    </button>
+                  </div>
+                </div>
+                <div class="card-text">
+                  <!-- Select Input Scan Here -->
+                  <div class="mb-3">
+                    <label for="networkScan" class="form-label"
+                      >Network Scan</label
+                    >
+                    <select
+                      class="form-select"
+                      id="networkScan"
+                      x-model="fullScanModeType"
+                    >
+                      <option selected>Choose Scan Mode</option>
+                      <option value="LTE">LTE</option>
+                      <option value="NR5G">NR5G</option>
+                      <option value="ALL">ALL</option>
+                    </select>
+                  </div>
+                  <div class="d-grid gap-2">
+                    <button
+                      class="btn btn-primary"
+                      type="button"
+                      @click="fullScanMode()"
+                      :disabled="isLoading"
+                      x-text="scanStart ? 'Scanning... Please wait.' : 'Start Scan'"
+                    ></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading Modal for Reboot -->
+        <div class="modal-overlay" x-show="showModal">
+          <div class="loading-modal">
+            <div
+              class="loading-text"
+              style="display: flex; flex-direction: column"
+            >
+              <h3>This will reboot the modem.</h3>
+              <p style="margin-top: 0.5rem">Continue?</p>
+            </div>
+            <div class="d-grid gap-2 d-md-block">
+              <button
+                class="btn btn-primary"
+                type="button"
+                @click="rebootDevice()"
+              >
+                Reboot
+              </button>
+              <button
+                class="btn btn-danger"
+                type="button"
+                @click="closeModal()"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reboot Modal Countdown -->
+        <div class="modal-overlay" x-show="isRebooting">
+          <div class="loading-modal">
+            <div class="loader"></div>
+            <div
+              class="loading-text"
+              style="display: flex; flex-direction: column"
+            >
+              <h3>Rebooting...</h3>
+              <p style="margin-top: 0.5rem">
+                Please wait for
+                <span x-text="countdown" style="font-weight: 500"></span>
+                seconds.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="/js/dark-mode.js"></script>
+    <script>
+      function simpleSettings() {
+        return {
+          isLoading: false,
+          showSuccess: false,
+          showError: false,
+          isClean: true,
+          showModal: false,
+          isRebooting: false,
+          atcmd: "",
+          fetchATCommand: "",
+          countdown: 0,
+          atCommandResponse: "",
+          currentSettingsResponse: "",
+          ttldata: null,
+          ttlvalue: 0,
+          ttlStatus: false,
+          newTTL: null,
+          ethPassStatus: false,
+          DNSProxyStatus: true,
+          USBModeStatus: true,
+          fullScanModeType: "",
+          scanStart: false,
+
+          closeModal() {
+            this.confirmModal = false;
+            this.showModal = false;
+          },
+
+          showRebootModal() {
+            this.showModal = true;
+          },
+
+          sendATCommand() {
+            if (!this.atcmd) {
+              // Use ATI as default command
+              this.atcmd = "ATI";
+              console.log(
+                "AT Command is empty, using ATI as default command: ",
+                this.atcmd
+              );
+            }
+
+            this.isLoading = true;
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: this.atcmd,
+                })
+            )
+              .then((res) => {
+                return res.text();
+              })
+              .then((data) => {
+                this.atCommandResponse = data;
+                this.isLoading = false;
+                this.isClean = false;
+              })
+              .catch((error) => {
+                console.error("Error: ", error);
+                this.showError = true;
+              });
+          },
+
+          clearResponses() {
+            this.atCommandResponse = "";
+            this.isClean = true;
+          },
+
+          rebootDevice() {
+            this.atcmd = "AT+CFUN=1,1";
+            this.sendATCommand();
+
+            this.atCommandResponse = "";
+            this.showModal = false;
+            this.isRebooting = true;
+            this.countdown = 40;
+
+            // Do the countdown
+            const interval = setInterval(() => {
+              this.countdown--;
+              if (this.countdown === 0) {
+                clearInterval(interval);
+                this.isRebooting = false;
+                this.init();
+              }
+            }, 1000);
+          },
+
+          resetATCommands() {
+            this.atcmd = "AT&F";
+            this.sendATCommand();
+            console.log("Resetting AT Commands");
+            this.atcmd = "";
+            this.atCommandResponse = "";
+            this.showRebootModal();
+          },
+
+          ethPassthroughEnable() {
+            this.atcmd = 'AT+QMAP="MPDN_RULE",0,1,0,1,1,"FF:FF:FF:FF:FF:FF"';
+            this.sendATCommand();
+            this.fetchCurrentSettings();
+          },
+
+          ethPassthroughDisable() {
+            this.atcmd = 'AT+QMAP="MPDN_RULE",0';
+            this.sendATCommand();
+            this.fetchCurrentSettings();
+          },
+
+          onBoardDNSProxyEnable() {
+            this.atcmd = 'AT+QMAP="DHCPV4DNS","enable"';
+            this.sendATCommand();
+            this.fetchCurrentSettings();
+          },
+
+          onBoardDNSProxyDisable() {
+            this.atcmd = 'AT+QMAP="DHCPV4DNS","disable"';
+            this.sendATCommand();
+            this.fetchCurrentSettings();
+          },
+
+          usbModeEnable() {
+            this.atcmd = "AT+QMAPWAC=1";
+            this.sendATCommand();
+            this.fetchCurrentSettings();
+          },
+
+          usbModeDisable() {
+            this.atcmd = "AT+QMAPWAC=0";
+            this.sendATCommand();
+            this.fetchCurrentSettings();
+          },
+
+          scanLTE() {
+            this.atcmd = 'AT+QENG="neighbourcell"';
+            this.sendATCommand();
+          },
+
+          scanNSA() {
+            this.atcmd =
+              'AT+QNWCFG="nr5g_meas_info",1;+QNWCFG="nr5g_meas_info"';
+            this.sendATCommand();
+          },
+
+          fullScanMode() {
+            switch (this.fullScanModeType) {
+              case "LTE":
+                this.atcmd = "AT+QSCAN=1,1";
+                this.scanStart = true;
+                this.atCommandResponse = "Scanning all available LTE networks... This might take a while."
+                this.sendATCommand();
+                this.scanStart = false;
+                break;
+              case "NR5G":
+                this.atcmd = "AT+QSCAN=2,1";
+                this.scanStart = true;
+                this.atCommandResponse = "Scanning all available NR5G-SA networks... This might take a while."
+                this.sendATCommand();
+                this.scanStart = false;
+                break;
+              case "ALL":
+                this.atcmd = "AT+QSCAN=3,1";
+                this.scanStart = true;
+                this.atCommandResponse = "Scanning all available networks... This might take a while."
+                this.sendATCommand();
+                this.scanStart = false;
+                break;
+              default:
+                alert("Select a Scan Mode First");
+            }
+          },
+
+          fetchCurrentSettings() {
+            this.fetchATCommand =
+              'AT+QMAP="MPDN_RULE";+QMAP="DHCPV4DNS";+QMAPWAC?';
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: this.fetchATCommand,
+                })
+            )
+              .then((res) => {
+                return res.text();
+              })
+              .then((data) => {
+                // Set the value of currentSettingsResponse
+                this.currentSettingsResponse = data;
+                const currentData = data.split("\n");
+
+                const testEthpass = currentData[1].match(
+                  /\+QMAP: "MPDN_rule",0,0,0,0,0/
+                );
+
+                if (testEthpass) {
+                  this.ethPassStatus = false;
+                } else {
+                  this.ethPassStatus = true;
+                }
+
+                const testDNSProxy = currentData[6].match(
+                  /\+QMAP: "DHCPV4DNS","enable"/
+                );
+
+                if (testDNSProxy) {
+                  this.DNSProxyStatus = true;
+                } else {
+                  this.DNSProxyStatus = false;
+                }
+
+                const testUSBMode = currentData[8].match(/\+QMAPWAC: 1/);
+
+                if (testUSBMode) {
+                  this.USBModeStatus = true;
+                } else {
+                  this.USBModeStatus = false;
+                }
+
+                // clear atcmd
+                this.atcmd = "";
+              })
+              .catch((error) => {
+                console.error("Error: ", error);
+                this.showError = true;
+              });
+          },
+
+          fetchTTL() {
+            fetch("/cgi-bin/get_ttl_status")
+              .then((res) => res.json())
+              .then((data) => {
+                this.ttldata = data;
+                this.ttlStatus = this.ttldata.isEnabled;
+                this.ttlvalue = this.ttldata.ttl;
+              });
+          },
+
+          setTTL() {
+            this.isLoading = true; // Set loading state while updating TTL
+
+            fetch(
+              "/cgi-bin/set_ttl?" +
+                new URLSearchParams({
+                  ttlvalue: this.newTTL,
+                })
+            )
+              .then((res) => res.json())
+              .then((data) => {
+                // Once TTL is updated, fetch the updated TTL data
+                this.fetchTTL();
+                this.isLoading = false; // Set loading state back to false
+              })
+              .catch((error) => {
+                console.error("Error updating TTL: ", error);
+                this.isLoading = false; // Ensure loading state is properly handled in case of error
+              });
+          },
+
+          init() {
+            this.fetchTTL();
+            this.fetchCurrentSettings();
+          },
+        };
+      }
+    </script>
+  </body>
+</html>
