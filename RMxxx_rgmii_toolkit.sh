@@ -2,9 +2,9 @@
 
 # Define toolkit paths
 GITUSER="iamromulan"
-GITTREE="development-v2"
+GITTREE="development"
 GITMAINTREE="main"
-GITDEVTREE="development-v2"
+GITDEVTREE="development"
 TMP_DIR="/tmp"
 USRDATA_DIR="/usrdata"
 SOCAT_AT_DIR="/usrdata/socat-at-bridge"
