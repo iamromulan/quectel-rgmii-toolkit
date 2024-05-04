@@ -2,7 +2,7 @@
 
 # Define constants
 GITUSER="iamromulan"
-GITTREE="development"
+GITTREE="development-v2"
 DIR_NAME="simpleadmin"
 SERVICE_FILE="/lib/systemd/system/install_simpleadmin.service"
 SERVICE_NAME="install_simpleadmin"
@@ -39,7 +39,7 @@ cat <<EOF > "$TMP_SCRIPT"
 #!/bin/bash
 
 GITUSER="iamromulan"
-GITTREE="development"
+GITTREE="development-v2"
 SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 
 # Function to remount file system as read-write
