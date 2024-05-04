@@ -1,9 +1,0 @@
-[Unit]
-Description=Simpleadmin service to generate status from modem
-
-[Service]
-ExecStart=/usrdata/simpleadmin/scripts/build_modem_status
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
