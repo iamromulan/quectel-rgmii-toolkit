@@ -40,9 +40,7 @@
             <div class="collapse navbar-collapse" id="navbarText">
               <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="/"
-                    >Home</a
-                  >
+                  <a class="nav-link active" aria-current="page" href="/">Home</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="network.html">Simple Network</a>
@@ -54,10 +52,11 @@
                   <a class="nav-link" href="/sms.html">SMS</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/deviceinfo.html"
-                    >Device Information</a
-                  >
-                </li>
+                  <a class="nav-link" href="/console">Console</a>
+                </li>				
+                <li class="nav-item">
+                  <a class="nav-link" href="/deviceinfo.html">Device Information</a>
+                </li>				
               </ul>
               <span class="navbar-text">
                 <button class="btn btn-link text-reset" id="darkModeToggle">
@@ -543,7 +542,7 @@
           internetConnection: "Disconnected",
           lastUpdate: new Date().toLocaleString(),
           newRefreshRate: null,
-          refreshRate: 30,
+          refreshRate: 3,
           intervalId: null,
           fetchNetworkInfo() {
             this.atcmd =
