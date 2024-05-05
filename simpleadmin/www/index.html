@@ -40,7 +40,9 @@
             <div class="collapse navbar-collapse" id="navbarText">
               <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="/">Home</a>
+                  <a class="nav-link active" aria-current="page" href="/"
+                    >Home</a
+                  >
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="network.html">Simple Network</a>
@@ -52,18 +54,16 @@
                   <a class="nav-link" href="/sms.html">SMS</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/console">Console</a>
-                </li>				
-                <li class="nav-item">
-                  <a class="nav-link" href="/deviceinfo.html">Device Information</a>
-                </li>				
+                  <a class="nav-link" href="/deviceinfo.html"
+                    >Device Information</a
+                  >
+                </li>
               </ul>
               <span class="navbar-text">
-                <button class="btn btn-link text-reset" id="darkModeToggle">Dark Mode</button>
+                <button class="btn btn-link text-reset" id="darkModeToggle">
+                  Dark Mode
+                </button>
               </span>
-              <span class="navbar-text">
-                <button class="btn btn-link" href="logout.html">Log Out</button>
-              </span>              
             </div>
           </div>
         </nav>
@@ -272,7 +272,6 @@
                           }
                       } }"
                         >
-                        
                           <div
                             x-show="rsrqLTE != '-'"
                             class="progress w-100"
@@ -287,7 +286,9 @@
                               :class="getProgressBarClass()"
                               :style="'width: ' + rsrqLTEPercentage + '%'"
                             >
-                              <span x-text="rsrqLTE + ' / ' +  rsrqLTEPercentage + '%'"></span>
+                              <span
+                                x-text="rsrqLTE + ' / ' +  rsrqLTEPercentage + '%'"
+                              ></span>
                             </div>
                           </div>
                         </td>
@@ -322,7 +323,9 @@
                               :class="getProgressBarClass()"
                               :style="'width: ' + rsrqNRPercentage + '%'"
                             >
-                              <span x-text="rsrqNR + ' / ' + rsrqNRPercentage + '%'"></span>
+                              <span
+                                x-text="rsrqNR + ' / ' + rsrqNRPercentage + '%'"
+                              ></span>
                             </div>
                           </div>
                         </td>
@@ -360,7 +363,9 @@
                               :class="getProgressBarClass()"
                               :style="'width: ' + rsrpLTEPercentage + '%'"
                             >
-                              <span x-text="rsrpLTE + ' / ' + rsrpLTEPercentage + '%'"></span>
+                              <span
+                                x-text="rsrpLTE + ' / ' + rsrpLTEPercentage + '%'"
+                              ></span>
                             </div>
                           </div>
                         </td>
@@ -398,7 +403,9 @@
                               :class="getProgressBarClass()"
                               :style="'width: ' + rsrpNRPercentage + '%'"
                             >
-                              <span x-text="rsrpNR + ' / ' + rsrpNRPercentage + '%'"></span>
+                              <span
+                                x-text="rsrpNR + ' / ' + rsrpNRPercentage + '%'"
+                              ></span>
                             </div>
                           </div>
                         </td>
@@ -436,7 +443,9 @@
                               :class="getProgressBarClass()"
                               :style="'width: ' + sinrLTEPercentage +'%'"
                             >
-                              <span x-text="sinrLTE + ' / ' + sinrLTEPercentage +'%'"></span>
+                              <span
+                                x-text="sinrLTE + ' / ' + sinrLTEPercentage +'%'"
+                              ></span>
                             </div>
                           </div>
                         </td>
@@ -474,7 +483,9 @@
                               :class="getProgressBarClass()"
                               :style="'width: ' + sinrNRPercentage +'%'"
                             >
-                              <span x-text="sinrNR + ' / ' + sinrNRPercentage +'%'"></span>
+                              <span
+                                x-text="sinrNR + ' / ' + sinrNRPercentage +'%'"
+                              ></span>
                             </div>
                           </div>
                         </td>
@@ -543,7 +554,7 @@
           internetConnection: "Disconnected",
           lastUpdate: new Date().toLocaleString(),
           newRefreshRate: null,
-          refreshRate: 3,
+          refreshRate: 30,
           intervalId: null,
           fetchNetworkInfo() {
             this.atcmd =
@@ -610,18 +621,38 @@
                 } else {
                   let networkMode2, networkMode3;
 
-                  networkMode2 = lines[28].split(":")[1].replace(/"/g, "");
-                  networkMode2 = networkMode2.split(",")[0];
-
                   if (
-                    lines[29] !== undefined &&
-                    lines[29] !== "OK" &&
-                    lines[29] !== ""
+                    lines[27] !== undefined &&
+                    lines[27] !== "OK" &&
+                    lines[27] !== "" &&
+                    lines[27] !== "/r"
                   ) {
-                    networkMode3 = lines[29].split(":")[1].replace(/"/g, "");
-                    networkMode3 = networkMode3.split(",")[0];
+                    // Check if lines[27] doesnt have NOCONN
+                    if (lines[27].match(/servingcell/) === null) {
+                      networkMode2 = lines[27].split(",")[2].replace(/"/g, "");
+                      networkMode2 = networkMode2.split(",")[0].trim();
+                      console.log(networkMode2);
+                    }
+
+                    if (networkMode2 !== "LTE") {
+                      networkMode2 = lines[28].split(":")[1].replace(/"/g, "");
+                      networkMode2 = networkMode2.split(",")[0];
+
+                      if (
+                        lines[29] !== undefined &&
+                        lines[29] !== "OK" &&
+                        lines[29] !== ""
+                      ) {
+                        networkMode3 = lines[29]
+                          .split(":")[1]
+                          .split(",")[0]
+                          .replace(/"/g, "");
+                        networkMode3 = networkMode3.split(",")[0];
+                      }
+                    }
                   }
 
+                  console.log(networkMode2, networkMode3);
                   // Check if networkMode3 is not empty
                   if (networkMode3 !== undefined) {
                     this.network_mode = networkMode2 + ", " + networkMode3;
@@ -871,6 +902,9 @@
                     this.signalPercentage =
                       (this.signalPercentage + nrSignalPercentage) / 2;
 
+                    // Round the signalPercentage value
+                    this.signalPercentage = Math.round(this.signalPercentage);
+
                     // Get the Signal Assessment
                     this.signalAssessment = this.signalQuality(
                       this.signalPercentage
@@ -998,8 +1032,9 @@
                   const rawdata = data;
 
                   const lines = rawdata.split("\n");
+                  console.log("CSQ: ", lines);
 
-                  this.csq = lines[0].split(":")[1].split(",")[0].trim();
+                  this.csq = lines[1].split(":")[1].split(",")[0].trim();
                 });
               });
             }
@@ -1031,11 +1066,22 @@
             this.refreshRate = this.newRefreshRate;
             console.log("Refresh Rate Updated to " + this.refreshRate);
 
+            // Store the refresh rate in local storage or session storage
+            localStorage.setItem("refreshRate", this.refreshRate);
+
             // Initialize with the new refresh rate
             this.init();
           },
 
           init() {
+            // Retrieve the refresh rate from local storage or session storage
+            const storedRefreshRate = localStorage.getItem("refreshRate");
+
+            // If a refresh rate is stored, use it; otherwise, use a default value
+            this.refreshRate = storedRefreshRate
+              ? parseInt(storedRefreshRate)
+              : 5; // Change 5 to your desired default value
+
             this.fetchNetworkInfo();
             // sleep for 2 seconds
             setTimeout(() => {
@@ -1044,7 +1090,8 @@
 
             this.requestPing()
               .then((data) => {
-                const response = data.trim(); // Trim any leading/trailing spaces
+                const response = data.trim();
+                // Trim any leading/trailing spaces
                 if (response === "OK") {
                   this.internetConnection = "Connected";
                 } else {
@@ -1069,7 +1116,8 @@
 
               this.requestPing()
                 .then((data) => {
-                  const response = data.trim(); // Trim any leading/trailing spaces
+                  const response = data.trim();
+                  // Trim any leading/trailing spaces
                   if (response === "OK") {
                     this.internetConnection = "Connected";
                   } else {
@@ -1082,7 +1130,6 @@
                 });
 
               this.lastUpdate = new Date().toLocaleString();
-
               console.log("Refreshed");
             }, this.refreshRate * 1000);
           },
