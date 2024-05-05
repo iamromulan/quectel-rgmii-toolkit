@@ -618,7 +618,9 @@
                 if (networkMode1 === '"NR5G-SA"') {
                   this.network_mode = networkMode1;
                   this.network_mode = this.network_mode.replace(/"/g, "");
-                } else {
+                } 
+                
+                else {
                   let networkMode2, networkMode3;
 
                   if (
@@ -627,8 +629,8 @@
                     lines[27] !== "" &&
                     lines[27] !== "/r"
                   ) {
-                    // Check if lines[27] doesnt have NOCONN
-                    if (lines[27].match(/servingcell/) === null) {
+                    // Check if lines[27] doesnt have TDD or FDD
+                    if (lines[27].match(/FDD/) != null || lines[27].match(/TDD/) != null) {
                       networkMode2 = lines[27].split(",")[2].replace(/"/g, "");
                       networkMode2 = networkMode2.split(",")[0].trim();
                       console.log(networkMode2);
