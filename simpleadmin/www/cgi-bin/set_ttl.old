@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Get query
+QUERY_STRING=$(echo "${QUERY_STRING}" | sed 's/;//g')
+
+if [ "${QUERY_STRING}" ]; then
+
+	export IFS="&"
+	for cmd in ${QUERY_STRING}; do
+	
+		if [ "$(echo $cmd | grep '=')" ]; then
+			key=$(echo $cmd | awk -F '=' '{print $1}')
+			value=$(echo $cmd | awk -F '=' '{print $2}')
+			eval $key=$value
+		fi
+		
+	done
+
+fi
+
+setTTL=$(printf '%b\n' "${ttlvalue//%/\\x}")
+
+if [ -n "${setTTL}" ]; then
+    # Stop Service To Remove Rules
+    /usrdata/simplefirewall/ttl-override stop
+
+    # Check iptables is still set
+    ttlcheck=$(iptables -t mangle -vnL | grep TTL | awk '{print $13}')
+
+    # If TTL is still set manually remove values
+    if [ !-z "${ttlcheck}" ]; then
+        iptables -t mangle -D POSTROUTING -o rmnet+ -j TTL --ttl-set ${ttlcheck} &>/dev/null || true
+        ip6tables -t mangle -D POSTROUTING -o rmnet+ -j HL --hl-set ${ttlcheck} &>/dev/null || true
+    fi
+
+    # Echo TTL to file
+    echo $setTTL > /usrdata/simplefirewall/ttlvalue
+
+    # Set Start Service
+    /usrdata/simplefirewall/ttl-override start
+fi
+
+
+
+# Check iptables for ttlvalue
+ttlvalue=$(iptables -t mangle -vnL | grep TTL | awk '{print $13}')
+ttlenabled=true;
+
+# Set Variables
+if [ -z "${ttlvalue}" ]; then
+    ttlvalue=0
+    ttlenabled=false
+fi
+
+echo "Content-type: text/json" 
+echo ""
+cat <<EOT
+{
+    "isEnabled": $ttlenabled,
+    "ttl": $ttlvalue
+}

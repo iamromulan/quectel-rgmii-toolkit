@@ -43,7 +43,12 @@
                   <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link active" href="network.html" aria-current="page">Simple Network</a>
+                  <a
+                    class="nav-link active"
+                    href="network.html"
+                    aria-current="page"
+                    >Simple Network</a
+                  >
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="/settings.html">Simple Settings</a>
@@ -52,18 +57,16 @@
                   <a class="nav-link" href="/sms.html">SMS</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/console">Console</a>
-                </li>                
-                <li class="nav-item">
-                  <a class="nav-link" href="deviceinfo.html">Device Information</a>
+                  <a class="nav-link" href="deviceinfo.html"
+                    >Device Information</a
+                  >
                 </li>
               </ul>
               <span class="navbar-text">
-                <button class="btn btn-link text-reset" id="darkModeToggle">Dark Mode</button>
+                <button class="btn btn-link text-reset" id="darkModeToggle">
+                  Dark Mode
+                </button>
               </span>
-              <span class="navbar-text">
-                <button class="btn btn-link" href="logout.html">Log Out</button>
-              </span>              
             </div>
           </div>
         </nav>
@@ -552,7 +555,7 @@
           updatedLockedBands: null,
           sim: "-",
           newSim: null,
-          cellLockStatus: null,
+          cellLockStatus: "Unknown",
           bands: "Fetching Bands...",
           init() {
             // Function to populate checkboxes
