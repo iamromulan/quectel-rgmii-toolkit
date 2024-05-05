@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# This is a simple scrip that fetches the SMS messages from the device
+SMS_MESSAGE_INDICATION="AT+CNMI=2,1"
+SMS_FORMAT="AT+CMGF=1"
+SMS_LIST="AT+CMGL=\"ALL\""
+
+while true; do
+    runcmd=$(echo -en "$SMS_LIST\r\n" | microcom -t 2000 /dev/ttyOUT2)
+    if [[ $runcmd =~ "OK" ]] || [[ $runcmd =~ "ERROR" ]]; then
+        break
+    fi
+    ((wait_time++))
+done
+
+
+# Print the list of SMS messages as JSON plain text
+echo "Content-type: text/plain"
+echo ""
+echo $runcmd
