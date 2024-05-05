@@ -1,7 +1,8 @@
 #!/bin/sh
-
+# Modified by iamromulan to set up a proper entware environment for Quectel RM5xx series m.2 modems
 TYPE='generic'
 #|---------|-----------------|
+#| TARGET  | Quectel Modem   |
 #| ARCH    | armv7sf-k3.2    | 
 #| LOADER  | ld-linux.so.3   | 
 #| GLIBC   | 2.27            | 
@@ -15,64 +16,6 @@ PRE_OPKG_PATH=$(which opkg)
 
 # Remount filesystem as read-write
 mount -o remount,rw /
-
-uninstall_entware() {
-    echo -e '\033[31mInfo: Starting Entware/OPKG uninstallation...\033[0m'
-
-    # Stop services
-    systemctl stop rc.unslung.service
-    /opt/etc/init.d/rc.unslung stop
-    rm /lib/systemd/system/multi-user.target.wants/rc.unslung.service
-    rm /lib/systemd/system/rc.unslung.service
-    
-    systemctl stop opt.mount
-    rm /lib/systemd/system/multi-user.target.wants/start-opt-mount.service
-    rm /lib/systemd/system/opt.mount
-    rm /lib/systemd/system/start-opt-mount.service
-
-    # Unmount /opt if mounted
-    mountpoint -q /opt && umount /opt
-
-    # Remove Entware installation directory
-    rm -rf /usrdata/opt
-    rm -rf /opt
-
-    # Reload systemctl daemon
-    systemctl daemon-reload
-
-    # Optionally, clean up any modifications to /etc/profile or other system files
-    # This step depends on the specific changes made by the user or the installation script
-
-    echo -e '\033[32mInfo: Entware/OPKG has been uninstalled successfully.\033[0m'
-}
-
-# Check if /opt exists
-if [ -d /opt ]; then
-    echo -e "\033[32mDo you want to uninstall Entware/OPKG first? It is already installed.\033[0m"
-    echo -e "\033[32m1) Yes\033[0m"
-    echo -e "\033[32m2) No\033[0m"
-    echo -e "\033[32m3) Cancel\033[0m"
-    read -p "Select an option: " choice
-
-    case $choice in
-        1)
-            # Call the uninstall function
-            uninstall_entware
-            exit 0
-            ;;
-        2)
-            # Continue with the script
-            echo "Continuing with the script..."
-            ;;
-        3)
-            echo "Canceling. Exiting script."
-            exit 0
-            ;;            
-        *)
-            echo "Invalid option. Please select 1, 2, or 3."
-            ;;
-    esac
-fi
 
 create_opt_mount() {
     # Bind /usrdata/opt to /opt
@@ -114,32 +57,13 @@ EOF
 }
 
 if [ -n "$PRE_OPKG_PATH" ]; then
-    while true; do
-        echo -e "\033[32mopkg already exists at: $PRE_OPKG_PATH\033[0m"
-        echo -e "\033[32mDo you want to rename it to opkg_old?\033[0m"
-        echo -e "\033[32m1) Yes (Highly Recommended)\033[0m"
-        echo -e "\033[32m2) No (The opkg command may not work)\033[0m"
-        read -p "Select an option (1 or 2): " user_choice
-        
-
-        case $user_choice in
-            1)
-                mv "$PRE_OPKG_PATH" "${PRE_OPKG_PATH}_old"
-                echo "Factory/Already existing opkg has been renamed to opkg_old."
-                break
-                ;;
-            2)        
-                echo "Proceeding without renaming opkg."
-                break
-                ;;
-            *)
-                echo "Invalid option. Please select 1 or 2."
-                ;;
-        esac
-    done
+    # Automatically rename the existing opkg binary
+    mv "$PRE_OPKG_PATH" "${PRE_OPKG_PATH}_old"
+    echo -e "\033[32mFactory/Already existing opkg has been renamed to opkg_old.\033[0m"
 else
     echo "Info: no existing opkg binary detected, proceeding with installation"
 fi
+
 echo -e '\033[32mInfo: Creating /opt mount pointed to /usrdata/opt ...\033[0m'
 create_opt_mount
 echo -e '\033[32mInfo: Proceeding with main installation ...\033[0m'
@@ -206,9 +130,38 @@ systemctl start rc.unslung.service
 echo -e '\033[32mInfo: Congratulations!\033[0m'
 echo -e '\033[32mInfo: If there are no errors above then Entware was successfully initialized.\033[0m'
 echo -e '\033[32mInfo: Add /opt/bin & /opt/sbin to $PATH variable\033[0m'
-echo -e '\033[32mInfo: Run export PATH=/opt/bin:/opt/sbin:$PATH to do it for this session only\033[0m'
-echo -e '\033[32mInfo: opkg at /opt/bin will be linked to /bin but any package you install with opkg will not be automatically.\033[0m'
 ln -sf /opt/bin/opkg /bin
-opkg update
+echo -e '\033[32mInfo: Patching Quectel Login Binary\033[0m'
+opkg update && opkg install shadow-login shadow-passwd shadow-useradd
+    if [ "$?" -ne 0 ]; then
+        echo -e "\e[1;31mPackage installation failed. Please check your internet connection and try again.\e[0m"
+        exit 1
+    fi
+
+    # Replace the login and passwd binaries and set home for root to a writable directory
+    rm /opt/etc/shadow
+    rm /opt/etc/passwd
+    cp /etc/shadow /opt/etc/
+    cp /etc/passwd /opt/etc
+    mkdir /usrdata/root
+    mkdir /usrdata/root/bin
+    touch /usrdata/root/.profile
+    echo "# Set PATH for all shells" > /usrdata/root/.profile
+    echo "export PATH=/bin:/usr/sbin:/usr/bin:/sbin:/opt/sbin:/opt/bin:/usrdata/root/bin" >> /usrdata/root/.profile
+    chmod +x /usrdata/root/.profile
+    sed -i '1s|/home/root:/bin/sh|/usrdata/root:/bin/bash|' /opt/etc/passwd
+    rm /bin/login /usr/bin/passwd
+    ln -sf /opt/bin/login /bin
+    ln -sf /opt/bin/passwd /usr/bin/
+	ln -sf /opt/bin/useradd /usr/bin/
+    echo -e "\e[1;31mPlease set the root password.\e[0m"
+    /usr/bin/passwd
+
+    # Install basic and useful utilites
+    opkg install mc htop dfc lsof
+    ln -sf /opt/bin/mc /bin
+    ln -sf /opt/bin/htop /bin
+    ln -sf /opt/bin/dfc /bin
+    ln -sf /opt/bin/lsof /bin
 # Remount filesystem as read-only
 mount -o remount,ro /

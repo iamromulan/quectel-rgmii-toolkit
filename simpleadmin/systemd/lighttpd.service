@@ -1,0 +1,14 @@
+[Unit]
+Description=Lighttpd Daemon
+After=network.target
+
+[Service]
+Type=simple
+PIDFile=/opt/var/run/lighttpd.pid
+ExecStartPre=/opt/sbin/lighttpd -tt -f /usrdata/simpleadmin/lighttpd.conf
+ExecStart=/opt/sbin/lighttpd -D -f /usrdata/simpleadmin/lighttpd.conf
+ExecReload=/bin/kill -USR1 $MAINPID
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simple Admin</title>
+    <!-- <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    /> -->
+    <!-- Import all the bootstrap css files from css folder -->
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+
+    <!--  Import BootStrap Javascript -->
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/alpinejs.min.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <div class="container my-4" x-data="fetchDeviceInfo()">
+        <nav class="navbar navbar-expand-lg mt-2">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="/"
+              ><span class="mb-0 h4">Simple Admin</span></a
+            >
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarText"
+              aria-controls="navbarText"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarText">
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/network.html">Simple Network</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/settings.html">Simple Settings</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/sms.html">SMS</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/console">Console</a>
+                </li>                
+                <li class="nav-item">
+                  <a class="nav-link active" href="/deviceinfo.html" aria-current="page" >Device Information</a>
+                </li>
+              </ul>
+              <span class="navbar-text">
+                <button class="btn btn-link text-reset" id="darkModeToggle">Dark Mode</button>
+              </span>
+              <span class="navbar-text">
+                <button class="btn btn-link" href="logout.html">Log Out</button>
+              </span>               
+            </div>
+          </div>
+        </nav>
+
+        <div class="row mt-5 gap-3">
+          <div class="col">
+            <div class="card">
+              <div class="card-header">Device Information</div>
+              <div class="card-body">
+                <div class="card-text">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <tbody>
+                        <tr>
+                          <th scope="row">Manufacturer</th>
+                          <td x-text="manufacturer"></td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Model Name</th>
+                          <td x-text="modelName"></td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Firmware version</th>
+                          <td class="col-md-2" x-text="firmwareVersion"></td>
+                        </tr>
+                        <tr>
+                          <th scope="row">IMSI</th>
+                          <td class="col-md-2" x-text="imsi"></td>
+                        </tr>
+                        <tr>
+                          <th scope="row">ICCID</th>
+                          <td class="col-md-2" x-text="iccid"></td>
+                        </tr>
+                        <tr>
+                          <th scope="row">IMEI</th>
+                          <td class="col-md-2">
+                            <input
+                              class="form-control"
+                              type="text"
+                              x-model="newImei"
+                              x-bind:placeholder="imei === '-' ? 'Fetching IMEI...' : imei"
+                            />
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              class="btn btn-primary"
+                              @click="openModal()"
+                            >
+                              Update
+                            </button>
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <th scope="row">LAN IP</th>
+                          <td class="col-md-2" x-text="lanIp"></td>
+                        </tr>
+                        <tr>
+                          <th scope="row">WWAN IPv<sup>4</sup></th>
+                          <td class="col-md-2" x-text="wwanIpv4"></td>
+                        </tr>
+                        <tr>
+                          <th scope="row">WWAN IPv<sup>6</sup></th>
+                          <td class="col-md-2" x-text="wwanIpv6"></td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Simple Admin Version</th>
+                          <td class="col-md-2">SimpleAdminRev-Alpha-0.3</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                Visit our
+                <a
+                  href="https://github.com/iamromulan/quectel-rgmii-toolkit.gits"
+                  target="_blank"
+                  class="text-reset"
+                  >repository</a
+                >
+                or
+                <a
+                  href="https://github.com/iamromulan/quectel-rgmii-configuration-notes.git"
+                  target="_blank"
+                  class="text-reset"
+                  >documentation</a
+                >
+                for more information. All rights reserved. 2024
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading Modal for Reboot -->
+        <div class="modal-overlay" x-show="showModal">
+          <div class="loading-modal">
+            <div
+              class="loading-text"
+              style="display: flex; flex-direction: column"
+            >
+              <h3>This will reboot the modem.</h3>
+              <p style="margin-top: 0.5rem">Continue?</p>
+            </div>
+            <div class="d-grid gap-2 d-md-block">
+              <button
+                class="btn btn-primary"
+                type="button"
+                @click="updateIMEI()"
+              >
+                Reboot
+              </button>
+              <button
+                class="btn btn-danger"
+                type="button"
+                @click="closeModal()"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reboot Modal Countdown -->
+        <div class="modal-overlay" x-show="isRebooting">
+          <div class="loading-modal">
+            <div class="loader"></div>
+            <div
+              class="loading-text"
+              style="display: flex; flex-direction: column"
+            >
+              <h3>Rebooting...</h3>
+              <p style="margin-top: 0.5rem">
+                Please wait for
+                <span x-text="countdown" style="font-weight: 500"></span>
+                seconds.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="/js/dark-mode.js"></script>
+    <script>
+      function fetchDeviceInfo() {
+        return {
+          manufacturer: "-",
+          modelName: "-",
+          firmwareVersion: "-",
+          imsi: "-",
+          iccid: "-",
+          imei: "-",
+          newImei: null,
+          lanIp: "-",
+          wwanIpv4: "-",
+          wwanIpv6: "-",
+          simpleAdminVersion: "-",
+          atcmd: null,
+          atCommandResponse: "",
+          showModal: false,
+          isLoading: false,
+          isRebooting: false,
+          countdown: 3,
+
+          sendATCommand() {
+            if (!this.atcmd) {
+              // Use ATI as default command
+              console.log(
+                "AT Command is empty, using ATI as default command: "
+              );
+            }
+
+            this.isLoading = true;
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: this.atcmd,
+                })
+            )
+              .then((res) => {
+                return res.text();
+              })
+              .then((data) => {
+                this.atCommandResponse = data;
+              })
+              .catch((error) => {
+                console.error("Error: ", error);
+                this.showError = true;
+              });
+          },
+
+          fetchATCommand() {
+            this.atcmd =
+              'AT+CGMI;+CGMM;+QGMR;+CIMI;+ICCID;+CGSN;+QMAP="LANIP";+QMAP="WWAN"';
+            this.isLoading = true;
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: this.atcmd,
+                })
+            )
+              .then((res) => {
+                return res.text();
+              })
+              .then((data) => {
+                this.atCommandResponse = data;
+                this.parseFetchedData();
+              })
+              .catch((error) => {
+                console.error("Error: ", error);
+                this.showError = true;
+              });
+          },
+
+          parseFetchedData() {
+            const lines = this.atCommandResponse.split("\n");
+
+            console.log("AT Command Response: ", lines);
+
+            this.manufacturer = lines[1].trim();
+            this.modelName = lines[3].trim();
+            this.firmwareVersion = lines[5].trim();
+            this.imsi = lines[7].trim();
+            this.iccid = lines[9].trim().replace("+ICCID: ", "");
+            this.imei = lines[11].trim();
+            this.lanIp = lines[13].trim().split(",")[3];
+            this.wwanIpv4 = lines[15].trim().split(",")[4].replace(/"/g, "");
+            this.wwanIpv6 = lines[16].trim().split(",")[4].replace(/"/g, "");
+            this.simpleAdminVersion = "SimpleAdminRev-Alpha-0.5";
+            this.isLoading = false;
+          },
+
+          updateIMEI() {
+            this.atcmd = `AT+EGMR=1,7,"${this.newImei}"`;
+            this.sendATCommand();
+            this.rebootDevice();
+          },
+
+          rebootDevice() {
+            this.atcmd = "AT+CFUN=1,1";
+            this.sendATCommand();
+
+            this.isLoading = true;
+            this.showModal = false;
+            this.isRebooting = true;
+            this.countdown = 40;
+            const interval = setInterval(() => {
+              this.countdown--;
+              if (this.countdown === 0) {
+                clearInterval(interval);
+                this.isLoading = false;
+                this.showModal = false;
+                this.isRebooting = false;
+                this.init();
+              }
+            }, 1000);
+          },
+
+          openModal() {
+            if (!this.newImei) {
+              alert("No new IMEI provided.");
+              return;
+            }
+
+            if (this.newImei.length !== 15) {
+              alert("IMEI is invalid");
+              return;
+            }
+
+            if (this.newImei === this.imei) {
+              alert("IMEI is the same as the current IMEI");
+              return;
+            }
+            
+            this.showModal = true;
+          },
+
+          closeModal() {
+            this.showModal = false;
+          },
+
+          init() {
+            this.fetchATCommand();
+          },
+        };
+      }
+    </script>
+  </body>
+</html>

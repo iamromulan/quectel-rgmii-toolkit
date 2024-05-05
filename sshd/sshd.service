@@ -1,0 +1,17 @@
+[Unit]
+Description=OpenBSD Secure Shell server
+Documentation=man:sshd(8) man:sshd_config(5)
+After=network.target
+
+[Service]
+Type=simple
+PIDFile=/opt/var/run/sshd.pid
+ExecStartPre=/opt/sbin/sshd -t
+ExecStart=/opt/sbin/sshd -D
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+Alias=sshd.service

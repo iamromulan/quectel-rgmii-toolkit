@@ -3,6 +3,8 @@
 # Define toolkit paths
 GITUSER="iamromulan"
 GITTREE="development"
+GITMAINTREE="main"
+GITDEVTREE="development"
 TMP_DIR="/tmp"
 USRDATA_DIR="/usrdata"
 SOCAT_AT_DIR="/usrdata/socat-at-bridge"
@@ -11,12 +13,6 @@ SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 SIMPLE_FIREWALL_DIR="/usrdata/simplefirewall"
 SIMPLE_FIREWALL_SCRIPT="$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
 SIMPLE_FIREWALL_SYSTEMD_DIR="$SIMPLE_FIREWALL_DIR/systemd"
-SIMPLE_FIREWALL_SERVICE="/lib/systemd/system/simplefirewall.service"
-GITHUB_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/$GITTREE.zip"
-GITHUB_SIMPADMIN_FULL_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadminfull.zip"
-GITHUB_SIMPADMIN_NOCMD_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadminnoatcmds.zip"
-GITHUB_SIMPADMIN_TTL_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadminttlonly.zip"
-GITHUB_SIMPADMIN_TEST_URL="https://github.com/$GITUSER/quectel-rgmii-toolkit/archive/refs/heads/simpleadmintest.zip"
 TAILSCALE_DIR="/usrdata/tailscale/"
 TAILSCALE_SYSD_DIR="/usrdata/tailscale/systemd"
 # AT Command Script Variables and Functions
@@ -103,118 +99,105 @@ send_at_commands() {
     fi
 }
 
-# Check if Simple Admin is installed
-is_simple_admin_installed() {
-    [ -d "$SIMPLE_ADMIN_DIR" ] && return 0 || return 1
+# Check for existing Entware/opkg installation, install if not installed
+ensure_entware_installed() {
+	remount_rw
+    if [ ! -f "/opt/bin/opkg" ]; then
+        echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
+        cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
+        if [ "$?" -ne 0 ]; then
+            echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
+            exit 1
+        fi
+        cd /
+    else
+        echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
+        if [ "$(readlink /bin/login)" != "/opt/bin/login" ]; then
+            opkg update && opkg install shadow-login shadow-passwd shadow-useradd
+            if [ "$?" -ne 0 ]; then
+                echo -e "\e[1;31mPackage installation failed. Please check your internet connection and try again.\e[0m"
+                exit 1
+            fi
+
+            # Replace the login and passwd binaries and set home for root to a writable directory
+            rm /opt/etc/shadow
+            rm /opt/etc/passwd
+            cp /etc/shadow /opt/etc/
+            cp /etc/passwd /opt/etc
+            mkdir -p /usrdata/root/bin
+            touch /usrdata/root/.profile
+            echo "# Set PATH for all shells" > /usrdata/root/.profile
+            echo "export PATH=/bin:/usr/sbin:/usr/bin:/sbin:/opt/sbin:/opt/bin:/usrdata/root/bin" >> /usrdata/root/.profile
+            chmod +x /usrdata/root/.profile
+            sed -i '1s|/home/root:/bin/sh|/usrdata/root:/bin/bash|' /opt/etc/passwd
+            rm /bin/login /usr/bin/passwd
+            ln -sf /opt/bin/login /bin
+            ln -sf /opt/bin/passwd /usr/bin/
+			ln -sf /opt/bin/useradd /usr/bin/
+            echo -e "\e[1;31mPlease set the root password.\e[0m"
+            /opt/bin/passwd
+
+            # Install basic and useful utilities
+            opkg install mc htop dfc lsof
+            ln -sf /opt/bin/mc /bin
+            ln -sf /opt/bin/htop /bin
+            ln -sf /opt/bin/dfc /bin
+            ln -sf /opt/bin/lsof /bin
+        fi
+
+        if [ ! -f "/usrdata/root/.profile" ]; then
+            opkg update && opkg install shadow-useradd
+            mkdir -p /usrdata/root/bin
+            touch /usrdata/root/.profile
+            echo "# Set PATH for all shells" > /usrdata/root/.profile
+            echo "export PATH=/bin:/usr/sbin:/usr/bin:/sbin:/opt/sbin:/opt/bin:/usrdata/root/bin" >> /usrdata/root/.profile
+            chmod +x /usrdata/root/.profile
+            sed -i '1s|/home/root:/bin/sh|/usrdata/root:/bin/bash|' /opt/etc/passwd
+        fi
+    fi
+	if [ ! -f "/opt/sbin/useradd" ]; then
+		echo "useradd does not exist. Installing shadow-useradd..."
+		opkg install shadow-useradd
+		else
+		echo "useradd already exists. Continuing..."
+	fi
+
 }
 
-# Function to install/update AT Socat Bridge
-install_update_at_socat() {
-    remount_rw
+#Uninstall Entware if the Users chooses 
+uninstall_entware() {
+    echo -e '\033[31mInfo: Starting Entware/OPKG uninstallation...\033[0m'
+
+    # Stop services
+    systemctl stop rc.unslung.service
+    /opt/etc/init.d/rc.unslung stop
+    rm /lib/systemd/system/multi-user.target.wants/rc.unslung.service
+    rm /lib/systemd/system/rc.unslung.service
     
-	# Stop and disable existing services/files before installing new ones
-	echo -e "\033[0;32mRemoving installed AT Socat Bridge services...\033[0m"
-	systemctl stop at-telnet-daemon > /dev/null 2>&1
-	systemctl disable at-telnet-daemon > /dev/null 2>&1
-	systemctl stop socat-smd11 > /dev/null 2>&1
-	systemctl stop socat-smd11-to-ttyIN > /dev/null 2>&1
-	systemctl stop socat-smd11-from-ttyIN > /dev/null 2>&1
-	systemctl stop socat-smd7 > /dev/null 2>&1
-	systemctl stop socat-smd7-to-ttyIN2 > /dev/null 2>&1
-	systemctl stop socat-smd7-to-ttyIN > /dev/null 2>&1
-	systemctl stop socat-smd7-from-ttyIN2 > /dev/null 2>&1
-	systemctl stop socat-smd7-from-ttyIN > /dev/null 2>&1
-	rm /lib/systemd/system/at-telnet-daemon.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd11.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd11-to-ttyIN.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd11-from-ttyIN.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd7.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd7-to-ttyIN2.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd7-to-ttyIN.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd7-from-ttyIN.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd7-from-ttyIN2.service > /dev/null 2>&1
-	systemctl daemon-reload > /dev/null 2>&1
-	rm -rf "$SOCAT_AT_DIR" > /dev/null 2>&1
-	
-	# Install service units
-	echo -e "\033[0;32mInstalling AT Socat Bridge services...\033[0m"
-	mkdir $SOCAT_AT_DIR
-    cd $SOCAT_AT_DIR
-    mkdir $SOCAT_AT_SYSD_DIR
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/socat-armel-static
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/killsmd7bridge
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/atcmd
-    cd $SOCAT_AT_SYSD_DIR
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11.service
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-from-ttyIN.service
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-to-ttyIN.service
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-killsmd7bridge.service	
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7-from-ttyIN2.service
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7-to-ttyIN2.service
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7.service
+    systemctl stop opt.mount
+    rm /lib/systemd/system/multi-user.target.wants/start-opt-mount.service
+    rm /lib/systemd/system/opt.mount
+    rm /lib/systemd/system/start-opt-mount.service
 
-    # Set execute permissions
-    cd $SOCAT_AT_DIR
-    chmod +x socat-armel-static
-    chmod +x killsmd7bridge
-    chmod +x atcmd
-	
-    # Link new command for AT Commands from the shell
-    ln -sf $SOCAT_AT_DIR/atcmd /bin
-	
-    # Install service units
-    echo -e "\033[0;32mAdding AT Socat Bridge systemd service units...\033[0m"
-    cp -rf $SOCAT_AT_SYSD_DIR/*.service /lib/systemd/system
-    ln -sf /lib/systemd/system/socat-killsmd7bridge.service /lib/systemd/system/multi-user.target.wants/
-    ln -sf /lib/systemd/system/socat-smd11.service /lib/systemd/system/multi-user.target.wants/
-    ln -sf /lib/systemd/system/socat-smd11-to-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-    ln -sf /lib/systemd/system/socat-smd11-from-ttyIN.service /lib/systemd/system/multi-user.target.wants/
-    ln -sf /lib/systemd/system/socat-smd7.service /lib/systemd/system/multi-user.target.wants/
-    ln -sf /lib/systemd/system/socat-smd7-to-ttyIN2.service /lib/systemd/system/multi-user.target.wants/
-    ln -sf /lib/systemd/system/socat-smd7-from-ttyIN2.service /lib/systemd/system/multi-user.target.wants/
+    # Unmount /opt if mounted
+    mountpoint -q /opt && umount /opt
+
+    # Remove Entware installation directory
+    rm -rf /usrdata/opt
+    rm -rf /opt
+
+    # Reload systemctl daemon
     systemctl daemon-reload
-    systemctl start socat-smd11
-    sleep 2s
-    systemctl start socat-smd11-to-ttyIN
-    systemctl start socat-smd11-from-ttyIN
-    echo -e "\033[0;32mAT Socat Bridge service online: smd11 to ttyOUT\033[0m"
-    systemctl start socat-killsmd7bridge
-    sleep 1s
-    systemctl start socat-smd7
-    sleep 2s
-    systemctl start socat-smd7-to-ttyIN2
-    systemctl start socat-smd7-from-ttyIN2
-    echo -e "\033[0;32mAT Socat Bridge service online: smd7 to ttyOUT2\033[0m"
-    remount_ro
-    cd /
-    echo -e "\033[0;32mAT Socat Bridge services Installed!\033[0m"
+
+    # Optionally, clean up any modifications to /etc/profile or other system files
+    # Restore original link to login binary compiled by Quectel
+    rm /bin/login
+    ln /bin/login.shadow /bin/login
+
+    echo -e '\033[32mInfo: Entware/OPKG has been uninstalled successfully.\033[0m'
 }
 
-# Function to install Simple Firewall
-install_simple_firewall() {
-    systemctl stop simplefirewall
-    systemctl stop ttl-override
-    echo -e "\033[0;32mInstalling/Updating Simple Firewall...\033[0m"
-    mount -o remount,rw /
-    mkdir -p "$SIMPLE_FIREWALL_DIR"
-    mkdir -p "$SIMPLE_FIREWALL_SYSTEMD_DIR"
-    wget -O "$SIMPLE_FIREWALL_DIR/simplefirewall.sh" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/simplefirewall.sh
-    wget -O "$SIMPLE_FIREWALL_DIR/ttl-override" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttl-override
-    wget -O "$SIMPLE_FIREWALL_DIR/ttlvalue" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttlvalue
-    chmod +x "$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
-    chmod +x "$SIMPLE_FIREWALL_DIR/ttl-override"	
-    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/simplefirewall.service
-    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/ttl-override.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/ttl-override.service
-    cp -rf $SIMPLE_FIREWALL_SYSTEMD_DIR/* /lib/systemd/system
-    ln -sf "/lib/systemd/system/simplefirewall.service" "/lib/systemd/system/multi-user.target.wants/"
-    ln -sf "/lib/systemd/system/ttl-override.service" "/lib/systemd/system/multi-user.target.wants/"
-    systemctl daemon-reload
-    systemctl start simplefirewall
-    systemctl start ttl-override
-    remount_ro
-    echo -e "\033[0;32mSimple Firewall installation/update complete.\033[0m"
-}
-
+# function to configure the fetures of simplefirewall
 configure_simple_firewall() {
     if [ ! -f "$SIMPLE_FIREWALL_SCRIPT" ]; then
         echo -e "\033[0;31mSimplefirewall is not installed, would you like to install it?\033[0m"
@@ -306,101 +289,65 @@ configure_simple_firewall() {
     echo -e "\e[1;32mFirewall configuration updated.\e[0m"
 }
 
+set_simpleadmin_passwd(){
+	ensure_entware_installed
+ 	opkg update
+  	opkg install libaprutil
+	wget -O /usrdata/root/bin/htpasswd https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/htpasswd && chmod +x /usrdata/root/bin/htpasswd
+	wget -O /usrdata/root/bin/simplepasswd https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/simplepasswd && chmod +x /usrdata/root/bin/simplepasswd
+	echo -e "\e[1;32mTo change your simpleadmin (admin) password in the future...\e[0m"
+	echo -e "\e[1;32mIn the console type simplepasswd and press enter\e[0m"
+	/usrdata/root/bin/simplepasswd
+	
+}
+
+set_root_passwd() {
+	echo -e "\e[1;31mPlease set the root/console password.\e[0m"
+	/opt/bin/passwd
+}
+
 # Function to install/update Simple Admin
 install_simple_admin() {
     while true; do
-	echo -e "\e[1;32mWhat version of Simple Admin do you want to install? This will start a webserver on port 8080\e[0m"
-        echo -e "\e[1;32m1) Full Install\e[0m"
-	echo -e "\e[1;34m2) No AT Commands, List only\e[0m"
-	echo -e "\e[1;33m3) TTL Only\e[0m"
-	echo -e "\e[1;31m4) Install Test Build (work in progress/not ready yet)\e[0m"
-	echo -e "\e[0;33m5) Return to Main Menu\e[0m"
+	echo -e "\e[1;32mWhat version of Simple Admin do you want to install? This will start a webserver on port 80/443 on test build\e[0m"
+    echo -e "\e[1;32m1) Stable current version, (Main Branch)\e[0m"
+	echo -e "\e[1;31m2) Install Test Build (Development Branch)\e[0m"
+	echo -e "\e[0;33m3) Return to Main Menu\e[0m"
  	echo -e "\e[1;32mSelect your choice: \e[0m"
         read choice
 
         case $choice in
-            1)
-		install_update_at_socat
-		install_simple_firewall
-                remount_rw
-                cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_FULL_URL -O simpleadminfull.zip
-                unzip -o simpleadminfull.zip
-                cp -Rf quectel-rgmii-toolkit-simpleadminfull/simpleadmin/ $USRDATA_DIR
-                chmod +x $SIMPLE_ADMIN_DIR/scripts/*
-                chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
-                systemctl daemon-reload
-                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
-                ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
-                systemctl start simpleadmin_generate_status
-                systemctl start simpleadmin_httpd
-                remount_ro
-                echo "Cleaning up..."
-		rm /tmp/simpleadminfull.zip
-		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminfull/
-                break
-                ;;
-            2)
-		install_update_at_socat
-		install_simple_firewall
-                remount_rw
-                cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_NOCMD_URL -O simpleadminnoatcmds.zip
-                unzip -o simpleadminnoatcmds.zip
-                cp -Rf quectel-rgmii-toolkit-simpleadminnoatcmds/simpleadmin/ $USRDATA_DIR
-                chmod +x $SIMPLE_ADMIN_DIR/scripts/*
-                chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
-                systemctl daemon-reload
-                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
-                ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
-                systemctl start simpleadmin_generate_status
-                systemctl start simpleadmin_httpd
-                remount_ro
-		echo "Cleaning up..."
-		rm /tmp/simpleadminnoatcmds.zip
-		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminnoatcmds/
-                break
-                ;;
-            3)
-		install_simple_firewall
-                remount_rw
-                cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_TTL_URL -O simpleadminttlonly.zip
-                unzip -o simpleadminttlonly.zip
-                cp -Rf quectel-rgmii-toolkit-simpleadminttlonly/simpleadmin/ $USRDATA_DIR
-		chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
-                systemctl daemon-reload
-                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
-                systemctl start simpleadmin_httpd
-                remount_ro
-		echo "Cleaning up..."
-		rm /tmp/simpleadminttlonly.zip
-		rm -rf /tmp/quectel-rgmii-toolkit-simpleadminttlonly/
-                break
-                ;;
-            4)
-		install_update_at_socat
-		install_simple_firewall
-                remount_rw
-                cd $TMP_DIR
-                wget $GITHUB_SIMPADMIN_TEST_URL -O simpleadmintest.zip
-                unzip -o simpleadmintest.zip
-                cp -Rf quectel-rgmii-toolkit-simpleadmintest/simpleadmin/ $USRDATA_DIR
-                chmod +x $SIMPLE_ADMIN_DIR/scripts/*
-                chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
-                cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
-                systemctl daemon-reload
-                ln -sf /lib/systemd/system/simpleadmin_httpd.service /lib/systemd/system/multi-user.target.wants/
-                ln -sf /lib/systemd/system/simpleadmin_generate_status.service /lib/systemd/system/multi-user.target.wants/
-                systemctl start simpleadmin_generate_status
-                systemctl start simpleadmin_httpd
-                remount_ro
-                break
-                ;;
-	    5)
+        1)
+            echo -e "\e[1;32mYou are using the development toolkit; Use the one from main if you want the stable version right now\e[0m"
+            break
+			;;
+        2)
+			ensure_entware_installed
+			echo -e "\e[1;31m2) Installing simpleadmin from the development test branch\e[0m"
+			mkdir /usrdata/simpleupdates > /dev/null 2>&1
+		    mkdir /usrdata/simpleupdates/scripts > /dev/null 2>&1
+		    wget -O /usrdata/simpleupdates/scripts/update_socat-at-bridge.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_socat-at-bridge.sh && chmod +x /usrdata/simpleupdates/scripts/update_socat-at-bridge.sh
+		    echo -e "\e[1;32mInstalling/updating dependency: socat-at-bridge\e[0m"
+			echo -e "\e[1;32mPlease Wait....\e[0m"
+			/usrdata/simpleupdates/scripts/update_socat-at-bridge.sh
+			echo -e "\e[1;32m Dependency: socat-at-bridge has been updated/installed.\e[0m"
+			sleep 1
+		    wget -O /usrdata/simpleupdates/scripts/update_simplefirewall.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_simplefirewall.sh && chmod +x /usrdata/simpleupdates/scripts/update_simplefirewall.sh
+		    echo -e "\e[1;32mInstalling/updating dependency: simplefirewall\e[0m"
+			echo -e "\e[1;32mPlease Wait....\e[0m"
+			/usrdata/simpleupdates/scripts/update_simplefirewall.sh
+			echo -e "\e[1;32m Dependency: simplefirewall has been updated/installed.\e[0m"
+			sleep 1
+			set_simpleadmin_passwd
+		    wget -O /usrdata/simpleupdates/scripts/update_simpleadmin.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_simpleadmin.sh && chmod +x /usrdata/simpleupdates/scripts/update_simpleadmin.sh
+			echo -e "\e[1;32mInstalling/updating: Simpleadmin content\e[0m"
+			echo -e "\e[1;32mPlease Wait....\e[0m"
+			/usrdata/simpleupdates/scripts/update_simpleadmin.sh
+            echo -e "\e[1;32mSimpleadmin content has been updated/installed.\e[0m"
+			sleep 1
+            break
+            ;;
+	    3)
                 echo "Returning to main menu..."
                 break
                 ;;
@@ -415,7 +362,6 @@ install_simple_admin() {
 uninstall_simpleadmin_components() {
     echo -e "\e[1;32mStarting the uninstallation process for Simpleadmin components.\e[0m"
     echo -e "\e[1;32mNote: Uninstalling certain components may affect the functionality of others.\e[0m"
-    echo -e "\e[1;36mIf you are upgrading from an older version of the toolkit uninstall/say yes to all everything.\e[0m"
     remount_rw
 
     # Uninstall Simple Firewall
@@ -443,49 +389,67 @@ uninstall_simpleadmin_components() {
     read -p "Enter your choice (1 or 2): " choice_socat_at_bridge
     if [ "$choice_socat_at_bridge" -eq 1 ]; then
         echo -e "\033[0;32mRemoving installed AT Socat Bridge services...\033[0m"
-	systemctl stop at-telnet-daemon > /dev/null 2>&1
-	systemctl disable at-telnet-daemon > /dev/null 2>&1
-	systemctl stop socat-smd11 > /dev/null 2>&1
-	systemctl stop socat-smd11-to-ttyIN > /dev/null 2>&1
-	systemctl stop socat-smd11-from-ttyIN > /dev/null 2>&1
-	systemctl stop socat-smd7 > /dev/null 2>&1
-	systemctl stop socat-smd7-to-ttyIN2 > /dev/null 2>&1
-	systemctl stop socat-smd7-to-ttyIN > /dev/null 2>&1
-	systemctl stop socat-smd7-from-ttyIN2 > /dev/null 2>&1
-	systemctl stop socat-smd7-from-ttyIN > /dev/null 2>&1
-	rm /lib/systemd/system/at-telnet-daemon.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd11.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd11-to-ttyIN.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd11-from-ttyIN.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd7.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd7-to-ttyIN2.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd7-to-ttyIN.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd7-from-ttyIN.service > /dev/null 2>&1
-	rm /lib/systemd/system/socat-smd7-from-ttyIN2.service > /dev/null 2>&1
-	systemctl daemon-reload > /dev/null 2>&1
-	rm -rf "$SOCAT_AT_DIR" > /dev/null 2>&1
-        rm -rf "$SOCAT_AT_DIR" > /dev/null 2>&1
-	rm -rf "/usrdata/micropython" > /dev/null 2>&1
- 	rm -rf "/usrdata/at-telnet" > /dev/null 2>&1
-        echo -e "\033[0;32mAT Socat Bridge services removed!...\033[0m"
+		systemctl stop at-telnet-daemon > /dev/null 2>&1
+		systemctl disable at-telnet-daemon > /dev/null 2>&1
+		systemctl stop socat-smd11 > /dev/null 2>&1
+		systemctl stop socat-smd11-to-ttyIN > /dev/null 2>&1
+		systemctl stop socat-smd11-from-ttyIN > /dev/null 2>&1
+		systemctl stop socat-smd7 > /dev/null 2>&1
+		systemctl stop socat-smd7-to-ttyIN2 > /dev/null 2>&1
+		systemctl stop socat-smd7-to-ttyIN > /dev/null 2>&1
+		systemctl stop socat-smd7-from-ttyIN2 > /dev/null 2>&1
+		systemctl stop socat-smd7-from-ttyIN > /dev/null 2>&1
+		rm /lib/systemd/system/at-telnet-daemon.service > /dev/null 2>&1
+		rm /lib/systemd/system/socat-smd11.service > /dev/null 2>&1
+		rm /lib/systemd/system/socat-smd11-to-ttyIN.service > /dev/null 2>&1
+		rm /lib/systemd/system/socat-smd11-from-ttyIN.service > /dev/null 2>&1
+		rm /lib/systemd/system/socat-smd7.service > /dev/null 2>&1
+		rm /lib/systemd/system/socat-smd7-to-ttyIN2.service > /dev/null 2>&1
+		rm /lib/systemd/system/socat-smd7-to-ttyIN.service > /dev/null 2>&1
+		rm /lib/systemd/system/socat-smd7-from-ttyIN.service > /dev/null 2>&1
+		rm /lib/systemd/system/socat-smd7-from-ttyIN2.service > /dev/null 2>&1
+		systemctl daemon-reload > /dev/null 2>&1
+		rm -rf "$SOCAT_AT_DIR" > /dev/null 2>&1
+		rm -rf "$SOCAT_AT_DIR" > /dev/null 2>&1
+		rm -rf "/usrdata/micropython" > /dev/null 2>&1
+		rm -rf "/usrdata/at-telnet" > /dev/null 2>&1
+		echo -e "\033[0;32mAT Socat Bridge services removed!...\033[0m"
     fi
 
-    # Uninstall the rest of Simpleadmin
-    echo -e "\e[1;32mDo you want to uninstall the rest of Simpleadmin?\e[0m"
+	# Uninstall ttyd
+    echo -e "\e[1;32mDo you want to uninstall ttyd (simpleadmin console)?\e[0m"
+	echo -e "\e[1;31mWarning: Do not uninstall if you are currently using ttyd to do this!!!\e[0m"
     echo -e "\e[1;32m1) Yes\e[0m"
     echo -e "\e[1;31m2) No\e[0m"
     read -p "Enter your choice (1 or 2): " choice_simpleadmin
     if [ "$choice_simpleadmin" -eq 1 ]; then
-        echo "Uninstalling the rest of Simpleadmin..."
-        systemctl stop simpleadmin_httpd
-        systemctl stop simpleadmin_generate_status
-        rm -f /lib/systemd/system/simpleadmin_httpd.service
-        rm -f /lib/systemd/system/simpleadmin_generate_status.service
-        systemctl daemon-reload
-        rm -rf "$SIMPLE_ADMIN_DIR"
-        echo "The rest of Simpleadmin uninstalled."
+		echo -e "\e[1;34mUninstalling ttyd...\e[0m"
+        systemctl stop ttyd
+        rm -rf /usrdata/ttyd
+        rm /lib/systemd/system/ttyd.service
+        rm /lib/systemd/system/multi-user.target.wants/ttyd.service
+        rm /bin/ttyd
+        echo -e "\e[1;32mttyd has been uninstalled.\e[0m"
+	fi
+
+	echo "Uninstalling the rest of Simpleadmin..."
+		
+	# Check if Lighttpd service is installed and remove it if present
+	if [ -f "/lib/systemd/system/lighttpd.service" ]; then
+		echo "Lighttpd detected, uninstalling Lighttpd and its modules..."
+		systemctl stop lighttpd
+		opkg --force-remove --force-removal-of-dependent-packages remove lighttpd-mod-authn_file lighttpd-mod-auth lighttpd-mod-cgi lighttpd-mod-openssl lighttpd-mod-proxy lighttpd
+		rm -rf $LIGHTTPD_DIR
+	fi
+
+	systemctl stop simpleadmin_generate_status
+	systemctl stop simpleadmin_httpd
+	rm -f /lib/systemd/system/simpleadmin_httpd.service
+	rm -f /lib/systemd/system/simpleadmin_generate_status.service
+	systemctl daemon-reload
+	rm -rf "$SIMPLE_ADMIN_DIR"
+	echo "The rest of Simpleadmin and Lighttpd (if present) uninstalled."
 	remount_ro
-    fi
 
     echo "Uninstallation process completed."
 }
@@ -494,13 +458,13 @@ uninstall_simpleadmin_components() {
 tailscale_menu() {
     while true; do
         echo -e "\e[1;32mTailscale Menu\e[0m"
-	echo -e "\e[1;32m1) Install/Update/Remove Tailscale\e[0m"
+	echo -e "\e[1;32m1) Install/Update Tailscale\e[0m"
 	echo -e "\e[1;36m2) Configure Tailscale\e[0m"
 	echo -e "\e[1;31m3) Return to Main Menu\e[0m"
         read -p "Enter your choice: " tailscale_choice
 
         case $tailscale_choice in
-            1) install_update_remove_tailscale;;
+            1) install_update_tailscale;;
             2) configure_tailscale;;
             3) break;;
             *) echo "Invalid option";;
@@ -509,62 +473,16 @@ tailscale_menu() {
 }
 
 # Function to install, update, or remove Tailscale
-install_update_remove_tailscale() {
-    if [ -d "$TAILSCALE_DIR" ]; then
-        echo "Tailscale is already installed."
-        echo "1) Update Tailscale"
-        echo "2) Remove Tailscale"
-        read -p "Enter your choice: " tailscale_update_remove_choice
-
-        case $tailscale_update_remove_choice in
-            1) 
-		echo "Updating Tailscale..."
-		/usrdata/tailscale/tailscale update			
-                ;;
-            2) 
-                echo "Removing Tailscale..."
-		remount_rw
-                $TAILSCALE_DIR/tailscale down
-                $TAILSCALE_DIR/tailscale logout
-                systemctl stop tailscaled
-                rm -f /lib/systemd/system/tailscaled.service
-                systemctl daemon-reload
-                rm -rf $TAILSCALE_DIR
-                remount_ro
-                echo "Tailscale removed successfully."
-                ;;
-            *) 
-                echo "Invalid option";;
-        esac
-    else
-        echo "Installing Tailscale..."
-        remount_rw
-	echo "Creating /usrdata/tailscale/"
-	mkdir $TAILSCALE_DIR
-	mkdir $TAILSCALE_SYSD_DIR
-        cd $TAILSCALE_DIR
-	echo "Downloading binary: /usrdata/tailscale/tailscaled"
-        wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/tailscaled
-	echo "Downloading binary: /usrdata/tailscale/tailscale"
-	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/tailscale
-    	echo "Downloading systemd files..."
-     	cd $TAILSCALE_SYSD_DIR
-      	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
-       	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.defaults
-	sleep 2s
-	echo "Setting Permissions..."
-        chmod +x /usrdata/tailscale/tailscaled
-        chmod +x /usrdata/tailscale/tailscale
-	echo "Copy systemd units..."
-        cp -rf /usrdata/tailscale/systemd/* /lib/systemd/system
-	ln -sf /lib/systemd/system/tailscaled.service /lib/systemd/system/multi-user.target.wants/
-        systemctl daemon-reload
-	echo "Starting Tailscaled..."
-        systemctl start tailscaled
-	cd /
-        remount_ro
-        echo "Tailscale installed successfully."
-    fi
+install_update_tailscale() {
+echo -e "\e[1;31m2) Installing tailscale from the $GITTREE branch\e[0m"
+			mkdir /usrdata/simpleupdates > /dev/null 2>&1
+		    mkdir /usrdata/simpleupdates/scripts > /dev/null 2>&1
+		    wget -O /usrdata/simpleupdates/scripts/update_tailscale.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_tailscale.sh && chmod +x /usrdata/simpleupdates/scripts/update_tailscale.sh
+		    echo -e "\e[1;32mInstalling/updating: Tailscale\e[0m"
+			echo -e "\e[1;32mPlease Wait....\e[0m"
+			remount_rw
+   			/usrdata/simpleupdates/scripts/update_tailscale.sh
+			echo -e "\e[1;32m Tailscale has been updated/installed.\e[0m"
 }
 
 # Function to Configure Tailscale
@@ -795,57 +713,43 @@ WantedBy=multi-user.target" > "$cfun_service_path"
     fi
 }
 
-# Function for TTYd install
-install_ttyd() {
-    echo -e "\e[1;34mStarting ttyd installation process...\e[0m"
 
-    if [ ! -f "/opt/bin/opkg" ]; then
-        echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
-        cd /tmp && wget -O installentware.sh "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh" && chmod +x installentware.sh && ./installentware.sh
-        if [ "$?" -ne 0 ]; then
-            echo -e "\e[1;31mEntware/OPKG installation failed. Please check your internet connection or the repository URL.\e[0m"
-            exit 1
-        fi
-        cd /
-    else
-        echo -e "\e[1;32mEntware/OPKG is already installed.\e[0m"
+install_sshd() {
+    if [ -d "/usrdata/sshd" ]; then
+        echo -e "\e[1;31mSSHD is currently installed.\e[0m"
+        echo -e "Do you want to update or uninstall?"
+        echo -e "1.) Update"
+        echo -e "2.) Uninstall"
+        read -p "Select an option (1 or 2): " sshd_choice
+
+        case $sshd_choice in
+            1)
+				echo -e "\e[1;31m2) Installing sshd from the $GITTREE branch\e[0m"
+                ;;
+            2)
+                echo -e "\e[1;31mUninstalling SSHD...\e[0m"
+                systemctl stop sshd
+                rm /lib/systemd/system/sshd.service
+                opkg remove openssh-server-pam
+                echo -e "\e[1;32mSSHD has been uninstalled successfully.\e[0m"
+                return 0
+                ;;
+            *)
+                echo -e "\e[1;31mInvalid option. Please select 1 or 2.\e[0m"
+                return 1
+                ;;
+        esac
     fi
 
-    mount -o remount,rw /
-    opkg update && opkg install shadow-login shadow-passwd
-    if [ "$?" -ne 0 ]; then
-        echo -e "\e[1;31mPackage installation failed. Please check your internet connection and try again.\e[0m"
-        exit 1
-    fi
-
-    # Replacing the login and passwd binaries
-    rm /opt/etc/shadow
-    cp /etc/shadow /opt/etc/
-    rm /bin/login /usr/bin/passwd
-    ln -sf /opt/bin/login /bin
-    ln -sf /opt/bin/passwd /usr/bin/
-    echo -e "\e[1;31mPlease set your system login password.\e[0m"
-    /usr/bin/passwd
-
-    # Setting up ttyd
-    mkdir -p /usrdata/ttyd/scripts /usrdata/ttyd/systemd
-    cd /usrdata/ttyd/
-    wget -O ttyd "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/ttyd" && chmod +x ttyd
-    wget -O scripts/ttyd.bash "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/scripts/ttyd.bash" && chmod +x scripts/ttyd.bash
-    wget -O systemd/ttyd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/ttyd/systemd/ttyd.service"
-    cp systemd/ttyd.service /lib/systemd/system/
-    ln -sf /lib/systemd/system/ttyd.service /etc/systemd/system/multi-user.target.wants/
-    
-    # Enabling and starting ttyd service
-    systemctl daemon-reload
-    systemctl enable ttyd
-    systemctl start ttyd
-    if [ "$?" -ne 0 ]; then
-        echo -e "\e[1;31mFailed to start ttyd service. Please check the systemd service file and ttyd binary.\e[0m"
-        exit 1
-    fi
-
-    echo -e "\e[1;32mInstall Complete! ttyd server is up on port 443. Note: No TLS/SSL enabled yet.\e[0m"
+    # Proceed with installation or updating if not uninstalling
+	ensure_entware_installed
+    mkdir /usrdata/simpleupdates > /dev/null 2>&1
+	mkdir /usrdata/simpleupdates/scripts > /dev/null 2>&1
+	wget -O /usrdata/simpleupdates/scripts/update_sshd.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_sshd.sh && chmod +x /usrdata/simpleupdates/scripts/update_sshd.sh
+	echo -e "\e[1;32mInstalling/updating: SSHd\e[0m"
+	echo -e "\e[1;32mPlease Wait....\e[0m"
+	/usrdata/simpleupdates/scripts/update_sshd.sh
+	echo -e "\e[1;32m SSHd has been updated/installed.\e[0m"
 }
 
 
@@ -918,14 +822,19 @@ echo "                                           :+##+.            "
     echo "Select an option:"
     echo -e "\e[0m"
     echo -e "\e[96m1) Send AT Commands\e[0m" # Cyan
-    echo -e "\e[93m2) Install/Update/Uninstall Simple Admin\e[0m" # Yellow
-    echo -e "\e[95m3) Simple Firewall Management\e[0m" # Light Purple
-    echo -e "\e[94m4) Tailscale Management\e[0m" # Light Blue
-    echo -e "\e[92m5) Install/Change or remove Daily Reboot Timer\e[0m" # Light Green
-    echo -e "\e[91m6) Install/Uninstall CFUN 0 Fix\e[0m" # Light Red
-    echo -e "\e[96m7) Install Entware/OPKG (BETA/Advanced)\e[0m" # Cyan (repeated color for additional options)
-    echo -e "\e[96m8) Install TTYd (BETA,443,No TLS/SSL)\e[0m" # Cyan
-    echo -e "\e[93m9) Exit\e[0m" # Yellow (repeated color for exit option)
+    echo -e "\e[93m2) Install Simple Admin\e[0m" # Yellow
+	echo -e "\e[95m3) Set Simpleadmin (admin) password\e[0m" # Light Purple
+	echo -e "\e[94m4) Set Console/ttyd (root) password\e[0m" # Light Blue
+    echo -e "\e[91m5) Uninstall Simple Admin\e[0m" # Light Red	
+    echo -e "\e[95m6) Simple Firewall Management\e[0m" # Light Purple
+    echo -e "\e[94m7) Tailscale Management\e[0m" # Light Blue
+    echo -e "\e[92m8) Install/Change or remove Daily Reboot Timer\e[0m" # Light Green
+    echo -e "\e[96m9) Install/Uninstall CFUN 0 Fix\e[0m" # Cyan (repeated color for additional options)
+    echo -e "\e[91m10) Uninstall Entware/OPKG\e[0m" # Light Red
+    echo -e "\e[92m11) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
+    echo -e "\e[92m12) Install Fast.com CLI app (fast command)(tops out at 40Mbps)\e[0m" # Light Green
+    echo -e "\e[92m13) Install OpenSSH Server\e[0m" # Light Green
+    echo -e "\e[93m14) Exit\e[0m" # Yellow (repeated color for exit option)
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -933,48 +842,97 @@ echo "                                           :+##+.            "
             send_at_commands
             ;;
         2)
-            if is_simple_admin_installed; then
-                echo -e "\e[1;31mSimple Admin is already installed. It must be removed first\e[0m"
-                echo -e "\e[1;32m1) Remove\e[0m"  # Green
-		echo -e "\e[0;33m2) Return to main menu\e[0m"
-                read -p "Enter your choice: " simple_admin_choice
-                case $simple_admin_choice in
-                    1) uninstall_simpleadmin_components;;
-                    2) break;;
-                    *) echo -e "\e[1;31mInvalid option\e[0m";;
-                esac
-            else
-                echo -e "\e[1;32mInstalling Simple Admin...\e[0m"
-                install_simple_admin
-            fi
+            install_simple_admin
             ;;
-	3)
-	    configure_simple_firewall
+		3)	set_simpleadmin_passwd
+			;;
+		4)
+			set_root_passwd
+			;;
+		5)
+			uninstall_simpleadmin_components
+			;;
+		6)
+			configure_simple_firewall
             ;;
         
-        4)  
-	    tailscale_menu
-	    ;;
-	5)
-            manage_reboot_timer
+        7)  
+			tailscale_menu
+	        ;;
+		8)
+			manage_reboot_timer
             ;;
-	6)
-            manage_cfun_fix
+		9)
+			manage_cfun_fix
             ;;	    
-        7) 
-	    echo -e "\e[1;32mInstalling Entware/OPKG\e[0m"
-	    cd /tmp && wget -O installentware.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/installentware.sh && chmod +x installentware.sh && ./installentware.sh
+		10)
+			echo -e "\033[31mAre you sure you want to uninstall entware?\033[0m"
+			echo -e "\033[31m1) Yes\033[0m"
+			echo -e "\033[31m2) No\033[0m"
+			read -p "Select an option (1 or 2): " user_choice
+
+			case $user_choice in
+				1)
+					# If yes, uninstall existing entware
+					echo -e "\033[31mUninstalling existing entware...\033[0m"
+					uninstall_entware  # Assuming uninstall_entware is a defined function or command
+					echo -e "\033[31mEntware has been uninstalled.\033[0m"
+					;;
+				2)
+					# If no, exit the script
+					echo -e "\033[31mUninstallation cancelled.\033[0m"
+					exit  # Use 'exit' to terminate the script outside a loop
+					;;
+				*)
+					# Handle invalid input
+					echo -e "\033[31mInvalid option. Please select 1 or 2.\033[0m"
+					;;
+			esac
+			;;
+
+		11) 
+			ensure_entware_installed
+			echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
+     	    remount_rw
+			mkdir /usrdata/root
+     	    mkdir /usrdata/root/bin
+			cd /usrdata/root/bin
+     	    wget https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-armhf.tgz
+			tar -xzf ookla-speedtest-1.2.0-linux-armhf.tgz
+     	    rm ookla-speedtest-1.2.0-linux-armhf.tgz
+			rm speedtest.md
      	    cd /
+			ln -sf /usrdata/root/bin/speedtest /bin
+     	    remount_ro
+			echo -e "\e[1;32mSpeedtest CLI (speedtest command) installed!!\e[0m"
+     	    echo -e "\e[1;32mTry running the command 'speedtest'\e[0m"
+			echo -e "\e[1;32mNote that it will not work unless you login to the root account first\e[0m"
+			echo -e "\e[1;32mNormaly only an issue in adb, ttyd and ssh you are forced to login\e[0m"
+			echo -e "\e[1;32mIf in adb just type login and then try to run the speedtest command\e[0m"
             ;;
-	8)  
- 	    install_ttyd
-      	    ;;
-	9) 
-	    echo -e "\e[1;32mGoodbye!\e[0m"
+		12) 
+			echo -e "\e[1;32mInstalling fast.com CLI (fast command)\e[0m"
+     	    remount_rw
+			mkdir /usrdata/root
+     	    mkdir /usrdata/root/bin
+			cd /usrdata/root/bin
+     	    wget -O fast https://github.com/ddo/fast/releases/download/v0.0.4/fast_linux_arm && chmod +x fast
+     	    cd /
+			ln -sf /usrdata/root/bin/fast /bin
+     	    remount_ro
+			echo -e "\e[1;32mFast.com CLI (speedtest command) installed!!\e[0m"
+     	    echo -e "\e[1;32mTry running the command 'fast'\e[0m"
+			echo -e "\e[1;32mThe fast.com test tops out at 40Mbps on the modem\e[0m"
+            ;;
+		13) 
+			install_sshd
+			;;
+		14) 
+			echo -e "\e[1;32mGoodbye!\e[0m"
      	    break
             ;;    
-        *)
-            echo -e "\e[1;31mInvalid option\e[0m"
+    *)
+			echo -e "\e[1;31mInvalid option\e[0m"
             ;;
     esac
 done

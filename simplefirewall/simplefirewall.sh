@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the ports you want to block
-PORTS=("80" "8080" "8088" "443") # Default ports, will be modified by the install script
+PORTS=("80" "443") # Default ports, will be modified by the install script
 
 # First, allow specified ports on bridge0, eth0, and tailscale0
 for port in "${PORTS[@]}"; do
