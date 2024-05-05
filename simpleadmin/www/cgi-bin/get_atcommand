@@ -16,8 +16,8 @@ fi
 MYATCMD=$(printf '%b\n' "${atcmd//%/\\x}")
 if [ -n "${MYATCMD}" ]; then
     x=$(urldecode "$atcmd")
-    # Initialize wait time to 200 ms
-    wait_time=200
+    # Initialize wait time to 1 second
+    wait_time=1000
     while true; do
         runcmd=$(echo -en "$x\r\n" | microcom -t $wait_time /dev/ttyOUT2)
         # Check if "OK" or "ERROR" is present in the response
