@@ -793,11 +793,10 @@
             }
 
             // Construct the AT command using the valid pairs
-            let atcmd = `+QNWLOCK="common/4g",${cellNum},${validPairs
+            let atcmd = `AT+QNWLOCK="common/4g",${cellNum},${validPairs
               .map((pair) => `${pair.earfcn},${pair.pci}`)
               .join(",")}`;
-            atcmd = "AT+CFUN=0;" + atcmd + ";+CFUN=1";
-
+            
             // Mock data
             this.showModal = true;
 
@@ -830,8 +829,7 @@
             }
 
             // Construct the AT command using the valid pairs
-            let atcmd = `+QNWLOCK="common/5g",${earfcn},${pci},${scs},${band}`;
-            atcmd = "AT+CFUN=0;" + atcmd + ";+CFUN=1";
+            let atcmd = `AT+QNWLOCK="common/5g",${earfcn},${pci},${scs},${band}`;
 
             // Mock data
             this.showModal = true;
@@ -850,7 +848,7 @@
           },
           cellLockDisableLTE() {
             // Send the atcmd command to reset the locked bands
-            const atcmd = 'AT+CFUN=0;+QNWLOCK="common/4g,0;+CFUN=1"';
+            const atcmd = 'AT+QNWLOCK="common/4g,0"';
             this.showModal = true;
 
             this.sendATcommand(atcmd);
@@ -866,7 +864,7 @@
           },
           cellLockDisableNR() {
             // Send the atcmd command to reset the locked bands
-            const atcmd = 'AT+CFUN=0;+QNWLOCK="common/5g,0;+CFUN=1"';
+            const atcmd = 'AT+QNWLOCK="common/5g,0"';
 
             this.showModal = true;
 

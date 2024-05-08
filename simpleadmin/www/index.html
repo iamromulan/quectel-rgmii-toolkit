@@ -557,7 +557,7 @@
           internetConnection: "Disconnected",
           lastUpdate: new Date().toLocaleString(),
           newRefreshRate: null,
-          refreshRate: 30,
+          refreshRate: 5,
           intervalId: null,
           fetchNetworkInfo() {
             this.atcmd =
@@ -639,7 +639,6 @@
                     ) {
                       networkMode2 = lines[27].split(",")[2].replace(/"/g, "");
                       networkMode2 = networkMode2.split(",")[0].trim();
-                      console.log(networkMode2);
                     }
 
                     if (networkMode2 !== "LTE") {
@@ -660,7 +659,6 @@
                     }
                   }
 
-                  console.log(networkMode2, networkMode3);
                   // Check if networkMode3 is not empty
                   if (networkMode3 !== undefined) {
                     this.network_mode = networkMode2 + ", " + networkMode3;
