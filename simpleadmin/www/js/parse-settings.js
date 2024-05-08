@@ -15,14 +15,16 @@ function parseCurrentSettings(rawdata) {
 
     let bands = [];
 
-    // Append the values if there is separated by comma
+    // Append the values if there is separated by comma with a space.
+    // i.e. LTE BAND 3, LTE BAND 1
     for (let i = 13; i < 17; i++) {
       if (lines[i].split(",").length > 1) {
-        bands.push(lines[i].split(",")[3].replace(/\"/g, ""));
+        bands.push(lines[i].split(",")[3].replace(/\"/g, " "));
       }
     }
 
     this.bands = bands;
+    
 
     if (this.cellLock4GStatus == 1 && this.cellLock5GStatus == 1) {
       this.cellLockStatus = "Locked to 4G and 5G";

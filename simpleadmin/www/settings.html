@@ -4,12 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Simple Admin</title>
-    <link rel="stylesheet" href="/css/styles.css" />
-    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    
+    <!-- Logo -->
+    <link rel="simpleadmin-logo" href="favicon.ico">
 
     <!--  Import BootStrap Javascript -->
-    <script src="/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/alpinejs.min.js" defer></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/alpinejs.min.js" defer></script>
   </head>
   <body>
     <main>
@@ -39,14 +42,16 @@
                   <a class="nav-link" href="/network.html">Simple Network</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link active" href="/settings.html" aria-current="page">Simple Settings</a>
+                  <a
+                    class="nav-link active"
+                    href="/settings.html"
+                    aria-current="page"
+                    >Simple Settings</a
+                  >
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="/sms.html">SMS</a>
                 </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/console">Console</a>
-                </li>                
                 <li class="nav-item">
                   <a class="nav-link" href="/deviceinfo.html"
                     >Device Information</a
@@ -54,11 +59,10 @@
                 </li>
               </ul>
               <span class="navbar-text">
-                <button class="btn btn-link text-reset" id="darkModeToggle">Dark Mode</button>
+                <button class="btn btn-link text-reset" id="darkModeToggle">
+                  Dark Mode
+                </button>
               </span>
-              <span class="navbar-text">
-                <button class="btn btn-link" href="logout.html">Log Out</button>
-              </span>               
             </div>
           </div>
         </nav>
@@ -396,7 +400,7 @@
         </div>
       </div>
     </main>
-    <script src="/js/dark-mode.js"></script>
+    <script src="js/dark-mode.js"></script>
     <script>
       function simpleSettings() {
         return {
