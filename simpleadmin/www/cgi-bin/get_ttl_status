@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check iptables for ttlvalue
-ttlvalue=$(iptables -t mangle -vnL | awk '/TTL/ {print $13; exit}')
+ttlvalue=$(/opt/bin/sudo /usr/sbin/iptables -w 5 -t mangle -vnL | grep TTL | awk '{print $13}' | head -n1)
 ttlenabled=true;
 
 # Set Variables
