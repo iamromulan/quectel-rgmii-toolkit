@@ -133,8 +133,9 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 			sleep 1
 			cd $SIMPLE_ADMIN_DIR/www
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/deviceinfo.html
+   			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/favicon.ico
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/index.html
-    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/network.html
+    		        wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/network.html
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/settings.html
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/sms.html
    			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/logout.html
