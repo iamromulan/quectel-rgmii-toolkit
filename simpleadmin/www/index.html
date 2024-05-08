@@ -15,8 +15,8 @@
     <link rel="stylesheet" href="css/bootstrap.min.css" />
 
     <!--  Import BootStrap Javascript -->
-    <script src="/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/alpinejs.min.js" defer></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/alpinejs.min.js" defer></script>
   </head>
   <body>
     <main>
@@ -514,7 +514,7 @@
         </div>
       </div>
     </main>
-    <script src="/js/dark-mode.js"></script>
+    <script src="js/dark-mode.js"></script>
     <script>
       function getStaticNetworkInfo() {
         return {
@@ -618,9 +618,7 @@
                 if (networkMode1 === '"NR5G-SA"') {
                   this.network_mode = networkMode1;
                   this.network_mode = this.network_mode.replace(/"/g, "");
-                } 
-                
-                else {
+                } else {
                   let networkMode2, networkMode3;
 
                   if (
@@ -630,7 +628,10 @@
                     lines[27] !== "/r"
                   ) {
                     // Check if lines[27] doesnt have TDD or FDD
-                    if (lines[27].match(/FDD/) != null || lines[27].match(/TDD/) != null) {
+                    if (
+                      lines[27].match(/FDD/) != null ||
+                      lines[27].match(/TDD/) != null
+                    ) {
                       networkMode2 = lines[27].split(",")[2].replace(/"/g, "");
                       networkMode2 = networkMode2.split(",")[0].trim();
                       console.log(networkMode2);
@@ -776,86 +777,167 @@
                     this.signalPercentage
                   );
                 } else {
-                  let lte_bw_ul = lines[28].split(",")[8].replace(/"/g, "");
-                  let lte_bw_dl = lines[28].split(",")[9].replace(/"/g, "");
+                  if (this.network_mode.match(/LTE/) != null) {
+                    let lte_bw_ul = lines[27].split(",")[10].replace(/"/g, "");
+                    let lte_bw_dl = lines[27].split(",")[11].replace(/"/g, "");
 
-                  lte_bw_dl = parseInt(lte_bw_dl);
-                  lte_bw_ul = parseInt(lte_bw_ul);
+                    lte_bw_dl = parseInt(lte_bw_dl);
+                    lte_bw_ul = parseInt(lte_bw_ul);
 
-                  // Calculate the LTE bandwidth
-                  this.bandwidth =
-                    this.calculate_lte_bw(lte_bw_ul) +
-                    " MHz / " +
-                    this.calculate_lte_bw(lte_bw_dl) +
-                    " MHz";
+                    // Calculate the LTE bandwidth
+                    this.bandwidth =
+                      this.calculate_lte_bw(lte_bw_ul) +
+                      " MHz / " +
+                      this.calculate_lte_bw(lte_bw_dl) +
+                      " MHz";
 
-                  // Get the RSSI
-                  this.rssi = lines[28].split(",")[13].replace(/"/g, "");
+                    // Get the Cell ID
+                    const longCID = lines[27].split(",")[6].replace(/"/g, "");
 
-                  // Get the Cell ID
-                  const longCID = lines[28].split(",")[4].replace(/"/g, "");
+                    // Get the eNBID. Its just Cell ID minus the last 2 characters
+                    this.eNBID = longCID.substring(0, longCID.length - 2);
 
-                  // Get the eNBID. Its just Cell ID minus the last 2 characters
-                  this.eNBID = longCID.substring(0, longCID.length - 2);
+                    // Get the short Cell ID (Last 2 characters of the Cell ID)
+                    const shortCID = longCID.substring(longCID.length - 2);
 
-                  // Get the short Cell ID (Last 2 characters of the Cell ID)
-                  const shortCID = longCID.substring(longCID.length - 2);
+                    // Get the TAC
+                    this.tac = lines[27].split(",")[12].replace(/"/g, "");
+                    this.tac = this.tac + " (" + parseInt(this.tac, 16) + ")";
 
-                  // Get the TAC
-                  this.tac = lines[28].split(",")[10].replace(/"/g, "");
-                  this.tac = this.tac + " (" + parseInt(this.tac, 16) + ")";
+                    this.cellID =
+                      "Short " +
+                      shortCID +
+                      "(" +
+                      parseInt(shortCID, 16) +
+                      ")" +
+                      ", " +
+                      "Long " +
+                      longCID +
+                      "(" +
+                      parseInt(longCID, 16) +
+                      ")";
 
-                  this.cellID =
-                    "Short " +
-                    shortCID +
-                    "(" +
-                    parseInt(shortCID, 16) +
-                    ")" +
-                    ", " +
-                    "Long " +
-                    longCID +
-                    "(" +
-                    parseInt(longCID, 16) +
-                    ")";
+                    // Parse the PCIs
+                    this.pcc_pci = lines[27].split(",")[7].replace(/"/g, "");
 
-                  // Parse the PCIs
-                  this.pcc_pci = lines[28].split(",")[5].replace(/"/g, "");
+                    // Get the RSRQ
+                    this.rsrqLTE = lines[27].split(",")[14].replace(/"/g, "");
+                    let rsrq = parseInt(this.rsrqLTE);
 
-                  // Get the RSRQ
-                  this.rsrqLTE = lines[28].split(",")[12].replace(/"/g, "");
-                  let rsrq = parseInt(this.rsrqLTE);
+                    // Calculate the RSRQ percentage
+                    this.rsrqLTEPercentage = this.calculateRSRQPercentage(rsrq);
 
-                  // Calculate the RSRQ percentage
-                  this.rsrqLTEPercentage = this.calculateRSRQPercentage(rsrq);
+                    // Get the RSRP
+                    this.rsrpLTE = lines[27].split(",")[13].replace(/"/g, "");
 
-                  // Get the RSRP
-                  this.rsrpLTE = lines[28].split(",")[11].replace(/"/g, "");
+                    // Calculate the RSRP percentage
+                    this.rsrpLTEPercentage = this.calculateRSRPPercentage(
+                      parseInt(this.rsrpLTE)
+                    );
 
-                  // Calculate the RSRP percentage
-                  this.rsrpLTEPercentage = this.calculateRSRPPercentage(
-                    parseInt(this.rsrpLTE)
-                  );
+                    // Get the RSSI
+                    this.rssi = lines[27].split(",")[15].replace(/"/g, "");
 
-                  // Get the SINR
-                  this.sinrLTE = lines[28].split(",")[14].replace(/"/g, "");
+                    // Get the SINR
+                    this.sinrLTE = lines[27].split(",")[16].replace(/"/g, "");
 
-                  // Calculate the SINR percentage
-                  this.sinrLTEPercentage = this.calculateSINRPercentage(
-                    parseInt(this.sinrLTE)
-                  );
+                    // Calculate the SINR percentage
+                    this.sinrLTEPercentage = this.calculateSINRPercentage(
+                      parseInt(this.sinrLTE)
+                    );
 
-                  // Calculate Signal Percentage
-                  this.signalPercentage = this.calculateSignalPercentage(
-                    parseInt(this.rsrpLTEPercentage),
-                    parseInt(this.sinrLTEPercentage)
-                  );
+                    // Calculate Signal Percentage
+                    this.signalPercentage = this.calculateSignalPercentage(
+                      parseInt(this.rsrpLTEPercentage),
+                      parseInt(this.sinrLTEPercentage)
+                    );
 
-                  // Get the Signal Assessment
-                  this.signalAssessment = this.signalQuality(
-                    this.signalPercentage
-                  );
+                    // Get the Signal Assessment
+                    this.signalAssessment = this.signalQuality(
+                      this.signalPercentage
+                    );
+                  }
 
                   if (this.network_mode.match(/NR5G-NSA/) != null) {
+                    let lte_bw_ul = lines[28].split(",")[8].replace(/"/g, "");
+                    let lte_bw_dl = lines[28].split(",")[9].replace(/"/g, "");
+
+                    lte_bw_dl = parseInt(lte_bw_dl);
+                    lte_bw_ul = parseInt(lte_bw_ul);
+
+                    // Calculate the LTE bandwidth
+                    this.bandwidth =
+                      this.calculate_lte_bw(lte_bw_ul) +
+                      " MHz / " +
+                      this.calculate_lte_bw(lte_bw_dl) +
+                      " MHz";
+
+                    // Get the RSSI
+                    this.rssi = lines[28].split(",")[13].replace(/"/g, "");
+
+                    // Get the Cell ID
+                    const longCID = lines[28].split(",")[4].replace(/"/g, "");
+
+                    // Get the eNBID. Its just Cell ID minus the last 2 characters
+                    this.eNBID = longCID.substring(0, longCID.length - 2);
+
+                    // Get the short Cell ID (Last 2 characters of the Cell ID)
+                    const shortCID = longCID.substring(longCID.length - 2);
+
+                    // Get the TAC
+                    this.tac = lines[28].split(",")[10].replace(/"/g, "");
+                    this.tac = this.tac + " (" + parseInt(this.tac, 16) + ")";
+
+                    this.cellID =
+                      "Short " +
+                      shortCID +
+                      "(" +
+                      parseInt(shortCID, 16) +
+                      ")" +
+                      ", " +
+                      "Long " +
+                      longCID +
+                      "(" +
+                      parseInt(longCID, 16) +
+                      ")";
+
+                    // Parse the PCIs
+                    this.pcc_pci = lines[28].split(",")[5].replace(/"/g, "");
+
+                    // Get the RSRQ
+                    this.rsrqLTE = lines[28].split(",")[12].replace(/"/g, "");
+                    rsrq = parseInt(this.rsrqLTE);
+
+                    // Calculate the RSRQ percentage
+                    this.rsrqLTEPercentage = this.calculateRSRQPercentage(rsrq);
+
+                    // Get the RSRP
+                    this.rsrpLTE = lines[28].split(",")[11].replace(/"/g, "");
+
+                    // Calculate the RSRP percentage
+                    this.rsrpLTEPercentage = this.calculateRSRPPercentage(
+                      parseInt(this.rsrpLTE)
+                    );
+
+                    // Get the SINR
+                    this.sinrLTE = lines[28].split(",")[14].replace(/"/g, "");
+
+                    // Calculate the SINR percentage
+                    this.sinrLTEPercentage = this.calculateSINRPercentage(
+                      parseInt(this.sinrLTE)
+                    );
+
+                    // Calculate Signal Percentage
+                    this.signalPercentage = this.calculateSignalPercentage(
+                      parseInt(this.rsrpLTEPercentage),
+                      parseInt(this.sinrLTEPercentage)
+                    );
+
+                    // Get the Signal Assessment
+                    this.signalAssessment = this.signalQuality(
+                      this.signalPercentage
+                    );
+
                     let nr_bw = lines[29].split(",")[9].replace(/"/g, "");
 
                     nr_bw = parseInt(nr_bw);
