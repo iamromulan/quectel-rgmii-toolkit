@@ -120,6 +120,7 @@ remount_rw
 echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 			mkdir $SIMPLE_ADMIN_DIR
 			mkdir $SIMPLE_ADMIN_DIR/systemd
+			mkdir $SIMPLE_ADMIN_DIR/script
     		mkdir $SIMPLE_ADMIN_DIR/console
 			mkdir $SIMPLE_ADMIN_DIR/console/menu
 			mkdir $SIMPLE_ADMIN_DIR/console/services
@@ -130,6 +131,9 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
     		mkdir $SIMPLE_ADMIN_DIR/www/js
             cd $SIMPLE_ADMIN_DIR/systemd
             wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/systemd/lighttpd.service
+			sleep 1
+			cd $SIMPLE_ADMIN_DIR/script
+			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/script/ttl_script.sh
 			sleep 1
 			cd $SIMPLE_ADMIN_DIR/www
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/deviceinfo.html
