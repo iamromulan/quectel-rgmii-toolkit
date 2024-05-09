@@ -458,12 +458,14 @@
 
           getSupportedBands() {
             const atcmd = 'AT+QNWPREFCFG="policy_band"';
-            this.sendATcommand(atcmd).then((rawdata) => {
-              this.rawdata = rawdata;
-              this.parseSupportedBands(rawdata);
-            }).then(() => {
-              this.getLockedBands();
-            });
+            this.sendATcommand(atcmd)
+              .then((rawdata) => {
+                this.rawdata = rawdata;
+                this.parseSupportedBands(rawdata);
+              })
+              .then(() => {
+                this.getLockedBands();
+              });
           },
 
           parseSupportedBands(rawdata) {
@@ -490,10 +492,15 @@
             const atcmd =
               'AT+QNWPREFCFG="lte_band";+QNWPREFCFG= "nsa_nr5g_band";+QNWPREFCFG= "nr5g_band"';
 
-            this.sendATcommand(atcmd).then((rawdata) => {
-              this.rawdata = rawdata;
-              this.parseLockedBands(rawdata);
-            });
+            this.sendATcommand(atcmd)
+              .then((rawdata) => {
+                this.rawdata = rawdata;
+                this.parseLockedBands(rawdata);
+              })
+              .then(() => {
+                // Call current settings
+                this.getCurrentSettings();
+              });
           },
 
           parseLockedBands(rawdata) {
@@ -524,9 +531,6 @@
               this.locked_sa_bands,
               this
             );
-
-            // Call current settings
-            this.getCurrentSettings();
           },
 
           init() {
