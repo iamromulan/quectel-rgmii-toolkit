@@ -570,9 +570,9 @@
           init() {
             // Function to populate checkboxes
             const showPopulateCheckboxes = () => {
+              this.isGettingBands = true;
               Promise.all([getSupportedBands(), getLockedBands()])
                 .then(([supportedBandsData, lockedBandsData]) => {
-                  this.isGettingBands = true;
                   this.lte_bands = supportedBandsData.lte_bands;
                   this.nsa_bands = supportedBandsData.nsa_bands;
                   this.sa_bands = supportedBandsData.sa_bands;
