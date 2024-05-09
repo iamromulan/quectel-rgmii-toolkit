@@ -1,58 +1,43 @@
 #!/bin/bash
 PATH=/bin:/usr/sbin:/usr/bin:/sbin:/opt/sbin:/opt/bin:/usrdata/root/bin
+
 # Get query
 QUERY_STRING=$(echo "${QUERY_STRING}" | sed 's/;//g')
-
 if [ "${QUERY_STRING}" ]; then
-
-	export IFS="&"
-	for cmd in ${QUERY_STRING}; do
-	
-		if [ "$(echo $cmd | grep '=')" ]; then
-			key=$(echo $cmd | awk -F '=' '{print $1}')
-			value=$(echo $cmd | awk -F '=' '{print $2}')
-			eval $key=$value
-		fi
-		
-	done
-
+    export IFS="&"
+    for cmd in ${QUERY_STRING}; do
+        if [ "$(echo $cmd | grep '=')" ]; then
+            key=$(echo $cmd | awk -F '=' '{print $1}')
+            value=$(echo $cmd | awk -F '=' '{print $2}')
+            eval $key=$value
+        fi
+    done
 fi
 
-setTTL=$(printf '%b\n' "${ttlvalue//%/\\x}")
-
-if [ -n "${setTTL}" ]; then
-    # Stop Service To Remove Rules
-    /opt/bin/sudo /usrdata/simplefirewall/ttl-override stop
-
-    # Check iptables is still set
-    ttlcheck=$(/opt/bin/sudo /usr/sbin/iptables -w 5 -t mangle -vnL | grep TTL | awk '{print $13}')
-
-    # If TTL is still set manually remove values
-    if [ ! -z "${ttlcheck}" ]; then
-        /opt/bin/sudo /usr/sbin/iptables -w 5 -t mangle -D POSTROUTING -o rmnet+ -j TTL --ttl-set ${ttlcheck} &>/dev/null || true
-        /opt/bin/sudo /usr/sbin/ip6tables -w 5 -t mangle -D POSTROUTING -o rmnet+ -j HL --hl-set ${ttlcheck} &>/dev/null || true
-    fi
-
-    # Echo TTL to file
-    echo $setTTL > /usrdata/simplefirewall/ttlvalue
-
-    # Set Start Service
-    /opt/bin/sudo /usrdata/simplefirewall/ttl-override start
+# Convert ttlvalue to integer
+if [ "${ttlvalue}" ]; then
+    ttlvalue_int=$(echo "${ttlvalue}" | sed 's/[^0-9]*//g')
 fi
 
+# Call the sh script with the appropriate parameters. If ttlvalue_int is not 0, then enable the script with the value of ttlvalue_int. If ttlvalue is disable, then disable the script.
 
-
-# Check iptables for ttlvalue
-ttlvalue=$(/opt/bin/sudo /usr/sbin/iptables -w 5 -t mangle -vnL | grep TTL | awk '{print $13}')
-ttlenabled=true;
-
-# Set Variables
-if [ -z "${ttlvalue}" ]; then
-    ttlvalue=0
+if [ "${ttlvalue_int}" != 0 ]; then
+    /usrdata/simpleadmin/script/ttl_script.sh enable "${ttlvalue_int}"
+    # Set ttlenabled to true
+    ttlenabled=true
+    # Set ttlvalue to the value of ttlvalue_int
+    ttlvalue=$ttlvalue_int
+elif [ "${ttlvalue_int}" = 0 ]; then
+    /usrdata/simpleadmin/script/ttl_script.sh disable 0
+    # Set ttlenabled to false
     ttlenabled=false
+    # Set ttlvalue to 0
+    ttlvalue=0
 fi
 
-echo "Content-type: text/json" 
+# Output the result in JSON format
+
+echo "Content-type: text/json"
 echo ""
 cat <<EOT
 {
