@@ -13,9 +13,9 @@
     <!-- Import all the bootstrap css files from css folder -->
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/bootstrap.min.css" />
-    
+
     <!-- Logo -->
-    <link rel="simpleadmin-logo" href="favicon.ico">
+    <link rel="simpleadmin-logo" href="favicon.ico" />
 
     <!--  Import BootStrap Javascript -->
     <script src="js/bootstrap.bundle.min.js"></script>
@@ -449,6 +449,12 @@
           bands[bandType] = numbers;
         }
 
+        // log all the bands
+        console.log("Bands", bands);
+        console.log("LTE Band: ", bands.lte_band);
+        console.log("NR5G Band NSA: ", bands.nsa_nr5g_band);
+        console.log("NR5G Band SA: ", bands.nr5g_band);
+
         // Seperate the bands for each network mode
         const lte_bands = bands.lte_band.join(":");
         const nsa_bands = bands.nsa_nr5g_band.join(":");
@@ -497,22 +503,22 @@
         });
       }
 
-      function getCurrentSettings() {
-        const atcmd =
-          'AT+QUIMSLOT?;+CGCONTRDP=1;+QNWLOCK="common/4g";+QNWLOCK="common/5g";+QNWPREFCFG="mode_pref";+QNWPREFCFG="nr5g_disable_mode";+QCAINFO';
+      // function getCurrentSettings() {
+      //   const atcmd =
+      //     'AT+QUIMSLOT?;+CGCONTRDP=1;+QNWLOCK="common/4g";+QNWLOCK="common/5g";+QNWPREFCFG="mode_pref";+QNWPREFCFG="nr5g_disable_mode";+QCAINFO';
 
-        return requestATInfo(atcmd).then((rawdata) => {
-          const settings = parseCurrentSettings(rawdata);
-          return {
-            sim: settings.sim,
-            apn: settings.apn,
-            cellLockStatus: settings.cellLockStatus,
-            prefNetwork: settings.prefNetwork,
-            nrModeControl: settings.nrModeControl,
-            bands: settings.bands,
-          };
-        });
-      }
+      //   return requestATInfo(atcmd).then((rawdata) => {
+      //     const settings = parseCurrentSettings(rawdata);
+      //     return {
+      //       sim: settings.sim,
+      //       apn: settings.apn,
+      //       cellLockStatus: settings.cellLockStatus,
+      //       prefNetwork: settings.prefNetwork,
+      //       nrModeControl: settings.nrModeControl,
+      //       bands: settings.bands,
+      //     };
+      //   });
+      // }
 
       function cellLocking() {
         return {
@@ -560,12 +566,13 @@
           newSim: null,
           cellLockStatus: "Unknown",
           bands: "Fetching Bands...",
+          isGettingBands: false,
           init() {
             // Function to populate checkboxes
             const showPopulateCheckboxes = () => {
-              this.isLoading = true;
               Promise.all([getSupportedBands(), getLockedBands()])
                 .then(([supportedBandsData, lockedBandsData]) => {
+                  this.isGettingBands = true;
                   this.lte_bands = supportedBandsData.lte_bands;
                   this.nsa_bands = supportedBandsData.nsa_bands;
                   this.sa_bands = supportedBandsData.sa_bands;
@@ -584,11 +591,13 @@
                     this
                   );
 
-                  // Set isLoading to false after populating checkboxes
-                  this.isLoading = false;
+                  this.isGettingBands = false;
 
                   // Add event listeners to checkboxes after populating them
                   addCheckboxListeners(this);
+
+                  // Call current settings
+                  this.getCurrentSettings();
                 })
                 .catch((error) => {
                   console.error("Error:", error);
@@ -616,17 +625,17 @@
               this.updatedLockedBands = newCheckedValues;
             };
 
-            // Function to get the current settings
-            const getCurrentSettingsData = () => {
-              getCurrentSettings().then((settings) => {
-                this.sim = settings.sim;
-                this.apn = settings.apn;
-                this.cellLockStatus = settings.cellLockStatus;
-                this.prefNetwork = settings.prefNetwork;
-                this.nrModeControl = settings.nrModeControl;
-                this.bands = settings.bands;
-              });
-            };
+            // // Function to get the current settings
+            // const getCurrentSettingsData = () => {
+            //   getCurrentSettings().then((settings) => {
+            //     this.sim = settings.sim;
+            //     this.apn = settings.apn;
+            //     this.cellLockStatus = settings.cellLockStatus;
+            //     this.prefNetwork = settings.prefNetwork;
+            //     this.nrModeControl = settings.nrModeControl;
+            //     this.bands = settings.bands;
+            //   });
+            // };
 
             // Function to add event listener to network mode dropdown
             const addNetworkModeListener = () => {
@@ -640,7 +649,21 @@
             // Execute necessary functions on initialization
             showPopulateCheckboxes();
             addNetworkModeListener();
-            getCurrentSettingsData();
+          },
+          getCurrentSettings() {
+            const atcmd =
+              'AT+QUIMSLOT?;+CGCONTRDP=1;+QNWLOCK="common/4g";+QNWLOCK="common/5g";+QNWPREFCFG="mode_pref";+QNWPREFCFG="nr5g_disable_mode";+QCAINFO';
+
+              this.sendATcommand(atcmd).then((rawdata) => {
+                const settings = parseCurrentSettings(rawdata);
+                this.sim = settings.sim;
+                this.apn = settings.apn;
+                this.cellLockStatus = settings.cellLockStatus;
+                this.prefNetwork = settings.prefNetwork;
+                this.nrModeControl = settings.nrModeControl;
+                this.bands = settings.bands;
+              });
+
           },
           lockSelectedBands() {
             // Get the updated this.currentNetworkMode = selectedMode; and this.updatedLockedBands = newCheckedValues;
@@ -796,7 +819,7 @@
             let atcmd = `AT+QNWLOCK="common/4g",${cellNum},${validPairs
               .map((pair) => `${pair.earfcn},${pair.pci}`)
               .join(",")}`;
-            
+
             // Mock data
             this.showModal = true;
 
