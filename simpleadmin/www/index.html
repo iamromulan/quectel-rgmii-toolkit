@@ -60,6 +60,9 @@
                   <a class="nav-link" href="/console">Console</a>
                 </li>
                 <li class="nav-item">
+                  <a class="nav-link" href="/console">Console</a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link" href="/deviceinfo.html"
                     >Device Information</a
                   >
@@ -718,7 +721,7 @@
 
                   // Calculate the NR bandwidth
                   this.bandwidth =
-                    this.calculate_nr_bw(nr_bw).toString() + " MHz";
+                    "NR " + this.calculate_nr_bw(nr_bw).toString() + " MHz";
 
                   // Parse the PCIs
                   this.pcc_pci = lines[27].split(",")[7].replace(/"/g, "");
@@ -792,9 +795,9 @@
 
                     // Calculate the LTE bandwidth
                     this.bandwidth =
-                      this.calculate_lte_bw(lte_bw_ul) +
+                      "UL " + this.calculate_lte_bw(lte_bw_ul) +
                       " MHz / " +
-                      this.calculate_lte_bw(lte_bw_dl) +
+                      "DL " + this.calculate_lte_bw(lte_bw_dl) +
                       " MHz";
 
                     // Get the Cell ID
@@ -874,8 +877,8 @@
                     // Calculate the LTE bandwidth
                     this.bandwidth =
                       this.calculate_lte_bw(lte_bw_ul) +
-                      " MHz / " +
-                      this.calculate_lte_bw(lte_bw_dl) +
+                      " MHz, " +
+                      "NR " + this.calculate_lte_bw(lte_bw_dl) +
                       " MHz";
 
                     // Get the RSSI

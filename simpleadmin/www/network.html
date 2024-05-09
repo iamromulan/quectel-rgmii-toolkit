@@ -63,6 +63,9 @@
                   <a class="nav-link" href="/console">Console</a>
                 </li>
                 <li class="nav-item">
+                  <a class="nav-link" href="/console">Console</a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link" href="deviceinfo.html"
                     >Device Information</a
                   >
@@ -97,10 +100,10 @@
                 </div>
               </div>
               <div class="card-body">
-                <h5 class="card-subtitle" x-show="isGettingBands">
+                <h5 class="card-subtitle" x-show="isGettingBands === true">
                   Fetching supported bands...
                 </h5>
-                <form id="checkboxForm" x-show="isLoading === false">
+                <form id="checkboxForm" x-show="isGettingBands === false">
                   <!-- Checkboxes will be populated here -->
                 </form>
               </div>
@@ -407,122 +410,6 @@
     <script src="js/populate-checkbox.js"></script>
     <script src="js/parse-settings.js"></script>
     <script>
-      function requestATInfo(atcmd) {
-        return fetch(
-          "/cgi-bin/get_atcommand?" +
-            new URLSearchParams({
-              atcmd: atcmd,
-            })
-        )
-          .then((response) => response.text())
-          .then((data) => {
-            return data;
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            // Throw the error again to ensure it's propagated
-            throw error;
-          });
-      }
-
-      function getSupportedBands() {
-        const atcmd = 'AT+QNWPREFCFG="policy_band"';
-        return requestATInfo(atcmd).then((rawdata) => {
-          let { lte_bands, nsa_bands, sa_bands } = parseSupportedBands(rawdata);
-
-          return {
-            lte_bands: lte_bands,
-            nsa_bands: nsa_bands,
-            sa_bands: sa_bands,
-          };
-        });
-      }
-
-      function parseSupportedBands(rawdata) {
-        const data = rawdata;
-        const regex = /"([^"]+)",([0-9:]+)/g;
-
-        // Object to store the results
-        const bands = {};
-
-        let match;
-        while ((match = regex.exec(data)) !== null) {
-          const bandType = match[1];
-          const numbers = match[2].split(":").map(Number);
-          bands[bandType] = numbers;
-        }
-
-        // log all the bands
-        console.log("Bands", bands);
-        console.log("LTE Band: ", bands.lte_band);
-        console.log("NR5G Band NSA: ", bands.nsa_nr5g_band);
-        console.log("NR5G Band SA: ", bands.nr5g_band);
-
-        // Seperate the bands for each network mode
-        const lte_bands = bands.lte_band.join(":");
-        const nsa_bands = bands.nsa_nr5g_band.join(":");
-        const sa_bands = bands.nr5g_band.join(":");
-
-        return {
-          lte_bands,
-          nsa_bands,
-          sa_bands,
-        };
-      }
-
-      function parseLockedBands(rawdata) {
-        const data = rawdata;
-        const regex = /"([^"]+)",([0-9:]+)/g;
-
-        // Object to store the results
-        const bands = {};
-
-        let match;
-        while ((match = regex.exec(data)) !== null) {
-          const bandType = match[1];
-          const numbers = match[2].split(":").map(Number);
-          bands[bandType] = numbers;
-        }
-
-        // Seperate the bands for each network mode
-        const locked_lte_bands = bands.lte_band.join(":");
-        const locked_nsa_bands = bands.nsa_nr5g_band.join(":");
-        const locked_sa_bands = bands.nr5g_band.join(":");
-
-        return {
-          locked_lte_bands,
-          locked_nsa_bands,
-          locked_sa_bands,
-        };
-      }
-
-      function getLockedBands() {
-        const atcmd =
-          'AT+QNWPREFCFG="lte_band";+QNWPREFCFG= "nsa_nr5g_band";+QNWPREFCFG= "nr5g_band"';
-
-        return requestATInfo(atcmd).then((rawdata) => {
-          const lockedBandsData = parseLockedBands(rawdata);
-          return lockedBandsData;
-        });
-      }
-
-      // function getCurrentSettings() {
-      //   const atcmd =
-      //     'AT+QUIMSLOT?;+CGCONTRDP=1;+QNWLOCK="common/4g";+QNWLOCK="common/5g";+QNWPREFCFG="mode_pref";+QNWPREFCFG="nr5g_disable_mode";+QCAINFO';
-
-      //   return requestATInfo(atcmd).then((rawdata) => {
-      //     const settings = parseCurrentSettings(rawdata);
-      //     return {
-      //       sim: settings.sim,
-      //       apn: settings.apn,
-      //       cellLockStatus: settings.cellLockStatus,
-      //       prefNetwork: settings.prefNetwork,
-      //       nrModeControl: settings.nrModeControl,
-      //       bands: settings.bands,
-      //     };
-      //   });
-      // }
-
       function cellLocking() {
         return {
           isLoading: false,
@@ -570,42 +457,94 @@
           cellLockStatus: "Unknown",
           bands: "Fetching Bands...",
           isGettingBands: false,
+          rawdata: null,
+
+          getSupportedBands() {
+            const atcmd = 'AT+QNWPREFCFG="policy_band"';
+            this.sendATcommand(atcmd)
+              .then((rawdata) => {
+                this.rawdata = rawdata;
+                this.parseSupportedBands(rawdata);
+              })
+              .then(() => {
+                this.getLockedBands();
+              });
+          },
+
+          parseSupportedBands(rawdata) {
+            const data = rawdata;
+            const regex = /"([^"]+)",([0-9:]+)/g;
+
+            // Object to store the results
+            const bands = {};
+
+            let match;
+            while ((match = regex.exec(data)) !== null) {
+              const bandType = match[1];
+              const numbers = match[2].split(":").map(Number);
+              bands[bandType] = numbers;
+            }
+
+            // Seperate the bands for each network mode
+            this.lte_bands = bands.lte_band.join(":");
+            this.nsa_bands = bands.nsa_nr5g_band.join(":");
+            this.sa_bands = bands.nr5g_band.join(":");
+          },
+
+          getLockedBands() {
+            const atcmd =
+              'AT+QNWPREFCFG="lte_band";+QNWPREFCFG= "nsa_nr5g_band";+QNWPREFCFG= "nr5g_band"';
+
+            this.sendATcommand(atcmd)
+              .then((rawdata) => {
+                this.rawdata = rawdata;
+                this.parseLockedBands(rawdata);
+              })
+              .then(() => {
+                // Call current settings
+                this.getCurrentSettings();
+              });
+          },
+
+          parseLockedBands(rawdata) {
+            const data = rawdata;
+            const regex = /"([^"]+)",([0-9:]+)/g;
+
+            // Object to store the results
+            const bands = {};
+
+            let match;
+            while ((match = regex.exec(data)) !== null) {
+              const bandType = match[1];
+              const numbers = match[2].split(":").map(Number);
+              bands[bandType] = numbers;
+            }
+
+            // Seperate the bands for each network mode
+            this.locked_lte_bands = bands.lte_band.join(":");
+            this.locked_nsa_bands = bands.nsa_nr5g_band.join(":");
+            this.locked_sa_bands = bands.nr5g_band.join(":");
+
+            populateCheckboxes(
+              this.lte_bands,
+              this.nsa_bands,
+              this.sa_bands,
+              this.locked_lte_bands,
+              this.locked_nsa_bands,
+              this.locked_sa_bands,
+              this
+            );
+          },
+
           init() {
             // Function to populate checkboxes
             const showPopulateCheckboxes = () => {
-              Promise.all([getSupportedBands(), getLockedBands()])
-                .then(([supportedBandsData, lockedBandsData]) => {
-                  this.isGettingBands = true;
-                  this.lte_bands = supportedBandsData.lte_bands;
-                  this.nsa_bands = supportedBandsData.nsa_bands;
-                  this.sa_bands = supportedBandsData.sa_bands;
-                  this.locked_lte_bands = lockedBandsData.locked_lte_bands;
-                  this.locked_nsa_bands = lockedBandsData.locked_nsa_bands;
-                  this.locked_sa_bands = lockedBandsData.locked_sa_bands;
+              this.isGettingBands = true;
+              this.getSupportedBands();
+              this.isGettingBands = false;
 
-                  // Once both promises are resolved, call populateCheckboxes
-                  populateCheckboxes(
-                    this.lte_bands,
-                    this.nsa_bands,
-                    this.sa_bands,
-                    this.locked_lte_bands,
-                    this.locked_nsa_bands,
-                    this.locked_sa_bands,
-                    this
-                  );
-
-                  this.isGettingBands = false;
-
-                  // Add event listeners to checkboxes after populating them
-                  addCheckboxListeners(this);
-
-                  // Call current settings
-                  this.getCurrentSettings();
-                })
-                .catch((error) => {
-                  console.error("Error:", error);
-                  // Handle errors if any
-                });
+              // Add event listeners to checkboxes after populating them
+              addCheckboxListeners(this);
             };
 
             // Function to track checkbox changes
@@ -628,18 +567,6 @@
               this.updatedLockedBands = newCheckedValues;
             };
 
-            // // Function to get the current settings
-            // const getCurrentSettingsData = () => {
-            //   getCurrentSettings().then((settings) => {
-            //     this.sim = settings.sim;
-            //     this.apn = settings.apn;
-            //     this.cellLockStatus = settings.cellLockStatus;
-            //     this.prefNetwork = settings.prefNetwork;
-            //     this.nrModeControl = settings.nrModeControl;
-            //     this.bands = settings.bands;
-            //   });
-            // };
-
             // Function to add event listener to network mode dropdown
             const addNetworkModeListener = () => {
               document
@@ -657,16 +584,15 @@
             const atcmd =
               'AT+QUIMSLOT?;+CGCONTRDP=1;+QNWLOCK="common/4g";+QNWLOCK="common/5g";+QNWPREFCFG="mode_pref";+QNWPREFCFG="nr5g_disable_mode";+QCAINFO';
 
-              this.sendATcommand(atcmd).then((rawdata) => {
-                const settings = parseCurrentSettings(rawdata);
-                this.sim = settings.sim;
-                this.apn = settings.apn;
-                this.cellLockStatus = settings.cellLockStatus;
-                this.prefNetwork = settings.prefNetwork;
-                this.nrModeControl = settings.nrModeControl;
-                this.bands = settings.bands;
-              });
-
+            this.sendATcommand(atcmd).then((rawdata) => {
+              const settings = parseCurrentSettings(rawdata);
+              this.sim = settings.sim;
+              this.apn = settings.apn;
+              this.cellLockStatus = settings.cellLockStatus;
+              this.prefNetwork = settings.prefNetwork;
+              this.nrModeControl = settings.nrModeControl;
+              this.bands = settings.bands;
+            });
           },
           lockSelectedBands() {
             // Get the updated this.currentNetworkMode = selectedMode; and this.updatedLockedBands = newCheckedValues;
