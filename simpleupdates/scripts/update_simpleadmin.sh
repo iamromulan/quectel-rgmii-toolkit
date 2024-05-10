@@ -24,8 +24,8 @@ remount_ro() {
 # Installation Prep
 remount_rw
 systemctl daemon-reload
-rm $SERVICE_FILE
-rm $SERVICE_NAME
+rm $SERVICE_FILE > /dev/null 2>&1
+rm $SERVICE_NAME > /dev/null 2>&1
 
 # Create the systemd service file
 cat <<EOF > "$SERVICE_FILE"
