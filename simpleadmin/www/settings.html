@@ -6,9 +6,9 @@
     <title>Simple Admin</title>
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/bootstrap.min.css" />
-    
+
     <!-- Logo -->
-    <link rel="simpleadmin-logo" href="favicon.ico">
+    <link rel="simpleadmin-logo" href="favicon.ico" />
 
     <!--  Import BootStrap Javascript -->
     <script src="js/bootstrap.bundle.min.js"></script>
@@ -104,7 +104,7 @@
                         placeholder="ATI"
                         aria-describedby="atCommandInput"
                         x-model="atcmd"
-                        @keydown.enter = "sendATCommand()"
+                        @keydown.enter="sendATCommand()"
                       />
                       <div id="atCommandInputHelper" class="form-text">
                         Seperate multiple commands with comma (,).
@@ -557,21 +557,24 @@
               case "LTE":
                 this.atcmd = "AT+QSCAN=1,1";
                 this.scanStart = true;
-                this.atCommandResponse = "Scanning all available LTE networks... This might take a while."
+                this.atCommandResponse =
+                  "Scanning all available LTE networks... This might take a while.";
                 this.sendATCommand();
                 this.scanStart = false;
                 break;
               case "NR5G":
                 this.atcmd = "AT+QSCAN=2,1";
                 this.scanStart = true;
-                this.atCommandResponse = "Scanning all available NR5G-SA networks... This might take a while."
+                this.atCommandResponse =
+                  "Scanning all available NR5G-SA networks... This might take a while.";
                 this.sendATCommand();
                 this.scanStart = false;
                 break;
               case "ALL":
                 this.atcmd = "AT+QSCAN=3,1";
                 this.scanStart = true;
-                this.atCommandResponse = "Scanning all available networks... This might take a while."
+                this.atCommandResponse =
+                  "Scanning all available networks... This might take a while.";
                 this.sendATCommand();
                 this.scanStart = false;
                 break;
@@ -646,15 +649,16 @@
 
           setTTL() {
             this.isLoading = true; // Set loading state while updating TTL
-
+            const ttlval = this.newTTL;
             fetch(
-              "/cgi-bin/set_ttl?" +
-                new URLSearchParams({
-                  ttlvalue: this.newTTL,
-                })
+              "/cgi-bin/set_ttl?" + new URLSearchParams({ ttlvalue: ttlval })
             )
-              .then((res) => res.json())
+              .then((res) => res.text()) // Use res.text() instead of res.json()
               .then((data) => {
+                // Manually handle the response data
+                console.log("Response from server:", data);
+                // You can try to parse the JSON manually or handle the response as needed
+
                 // Once TTL is updated, fetch the updated TTL data
                 this.fetchTTL();
                 this.isLoading = false; // Set loading state back to false
@@ -664,7 +668,6 @@
                 this.isLoading = false; // Ensure loading state is properly handled in case of error
               });
           },
-
           init() {
             this.fetchTTL();
             this.fetchCurrentSettings();

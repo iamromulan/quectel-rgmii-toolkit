@@ -1,5 +1,13 @@
 #!/bin/bash
-PATH=/bin:/usr/sbin:/usr/bin:/sbin:/opt/sbin:/opt/bin:/usrdata/root/bin
+
+# Debug log function
+log_debug() {
+    local message="$1"
+    debug_logs+=("$message")
+}
+
+# Initialize debug logs array
+declare -a debug_logs=()
 
 # Get query
 QUERY_STRING=$(echo "${QUERY_STRING}" | sed 's/;//g')
@@ -10,38 +18,44 @@ if [ "${QUERY_STRING}" ]; then
             key=$(echo $cmd | awk -F '=' '{print $1}')
             value=$(echo $cmd | awk -F '=' '{print $2}')
             eval $key=$value
+            log_debug "Received parameter: $key=$value"
         fi
     done
 fi
 
-# Convert ttlvalue to integer
-if [ "${ttlvalue}" ]; then
-    ttlvalue_int=$(echo "${ttlvalue}" | sed 's/[^0-9]*//g')
+setTTL=$(printf '%b\n' "${ttlvalue//%/\\x}")
+if [ -n "${setTTL}" ]; then
+    log_debug "Stopping service to remove rules"
+    /usrdata/simplefirewall/ttl-override stop
+
+    # Convert ttlvalue to integer
+    if [ "${ttlvalue}" ]; then
+        ttlvalue_int=$(echo "${ttlvalue}" | sed 's/[^0-9]//g')
+        log_debug "Converted ttlvalue to integer: $ttlvalue_int"
+    fi
+
+    # Call the sh script with the appropriate parameters
+    if [ "${ttlvalue_int}" != 0 ]; then
+        log_debug "Enabling TTL with value: ${setTTL}"
+        /usrdata/simpleadmin/script/ttl_script.sh enable "${setTTL}"
+        commandRan="/usrdata/simpleadmin/script/ttl_script.sh enable ${setTTL}"
+        ttlenabled=true
+        ttlvalue=$ttlvalue_int
+    elif [ "${ttlvalue_int}" = 0 ]; then
+        log_debug "Disabling TTL"
+        /usrdata/simpleadmin/script/ttl_script.sh disable 0
+        commandRan="/usrdata/simpleadmin/script/ttl_script.sh disable 0"
+        ttlenabled=false
+        ttlvalue=0
+    fi
 fi
 
-# Call the sh script with the appropriate parameters. If ttlvalue_int is not 0, then enable the script with the value of ttlvalue_int. If ttlvalue is disable, then disable the script.
-
-if [ "${ttlvalue_int}" != 0 ]; then
-    /usrdata/simpleadmin/script/ttl_script.sh enable "${ttlvalue_int}"
-    # Set ttlenabled to true
-    ttlenabled=true
-    # Set ttlvalue to the value of ttlvalue_int
-    ttlvalue=$ttlvalue_int
-elif [ "${ttlvalue_int}" = 0 ]; then
-    /usrdata/simpleadmin/script/ttl_script.sh disable 0
-    # Set ttlenabled to false
-    ttlenabled=false
-    # Set ttlvalue to 0
-    ttlvalue=0
-fi
-
-# Output the result in JSON format
-
-echo "Content-type: text/json"
+echo "Content-type: text/text"
 echo ""
 cat <<EOT
 {
-    "isEnabled": $ttlenabled,
-    "ttl": $ttlvalue
+    "debug_logs": [
+        $(printf '"%s",' "${debug_logs[@]}")
+    ]
 }
 EOT

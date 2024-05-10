@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="css/bootstrap.min.css" />
 
     <!-- Logo -->
-    <link rel="simpleadmin-logo" href="favicon.ico">
+    <link rel="simpleadmin-logo" href="favicon.ico" />
 
     <!--  Import BootStrap Javascript -->
     <script src="js/bootstrap.bundle.min.js"></script>
@@ -190,7 +190,12 @@
                       </tr>
                       <tr>
                         <th scope="row">PCI</th>
-                        <td x-text="pcc_pci + ', ' + scc_pci"></td>
+                        <td
+                          x-show="scc_pci != '-'"
+                          x-text="pcc_pci + ', ' + scc_pci"
+                        ></td>
+
+                        <td x-show="scc_pci == '-'" x-text="pcc_pci"></td>
                       </tr>
                       <tr>
                         <th scope="row">IPv<sup>4</sup></th>
@@ -246,7 +251,8 @@
                       </tr>
                       <tr>
                         <th scope="row">CSQ</th>
-                        <td x-text="csq"></td>
+                        <td x-show="csq != '-'" x-text="csq"></td>
+                        <td x-show="csq == '-'" class="fst-italic">None</td>
                       </tr>
                       <tr>
                         <th scope="row">CELL ID</th>
@@ -262,7 +268,8 @@
                       </tr>
                       <tr>
                         <th scope="row">RSSI</th>
-                        <td x-text="rssi"></td>
+                        <td x-show="rssi != '-'" x-text="rssi"></td>
+                        <td x-show="rssi == '-'" class="fst-italic">None</td>
                       </tr>
                       <tr>
                         <th scope="row">SS_RSRQ<sup>4G</sup></th>
@@ -282,7 +289,7 @@
                       } }"
                         >
                           <div
-                            x-show="rsrqLTE != '-'"
+                            x-show="rsrqLTE != '-' && rsrqLTEPercentage != '0'"
                             class="progress w-100"
                             role="progressbar"
                             aria-label="RSRQ BAR"
@@ -300,6 +307,13 @@
                               ></span>
                             </div>
                           </div>
+                          <span
+                            x-show="rsrqLTEPercentage == '0'"
+                            x-text="rsrqLTE"
+                          ></span>
+                          <span x-show="rsrqLTE == '-'" class="fst-italic">
+                            None
+                          </span>
                         </td>
                       </tr>
                       <tr>
@@ -319,7 +333,7 @@
                       } }"
                         >
                           <div
-                            x-show="rsrqNR != '-'"
+                            x-show="rsrqNR != '-' && rsrqNRPercentage != '0'"
                             class="progress w-100"
                             role="progressbar"
                             aria-label="RSRQ BAR"
@@ -337,6 +351,13 @@
                               ></span>
                             </div>
                           </div>
+                          <span
+                            x-show="rsrqNRPercentage == '0'"
+                            x-text="rsrqNR"
+                          ></span>
+                          <span x-show="rsrqNR == '-'" class="fst-italic">
+                            None
+                          </span>
                         </td>
                       </tr>
                       <tr>
@@ -359,7 +380,7 @@
                         }"
                         >
                           <div
-                            x-show="rsrpLTE != '-'"
+                            x-show="rsrpLTE != '-' && rsrpLTEPercentage != '0'"
                             class="progress w-100"
                             role="progressbar"
                             aria-label="RSRP BAR"
@@ -377,6 +398,13 @@
                               ></span>
                             </div>
                           </div>
+                          <span
+                            x-show="rsrpLTEPercentage == '0'"
+                            x-text="rsrpLTE"
+                          ></span>
+                          <span x-show="rsrpLTE == '-'" class="fst-italic">
+                            None
+                          </span>
                         </td>
                       </tr>
                       <tr>
@@ -399,7 +427,7 @@
                         }"
                         >
                           <div
-                            x-show="rsrpNR != '-'"
+                            x-show="rsrpNR != '-' && rsrpNRPercentage != '0'"
                             class="progress w-100"
                             role="progressbar"
                             aria-label="RSRP BAR"
@@ -417,6 +445,13 @@
                               ></span>
                             </div>
                           </div>
+                          <span
+                            x-show="rsrpNRPercentage == '0'"
+                            x-text="rsrpNR"
+                          ></span>
+                          <span x-show="rsrpNR == '-'" class="fst-italic">
+                            None
+                          </span>
                         </td>
                       </tr>
                       <tr>
@@ -439,7 +474,7 @@
                         }"
                         >
                           <div
-                            x-show="sinrLTE != '-'"
+                            x-show="sinrLTE != '-' && sinrLTEPercentage != '0'"
                             class="progress w-100"
                             role="progressbar"
                             aria-label="SINR BAR"
@@ -457,6 +492,13 @@
                               ></span>
                             </div>
                           </div>
+                          <span
+                            x-text="sinrLTE"
+                            x-show="sinrLTEPercentage == '0'"
+                          ></span>
+                          <span x-show="sinrLTE == '-'" class="fst-italic">
+                            None
+                          </span>
                         </td>
                       </tr>
                       <tr>
@@ -479,7 +521,7 @@
                         }"
                         >
                           <div
-                            x-show="sinrNR != '-'"
+                            x-show="sinrNR != '-' && sinrNRPercentage != '0'"
                             class="progress w-100"
                             role="progressbar"
                             aria-label="SINR BAR"
@@ -497,6 +539,13 @@
                               ></span>
                             </div>
                           </div>
+                          <span
+                            x-text="sinrNR"
+                            x-show="sinrNRPercentage == '0'"
+                          ></span>
+                          <span x-show="sinrNR == '-'" class="fst-italic">
+                            None
+                          </span>
                         </td>
                       </tr>
                     </tbody>
@@ -563,7 +612,7 @@
           internetConnection: "Disconnected",
           lastUpdate: new Date().toLocaleString(),
           newRefreshRate: null,
-          refreshRate: 5,
+          refreshRate: 3,
           intervalId: null,
           fetchNetworkInfo() {
             this.atcmd =
@@ -627,9 +676,7 @@
                 if (networkMode1 === '"NR5G-SA"') {
                   this.network_mode = networkMode1;
                   this.network_mode = this.network_mode.replace(/"/g, "");
-                } 
-                
-                else {
+                } else {
                   let networkMode2, networkMode3;
 
                   if (
@@ -786,7 +833,10 @@
                     this.signalPercentage
                   );
                 } else {
-                  if (this.network_mode.match(/LTE/) != null && this.network_mode.match(/NR5G-NSA/) == null) {
+                  if (
+                    this.network_mode.match(/LTE/) != null &&
+                    this.network_mode.match(/NR5G-NSA/) == null
+                  ) {
                     let lte_bw_ul = lines[27].split(",")[10].replace(/"/g, "");
                     let lte_bw_dl = lines[27].split(",")[11].replace(/"/g, "");
 
@@ -795,9 +845,11 @@
 
                     // Calculate the LTE bandwidth
                     this.bandwidth =
-                      "UL " + this.calculate_lte_bw(lte_bw_ul) +
+                      "UL " +
+                      this.calculate_lte_bw(lte_bw_ul) +
                       " MHz / " +
-                      "DL " + this.calculate_lte_bw(lte_bw_dl) +
+                      "DL " +
+                      this.calculate_lte_bw(lte_bw_dl) +
                       " MHz";
 
                     // Get the Cell ID
@@ -878,7 +930,8 @@
                     this.bandwidth =
                       this.calculate_lte_bw(lte_bw_ul) +
                       " MHz, " +
-                      "NR " + this.calculate_lte_bw(lte_bw_dl) +
+                      "NR " +
+                      this.calculate_lte_bw(lte_bw_dl) +
                       " MHz";
 
                     // Get the RSSI
@@ -1042,7 +1095,7 @@
             let RSRQ_max = -8;
 
             // If rsrq is null, return 0%
-            if (isNaN(rsrq)) {
+            if (isNaN(rsrq) || rsrq < -20) {
               return 0;
             }
 
@@ -1060,7 +1113,7 @@
             let RSRP_max = -60;
 
             // If rsrp is null, return 0%
-            if (isNaN(rsrp)) {
+            if (isNaN(rsrp) || rsrp < -140) {
               return 0;
             }
 
@@ -1074,11 +1127,11 @@
           },
 
           calculateSINRPercentage(sinr) {
-            let SINR_min = 0;
+            let SINR_min = -10; // Changed from 0
             let SINR_max = 35;
 
             // If sinr is null, return 0%
-            if (isNaN(sinr)) {
+            if (isNaN(sinr) || sinr < -10) {
               return 0;
             }
 
@@ -1173,7 +1226,7 @@
             // If a refresh rate is stored, use it; otherwise, use a default value
             this.refreshRate = storedRefreshRate
               ? parseInt(storedRefreshRate)
-              : 5; // Change 5 to your desired default value
+              : 3; // Change 5 to your desired default value
 
             this.fetchNetworkInfo();
             // sleep for 2 seconds
