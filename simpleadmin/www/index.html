@@ -187,7 +187,15 @@
                       </tr>
                       <tr>
                         <th scope="row">PCI</th>
-                        <td x-text="pcc_pci + ', ' + scc_pci"></td>
+                        <td
+                          x-show="scc_pci != '-'"
+                          x-text="pcc_pci + ', ' + scc_pci"
+                        ></td>
+
+                        <td
+                          x-show="scc_pci == '-'"
+                          x-text="pcc_pci"
+                        ></td>
                       </tr>
                       <tr>
                         <th scope="row">IPv<sup>4</sup></th>
@@ -243,7 +251,8 @@
                       </tr>
                       <tr>
                         <th scope="row">CSQ</th>
-                        <td x-text="csq"></td>
+                        <td x-show="csq != '-'" x-text="csq"></td>
+                        <td x-show="csq == '-'" class="fst-italic">NR-SA Mode</td>
                       </tr>
                       <tr>
                         <th scope="row">CELL ID</th>
@@ -259,7 +268,8 @@
                       </tr>
                       <tr>
                         <th scope="row">RSSI</th>
-                        <td x-text="rssi"></td>
+                        <td x-show="rssi != '-'" x-text="rssi"></td>
+                        <td x-show="rssi == '-'" class="fst-italic">NR-SA Mode</td>
                       </tr>
                       <tr>
                         <th scope="row">SS_RSRQ<sup>4G</sup></th>
@@ -342,6 +352,9 @@
                             x-show="rsrqNRPercentage == '0'"
                             x-text="rsrqNR"
                           ></span>
+                          <span x-show="rsrqNR == '-'" class="fst-italic">
+                            None
+                          </span>
                         </td>
                       </tr>
                       <tr>
@@ -430,6 +443,9 @@
                             x-show="rsrpNRPercentage == '0'"
                             x-text="rsrpNR"
                           ></span>
+                          <span x-show="rsrpNR == '-'" class="fst-italic">
+                            None
+                          </span>
                         </td>
                       </tr>
                       <tr>
@@ -518,6 +534,9 @@
                             x-text="sinrNR"
                             x-show="sinrNRPercentage == '0'"
                           ></span>
+                          <span x-show="sinrNR == '-'" class="fst-italic">
+                            None
+                          </span>
                         </td>
                       </tr>
                     </tbody>
