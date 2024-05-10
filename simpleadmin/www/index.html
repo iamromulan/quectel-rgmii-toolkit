@@ -279,7 +279,7 @@
                       } }"
                         >
                           <div
-                            x-show="rsrqLTE != '-'"
+                            x-show="rsrqLTE != '-' && rsrqLTEPercentage != '0'"
                             class="progress w-100"
                             role="progressbar"
                             aria-label="RSRQ BAR"
@@ -297,6 +297,10 @@
                               ></span>
                             </div>
                           </div>
+                          <span
+                            x-show="rsrqLTEPercentage == '0'"
+                            x-text="rsrqLTE"
+                          ></span>
                         </td>
                       </tr>
                       <tr>
@@ -316,7 +320,7 @@
                       } }"
                         >
                           <div
-                            x-show="rsrqNR != '-'"
+                            x-show="rsrqNR != '-' && rsrqNRPercentage != '0'"
                             class="progress w-100"
                             role="progressbar"
                             aria-label="RSRQ BAR"
@@ -334,6 +338,10 @@
                               ></span>
                             </div>
                           </div>
+                          <span
+                            x-show="rsrqNRPercentage == '0'"
+                            x-text="rsrqNR"
+                          ></span>
                         </td>
                       </tr>
                       <tr>
@@ -356,7 +364,7 @@
                         }"
                         >
                           <div
-                            x-show="rsrpLTE != '-'"
+                            x-show="rsrpLTE != '-' && rsrpLTEPercentage != '0'"
                             class="progress w-100"
                             role="progressbar"
                             aria-label="RSRP BAR"
@@ -374,6 +382,10 @@
                               ></span>
                             </div>
                           </div>
+                          <span
+                            x-show="rsrpLTEPercentage == '0'"
+                            x-text="rsrpLTE"
+                          ></span>
                         </td>
                       </tr>
                       <tr>
@@ -396,7 +408,7 @@
                         }"
                         >
                           <div
-                            x-show="rsrpNR != '-'"
+                            x-show="rsrpNR != '-' && rsrpNRPercentage != '0'"
                             class="progress w-100"
                             role="progressbar"
                             aria-label="RSRP BAR"
@@ -414,6 +426,10 @@
                               ></span>
                             </div>
                           </div>
+                          <span
+                            x-show="rsrpNRPercentage == '0'"
+                            x-text="rsrpNR"
+                          ></span>
                         </td>
                       </tr>
                       <tr>
@@ -436,7 +452,7 @@
                         }"
                         >
                           <div
-                            x-show="sinrLTE != '-'"
+                            x-show="sinrLTE != '-' && sinrLTEPercentage != '0'"
                             class="progress w-100"
                             role="progressbar"
                             aria-label="SINR BAR"
@@ -454,6 +470,10 @@
                               ></span>
                             </div>
                           </div>
+                          <span
+                            x-text="sinrLTE"
+                            x-show="sinrLTEPercentage == '0'"
+                          ></span>
                         </td>
                       </tr>
                       <tr>
@@ -476,7 +496,7 @@
                         }"
                         >
                           <div
-                            x-show="sinrNR != '-'"
+                            x-show="sinrNR != '-' && sinrNRPercentage != '0'"
                             class="progress w-100"
                             role="progressbar"
                             aria-label="SINR BAR"
@@ -494,6 +514,10 @@
                               ></span>
                             </div>
                           </div>
+                          <span
+                            x-text="sinrNR"
+                            x-show="sinrNRPercentage == '0'"
+                          ></span>
                         </td>
                       </tr>
                     </tbody>
@@ -1043,7 +1067,7 @@
             let RSRQ_max = -8;
 
             // If rsrq is null, return 0%
-            if (isNaN(rsrq)) {
+            if (isNaN(rsrq) || rsrq < -20) {
               return 0;
             }
 
@@ -1061,7 +1085,7 @@
             let RSRP_max = -60;
 
             // If rsrp is null, return 0%
-            if (isNaN(rsrp)) {
+            if (isNaN(rsrp) || rsrp < -140) {
               return 0;
             }
 
@@ -1075,11 +1099,11 @@
           },
 
           calculateSINRPercentage(sinr) {
-            let SINR_min = 0;
+            let SINR_min = -10; // Changed from 0
             let SINR_max = 35;
 
-            // If sinr is null or negative, return 0%
-            if (isNaN(sinr) || sinr < 0) {
+            // If sinr is null, return 0%
+            if (isNaN(sinr) || sinr < -10) {
               return 0;
             }
 
