@@ -192,10 +192,7 @@
                           x-text="pcc_pci + ', ' + scc_pci"
                         ></td>
 
-                        <td
-                          x-show="scc_pci == '-'"
-                          x-text="pcc_pci"
-                        ></td>
+                        <td x-show="scc_pci == '-'" x-text="pcc_pci"></td>
                       </tr>
                       <tr>
                         <th scope="row">IPv<sup>4</sup></th>
@@ -311,6 +308,9 @@
                             x-show="rsrqLTEPercentage == '0'"
                             x-text="rsrqLTE"
                           ></span>
+                          <span x-show="rsrqLTE == '-'" class="fst-italic">
+                            None
+                          </span>
                         </td>
                       </tr>
                       <tr>
@@ -399,6 +399,9 @@
                             x-show="rsrpLTEPercentage == '0'"
                             x-text="rsrpLTE"
                           ></span>
+                          <span x-show="rsrpLTE == '-'" class="fst-italic">
+                            None
+                          </span>
                         </td>
                       </tr>
                       <tr>
@@ -490,6 +493,9 @@
                             x-text="sinrLTE"
                             x-show="sinrLTEPercentage == '0'"
                           ></span>
+                          <span x-show="sinrLTE == '-'" class="fst-italic">
+                            None
+                          </span>
                         </td>
                       </tr>
                       <tr>
