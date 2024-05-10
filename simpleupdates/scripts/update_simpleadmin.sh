@@ -20,7 +20,13 @@ remount_rw() {
 remount_ro() {
     mount -o remount,ro /
 }
+
+# Installation Prep
 remount_rw
+systemctl daemon-reload
+rm $SERVICE_FILE
+rm $SERVICE_NAME
+
 # Create the systemd service file
 cat <<EOF > "$SERVICE_FILE"
 [Unit]
@@ -75,7 +81,7 @@ uninstall_simpleadmin() {
 	rm -rf "$SIMPLE_ADMIN_DIR"
     rm -f /lib/systemd/system/ttyd.service
     rm -f /lib/systemd/system/multi-user.target.wants/ttyd.service
-    rm -rf /bin/ttyd
+    rm -f /bin/ttyd
     echo -e "\e[1;32mttyd has been uninstalled.\e[0m"
 
     echo "Uninstallation process completed."
@@ -139,7 +145,7 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/deviceinfo.html
    			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/favicon.ico
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/index.html
-    		        wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/network.html
+    		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/network.html
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/settings.html
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/sms.html
    			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/logout.html
