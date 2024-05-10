@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Define executable files path
-EXE=/usrdata/root/bin
 MENU_SH=/usrdata/simpleadmin/console/menu
 
 # Display Messages in Colors
@@ -23,79 +22,53 @@ display_red() {
 
 # Menus
 
-toolkit() {
+toolkit_menu() {
     while true; do
-        display_green "Welcome to iamromulan's Simple Console Menu"
+        display_green "Run a Toolkit version"
         display_green "Select an option:"
         echo "------------------"
-        display_green "1. LAN Settings"
-        display_green "2. Change simpleadmin (admin) password"
-        display_green "3. Change root password (shell/ssh/console)"
-        display_green "4. Open File Browser/Editor (mc)"
-        display_green "5. View Used/Available space"
-        display_green "6. Open Task Manager/View CPU Load"
-        display_green "7. Run speedtest.net test"
-        display_green "8. Run fast.com test (30Mbps max)"
-        display_green "9. Get and run the Toolkit"
-        display_green "10. Get and run the Development/unstable Toolkit"
-        display_green "11. Exit (Enter Root Shell)"
+        display_green "1. Get and run the Toolkit"
+        display_red "2. Get and run the Development/unstable Toolkit"
+        display_red "3. Exit (Enter Root Shell)"
         echo
         read -p "Select an option (1-11): " option
 
         case "$option" in
-            1) $MEU/LAN_settings ;;
-            2) $EXE/simplepasswd ;;
-            3) passwd ;;
+            1) cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh && cd / ;;
+            2) cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh && cd / ;;
+            3) break ;;
+            *) echo "Invalid option. Please try again." ;;
+        esac
+    done
+}
+
+apps_menu() {
+    while true; do
+        display_green "Run a modem App"
+        display_green "Select an option:"
+        echo "------------------"
+        display_random_color "1. Open File Browser/Editor (mc)"
+        display_random_color "2. View Used/Available space"
+        display_random_color "3. Open Task Manager/View CPU Load"
+        display_random_color "4. Run speedtest.net test"
+        display_random_color "5. Run fast.com test (30Mbps max)"
+        display_red "6. Go Back"
+        echo
+        read -p "Select an option (1-11): " option
+
+        case "$option" in
             4) mc ;;
             5) dfc ;;
             6) htop ;;
-            7) $EXE/speedtest ;;
-            8) $EXE/fast ;;
-            9) cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh && cd / ;;
-            10) cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh && cd / ;;
+            7) speedtest ;;
+            8) fast ;;
             11) break ;;
             *) echo "Invalid option. Please try again." ;;
         esac
     done
 }
 
-apps() {
-    while true; do
-        display_green "Welcome to iamromulan's Simple Console Menu"
-        display_green "Select an option:"
-        echo "------------------"
-        display_green "1. LAN Settings"
-        display_green "2. Change simpleadmin (admin) password"
-        display_green "3. Change root password (shell/ssh/console)"
-        display_green "4. Open File Browser/Editor (mc)"
-        display_green "5. View Used/Available space"
-        display_green "6. Open Task Manager/View CPU Load"
-        display_green "7. Run speedtest.net test"
-        display_green "8. Run fast.com test (30Mbps max)"
-        display_green "9. Get and run the Toolkit"
-        display_green "10. Get and run the Development/unstable Toolkit"
-        display_green "11. Exit (Enter Root Shell)"
-        echo
-        read -p "Select an option (1-11): " option
-
-        case "$option" in
-            1) $menu_sh/LAN_settings ;;
-            2) $EXE/simplepasswd ;;
-            3) passwd ;;
-            4) mc ;;
-            5) dfc ;;
-            6) htop ;;
-            7) $EXE/speedtest ;;
-            8) $EXE/fast ;;
-            9) cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/main/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh && cd / ;;
-            10) cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh && cd / ;;
-            11) break ;;
-            *) echo "Invalid option. Please try again." ;;
-        esac
-    done
-}
-
-settings() {
+settings_menu() {
     while true; do
         display_green "Welcome to iamromulan's Simple Console Menu"
         display_green "Select an option:"
@@ -131,9 +104,9 @@ main_menu() {
         read -p "Select an option (1-11): " option
 
         case "$option" in
-            1) apps ;;
-            2) settings ;;
-            3) toolkit ;;
+            1) apps_menu ;;
+            2) settings_menu ;;
+            3) toolkit_menu ;;
             4) break ;;
             *) echo "Invalid option. Please try again." ;;
         esac
