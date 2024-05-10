@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="css/bootstrap.min.css" />
 
     <!-- Logo -->
-    <link rel="simpleadmin-logo" href="favicon.ico">
+    <link rel="simpleadmin-logo" href="favicon.ico" />
 
     <!--  Import BootStrap Javascript -->
     <script src="js/bootstrap.bundle.min.js"></script>
@@ -624,9 +624,7 @@
                 if (networkMode1 === '"NR5G-SA"') {
                   this.network_mode = networkMode1;
                   this.network_mode = this.network_mode.replace(/"/g, "");
-                } 
-                
-                else {
+                } else {
                   let networkMode2, networkMode3;
 
                   if (
@@ -783,7 +781,10 @@
                     this.signalPercentage
                   );
                 } else {
-                  if (this.network_mode.match(/LTE/) != null && this.network_mode.match(/NR5G-NSA/) == null) {
+                  if (
+                    this.network_mode.match(/LTE/) != null &&
+                    this.network_mode.match(/NR5G-NSA/) == null
+                  ) {
                     let lte_bw_ul = lines[27].split(",")[10].replace(/"/g, "");
                     let lte_bw_dl = lines[27].split(",")[11].replace(/"/g, "");
 
@@ -792,9 +793,11 @@
 
                     // Calculate the LTE bandwidth
                     this.bandwidth =
-                      "UL " + this.calculate_lte_bw(lte_bw_ul) +
+                      "UL " +
+                      this.calculate_lte_bw(lte_bw_ul) +
                       " MHz / " +
-                      "DL " + this.calculate_lte_bw(lte_bw_dl) +
+                      "DL " +
+                      this.calculate_lte_bw(lte_bw_dl) +
                       " MHz";
 
                     // Get the Cell ID
@@ -875,7 +878,8 @@
                     this.bandwidth =
                       this.calculate_lte_bw(lte_bw_ul) +
                       " MHz, " +
-                      "NR " + this.calculate_lte_bw(lte_bw_dl) +
+                      "NR " +
+                      this.calculate_lte_bw(lte_bw_dl) +
                       " MHz";
 
                     // Get the RSSI
@@ -1074,8 +1078,8 @@
             let SINR_min = 0;
             let SINR_max = 35;
 
-            // If sinr is null, return 0%
-            if (isNaN(sinr)) {
+            // If sinr is null or negative, return 0%
+            if (isNaN(sinr) || sinr < 0) {
               return 0;
             }
 
