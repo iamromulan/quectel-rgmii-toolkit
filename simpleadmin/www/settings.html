@@ -650,36 +650,24 @@
             fetch(
               "/cgi-bin/set_ttl?" + new URLSearchParams({ ttlvalue: ttlval })
             )
-              .then((res) => res.text())
+              .then((res) => res.text()) // Use res.text() instead of res.json()
               .then((data) => {
-                // Split the response into JSON and non-JSON parts
-                const parts = data.trim().split("\n\n");
-                const nonJsonPart = parts[0];
-                const jsonPart = parts[1];
+                // Manually handle the response data
+                console.log("Response from server:", data);
+                // You can try to parse the JSON manually or handle the response as needed
 
-                // Log the non-JSON part
-                console.log("Non-JSON response:", nonJsonPart);
-
-                // Parse the JSON part
-                try {
-                  const jsonData = JSON.parse(jsonPart);
-                  console.log("JSON response:", jsonData);
-
-                  // Handle the JSON data as needed
-                  // ...
-
-                  // Once TTL is updated, fetch the updated TTL data
-                  this.fetchTTL();
-                  this.isLoading = false; // Set loading state back to false
-                } catch (error) {
-                  console.error("Error parsing JSON:", error);
-                  this.isLoading = false; // Ensure loading state is properly handled in case of error
-                }
+                // Once TTL is updated, fetch the updated TTL data
+                this.fetchTTL();
+                this.isLoading = false; // Set loading state back to false
               })
               .catch((error) => {
                 console.error("Error updating TTL: ", error);
                 this.isLoading = false; // Ensure loading state is properly handled in case of error
               });
+          },
+          init() {
+            this.fetchTTL();
+            this.fetchCurrentSettings();
           },
         };
       }
