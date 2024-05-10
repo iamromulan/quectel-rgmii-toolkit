@@ -603,7 +603,7 @@
           internetConnection: "Disconnected",
           lastUpdate: new Date().toLocaleString(),
           newRefreshRate: null,
-          refreshRate: 5,
+          refreshRate: 3,
           intervalId: null,
           fetchNetworkInfo() {
             this.atcmd =
@@ -1217,7 +1217,7 @@
             // If a refresh rate is stored, use it; otherwise, use a default value
             this.refreshRate = storedRefreshRate
               ? parseInt(storedRefreshRate)
-              : 5; // Change 5 to your desired default value
+              : 3; // Change 5 to your desired default value
 
             this.fetchNetworkInfo();
             // sleep for 2 seconds
