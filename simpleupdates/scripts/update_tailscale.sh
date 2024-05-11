@@ -12,6 +12,21 @@ LOG_FILE="/tmp/install_sshd.log"
 # Tmp Script dependent constants 
 TAILSCALE_DIR="/usrdata/tailscale/"
 TAILSCALE_SYSD_DIR="/usrdata/tailscale/systemd"
+# Function to remount file system as read-write
+remount_rw() {
+    mount -o remount,rw /
+}
+
+# Function to remount file system as read-only
+remount_ro() {
+    mount -o remount,ro /
+}
+
+# Installation Prep
+remount_rw
+systemctl daemon-reload
+rm $SERVICE_FILE > /dev/null 2>&1
+rm $SERVICE_NAME > /dev/null 2>&1
 
 # Create the systemd service file
 cat <<EOF > "$SERVICE_FILE"
@@ -35,6 +50,16 @@ GITUSER="iamromulan"
 GITTREE="development"
 TAILSCALE_DIR="/usrdata/tailscale/"
 TAILSCALE_SYSD_DIR="/usrdata/tailscale/systemd"
+
+# Function to remount file system as read-write
+remount_rw() {
+    mount -o remount,rw /
+}
+
+# Function to remount file system as read-only
+remount_ro() {
+    mount -o remount,ro /
+}
 
 install_update_tailscale() {
     echo "Checking if Tailscale is already installed..."
