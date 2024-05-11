@@ -30,6 +30,7 @@ EOF
 cat <<EOF > "$TMP_SCRIPT"
 #!/bin/bash
 
+export HOME=/usrdata/root
 GITUSER="iamromulan"
 GITTREE="development"
 TAILSCALE_DIR="/usrdata/tailscale/"
