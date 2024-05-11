@@ -165,6 +165,7 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 			sleep 1
 			cd /
             chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
+			chmod +x $SIMPLE_ADMIN_DIR/script/*
             cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
 			sleep 1
             systemctl daemon-reload
