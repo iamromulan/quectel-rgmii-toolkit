@@ -13,7 +13,7 @@ SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
 SIMPLE_FIREWALL_DIR="/usrdata/simplefirewall"
 SIMPLE_FIREWALL_SCRIPT="$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
 SIMPLE_FIREWALL_SYSTEMD_DIR="$SIMPLE_FIREWALL_DIR/systemd"
-TAILSCALE_DIR="/usrdata/tailscale/"
+TAILSCALE_DIR="/usrdata/tailscale"
 TAILSCALE_SYSD_DIR="/usrdata/tailscale/systemd"
 # AT Command Script Variables and Functions
 DEVICE_FILE="/dev/smd7"
@@ -526,7 +526,7 @@ configure_tailscale() {
      	remount_ro
 	;;
 	3) $TAILSCALE_DIR/tailscale up --accept-dns=false --reset;;
-        4) $TAILSCALE_DIR/tailscale up --ssh --accept-dns=false --reset;;
+    4) $TAILSCALE_DIR/tailscale up --ssh --accept-dns=false --reset;;
 	5) $TAILSCALE_DIR/tailscale up --accept-dns=false --reset;;
      	6) $TAILSCALE_DIR/tailscale down;;
         7) $TAILSCALE_DIR/tailscale logout;;
