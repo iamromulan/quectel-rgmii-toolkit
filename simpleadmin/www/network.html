@@ -589,6 +589,8 @@
               this.prefNetwork = settings.prefNetwork;
               this.nrModeControl = settings.nrModeControl;
               this.bands = settings.bands;
+            }).then(() => {
+              this.init();
             });
           },
           lockSelectedBands() {
