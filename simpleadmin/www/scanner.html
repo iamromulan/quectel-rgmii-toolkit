@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simple Admin</title>
+    <!-- <link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+			crossorigin="anonymous"
+		/> -->
+    <!-- Import all the bootstrap css files from css folder -->
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+
+    <!-- Logo -->
+    <link rel="simpleadmin-logo" href="favicon.ico" />
+
+    <!--  Import BootStrap Javascript -->
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/alpinejs.min.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <div class="container my-4" x-data="cellScanner()">
+        <nav class="navbar navbar-expand-lg mt-2">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="/"
+              ><span class="mb-0 h4">Simple Admin</span></a
+            >
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarText"
+              aria-controls="navbarText"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarText">
+              <ul class="navbar-nav me-auto mb-2 ml-4 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/network.html">Simple Network</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/settings.html">Simple Settings</a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link active"
+                    href="/sms.html"
+                    aria-current="page"
+                    >SMS</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/console">Console</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/deviceinfo.html"
+                    >Device Information</a
+                  >
+                </li>
+              </ul>
+              <span class="navbar-text">
+                <button class="btn btn-link text-reset" id="darkModeToggle">
+                  Dark Mode
+                </button>
+              </span>
+            </div>
+          </div>
+        </nav>
+        <div class="row mt-5 mb-4">
+          <div class="col">
+            <div class="card">
+              <div class="card-header">Cell Scanner</div>
+              <div class="card-body">
+                <div class="card-text">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Network</th>
+                        <th scope="col">Provider</th>
+                        <th scope="col">Band</th>
+                        <th scope="col">Frequency</th>
+                        <th scope="col">PCI</th>
+                        <th scope="col">RSRP</th>
+                      </tr>
+                    </thead>
+                    <tbody x-html="tableRows.join('')"></tbody>
+                  </table>
+                  <div>
+                    <div class="col-md-4 mb-3">
+                      <div class="form-group">
+                        <label for="exampleFormControlSelect1"
+                          >Choose Scan Mode</label
+                        >
+                        <select class="form-control" id="cellSelect">
+                          <option>Full Scan</option>
+                          <option>LTE Only</option>
+                          <option>NR5G Only</option>
+                        </select>
+                        <div id="cellSelectHelper" class="form-text">
+                          Cell Scanner will scan all LTE and NR5G-SA cells in
+                          your area. Scanning might take a some minutes to
+                          complete.
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="d-grid gap-2 d-md-flex justify-content-md-start"
+                    >
+                      <button class="btn btn-primary me-md-2" type="button">
+                        Start Cell Scanner
+                      </button>
+                      <button class="btn btn-danger" type="button">
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="js/dark-mode.js"></script>
+    <script>
+      function cellScanner() {
+        return {
+          networkNames: {
+            51566: "DITO",
+            51503: "Globe",
+            51502: "Smart",
+            // Add more MCC and MNC combinations if needed
+          },
+
+          nr5g_cells: [],
+          lte_cells: [],
+          nr5g_cells_parsed: [],
+          lte_cells_parsed: [],
+          atcmd: "",
+          tableRows: [],
+
+          init() {
+            this.startCellScan();
+          },
+          startCellScan() {
+            const rawdata = `+QSCAN: "NR5G",515,66,620640,887,-67,-12,61,1,70005C001,702000,273,78,28,6,-
++QSCAN: "LTE",515,03,39965,49,-64,-8,64,121,22319CA,BF8C,75,41
++QSCAN: "LTE",515,03,1775,49,-71,-10,57,119,22319D0,BF8C,75,3
++QSCAN: "LTE",515,03,1350,49,-70,-12,59,116,223196C,BF8C,75,3
++QSCAN: "LTE",515,66,450,428,-69,-7,52,121,702BC31,7020,100,1
++QSCAN: "LTE",515,03,150,49,-67,-12,61,116,2231966,BF8C,100,1
++QSCAN: "LTE",515,66,40140,76,-116,-20,5,108,700DA61,7020,100,41
++QSCAN: "LTE",515,02,3749,3,-74,-14,54,4,1D5597B,FAC,50,8
++QSCAN: "LTE",515,02,1650,47,-77,-9,43,9,1D55903,FAC,50,3
++QSCAN: "LTE",515,66,575,76,-115,-20,6,108,700DA34,7020,25,1
++QSCAN: "LTE",515,02,301,47,-74,-8,46,11,1D5595D,FAC,50,1
++QSCAN: "LTE",515,02,40562,92,-88,-20,32,109,3AC6BCB,FAC,100,41
++QSCAN: "LTE",515,02,40760,187,-82,-14,38,111,3AF15D4,FAC,100,41
++QSCAN: "LTE",515,02,39790,160,-109,-14,11,112,3AB5A20,FD7,100,41
++QSCAN: "LTE",515,66,6220,94,-65,-10,-1,0,700E001,7020,50,28
+
+OK`;
+
+            const lines = rawdata.split("\n");
+
+            // Get the length of the lines array and remove the last 2 elements from the array.
+            const linesLength = lines.length;
+            lines.splice(linesLength - 2, 2);
+
+            // Loop through all of the lines. If the line starts with NR5G then add it to the nr5g_cells array. If it starts with LTE then add it to the lte_cells array.
+
+            for (let i = 0; i < lines.length; i++) {
+              if (lines[i] !== "OK" && lines[i] !== "" && lines[i] !== "\r") {
+                if (lines[i].match(/NR5G/g)) {
+                  this.nr5g_cells.push(lines[i]);
+                } else if (lines[i].match(/LTE/g)) {
+                  this.lte_cells.push(lines[i]);
+                }
+              }
+            }
+            this.parseNr5gCells();
+            this.parseLTECells();
+            this.generateTableRow();
+          },
+          parseNr5gCells() {
+            // Parse the NR5G cells
+            for (let i = 0; i < this.nr5g_cells.length; i++) {
+              let mcc, mnc, freq, pci, rsrp, band, provider;
+              const lines = this.nr5g_cells[i].split(",");
+              mcc = this.nr5g_cells[i].split(":")[1].split(",")[1];
+              mnc = this.nr5g_cells[i].split(":")[1].split(",")[2];
+              freq = this.nr5g_cells[i].split(":")[1].split(",")[3];
+              pci = this.nr5g_cells[i].split(":")[1].split(",")[4];
+              rsrp = this.nr5g_cells[i].split(":")[1].split(",")[5];
+              band = this.nr5g_cells[i].split(":")[1].split(",")[12];
+
+              provider = this.convertMCCMNCtoNetworkName(mcc, mnc);
+              console.log("Provider", provider);
+
+              /// Append the value to lte_cells_parsed with this layout:
+              // mcc mnc, band, freq, pci, rsrp
+              this.nr5g_cells_parsed.push(
+                `${provider}, ${band}, ${freq}, ${pci}, ${rsrp}`
+              );
+            }
+          },
+
+          parseLTECells() {
+            for (let i = 0; i < this.lte_cells.length; i++) {
+              let mcc, mnc, freq, pci, rsrp, band, provider;
+              const lines = this.lte_cells[i].split(",");
+              mcc = this.lte_cells[i].split(":")[1].split(",")[1];
+              mnc = this.lte_cells[i].split(":")[1].split(",")[2];
+              freq = this.lte_cells[i].split(":")[1].split(",")[3];
+              pci = this.lte_cells[i].split(":")[1].split(",")[4];
+              rsrp = this.lte_cells[i].split(":")[1].split(",")[5];
+              band = this.lte_cells[i].split(":")[1].split(",")[12];
+
+              provider = this.convertMCCMNCtoNetworkName(mcc, mnc);
+              console.log("Provider", provider);
+
+              // Append the value to lte_cells_parsed with this layout:
+              // mcc mnc, band, freq, pci, rsrp
+              this.lte_cells_parsed.push(
+                `${provider}, ${band}, ${freq}, ${pci}, ${rsrp}`
+              );
+            }
+          },
+
+          generateTableRow() {
+            this.convertMCCMNCtoNetworkName();
+            this.tableRows = []; // Reset the array before generating new rows
+
+            // Generate rows for NR5G cells
+            for (let i = 0; i < this.nr5g_cells_parsed.length; i++) {
+              const nr5Glines = this.nr5g_cells_parsed[i].split(",");
+              this.tableRows.push(`
+          <tr>
+            <th scope="row">NR5G</th>
+            <td>${nr5Glines[0]}</td>
+            <td>${nr5Glines[1]}</td>
+            <td>${nr5Glines[2]}</td>
+            <td>${nr5Glines[3]}</td>
+            <td>${nr5Glines[4]}</td>
+          </tr>
+        `);
+            }
+
+            // Generate rows for LTE cells
+            for (let i = 0; i < this.lte_cells_parsed.length; i++) {
+              const LTElines = this.lte_cells_parsed[i].split(",");
+              this.tableRows.push(`
+          <tr>
+            <th scope="row">LTE</th>
+            <td>${LTElines[0]}</td>
+            <td>${LTElines[1]}</td>
+            <td>${LTElines[2]}</td>
+            <td>${LTElines[3]}</td>
+            <td>${LTElines[4]}</td>
+          </tr>
+        `);
+            }
+          },
+
+          convertMCCMNCtoNetworkName(mcc, mnc) {
+            const mccmnc = mcc + mnc;
+            return this.networkNames[mccmnc] || `${mcc} ${mnc}`;
+          },
+        };
+      }
+    </script>
+  </body>
+</html>

@@ -504,49 +504,59 @@
 
           ethPassthroughEnable() {
             this.atcmd = 'AT+QMAP="MPDN_RULE",0,1,0,1,1,"FF:FF:FF:FF:FF:FF"';
-            this.sendATCommand();
-            this.fetchCurrentSettings();
+            this.sendATCommand().then(() => {
+              this.fetchCurrentSettings();
+            });
           },
 
           ethPassthroughDisable() {
             this.atcmd = 'AT+QMAP="MPDN_RULE",0';
-            this.sendATCommand();
-            this.fetchCurrentSettings();
+            this.sendATCommand().then(() => {
+              this.fetchCurrentSettings();
+            });
           },
 
           onBoardDNSProxyEnable() {
             this.atcmd = 'AT+QMAP="DHCPV4DNS","enable"';
-            this.sendATCommand();
-            this.fetchCurrentSettings();
+            this.sendATCommand().then(() => {
+              this.fetchCurrentSettings();
+            });
           },
 
           onBoardDNSProxyDisable() {
             this.atcmd = 'AT+QMAP="DHCPV4DNS","disable"';
-            this.sendATCommand();
-            this.fetchCurrentSettings();
+            this.sendATCommand().then(() => {
+              this.fetchCurrentSettings();
+            });
           },
 
           usbModeEnable() {
             this.atcmd = "AT+QMAPWAC=1";
-            this.sendATCommand();
-            this.fetchCurrentSettings();
+            this.sendATCommand().then(() => {
+              this.fetchCurrentSettings();
+            });
           },
 
           usbModeDisable() {
             this.atcmd = "AT+QMAPWAC=0";
-            this.sendATCommand();
-            this.fetchCurrentSettings();
+            this.sendATCommand().then(() => {
+              this.fetchCurrentSettings();
+            });
           },
 
           scanLTE() {
             this.atcmd = 'AT+QENG="neighbourcell"';
-            this.sendATCommand();
+            this.sendATCommand().then(() => {
+              this.fetchCurrentSettings();
+            });
           },
 
           scanNSA() {
             this.atcmd =
               'AT+QNWCFG="nr5g_meas_info",1;+QNWCFG="nr5g_meas_info"';
-            this.sendATCommand();
+            this.sendATCommand().then(() => {
+              this.fetchCurrentSettings();
+            });
           },
 
           fullScanMode() {
@@ -667,7 +677,6 @@
           },
           init() {
             this.fetchTTL();
-            this.fetchCurrentSettings();
           },
         };
       }
