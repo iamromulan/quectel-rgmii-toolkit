@@ -589,9 +589,7 @@
               this.prefNetwork = settings.prefNetwork;
               this.nrModeControl = settings.nrModeControl;
               this.bands = settings.bands;
-            }).then(() => {
-              this.init();
-            });
+            })
           },
           lockSelectedBands() {
             // Get the updated this.currentNetworkMode = selectedMode; and this.updatedLockedBands = newCheckedValues;
