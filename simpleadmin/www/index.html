@@ -925,9 +925,10 @@
 
                     // Calculate the LTE bandwidth
                     this.bandwidth =
+                      "UL " +
                       this.calculate_lte_bw(lte_bw_ul) +
-                      " MHz, " +
-                      "NR " +
+                      " MHz / " +
+                      "DL " +
                       this.calculate_lte_bw(lte_bw_dl) +
                       " MHz";
 
@@ -1003,7 +1004,7 @@
 
                     // Calculate the NR bandwidth
                     this.bandwidth +=
-                      " / " + this.calculate_nr_bw(nr_bw).toString() + " MHz";
+                      " / NR " + this.calculate_nr_bw(nr_bw).toString() + " MHz";
 
                     // Parse the PCIs
                     this.pcc_pci = lines[28].split(",")[5].replace(/"/g, "");
