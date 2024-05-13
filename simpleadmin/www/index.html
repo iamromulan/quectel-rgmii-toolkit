@@ -1217,7 +1217,7 @@
                 // If uptimeArray[3] is not empty, and the value doesnt have : in it
                 if (
                   uptimeArray[3] !== "" &&
-                  uptimeArray[3].match(/:/) == null
+                  uptimeArray[3].match(/:/) == null && uptimeArray[4].match(/days/) == null
                 ) {
                   this.uptime =
                     uptimeArray[3] +
@@ -1232,7 +1232,11 @@
                     " hours and " +
                     uptimeArray[3].split(":")[1].replace(",", "") +
                     " minutes";
-                } else {
+                } else if (uptimeArray[5].match(/:/) == null && uptimeArray[4].match(/days/) != null) {
+                    this.uptime = uptimeArray[3].replace(",", "") + " days and " + uptimeArray[5] + " minutes";
+                }
+                
+                else {
                   this.uptime =
                     uptimeArray[4].split(":")[0] +
                     " hours and " +
