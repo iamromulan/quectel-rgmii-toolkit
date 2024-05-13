@@ -93,6 +93,10 @@
                           <td class="col-md-2" x-text="firmwareVersion"></td>
                         </tr>
                         <tr>
+                          <th scope="row">Phone Number</th>
+                          <td class="col-md-2" x-text="phoneNumber"></td>
+                        </tr>
+                        <tr>
                           <th scope="row">IMSI</th>
                           <td class="col-md-2" x-text="imsi"></td>
                         </tr>
@@ -225,6 +229,7 @@
           lanIp: "-",
           wwanIpv4: "-",
           wwanIpv6: "-",
+          phoneNumber: "Unknown",
           simpleAdminVersion: "-",
           atcmd: null,
           atCommandResponse: "",
@@ -262,7 +267,7 @@
 
           fetchATCommand() {
             this.atcmd =
-              'AT+CGMI;+CGMM;+QGMR;+CIMI;+ICCID;+CGSN;+QMAP="LANIP";+QMAP="WWAN"';
+              'AT+CGMI;+CGMM;+QGMR;+CIMI;+ICCID;+CGSN;+QMAP="LANIP";+QMAP="WWAN";+CNUM';
             this.isLoading = true;
             fetch(
               "/cgi-bin/get_atcommand?" +
@@ -297,7 +302,13 @@
             this.lanIp = lines[13].trim().split(",")[3];
             this.wwanIpv4 = lines[15].trim().split(",")[4].replace(/"/g, "");
             this.wwanIpv6 = lines[16].trim().split(",")[4].replace(/"/g, "");
-            this.simpleAdminVersion = "SimpleAdminRev-Alpha-0.5";
+            this.phoneNumber = lines[18].trim().split(",")[1].replace(/"/g, "");
+
+            if (this.phoneNumber === "") {
+              this.phoneNumber = "Unknown";
+            }
+
+            this.simpleAdminVersion = "SimpleAdminRev-Alpha-0.6";
             this.isLoading = false;
           },
 
