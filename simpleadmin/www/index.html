@@ -56,7 +56,7 @@
                 <li class="nav-item">
                   <a class="nav-link" href="/sms.html">SMS</a>
                 </li>
-				<li class="nav-item">
+                <li class="nav-item">
                   <a class="nav-link" href="/console">Console</a>
                 </li>
                 <li class="nav-item">
@@ -201,6 +201,10 @@
                       <tr>
                         <th scope="row">IPv<sup>6</sup></th>
                         <td x-text="ipv6"></td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Uptime</th>
+                        <td x-text="uptime"></td>
                       </tr>
                     </tbody>
                   </table>
@@ -611,6 +615,7 @@
           newRefreshRate: null,
           refreshRate: 3,
           intervalId: null,
+          uptime: "Unknown",
           fetchNetworkInfo() {
             this.atcmd =
               'AT+QTEMP;+QUIMSLOT?;+QSPN;+CGCONTRDP=1;+QMAP="WWANIP";+QENG="servingcell";+QCAINFO';
@@ -1004,7 +1009,9 @@
 
                     // Calculate the NR bandwidth
                     this.bandwidth +=
-                      " / NR " + this.calculate_nr_bw(nr_bw).toString() + " MHz";
+                      " / NR " +
+                      this.calculate_nr_bw(nr_bw).toString() +
+                      " MHz";
 
                     // Parse the PCIs
                     this.pcc_pci = lines[28].split(",")[5].replace(/"/g, "");
@@ -1197,6 +1204,18 @@
               });
           },
 
+          
+          fetchUpTime() {
+            // Content-Type: text/plain
+            //
+            // 1 hour 44, minute
+            fetch("/cgi-bin/get_uptime")
+              .then((response) => response.text())
+              .then((data) => {
+                this.uptime = data;
+              });
+          },
+
           updateRefreshRate() {
             // Check if the refresh rate is less than 3
             if (this.newRefreshRate < 3) {
@@ -1247,6 +1266,8 @@
                 this.internetConnection = "Disconnected";
               });
 
+            this.fetchUpTime();
+
             this.lastUpdate = new Date().toLocaleString();
             console.log("Initialized");
 
@@ -1272,6 +1293,8 @@
                   console.error("Error:", error);
                   this.internetConnection = "Disconnected";
                 });
+
+                this.fetchUpTime();
 
               this.lastUpdate = new Date().toLocaleString();
               console.log("Refreshed");

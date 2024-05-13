@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Execute the uptime command and extract the uptime duration
+uptime_output=$(uptime)
+
+# Extract hours and minutes from the uptime string
+hours=$(echo "$uptime_output" | awk -F '[ :]+' '{print $6}')
+minutes=$(echo "$uptime_output" | awk -F '[ :]+' '{print $7}')
+
+# Remove comma to minutes
+minutes=$(echo $minutes | tr -d ,)
+
+# Create a text response with the uptime duration
+uptime_text="$hours hours and $minutes minutes"
+
+# if hours and minutes are 1 or 0, then remove the 's' from the end of the string
+if [ $hours -eq 1 ] || [ $hours -eq 0 ]; then
+  uptime_text=$(echo $uptime_text | sed 's/hours/hour/g')
+fi
+
+# Set header for plain text content
+echo "Content-Type: text/plain"
+echo ""
+
+# Output the text response
+echo "$uptime_text"
