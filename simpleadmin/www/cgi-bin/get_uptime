@@ -1,50 +1,11 @@
 #!/bin/bash
 
-# Execute the uptime command and extract the uptime duration
+# Execute the uptime command and store the result
 uptime_output=$(uptime)
-
-# Example output of the uptime command
-# 2 days, 14:08,
-
-# Extract days, hours and minutes from the uptime string
-
-# For days, match if day or days is present in the string
-if [[ "$uptime_output" =~ day ]]; then
-    days=$(echo "$uptime_output" | awk -F '[ ,]+' '{print $2}')
-else
-    days=0
-fi
-
-hours=$(echo "$uptime_output" | awk -F '[ :]+' '{print $6}')
-minutes=$(echo "$uptime_output" | awk -F '[ :]+' '{print $7}')
-
-# Check if days is empty, then set it to 0
-if [ -z "$days" ]; then
-    days=0
-fi
-
-# Remove comma to days
-days=$(echo $days | tr -d ,)
-
-# Remove comma to minutes
-minutes=$(echo $minutes | tr -d ,)
-
-# Create a text response with the uptime duration. If days is empty, then set it to 0
-uptime_text="$days days, $hours hours, $minutes minutes"
-
-# If days is 0, then remove it from the text response
-if [ "$days" -eq 0 ]; then
-    uptime_text="$hours hours, $minutes minutes"
-fi
-
-# if days and hours are 0 or 1, remove s from the end of the string
-if [ "$days" -eq 0 ] && [ "$hours" -eq 0 ] || [ "$days" -eq 1 ] && [ "$hours" -eq 1 ]; then
-    uptime_text=$(echo $uptime_text | sed 's/s//g')
-fi
 
 # Set header for plain text content
 echo "Content-Type: text/plain"
 echo ""
 
-# Output the text response
-echo "$uptime_text"
+# Output the uptime result
+echo "$uptime_output"
