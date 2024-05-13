@@ -1204,7 +1204,6 @@
               });
           },
 
-          
           fetchUpTime() {
             // Content-Type: text/plain
             //
@@ -1215,11 +1214,30 @@
                 // Split the data by space
                 const uptimeArray = data.split(" ");
                 console.log(uptimeArray);
-                // If uptimeArray[3] is not empty, then set the uptime for days
-                if (uptimeArray[3] !== "") {
-                  this.uptime = uptimeArray[3] + " days, " + uptimeArray[5].split(":")[0] + " hours, and " + uptimeArray[5].split(":")[1].replace(",", "") + " minutes";
+                // If uptimeArray[3] is not empty, and the value doesnt have : in it
+                if (
+                  uptimeArray[3] !== "" &&
+                  uptimeArray[3].match(/:/) == null
+                ) {
+                  this.uptime =
+                    uptimeArray[3] +
+                    " days, " +
+                    uptimeArray[5].split(":")[0] +
+                    " hours, and " +
+                    uptimeArray[5].split(":")[1].replace(",", "") +
+                    " minutes";
+                } else if (uptimeArray[3].match(/:/) != null) {
+                  this.uptime =
+                    uptimeArray[3].split(":")[0] +
+                    " hours and " +
+                    uptimeArray[3].split(":")[1].replace(",", "") +
+                    " minutes";
                 } else {
-                  this.uptime = uptimeArray[4].split(":")[0] + " hours and " + uptimeArray[4].split(":")[1].replace(",", "") + " minutes";
+                  this.uptime =
+                    uptimeArray[4].split(":")[0] +
+                    " hours and " +
+                    uptimeArray[4].split(":")[1].replace(",", "") +
+                    " minutes";
                 }
               });
           },
@@ -1302,7 +1320,7 @@
                   this.internetConnection = "Disconnected";
                 });
 
-                this.fetchUpTime();
+              this.fetchUpTime();
 
               this.lastUpdate = new Date().toLocaleString();
               console.log("Refreshed");
