@@ -150,7 +150,7 @@
         <div class="row">
           <div class="col">
             <div class="card">
-              <div class="card-header">LTE and NSA Neighbourcell Scan</div>
+              <div class="card-header">LTE and NR5G Neighbourcell Scan</div>
               <div class="card-body">
                 <table class="table">
                   <thead>
@@ -177,12 +177,12 @@
                         x-model="neighbourCellsScanMode"
                       >
                         <option selected>Select Scan Mode</option>
-                        <option value="LTE and NSA">LTE and NSA</option>
+                        <option value="LTE and NR5G">LTE and NR5G</option>
                         <option value="LTE">LTE</option>
-                        <option value="NSA">NSA</option>
+                        <option value="NR5G">NR5G</option>
                       </select>
                       <div id="neighbourCellSelectHelper" class="form-text">
-                        Neighbourcell scan will only scan LTE or NSA cells from
+                        Neighbourcell scan will only scan LTE or NR5G cells from
                         your network provider.
                       </div>
                     </div>
@@ -191,7 +191,7 @@
                     <button
                       class="btn btn-primary me-md-2"
                       type="button"
-                      x-on:click="getNeighbourcellLTEandNSA()"
+                      x-on:click="getNeighbourcellLTEandNR5G()"
                       :disabled="isLoading"
                     >
                       Start Neighbour Cell Scan
@@ -1801,7 +1801,7 @@
             90131: "Orange S.A.",
             90135: "Globecomm Network Services",
             90136: "Azerfon",
-            90137: "Transatel",
+            90137: "TraNR5Gtel",
             90138: "Multiregional TransitTelecom (MTT)",
             90139: "MTX Connect Ltd",
             90140: "Deutsche Telekom AG",
@@ -2027,7 +2027,7 @@
             return this.networkNames[mccmnc] || `${mcc} ${mnc}`;
           },
 
-          getNeighbourcellLTEandNSA() {
+          getNeighbourcellLTEandNR5G() {
             // this.clearTableRowsBodyNeighbourCells();
             // Reset the array before generating new rows
             this.lte_neighbourCells = [];
@@ -2127,7 +2127,7 @@
             const tableBody = document.getElementById("neighbourCellTableBody");
             tableBody.innerHTML = "";
 
-            if (this.neighbourCellsScanMode === "LTE and NSA") {
+            if (this.neighbourCellsScanMode === "LTE and NR5G") {
               // Generate rows for LTE neighbour cells
               for (let i = 0; i < this.lte_neighbourCellsParsed.length; i++) {
                 const LTElines = this.lte_neighbourCellsParsed[i].split(",");
@@ -2166,7 +2166,7 @@
           </tr>
           `);
               }
-            } else if (this.neighbourCellsScanMode === "NSA") {
+            } else if (this.neighbourCellsScanMode === "NR5G") {
               // Generate rows for NR5G neighbour cells
 
               for (let i = 0; i < this.nr5g_neighbourCellsParsed.length; i++) {

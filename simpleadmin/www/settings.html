@@ -52,7 +52,7 @@
                 <li class="nav-item">
                   <a class="nav-link" href="/sms.html">SMS</a>
                 </li>
-				<li class="nav-item">
+                <li class="nav-item">
                   <a class="nav-link" href="/console">Console</a>
                 </li>
                 <li class="nav-item">
@@ -82,7 +82,7 @@
                       class="form-control"
                       placeholder="ATI"
                       id="atOutputBox"
-                      style="height: 220px"
+                      style="height: 210px"
                       x-text="atCommandResponse"
                       readonly
                     >
@@ -237,32 +237,6 @@
                             </button>
                           </td>
                         </tr>
-                        <tr>
-                          <th scope="row">Scan Neighbour LTE</th>
-                          <td>
-                            <button
-                              type="submit"
-                              class="btn btn-primary"
-                              @click="scanLTE()"
-                              :disabled="isLoading"
-                            >
-                              Scan LTE
-                            </button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Scan Neighbour NSA</th>
-                          <td>
-                            <button
-                              type="submit"
-                              class="btn btn-primary"
-                              @click="scanNSA()"
-                              :disabled="isLoading"
-                            >
-                              Scan NSA
-                            </button>
-                          </td>
-                        </tr>
                       </tbody>
                     </table>
                   </div>
@@ -313,7 +287,7 @@
                       Set TTL Value to 0 to disable.
                     </div>
                   </div>
-                  <div class="d-grid gap-2">
+                  <div class="d-grid gap-1">
                     <button
                       class="btn btn-primary"
                       type="button"
@@ -324,30 +298,18 @@
                   </div>
                 </div>
                 <div class="card-text">
-                  <!-- Select Input Scan Here -->
-                  <div class="mb-3">
-                    <label for="networkScan" class="form-label"
-                      >Network Scan</label
-                    >
-                    <select
-                      class="form-select"
-                      id="networkScan"
-                      x-model="fullScanModeType"
-                    >
-                      <option selected>Choose Scan Mode</option>
-                      <option value="LTE">LTE</option>
-                      <option value="NR5G">NR5G</option>
-                      <option value="ALL">ALL</option>
-                    </select>
-                  </div>
-                  <div class="d-grid gap-2">
-                    <button
-                      class="btn btn-primary"
-                      type="button"
-                      @click="fullScanMode()"
-                      :disabled="isLoading"
-                      x-text="scanStart ? 'Scanning... Please wait.' : 'Start Scan'"
-                    ></button>
+                  <label class="form-label">Cell Scanner</label>
+                  <div class="d-grid gap-1 w-full">
+                    <!--  -->
+                      <a
+                        class="btn btn-warning"
+                        type="button"
+                        href="/scanner.html"
+                        role="button"
+                      >
+                        Go to Cell Scanner
+                      </a>
+                    <!-- </a> -->
                   </div>
                 </div>
               </div>
@@ -425,8 +387,6 @@
           ethPassStatus: false,
           DNSProxyStatus: true,
           USBModeStatus: true,
-          fullScanModeType: "",
-          scanStart: false,
 
           closeModal() {
             this.confirmModal = false;
@@ -542,52 +502,6 @@
             this.sendATCommand().then(() => {
               this.fetchCurrentSettings();
             });
-          },
-
-          scanLTE() {
-            this.atcmd = 'AT+QENG="neighbourcell"';
-            this.sendATCommand().then(() => {
-              this.fetchCurrentSettings();
-            });
-          },
-
-          scanNSA() {
-            this.atcmd =
-              'AT+QNWCFG="nr5g_meas_info",1;+QNWCFG="nr5g_meas_info"';
-            this.sendATCommand().then(() => {
-              this.fetchCurrentSettings();
-            });
-          },
-
-          fullScanMode() {
-            switch (this.fullScanModeType) {
-              case "LTE":
-                this.atcmd = "AT+QSCAN=1,1";
-                this.scanStart = true;
-                this.atCommandResponse =
-                  "Scanning all available LTE networks... This might take a while.";
-                this.sendATCommand();
-                this.scanStart = false;
-                break;
-              case "NR5G":
-                this.atcmd = "AT+QSCAN=2,1";
-                this.scanStart = true;
-                this.atCommandResponse =
-                  "Scanning all available NR5G-SA networks... This might take a while.";
-                this.sendATCommand();
-                this.scanStart = false;
-                break;
-              case "ALL":
-                this.atcmd = "AT+QSCAN=3,1";
-                this.scanStart = true;
-                this.atCommandResponse =
-                  "Scanning all available networks... This might take a while.";
-                this.sendATCommand();
-                this.scanStart = false;
-                break;
-              default:
-                alert("Select a Scan Mode First");
-            }
           },
 
           fetchCurrentSettings() {
