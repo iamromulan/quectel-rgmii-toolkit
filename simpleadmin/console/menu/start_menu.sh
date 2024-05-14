@@ -82,8 +82,8 @@ settings_menu() {
         read -p "Select an option (1-5): " option
 
         case "$option" in
-            1) $MENU_SH/LAN_settings ;;
-            2) $MENU_SH/sfirewall_settings ;;
+            1) $MENU_SH/LAN_settings.sh ;;
+            2) $MENU_SH/sfirewall_settings.sh ;;
             3) simplepasswd ;;
             4) passwd ;;
             5) break ;;
