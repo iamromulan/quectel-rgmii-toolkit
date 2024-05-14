@@ -127,7 +127,7 @@
                         class="btn btn-primary me-md-2"
                         type="button"
                         x-on:click="startCellScan()"
-                        :disabled="isLoading"
+                        :disabled='isLoading === true || cellScanMode === "Unspecified" || cellScanMode === "Select Scan Mode"'
                         x-text="isCellScanning ? 'Scanning... Please wait.' : 'Start Cell Scan'"
                       >
                       </button>
@@ -135,7 +135,7 @@
                         class="btn btn-danger"
                         type="button"
                         x-on:click="clearTableRowsBodyCellScan()"
-                        :disabled="isLoading"
+                        :disabled="isLoading === true || resultDoneCell === false"
                       >
                         Clear
                       </button>
@@ -192,7 +192,7 @@
                       class="btn btn-primary me-md-2"
                       type="button"
                       x-on:click="getNeighbourcellLTEandNR5G()"
-                      :disabled="isLoading"
+                      :disabled="isLoading === true || neighbourCellsScanMode === 'Unspecified' || neighbourCellsScanMode === 'Select Scan Mode'"
                     >
                       Start Neighbour Cell Scan
                     </button>
@@ -200,7 +200,7 @@
                       class="btn btn-danger"
                       type="button"
                       x-on:click="clearTableRowsBodyNeighbourCells()"
-                      :disabled="isLoading"
+                      :disabled="isLoading === true || resultDoneNeighbourCell === false"
                     >
                       Clear
                     </button>
@@ -1830,10 +1830,12 @@
           nr5g_neighbourCellsParsed: [],
           lte_neighbourCellsParsed: [],
           neighbourCellsTableRows: [],
-          cellScanMode: "",
-          neighbourCellsScanMode: "",
+          cellScanMode: "Unspecified",
+          neighbourCellsScanMode: "Unspecified",
           isLoading: false,
           isCellScanning: false,
+          resultDoneCell: false,
+          resultDoneNeighbourCell: false,
 
           init() {
             this.generateNeighbourCellsTableRow();
@@ -1903,6 +1905,7 @@
                 this.generateTableRow();
                 this.isLoading = false;
                 this.isCellScanning = false;
+                this.resultDoneCell = true;
               });
           },
           parseNr5gCells() {
@@ -2090,6 +2093,7 @@
               .then(() => {
                 this.generateNeighbourCellsTableRow();
                 this.isLoading = false;
+                this.resultDoneNeighbourCell = true;
               });
           },
 
@@ -2207,6 +2211,8 @@
             this.nr5g_cells_parsed = [];
             this.tableRows = [];
 
+            this.resultDoneCell = false;
+
             const tableBody = document.getElementById("cellScanTableBody");
             tableBody.innerHTML = "";
             this.tableRows.push(`
@@ -2233,6 +2239,8 @@
             this.lte_neighbourCellsParsed = [];
             this.nr5g_neighbourCellsParsed = [];
             this.neighbourCellsTableRows = [];
+
+            this.resultDoneNeighbourCell = false;
 
             const tableBody = document.getElementById("neighbourCellTableBody");
             tableBody.innerHTML = "";

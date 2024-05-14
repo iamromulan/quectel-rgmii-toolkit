@@ -1211,37 +1211,134 @@
             fetch("/cgi-bin/get_uptime")
               .then((response) => response.text())
               .then((data) => {
-                // Split the data by space
-                const uptimeArray = data.split(" ");
-                console.log(uptimeArray);
-                // If uptimeArray[3] is not empty, and the value doesnt have : in it
-                if (
-                  uptimeArray[3] !== "" &&
-                  uptimeArray[3].match(/:/) == null && uptimeArray[4].match(/days/) == null
-                ) {
-                  this.uptime =
-                    uptimeArray[3] +
-                    " days, " +
-                    uptimeArray[5].split(":")[0] +
-                    " hours, and " +
-                    uptimeArray[5].split(":")[1].replace(",", "") +
-                    " minutes";
-                } else if (uptimeArray[3].match(/:/) != null) {
-                  this.uptime =
-                    uptimeArray[3].split(":")[0] +
-                    " hours and " +
-                    uptimeArray[3].split(":")[1].replace(",", "") +
-                    " minutes";
-                } else if (uptimeArray[5].match(/:/) == null && uptimeArray[4].match(/days/) != null) {
-                    this.uptime = uptimeArray[3].replace(",", "") + " days and " + uptimeArray[5] + " minutes";
-                }
-                
-                else {
-                  this.uptime =
-                    uptimeArray[4].split(":")[0] +
-                    " hours and " +
-                    uptimeArray[4].split(":")[1].replace(",", "") +
-                    " minutes";
+                // Example result
+                // 01:17:02 up 3 days,  2:41,  load average: 0.65, 0.66, 0.60
+
+                // Look for xx days in the result
+                const days = data.match(/(\d+) day/);
+                // Do the same for hours
+                const hours = data.match(/(\d+) hour/);
+                // Do the same for minutes
+                const minutes = data.match(/(\d+) minute/);
+                // 2:41
+                const hoursAndMinutes = data.match(/(\d+):(\d+),/);
+
+                if (hoursAndMinutes != null) {
+                  if (days != null) {
+                    if (days[1] === "1") {
+                      if (hoursAndMinutes[1] === "1") {
+                        this.uptime =
+                          days[1] +
+                          " day, " +
+                          hoursAndMinutes[1] +
+                          " hour " +
+                          hoursAndMinutes[2] +
+                          " minutes";
+                      } else if (hoursAndMinutes[2] === 1) {
+                        this.uptime =
+                          days[1] +
+                          " day, " +
+                          hoursAndMinutes[1] +
+                          " hours " +
+                          hoursAndMinutes[2] +
+                          " minute";
+                      } else {
+                        this.uptime =
+                          days[1] +
+                          " day, " +
+                          hoursAndMinutes[1] +
+                          " hours " +
+                          hoursAndMinutes[2] +
+                          " minutes";
+                      }
+                    } else {
+                      if (hoursAndMinutes[1] === "1") {
+                        this.uptime =
+                          days[1] +
+                          " days, " +
+                          hoursAndMinutes[1] +
+                          " hour " +
+                          hoursAndMinutes[2] +
+                          " minutes";
+                      } else if (hoursAndMinutes[2] === 1) {
+                        this.uptime =
+                          days[1] +
+                          " days, " +
+                          hoursAndMinutes[1] +
+                          " hours " +
+                          hoursAndMinutes[2] +
+                          " minute";
+                      } else {
+                        this.uptime =
+                          days[1] +
+                          " days, " +
+                          hoursAndMinutes[1] +
+                          " hours " +
+                          hoursAndMinutes[2] +
+                          " minutes";
+                      }
+                    }
+                  } else {
+                    if (hoursAndMinutes[1] === "1") {
+                      this.uptime =
+                        hoursAndMinutes[1] +
+                        " hour " +
+                        hoursAndMinutes[2] +
+                        " minutes";
+                    } else if (hoursAndMinutes[2] === 1) {
+                      this.uptime =
+                        hoursAndMinutes[1] +
+                        " hours " +
+                        hoursAndMinutes[2] +
+                        " minute";
+                    } else {
+                      this.uptime =
+                        hoursAndMinutes[1] +
+                        " hours " +
+                        hoursAndMinutes[2] +
+                        " minutes";
+                    }
+                  }
+                } else if (days != null) {
+                  if (hours != null) {
+                    if (days[1] === "1") {
+                      if (hours[1] === "1") {
+                        this.uptime = days[1] + " day, " + hours[1] + " hour";
+                      } else {
+                        this.uptime = days[1] + " day, " + hours[1] + " hours";
+                      }
+                    } else {
+                      if (hours[1] === "1") {
+                        this.uptime = days[1] + " days, " + hours[1] + " hour";
+                      } else {
+                        this.uptime = days[1] + " days, " + hours[1] + " hours";
+                      }
+                    }
+                  } else if (minutes != null) {
+                    if (days[1] === "1") {
+                      if (minutes[1] === "1") {
+                        this.uptime =
+                          days[1] + " day, " + minutes[1] + " minute";
+                      } else {
+                        this.uptime =
+                          days[1] + " day, " + minutes[1] + " minutes";
+                      }
+                    } else {
+                      if (minutes[1] === "1") {
+                        this.uptime =
+                          days[1] + " days, " + minutes[1] + " minute";
+                      } else {
+                        this.uptime =
+                          days[1] + " days, " + minutes[1] + " minutes";
+                      }
+                    }
+                  } else {
+                    if (days[1] === "1") {
+                      this.uptime = days[1] + " day";
+                    } else {
+                      this.uptime = days[1] + " days";
+                    }
+                  }
                 }
               });
           },
