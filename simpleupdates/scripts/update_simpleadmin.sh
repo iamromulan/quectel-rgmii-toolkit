@@ -146,6 +146,7 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 			sleep 1
 			cd $SIMPLE_ADMIN_DIR/console/menu
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/console/menu/start_menu.sh
+			ln -f $SIMPLE_ADMIN_DIR/console/menu/start_menu.sh /usrdata/root/bin/menu
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/console/menu/sfirewall_settings.sh
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/console/menu/start_menu.sh
 			sleep 1
