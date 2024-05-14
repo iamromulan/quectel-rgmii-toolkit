@@ -81,9 +81,9 @@ set_ttl(){
 # function to configure the fetures of simplefirewall
 simple_firewall_menu() {
     if [ ! -f "$SIMPLE_FIREWALL_SCRIPT" ]; then
-        echo -e "\033[0;31mSimplefirewall is not installed, would you like to install it?\033[0m"
-        echo -e "\033[0;32m1) Yes\033[0m"
-        echo -e "\033[0;31m2) No\033[0m"
+        display_random_color "Simplefirewall is not installed, would you like to install it?"
+        display_green "1) Yes"
+        display_red "2) No"
         read -p "Enter your choice (1-2): " install_choice
 
         case $install_choice in
@@ -94,14 +94,15 @@ simple_firewall_menu() {
                 return
                 ;;
             *)
-                echo -e "\033[0;31mInvalid choice. Please select either 1 or 2.\033[0m"
+                display_red "Invalid choice. Please select either 1 or 2."
                 ;;
         esac
     fi
 
-    echo -e "\e[1;32mConfigure Simple Firewall:\e[0m"
-    echo -e "\e[38;5;208m1) Configure incoming port block\e[0m"
-    echo -e "\e[38;5;27m2) Configure TTL\e[0m"
+    display_random_color "Configure Simple Firewall:"
+    display_green "1) Configure incoming port block"
+    display_green "2) Configure TTL"
+	display_green "3) Exit to Main Menu"
     read -p "Enter your choice (1-2): " menu_choice
 
     case $menu_choice in
@@ -111,6 +112,9 @@ simple_firewall_menu() {
     2)
         set_ttl
         ;;
+	3)
+		return
+		;;
     *)
         echo -e "\e[1;31mInvalid choice. Please select either 1 or 2.\e[0m"
         ;;
@@ -120,6 +124,6 @@ simple_firewall_menu() {
     echo -e "\e[1;32mFirewall configuration updated.\e[0m"
 }
 
-# Start by checking and installing xml if necessary, then mount filesystem as rw and run the menu
+# Main execution
 mount -o remount,rw /
 simple_firewall_menu

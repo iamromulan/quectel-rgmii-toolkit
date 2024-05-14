@@ -141,6 +141,14 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 			cd $SIMPLE_ADMIN_DIR/script
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/script/ttl_script.sh
 			sleep 1
+			cd $SIMPLE_ADMIN_DIR/console
+			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/console/.profile
+			sleep 1
+			cd $SIMPLE_ADMIN_DIR/console/menu
+			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/console/menu/start_menu.sh
+			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/console/menu/sfirewall_settings.sh
+			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/console/menu/start_menu.sh
+			sleep 1
 			cd $SIMPLE_ADMIN_DIR/www
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/deviceinfo.html
    			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/favicon.ico
@@ -173,6 +181,10 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 			cd /
             chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
 			chmod +x $SIMPLE_ADMIN_DIR/script/*
+			chmod +x $SIMPLE_ADMIN_DIR/console/menu/*
+			chmod +x $SIMPLE_ADMIN_DIR/console/.profile
+			cp -f $SIMPLE_ADMIN_DIR/console/.profile /usrdata/root/.profile
+			chmod +x /usrdata/root/.profile
             cp -rf $SIMPLE_ADMIN_DIR/systemd/* /lib/systemd/system
 			sleep 1
             systemctl daemon-reload

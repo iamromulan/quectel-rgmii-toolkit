@@ -24,12 +24,12 @@ display_red() {
 
 toolkit_menu() {
     while true; do
-        display_green "Run a Toolkit version"
+        display_random_color "Run a Toolkit version"
         display_green "Select an option:"
         echo "------------------"
         display_green "1. Get and run the Toolkit"
-        display_red "2. Get and run the Development/unstable Toolkit"
-        display_red "3. Exit (Enter Root Shell)"
+        display_random_color "2. Get and run the Development/unstable Toolkit"
+        display_random_color "3. Exit (Enter Root Shell)"
         echo
         read -p "Select an option (1-11): " option
 
@@ -44,7 +44,7 @@ toolkit_menu() {
 
 apps_menu() {
     while true; do
-        display_green "Run a modem App"
+        display_random_color "Run a modem App"
         display_green "Select an option:"
         echo "------------------"
         display_random_color "1. Open File Browser/Editor (mc)"
@@ -52,7 +52,7 @@ apps_menu() {
         display_random_color "3. Open Task Manager/View CPU Load"
         display_random_color "4. Run speedtest.net test"
         display_random_color "5. Run fast.com test (30Mbps max)"
-        display_red "6. Go Back"
+        display_green "6. Go Back"
         echo
         read -p "Select an option (1-11): " option
 
@@ -70,10 +70,11 @@ apps_menu() {
 
 settings_menu() {
     while true; do
-        display_green "Welcome to iamromulan's Simple Console Menu"
+        display_random_color "Welcome to" && display_green "iamromulan's" && display_random_color "Simple Console Menu"
         display_green "Select an option:"
         echo "------------------"
         display_green "1. LAN Settings"
+		display_green "2. simplefirewall settings (TTL and Port Block)"
         display_green "2. Change simpleadmin (admin) password"
         display_green "3. Change root password (shell/ssh/console)"
         display_green "4. Go back"
@@ -82,9 +83,10 @@ settings_menu() {
 
         case "$option" in
             1) $MENU_SH/LAN_settings ;;
-            2) $EXE/simplepasswd ;;
-            3) passwd ;;
-            4) break ;;
+            3) simplepasswd ;;
+            2) $MENU_SH/sfirewall_settings
+			4) passwd ;;
+            5) break ;;
             *) echo "Invalid option. Please try again." ;;
         esac
     done
