@@ -52,7 +52,7 @@
                 <li class="nav-item">
                   <a class="nav-link" href="/sms.html">SMS</a>
                 </li>
-				<li class="nav-item">
+                <li class="nav-item">
                   <a class="nav-link" href="/console">Console</a>
                 </li>
                 <li class="nav-item">
@@ -82,7 +82,7 @@
                       class="form-control"
                       placeholder="ATI"
                       id="atOutputBox"
-                      style="height: 220px"
+                      style="height: 210px"
                       x-text="atCommandResponse"
                       readonly
                     >
@@ -169,13 +169,24 @@
                           </td>
                         </tr>
                         <tr>
-                          <th scope="row">ETH IP Passthrough</th>
+                          <th scope="row">IP Passthrough</th>
+                          <td>
+                            <select
+                              class="form-select"
+                              id="ipPassModeSelect"
+                              x-model="ipPassMode"
+                            >
+                              <option selected>Passthrough Mode</option>
+                              <option value="ETH">ETH</option>
+                              <option value="USB">USB</option>
+                            </select>
+                          </td>
                           <td>
                             <button
                               type="submit"
                               class="btn btn-primary"
-                              @click="ethPassthroughEnable()"
-                              x-show="ethPassStatus === false"
+                              @click="ipPassThroughEnable()"
+                              x-show="ipPassStatus === false"
                               :disabled="isLoading"
                             >
                               Enable
@@ -183,11 +194,40 @@
                             <button
                               type="submit"
                               class="btn btn-danger"
-                              @click="ethPassthroughDisable()"
-                              x-show="ethPassStatus === true"
+                              @click="ipPassThroughDisable()"
+                              x-show="ipPassStatus === true"
                               :disabled="isLoading"
                             >
                               Disable
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Data Call Method</th>
+                          <td>
+                            <select
+                              class="form-select"
+                              id="usbNetModeSelect"
+                              x-model="usbNetMode"
+                            >
+                              <option
+                                selected
+                                x-text="currentUsbNetMode"
+                              ></option>
+                              <option value="RMNET">RMNET</option>
+                              <option value="ECM">ECM (Recommended)</option>
+                              <option value="MBIM">MBIM</option>
+                              <option value="RNDIS">RNDIS</option>
+                            </select>
+                          </td>
+                          <td>
+                            <button
+                              type="submit"
+                              class="btn btn-primary"
+                              @click="usbNetModeChanger()"
+                              :disabled="isLoading"
+                            >
+                              Change
                             </button>
                           </td>
                         </tr>
@@ -211,55 +251,6 @@
                               :disabled="isLoading"
                             >
                               Disable
-                            </button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <th scope="row">USB Mode</th>
-                          <td>
-                            <button
-                              type="submit"
-                              class="btn btn-primary"
-                              @click="usbModeEnable()"
-                              x-show="USBModeStatus === true"
-                              :disabled="isLoading"
-                            >
-                              Enable
-                            </button>
-                            <button
-                              type="submit"
-                              class="btn btn-danger"
-                              @click="usbModeDisable()"
-                              x-show="USBModeStatus === false"
-                              :disabled="isLoading"
-                            >
-                              Disable
-                            </button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Scan Neighbour LTE</th>
-                          <td>
-                            <button
-                              type="submit"
-                              class="btn btn-primary"
-                              @click="scanLTE()"
-                              :disabled="isLoading"
-                            >
-                              Scan LTE
-                            </button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Scan Neighbour NSA</th>
-                          <td>
-                            <button
-                              type="submit"
-                              class="btn btn-primary"
-                              @click="scanNSA()"
-                              :disabled="isLoading"
-                            >
-                              Scan NSA
                             </button>
                           </td>
                         </tr>
@@ -313,7 +304,7 @@
                       Set TTL Value to 0 to disable.
                     </div>
                   </div>
-                  <div class="d-grid gap-2">
+                  <div class="d-grid gap-1">
                     <button
                       class="btn btn-primary"
                       type="button"
@@ -324,30 +315,18 @@
                   </div>
                 </div>
                 <div class="card-text">
-                  <!-- Select Input Scan Here -->
-                  <div class="mb-3">
-                    <label for="networkScan" class="form-label"
-                      >Network Scan</label
-                    >
-                    <select
-                      class="form-select"
-                      id="networkScan"
-                      x-model="fullScanModeType"
-                    >
-                      <option selected>Choose Scan Mode</option>
-                      <option value="LTE">LTE</option>
-                      <option value="NR5G">NR5G</option>
-                      <option value="ALL">ALL</option>
-                    </select>
-                  </div>
-                  <div class="d-grid gap-2">
-                    <button
-                      class="btn btn-primary"
+                  <label class="form-label">Cell Scanner</label>
+                  <div class="d-grid gap-1 w-full">
+                    <!--  -->
+                    <a
+                      class="btn btn-warning"
                       type="button"
-                      @click="fullScanMode()"
-                      :disabled="isLoading"
-                      x-text="scanStart ? 'Scanning... Please wait.' : 'Start Scan'"
-                    ></button>
+                      href="/scanner.html"
+                      role="button"
+                    >
+                      Go to Cell Scanner
+                    </a>
+                    <!-- </a> -->
                   </div>
                 </div>
               </div>
@@ -422,11 +401,11 @@
           ttlvalue: 0,
           ttlStatus: false,
           newTTL: null,
-          ethPassStatus: false,
+          ipPassMode: "Unspecified",
+          ipPassStatus: false,
+          usbNetMode: "Unspecified",
+          currentUsbNetMode: "Unknown",
           DNSProxyStatus: true,
-          USBModeStatus: true,
-          fullScanModeType: "",
-          scanStart: false,
 
           closeModal() {
             this.confirmModal = false;
@@ -461,6 +440,7 @@
                 this.atCommandResponse = data;
                 this.isLoading = false;
                 this.isClean = false;
+                this.fetchCurrentSettings();
               })
               .catch((error) => {
                 console.error("Error: ", error);
@@ -502,87 +482,76 @@
             this.showRebootModal();
           },
 
-          ethPassthroughEnable() {
-            this.atcmd = 'AT+QMAP="MPDN_RULE",0,1,0,1,1,"FF:FF:FF:FF:FF:FF"';
-            this.sendATCommand();
-            this.fetchCurrentSettings();
+          ipPassThroughEnable() {
+            if (this.ipPassMode != "Unspecified") {
+              if (this.ipPassMode == "ETH") {
+                this.atcmd =
+                  'AT+QMAP="MPDN_RULE",0,1,0,1,1,"FF:FF:FF:FF:FF:FF"';
+                this.sendATCommand();
+              } else if (this.ipPassMode == "USB") {
+                this.atcmd =
+                  'AT+QMAP="MPDN_RULE",0,1,0,3,1,"FF:FF:FF:FF:FF:FF"';
+                this.sendATCommand();
+              } else {
+                console.error("Invalid IP Passthrough Mode");
+              }
+            } else {
+              console.error("IP Passthrough Mode not specified");
+            }
           },
 
-          ethPassthroughDisable() {
+          ipPassThroughDisable() {
             this.atcmd = 'AT+QMAP="MPDN_RULE",0';
             this.sendATCommand();
-            this.fetchCurrentSettings();
           },
 
           onBoardDNSProxyEnable() {
             this.atcmd = 'AT+QMAP="DHCPV4DNS","enable"';
-            this.sendATCommand();
-            this.fetchCurrentSettings();
+            this.sendATCommand().then(() => {
+              this.fetchCurrentSettings();
+            });
           },
 
           onBoardDNSProxyDisable() {
             this.atcmd = 'AT+QMAP="DHCPV4DNS","disable"';
-            this.sendATCommand();
-            this.fetchCurrentSettings();
+            this.sendATCommand().then(() => {
+              this.fetchCurrentSettings();
+            });
           },
 
-          usbModeEnable() {
-            this.atcmd = "AT+QMAPWAC=1";
-            this.sendATCommand();
-            this.fetchCurrentSettings();
-          },
-
-          usbModeDisable() {
-            this.atcmd = "AT+QMAPWAC=0";
-            this.sendATCommand();
-            this.fetchCurrentSettings();
-          },
-
-          scanLTE() {
-            this.atcmd = 'AT+QENG="neighbourcell"';
-            this.sendATCommand();
-          },
-
-          scanNSA() {
-            this.atcmd =
-              'AT+QNWCFG="nr5g_meas_info",1;+QNWCFG="nr5g_meas_info"';
-            this.sendATCommand();
-          },
-
-          fullScanMode() {
-            switch (this.fullScanModeType) {
-              case "LTE":
-                this.atcmd = "AT+QSCAN=1,1";
-                this.scanStart = true;
-                this.atCommandResponse =
-                  "Scanning all available LTE networks... This might take a while.";
-                this.sendATCommand();
-                this.scanStart = false;
-                break;
-              case "NR5G":
-                this.atcmd = "AT+QSCAN=2,1";
-                this.scanStart = true;
-                this.atCommandResponse =
-                  "Scanning all available NR5G-SA networks... This might take a while.";
-                this.sendATCommand();
-                this.scanStart = false;
-                break;
-              case "ALL":
-                this.atcmd = "AT+QSCAN=3,1";
-                this.scanStart = true;
-                this.atCommandResponse =
-                  "Scanning all available networks... This might take a while.";
-                this.sendATCommand();
-                this.scanStart = false;
-                break;
-              default:
-                alert("Select a Scan Mode First");
+          usbNetModeChanger() {
+            if (this.usbNetMode != "Unspecified") {
+              if (this.usbNetMode == "RMNET") {
+                this.atcmd = 'AT+QCFG="usbnet",0;';
+                this.sendATCommand().then(() => {
+                  this.rebootDevice();
+                });
+              } else if (this.usbNetMode == "ECM") {
+                this.atcmd = 'AT+QCFG="usbnet",1;';
+                this.sendATCommand().then(() => {
+                  this.rebootDevice();
+                });
+              } else if (this.usbNetMode == "MBIM") {
+                this.atcmd = 'AT+QCFG="usbnet",2;';
+                this.sendATCommand().then(() => {
+                  this.rebootDevice();
+                });
+              } else if (this.usbNetMode == "RNDIS") {
+                this.atcmd = 'AT+QCFG="usbnet",3;';
+                this.sendATCommand().then(() => {
+                  this.rebootDevice();
+                });
+              } else {
+                console.log("USB Net Mode Invalid");
+              }
+            } else {
+              console.error("USB Net Mode not specified");
             }
           },
 
           fetchCurrentSettings() {
             this.fetchATCommand =
-              'AT+QMAP="MPDN_RULE";+QMAP="DHCPV4DNS";+QMAPWAC?';
+              'AT+QMAP="MPDN_RULE";+QMAP="DHCPV4DNS";+QCFG="usbnet"';
             fetch(
               "/cgi-bin/get_atcommand?" +
                 new URLSearchParams({
@@ -596,15 +565,16 @@
                 // Set the value of currentSettingsResponse
                 this.currentSettingsResponse = data;
                 const currentData = data.split("\n");
+                console.log("Lines: ", currentData);
 
                 const testEthpass = currentData[1].match(
                   /\+QMAP: "MPDN_rule",0,0,0,0,0/
                 );
 
                 if (testEthpass) {
-                  this.ethPassStatus = false;
+                  this.ipPassStatus = false;
                 } else {
-                  this.ethPassStatus = true;
+                  this.ipPassStatus = true;
                 }
 
                 const testDNSProxy = currentData[6].match(
@@ -617,12 +587,20 @@
                   this.DNSProxyStatus = false;
                 }
 
-                const testUSBMode = currentData[8].match(/\+QMAPWAC: 1/);
+                const testUSBNet = currentData[8].match(
+                  /\+QCFG: "usbnet",(\d)/
+                );
 
-                if (testUSBMode) {
-                  this.USBModeStatus = true;
+                if (testUSBNet[1] == "0") {
+                  this.currentUsbNetMode = "RMNET";
+                } else if (testUSBNet[1] == "1") {
+                  this.currentUsbNetMode = "ECM";
+                } else if (testUSBNet[1] == "2") {
+                  this.currentUsbNetMode = "MBIM";
+                } else if (testUSBNet[1] == "3") {
+                  this.currentUsbNetMode = "RNDIS";
                 } else {
-                  this.USBModeStatus = false;
+                  this.currentUsbNetMode = "Unknown";
                 }
 
                 // clear atcmd
@@ -666,8 +644,8 @@
               });
           },
           init() {
-            this.fetchTTL();
             this.fetchCurrentSettings();
+            this.fetchTTL();
           },
         };
       }
