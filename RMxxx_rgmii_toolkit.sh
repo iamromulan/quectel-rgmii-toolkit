@@ -161,7 +161,17 @@ ensure_entware_installed() {
 		else
 		echo "useradd already exists. Continuing..."
 	fi
-
+    
+	if [ ! -f "/usr/bin/curl" ] && [ ! -f "/opt/bin/curl" ]; then
+        echo "curl does not exist. Installing curl..."
+        opkg update && opkg install curl
+        if [ "$?" -ne 0 ]; then
+            echo -e "\e[1;31mFailed to install curl. Please check your internet connection and try again.\e[0m"
+            exit 1
+        fi
+    else
+        echo "curl already exists. Continuing..."
+    fi
 }
 
 #Uninstall Entware if the Users chooses 
