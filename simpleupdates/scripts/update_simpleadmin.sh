@@ -195,10 +195,11 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 }
 install_ttyd() {
     echo -e "\e[1;34mStarting ttyd installation process...\e[0m"
-    cd $SIMPLE_ADMIN_DIR
-    wget -O ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.armhf && chmod +x ttyd
-    wget -O $SIMPLE_ADMIN_DIR/console/ttyd.bash "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/console/ttyd.bash" && chmod +x console/ttyd.bash
-    wget -O $SIMPLE_ADMIN_DIR/systemd/ttyd.service "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/systemd/ttyd.service"
+    cd $SIMPLE_ADMIN_DIR/console
+    wget "https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.armhf" && chmod +x ttyd
+    wget "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/console/ttyd.bash" && chmod +x console/ttyd.bash
+    cd $SIMPLE_ADMIN_DIR/systemd/ttyd.service
+	wget "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/systemd/ttyd.service"
     cp -f $SIMPLE_ADMIN_DIR/systemd/ttyd.service /lib/systemd/system/
     ln -sf /usrdata/simpleadmin/ttyd /bin
     
