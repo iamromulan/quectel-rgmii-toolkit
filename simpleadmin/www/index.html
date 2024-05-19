@@ -107,6 +107,28 @@
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 384 512"
+                  height="85"
+                  width="85"
+                >
+                  <path
+                    fill="#6a46d8"
+                    d="M64 0H242.7c17 0 33.3 6.7 45.3 18.7L365.3 96c12 12 18.7 28.3 18.7 45.3V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64C0 28.7 28.7 0 64 0zM96 192c-17.7 0-32 14.3-32 32v32h64V192H96zM64 352h80 96 80V288H240 144 64v64zM320 224c0-17.7-14.3-32-32-32H256v64h64V224zM160 192v64h64V192H160zM288 448c17.7 0 32-14.3 32-32V384H256v64h32zM160 384v64h64V384H160zM64 416c0 17.7 14.3 32 32 32h32V384H64v32z"
+                  />
+                </svg>
+                <h1 class="card-text mt-4" x-text="sim"></h1>
+              </div>
+              <div class="card-footer">SIM</div>
+            </div>
+          </div>
+
+          <div class="col align-self-center">
+            <div class="card">
+              <div
+                class="card-body d-flex flex-column align-items-center justify-content-center"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 640 512"
                   height="85"
                   width="85"
@@ -118,7 +140,7 @@
                 </svg>
                 <h1 class="card-text mt-4" x-text="signalPercentage + '%'"></h1>
               </div>
-              <div class="card-footer">Signal %</div>
+              <div class="card-footer">Signal Percentage</div>
             </div>
           </div>
 
@@ -577,6 +599,7 @@
     <script>
       function getStaticNetworkInfo() {
         return {
+          sim: "Inactive",
           atcmd: null,
           temperature: "0",
           active_sim: "?",
@@ -671,6 +694,43 @@
                 // Parse the WAN IPs
                 this.ipv4 = lines[24].split(",")[4].replace(/"/g, "");
                 this.ipv6 = lines[25].split(",")[4].replace(/"/g, "");
+
+                // If no network IP detected, consider as disconnected. Return all values as unknown (except temperature, sim, network provider, mccmnc, and apn)
+                if (this.ipv4 == "0.0.0.0" && this.ipv6 == "0:0:0:0:0:0:0:0") {
+                  this.temperature = this.temperature;
+                  this.active_sim = this.active_sim;
+                  this.network_provider = this.network_provider;
+                  this.mccmnc = this.mccmnc;
+                  this.apn = this.apn;
+                  this.network_mode =
+                    "Network Disconnected. Please check your SIM card and network settings.";
+                  this.bands = "Unknown";
+                  this.bandwidth = "Unknown";
+                  this.earfcns = "Unknown";
+                  this.pcc_pci = "Unknown";
+                  this.scc_pci = "Unknown";
+                  this.csq = "Unknown";
+                  this.rssi = "Unknown";
+                  this.cellID = "Unknown";
+                  this.eNBID = "Unknown";
+                  this.tac = "Unknown";
+                  this.rsrqLTE = "Unknown";
+                  this.rsrqNR = "Unknown";
+                  this.rsrqLTEPercentage = "0%";
+                  this.rsrqNRPercentage = "0%";
+                  this.rsrpLTE = "Unknown";
+                  this.rsrpNR = "Unknown";
+                  this.rsrpLTEPercentage = "0%";
+                  this.rsrpNRPercentage = "0%";
+                  this.sinrLTE = "Unknown";
+                  this.sinrNR = "Unknown";
+                  this.sinrLTEPercentage = "0%";
+                  this.sinrNRPercentage = "0%";
+                  this.signalPercentage = "0";
+                  this.internetConnection = "Disconnected";
+                  this.lastUpdate = new Date().toLocaleString();
+                  return;
+                }
 
                 // Parse the network mode
                 const networkMode1 = lines[27].split(",")[2];
@@ -1191,6 +1251,43 @@
             }
           },
 
+          fetchSIMInfo() {
+            this.atcmd = "AT+QSIMSTAT?";
+
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  atcmd: this.atcmd,
+                })
+            ).then((response) => {
+              response
+                .text()
+                .then((data) => {
+                  const rawdata = data;
+
+                  const lines = rawdata.split("\n");
+                  console.log("SIM: ", lines);
+
+                  const sim_status = lines[1]
+                    .split(":")[1]
+                    .split(",")[1]
+                    .trim();
+                  if (sim_status === "1") {
+                    this.sim = "Active";
+                  } else {
+                    this.sim = "Inactive";
+                  }
+                  console.log("SIM: ", this.sim);
+                })
+                .then(() => {
+                  this.fetchNetworkInfo();
+                })
+                .then(() => {
+                  this.fetchCSQ();
+                });
+            });
+          },
+
           requestPing() {
             return fetch("/cgi-bin/get_ping")
               .then((response) => response.text())
@@ -1219,7 +1316,7 @@
                 // Do the same for hours
                 const hours = data.match(/(\d+) hour/);
                 // Do the same for minutes
-                const minutes = data.match(/(\d+) minute/);
+                const minutes = data.match(/(\d+) min/);
                 // 2:41
                 const hoursAndMinutes = data.match(/(\d+):(\d+),/);
 
@@ -1339,6 +1436,20 @@
                       this.uptime = days[1] + " days";
                     }
                   }
+                } else if (hours != null) {
+                  if (hours[1] === "1") {
+                    this.uptime = hours[1] + " hour";
+                  } else {
+                    this.uptime = hours[1] + " hours";
+                  }
+                } else if (minutes != null) {
+                  if (minutes[1] === "1") {
+                    this.uptime = minutes[1] + " minute";
+                  } else {
+                    this.uptime = minutes[1] + " minutes";
+                  }
+                } else {
+                  this.uptime = "Unknown Time";
                 }
               });
           },
@@ -1372,11 +1483,13 @@
               ? parseInt(storedRefreshRate)
               : 3; // Change 5 to your desired default value
 
-            this.fetchNetworkInfo();
-            // sleep for 2 seconds
-            setTimeout(() => {
-              this.fetchCSQ();
-            }, 2000);
+            // Ensure fetchSIMInfo returns a promise
+            this.fetchSIMInfo();
+
+            // // sleep for 2 seconds
+            // setTimeout(() => {
+            //   this.fetchCSQ();
+            // }, 2000);
 
             this.requestPing()
               .then((data) => {
@@ -1400,11 +1513,7 @@
 
             // Set the refresh rate
             this.intervalId = setInterval(() => {
-              this.fetchNetworkInfo();
-              // sleep for 2 seconds
-              setTimeout(() => {
-                this.fetchCSQ();
-              }, 2000);
+              this.fetchSIMInfo();
 
               this.requestPing()
                 .then((data) => {

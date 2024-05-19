@@ -178,7 +178,7 @@
                             >
                               <option selected>Passthrough Mode</option>
                               <option value="ETH">ETH</option>
-                              <option value="USB">USB</option>
+                              <option value="USB">USB (ECM/RNDIS)</option>
                             </select>
                           </td>
                           <td>
@@ -203,7 +203,7 @@
                           </td>
                         </tr>
                         <tr>
-                          <th scope="row">Data Call Method</th>
+                          <th scope="row">USB Modem Protocol</th>
                           <td>
                             <select
                               class="form-select"
@@ -425,15 +425,15 @@
                 this.atcmd
               );
             }
-
             this.isLoading = true;
-            fetch(
-              "/cgi-bin/get_atcommand?" +
-                new URLSearchParams({
-                  atcmd: this.atcmd,
-                })
-            )
+            const encodedATCmd = encodeURIComponent(this.atcmd);
+            const url = `/cgi-bin/get_atcommand?atcmd=${encodedATCmd}`;
+
+            fetch(url)
               .then((res) => {
+                if (!res.ok) {
+                  throw new Error(`HTTP error! status: ${res.status}`);
+                }
                 return res.text();
               })
               .then((data) => {
@@ -445,6 +445,7 @@
               .catch((error) => {
                 console.error("Error: ", error);
                 this.showError = true;
+                this.isLoading = false;
               });
           },
 
@@ -486,6 +487,7 @@
             if (this.ipPassMode != "Unspecified") {
               if (this.ipPassMode == "ETH") {
                 this.atcmd =
+                  // at+qmap="mpdn_rule",0,1,1,1,1,"FF:FF:FF:FF:FF:FF"
                   'AT+QMAP="MPDN_RULE",0,1,0,1,1,"FF:FF:FF:FF:FF:FF"';
                 this.sendATCommand();
               } else if (this.ipPassMode == "USB") {
@@ -501,7 +503,7 @@
           },
 
           ipPassThroughDisable() {
-            this.atcmd = 'AT+QMAP="MPDN_RULE",0';
+            this.atcmd = 'AT+QMAP="MPDN_RULE",0;+QMAPWAC=1';
             this.sendATCommand();
           },
 
