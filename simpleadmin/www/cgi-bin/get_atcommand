@@ -13,9 +13,9 @@ if [ "${QUERY_STRING}" ]; then
     done
 fi
 
+x=$(urldecode "$atcmd")
 MYATCMD=$(printf '%b\n' "${atcmd//%/\\x}")
 if [ -n "${MYATCMD}" ]; then
-    x=$(urldecode "$atcmd")
     # Initialize wait time to 200 ms
     wait_time=200
     while true; do
