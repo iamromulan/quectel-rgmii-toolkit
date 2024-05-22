@@ -8,6 +8,7 @@ SERVICE_FILE="/lib/systemd/system/install_simpleadmin.service"
 SERVICE_NAME="install_simpleadmin"
 TMP_SCRIPT="/tmp/install_simpleadmin.sh"
 LOG_FILE="/tmp/install_simpleadmin.log"
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/opt/bin:/opt/sbin:/usrdata/root/bin
 
 # Tmp Script dependent constants 
 SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
@@ -47,6 +48,8 @@ cat <<EOF > "$TMP_SCRIPT"
 GITUSER="iamromulan"
 GITTREE="development"
 SIMPLE_ADMIN_DIR="/usrdata/simpleadmin"
+export HOME=/usrdata/root
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/opt/bin:/opt/sbin:/usrdata/root/bin
 
 # Function to remount file system as read-write
 remount_rw() {
@@ -159,6 +162,7 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/sms.html
    			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/logout.html
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/scanner.html
+			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/watchcat.html
 			sleep 1
 			cd $SIMPLE_ADMIN_DIR/www/js
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/js/alpinejs.min.js
@@ -196,7 +200,7 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 install_ttyd() {
     echo -e "\e[1;34mStarting ttyd installation process...\e[0m"
     cd $SIMPLE_ADMIN_DIR/console
-    wget "https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.armhf" && chmod +x ttyd
+    curl -L -o ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.armhf && chmod +x ttyd
     wget "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/console/ttyd.bash" && chmod +x console/ttyd.bash
     cd $SIMPLE_ADMIN_DIR/systemd/ttyd.service
 	wget "https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/systemd/ttyd.service"

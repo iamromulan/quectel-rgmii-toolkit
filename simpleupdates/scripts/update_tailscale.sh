@@ -8,6 +8,7 @@ SERVICE_FILE="/lib/systemd/system/install_tailscale.service"
 SERVICE_NAME="install_tailscale"
 TMP_SCRIPT="/tmp/install_tailscale.sh"
 LOG_FILE="/tmp/install_sshd.log"
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/opt/bin:/opt/sbin:/usrdata/root/bin
 
 # Tmp Script dependent constants 
 TAILSCALE_DIR="/usrdata/tailscale/"
@@ -46,6 +47,7 @@ cat <<EOF > "$TMP_SCRIPT"
 #!/bin/bash
 
 export HOME=/usrdata/root
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/opt/bin:/opt/sbin:/usrdata/root/bin
 GITUSER="iamromulan"
 GITTREE="development"
 TAILSCALE_DIR="/usrdata/tailscale/"
@@ -75,7 +77,7 @@ install_update_tailscale() {
         mkdir -p "$TAILSCALE_DIR" "$TAILSCALE_SYSD_DIR"
         echo "Downloading binary files..."
         cd /usrdata
-        wget https://pkgs.tailscale.com/stable/tailscale_1.64.0_arm.tgz
+        curl -O https://pkgs.tailscale.com/stable/tailscale_1.66.4_arm.tgz
         tar -xzf tailscale_1.64.0_arm.tgz
         cd tailscale_1.64.0_arm
         mv tailscale tailscaled "$TAILSCALE_DIR/"

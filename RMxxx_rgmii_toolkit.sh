@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # Define toolkit paths
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/opt/bin:/opt/sbin:/usrdata/root/bin
 GITUSER="iamromulan"
 GITTREE="development"
 GITMAINTREE="main"
@@ -485,6 +486,7 @@ tailscale_menu() {
 # Function to install, update, or remove Tailscale
 install_update_tailscale() {
 echo -e "\e[1;31m2) Installing tailscale from the $GITTREE branch\e[0m"
+			ensure_entware_installed
 			mkdir /usrdata/simpleupdates > /dev/null 2>&1
 		    mkdir /usrdata/simpleupdates/scripts > /dev/null 2>&1
 		    wget -O /usrdata/simpleupdates/scripts/update_tailscale.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_tailscale.sh && chmod +x /usrdata/simpleupdates/scripts/update_tailscale.sh
