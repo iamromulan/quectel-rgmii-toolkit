@@ -59,7 +59,7 @@
                 <li class="nav-item">
                   <a class="nav-link" href="/sms.html">SMS</a>
                 </li>
-				<li class="nav-item">
+                <li class="nav-item">
                   <a class="nav-link" href="/console">Console</a>
                 </li>
                 <li class="nav-item">
@@ -589,7 +589,7 @@
               this.prefNetwork = settings.prefNetwork;
               this.nrModeControl = settings.nrModeControl;
               this.bands = settings.bands;
-            })
+            });
           },
           lockSelectedBands() {
             // Get the updated this.currentNetworkMode = selectedMode; and this.updatedLockedBands = newCheckedValues;
@@ -692,8 +692,25 @@
               this.showModal = true;
               console.log(atcmd);
 
-              this.sendATcommand(atcmd);
+              // If atcmd has QUIMSLOT,  do a reboot instead
+              if (atcmd.includes("QUIMSLOT")) {
+                atcmd = atcmd +"+CFUN=1,1";
+                this.sendATcommand(atcmd);
+                this.countdown = 45;
 
+                const interval = setInterval(() => {
+                  this.countdown--;
+                  if (this.countdown === 0) {
+                    clearInterval(interval);
+                    this.showModal = false;
+                    this.init();
+                  }
+                }, 1000);
+
+                return;
+              }
+
+              this.sendATcommand(atcmd);
               // Do a 15 second countdown
               this.countdown = 15;
 
