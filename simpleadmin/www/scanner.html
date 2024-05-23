@@ -1963,7 +1963,7 @@
               for (let i = 0; i < this.nr5g_cells_parsed.length; i++) {
                 const nr5Glines = this.nr5g_cells_parsed[i].split(",");
 
-                const signalSvg = this.getSignalSvg(nr5Glines[4]);
+                const signalSvg = this.signalIconSVG(nr5Glines[4]);
 
                 this.tableRows.push(`
           <tr>
@@ -1983,7 +1983,7 @@
               for (let i = 0; i < this.lte_cells_parsed.length; i++) {
                 const LTElines = this.lte_cells_parsed[i].split(",");
 
-                const signalSvg = this.getSignalSvg(LTElines[4]);
+                const signalSvg = this.signalIconSVG(LTElines[4]);
 
                 this.tableRows.push(`
           <tr>
@@ -2002,7 +2002,7 @@
               for (let i = 0; i < this.nr5g_cells_parsed.length; i++) {
                 const nr5Glines = this.nr5g_cells_parsed[i].split(",");
 
-                const signalSvg = this.getSignalSvg(nr5Glines[4]);
+                const signalSvg = this.signalIconSVG(nr5Glines[4]);
 
                 this.tableRows.push(`
           <tr>
@@ -2021,7 +2021,7 @@
               for (let i = 0; i < this.lte_cells_parsed.length; i++) {
                 const LTElines = this.lte_cells_parsed[i].split(",");
 
-                const signalSvg = this.getSignalSvg(LTElines[4]);
+                const signalSvg = this.signalIconSVG(LTElines[4]);
 
                 this.tableRows.push(`
           <tr>
