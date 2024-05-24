@@ -315,17 +315,18 @@
                   </div>
                 </div>
                 <div class="card-text">
-                  <label class="form-label">Cell Scanner</label>
-                  <div class="d-grid gap-1 w-full">
+                  <div class="d-flex flex-row gap-4 w-full">
                     <!--  -->
-                    <a
+                    <!-- <a
                       class="btn btn-warning"
                       type="button"
                       href="/scanner.html"
                       role="button"
                     >
                       Go to Cell Scanner
-                    </a>
+                    </a> -->
+                    <p><a class="link-info link-opacity-50-hover link-offset-2" href="/scanner.html">Go to Cell Scanner</a></p>
+                    <p><a class="link-info link-opacity-50-hover link-offset-2" href="/watchcat.html">Go to WatchCat</a></p>
                     <!-- </a> -->
                   </div>
                 </div>
@@ -525,30 +526,23 @@
             if (this.usbNetMode != "Unspecified") {
               if (this.usbNetMode == "RMNET") {
                 this.atcmd = 'AT+QCFG="usbnet",0;';
-                this.sendATCommand().then(() => {
-                  this.rebootDevice();
-                });
+                this.sendATCommand();
               } else if (this.usbNetMode == "ECM") {
                 this.atcmd = 'AT+QCFG="usbnet",1;';
-                this.sendATCommand().then(() => {
-                  this.rebootDevice();
-                });
+                this.sendATCommand();
               } else if (this.usbNetMode == "MBIM") {
                 this.atcmd = 'AT+QCFG="usbnet",2;';
-                this.sendATCommand().then(() => {
-                  this.rebootDevice();
-                });
+                this.sendATCommand();
               } else if (this.usbNetMode == "RNDIS") {
                 this.atcmd = 'AT+QCFG="usbnet",3;';
-                this.sendATCommand().then(() => {
-                  this.rebootDevice();
-                });
+                this.sendATCommand();
               } else {
                 console.log("USB Net Mode Invalid");
               }
             } else {
               console.error("USB Net Mode not specified");
             }
+            this.rebootDevice();
           },
 
           fetchCurrentSettings() {

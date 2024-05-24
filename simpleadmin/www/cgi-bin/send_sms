@@ -1,44 +1,54 @@
 #!/bin/bash
 QUERY_STRING=$(echo "${QUERY_STRING}" | sed 's/;//g')
-function urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
+urldecode() {
+    local data
+    data="${*//+/ }"
+    echo -e "${data//%/\\x}"
+}
 
 if [ "${QUERY_STRING}" ]; then
     export IFS="&"
     for cmd in ${QUERY_STRING}; do
-        if [ "$(echo $cmd | grep '=')" ]; then
-            key=$(echo $cmd | awk -F '=' '{print $1}')
-            value=$(echo $cmd | awk -F '=' '{print $2}')
-            eval $key=$value
+        if [[ "$cmd" == *=* ]]; then
+            key=$(echo "$cmd" | awk -F '=' '{print $1}')
+            value=$(echo "$cmd" | awk -F '=' '{print $2}')
+            eval "$key"="$(urldecode "$value")"
         fi
     done
 fi
 
-# Extract phone number and message from inputs
 phone_number="$number"
-message="$msg"
+message_encoded="$msg"
 
-# Prepare AT command with phone number and message
-ATCMD="AT+CMGS=\"$phone_number\""
+phone_number="+86$phone_number"
 
-MYATCMD=$(printf '%b\n' "${ATCMD//%/\\x}")
-if [ -n "${MYATCMD}" ]; then
-    x=$(urldecode "$ATCMD")
-    # Send the AT command to initiate message sending
-    echo -en "$x\r\n" | microcom /dev/ttyOUT2
-    # Wait for a brief moment (assuming the message sending is instantaneous)
-    sleep 1
-fi
+send_at_command() {
+    local cmd=$1
+    echo "Sending command: $cmd" >&2
+    echo -en "$cmd\r" | microcom -t 1000 /dev/ttyOUT2
+    sleep 2
+    local response=$(microcom -t 1000 /dev/ttyOUT2)
+    echo "Response: $response" >&2
+    echo "$response"
+}
 
-# Send the message
-echo -en "$message\c"
+send_at_command "AT+CMGF=1"
+send_at_command "AT+CSCS=\"UCS2\""
 
-# Send Ctrl+Z to terminate the message
-echo -en "\032"
+encode_ucs2() {
+    local input="$1"
+    local output=""
+    local i
+    for ((i=0; i<${#input}; i++)); do
+        hex=$(printf "%04X" "'${input:$i:1}")
+        output="$output$hex"
+    done
+    echo "$output"
+}
 
-# Ensure microcom reads the response (assuming microcom will show response instantly)
-sleep 1
+phone_number_ucs2=$(encode_ucs2 "$phone_number")
+ATCMD="AT+CMGS=\"$phone_number_ucs2\""
+send_at_command "$ATCMD"
 
-# Capture and output the response
-runcmd=$(microcom /dev/ttyOUT2)
-echo "Content-type: text/plain"
+runcmd=$((echo -en "$message_encoded"; sleep 1; echo -en "\x1A") | microcom -t 1000 /dev/ttyOUT2)
 echo "$runcmd"

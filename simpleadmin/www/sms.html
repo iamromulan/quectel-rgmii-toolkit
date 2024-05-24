@@ -1,302 +1,422 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Simple Admin</title>
-		<!-- <link
-			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-			rel="stylesheet"
-			integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-			crossorigin="anonymous"
-		/> -->
-		<!-- Import all the bootstrap css files from css folder -->
-		<link rel="stylesheet" href="css/styles.css" />
-		<link rel="stylesheet" href="css/bootstrap.min.css" />
-		
-		<!-- Logo -->
-		<link rel="simpleadmin-logo" href="favicon.ico">
+<html lang="zh-CN" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simple Admin</title>
+    <!-- 导入自定义和Bootstrap样式 -->
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <!-- 网站图标 -->
+    <link rel="icon" href="favicon.ico" />
+    <!-- 导入Bootstrap和Alpine.js脚本 -->
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/alpinejs.min.js" defer></script>
 
-		<!--  Import BootStrap Javascript -->
-		<script src="js/bootstrap.bundle.min.js"></script>
-		<script src="js/alpinejs.min.js" defer></script>
-		<script src="js/auth.js"></script>
-	</head>
-	<body onload="isAuthenticated()">
-		<main>
-			<div class="container my-4" x-data="fetchSMS()">
-				<nav class="navbar navbar-expand-lg mt-2">
-					<div class="container-fluid">
-						<a class="navbar-brand" href="/"
-							><span class="mb-0 h4">Simple Admin</span></a
-						>
-						<button
-							class="navbar-toggler"
-							type="button"
-							data-bs-toggle="collapse"
-							data-bs-target="#navbarText"
-							aria-controls="navbarText"
-							aria-expanded="false"
-							aria-label="Toggle navigation"
-						>
-							<span class="navbar-toggler-icon"></span>
-						</button>
-						<div class="collapse navbar-collapse" id="navbarText">
-							<ul class="navbar-nav me-auto mb-2 ml-4 mb-lg-0">
-								<li class="nav-item">
-									<a class="nav-link" href="/">Home</a>
-								</li>
-								<li class="nav-item">
-									<a class="nav-link" href="/network.html">Simple Network</a>
-								</li>
-								<li class="nav-item">
-									<a class="nav-link" href="/settings.html">Simple Settings</a>
-								</li>
-								<li class="nav-item">
-									<a
-										class="nav-link active"
-										href="/sms.html"
-										aria-current="page"
-										>SMS</a
-									>
-								</li>
-								<li class="nav-item">
-									<a class="nav-link" href="/console">Console</a>
-								</li>
-								<li class="nav-item">
-									<a class="nav-link" href="/deviceinfo.html"
-										>Device Information</a
-									>
-								</li>
-							</ul>
-							<span class="navbar-text">
-								<button class="btn btn-link text-reset" id="darkModeToggle">
-									Dark Mode
-								</button>
-							</span>
-						</div>
-					</div>
-				</nav>
-				<div class="row mt-5 mb-4">
-					<div class="col">
-						<div class="card">
-							<div class="card-header">SMS Manager</div>
-							<div class="card-body">
-								<div class="card-text">
-									<div class="col">
-										<div
-											style="
-												max-height: 400px;
-												overflow-y: scroll;
-												overflow-x: hidden;
-											"
-										>
-											<table class="table table-hover border-success">
-												<tbody>
-													<div class="card-subtitle" x-show="isLoading">
-														<h4>Fetching SMS...</h4>
-													</div>
-													<!-- Only show template if isLoading is False -->
-													<template x-if="messages.length === 0 && isLoading === false" >
-														<div>
-															<p>Message Empty</p>
-														</div>
-													</template>
-													<template
-														x-for="(message, index) in messages"
-														:key="index"
-													>
-														<tr class="">
-															<td>
-																<div class="row column-gap-1 mb-2">
-																	<div class="col-md-3">
-																		<p x-text="'Sender: ' + senders[index]"></p>
-																	</div>
-																	<div class="col">
-																		<p
-																			x-text="'Date and Time: ' + dates[index]"
-																		></p>
-																	</div>
-																</div>
-																<div class="col-md-9">
-																	<p x-text="message"></p>
-																</div>
-															</td>
-														</tr>
-													</template>
-												</tbody>
-											</table>
-										</div>
-									</div>
-									<form>
-										<!-- <div class="col-md-4 my-4">
-											<label for="PhoneNumber" class="form-label"
-												>Send SMS</label
-											>
-											<input
-												type="text"
-												class="form-control"
-												placeholder="Phone Number"
-												aria-label="Phone Number"
-												x-model="phoneNumber"
-											/>
-										</div> -->
+	<!-- Contributed By: snjzb -->
+  </head>
 
-										<!-- <div class="col-md-8 mb-3">
-										
-											<textarea
-												class="form-control"
-												id="smsInputBox"
-												rows="5"
-												placeholder="Enter SMS here (!!!CURRENTLY UNDER DEVELOPMENT!!!)"
-												x-model="messageToSend"
-											></textarea>
-										</div> -->
-									</form>
-								</div>
-							</div>
-							<div class="card-footer">
-								<div
-								class="d-grid gap-2 d-md-flex justify-content-md-start"
-							>
-								<!-- <button class="btn btn-primary me-md-2" type="button" @click="sendSMS()" :disabled="true" >
-									Send SMS
-								</button> -->
-								<button
-									class="btn btn-success"
-									type="button"
-									@click="init()"
-								>
-									Refresh
-								</button>
-								<button
-									class="btn btn-danger"
-									type="button"
-									@click="deleteAllSMS()"
-								>
-									Delete All SMS
-								</button>
-							</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</main>
-		<script src="js/dark-mode.js"></script>
-		<script>
-			function fetchSMS() {
-				return {
-					isLoading: false,
-					atCommandResponse: "",
-					messageToSend: "",
-					phoneNumber: "",
-					messages: [],
-					senders: [],
-					dates: [],
-					requestSMS() {
-						this.isLoading = true;
-						this.atCommandResponse = "Loading...";
-						// Expect a text response from the server
-						fetch("/cgi-bin/get_sms")
-							.then((response) => response.text())
-							.then((data) => {
-								this.isLoading = false;
-								this.atCommandResponse = data;
-							})
-							.finally(() => {
-								this.parseSMSData(this.atCommandResponse);
-							});
-					},
+  <body>
+    <main>
+      <div class="container my-4" x-data="fetchSMS()">
+        <nav class="navbar navbar-expand-lg mt-2">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="/"
+              ><span class="mb-0 h4">Simple Admin</span></a
+            >
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarText"
+              aria-controls="navbarText"
+              aria-expanded="false"
+              aria-label="切换导航"
+            >
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarText">
+              <ul class="navbar-nav me-auto mb-2 ml-4 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/network.html">Simple Network</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/settings.html">Simple Settings</a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link active"
+                    aria-current="page"
+                    href="/sms.html"
+                    >SMS</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/console">Console</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/deviceinfo.html"
+                    >Device Information</a
+                  >
+                </li>
+              </ul>
+              <span class="navbar-text">
+                <button class="btn btn-link text-reset" id="darkModeToggle">
+                  Dark Mode
+                </button>
+              </span>
+            </div>
+          </div>
+        </nav>
+        <div class="row mt-5 mb-4">
+          <div class="col">
+            <div class="card">
+              <div class="card-header">SMS Inbox</div>
+              <div class="card-body">
+                <div class="card-text">
+                  <div class="col">
+                    <div
+                      style="
+                        max-height: 400px;
+                        overflow-y: scroll;
+                        overflow-x: hidden;
+                      "
+                    >
+                      <div x-show="isLoading">
+                        <h4>Fetching SMS...</h4>
+                      </div>
+                      <table
+                        class="table table-hover border-success"
+                        x-show="!isLoading"
+                      >
+                        <tbody>
+                          <!-- 没有消息时显示 -->
+						  <!-- Display when there are no messages -->
+                          <template x-if="messages.length === 0 && !isLoading">
+                            <div>
+                              <p>Inbox is Empty</p>
+                            </div>
+                          </template>
+                          <!-- 循环显示短信消息 -->
+						  <!-- "Loop display SMS messages" -->
+                          <template
+                            x-for="(message, index) in messages"
+                            :key="index"
+                          >
+                            <tr>
+                              <td>
+                                <div class="form-check">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    :value="index"
+                                    x-model="selectedMessages"
+                                  />
+                                  <div class="row column-gap-1 mb-2">
+                                    <div class="col-md-3">
+                                      <p
+                                        x-text="'Sender: ' + senders[index]"
+                                      ></p>
+                                    </div>
+                                    <div class="col">
+                                      <p
+                                        x-text="'Date and Time: ' + dates[index]"
+                                      ></p>
+                                    </div>
+                                  </div>
+                                  <div class="col-md-9">
+                                    <p x-text="message"></p>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          </template>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- 添加判断，只有当messages数组有内容时才显示全选复选框及其区域 -->
+			  <!-- Add a judgment, only when the messages array has content will the select all checkbox and its area be displayed" -->
+              <div class="card-body border-top" x-show="messages.length > 0">
+                <div class="form-check">
+                  <input
+                    id="selectAllCheckbox"
+                    class="form-check-input"
+                    type="checkbox"
+                    @change="toggleAll($event)"
+                  />
+                  <label class="form-check-label">Select All</label>
+                </div>
+              </div>
+              <div class="card-footer">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                  <!-- 刷新按钮 -->
+				  <!-- Refresh button -->
+                  <button class="btn btn-success" type="button" @click="init()">
+                    Refresh
+                  </button>
+                  <!-- 删除选中短信按钮 -->
+				  <!-- Delete selected SMS button -->
+                  <button
+                    class="btn btn-danger"
+                    type="button"
+                    @click="deleteSelectedSMS()"
+                  >
+                    Delete Selected SMS
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-5 mb-4">
+          <div class="col">
+            <div class="card">
+              <div class="card-header">Send Message</div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="phoneNumber" class="form-label">Recipient's Number</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="phoneNumber"
+                    x-model="phoneNumber"
+                    placeholder="Enter the recipient's number."
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="messageToSend" class="form-label">SMS Content</label>
+                  <textarea
+                    class="form-control"
+                    id="messageToSend"
+                    rows="3"
+                    x-model="messageToSend"
+                    placeholder="Enter SMS content."
+                  ></textarea>
+                </div>
+                <button class="btn btn-primary" @click="sendSMS()">
+                  Send SMS
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="js/dark-mode.js"></script>
+    <script>
+      function fetchSMS() {
+        return {
+          isLoading: false,
+          atCommandResponse: "",
+          messages: [],
+          senders: [],
+          dates: [],
+          selectedMessages: [],
+          phoneNumber: "",
+          messageToSend: "",
 
-					parseSMSData(data) {
-						const cmglRegex =
-							/^\s*\+CMGL:\s*(\d+),"[^"]*","([^"]*)"[^"]*,"([^"]*)"/gm;
+          // 请求获取短信
+		//   Request to get SMS
+          requestSMS() {
+            this.isLoading = true;
+            fetch("/cgi-bin/get_sms")
+              .then((response) => response.text())
+              .then((data) => {
+                this.atCommandResponse = data
+                  .split("\n")
+                  .filter((line) => line.trim() !== "OK" && line.trim() !== "")
+                  .join("\n");
+              })
+              .finally(() => {
+                this.isLoading = false;
+                this.clearData();
+                this.parseSMSData(this.atCommandResponse);
+              });
+          },
 
-						let match;
-						while ((match = cmglRegex.exec(data)) !== null) {
-							const index = parseInt(match[1]);
-							const sender = match[2];
-							let date = match[3];
+          // 清除现有数据
+		//   Clear existing data
+          clearData() {
+            this.messages = [];
+            this.senders = [];
+            this.dates = [];
+            this.selectedMessages = [];
+            const selectAllCheckbox =
+              document.getElementById("selectAllCheckbox");
+            if (selectAllCheckbox) {
+              selectAllCheckbox.checked = false;
+            }
+          },
 
-							// remove +32 from the date
-							date = date.replace("+32", "");
+          // 解析短信数据
+		//   Parse SMS data
+          parseSMSData(data) {
+            const cmglRegex =
+              /^\s*\+CMGL:\s*(\d+),"[^"]*","([^"]*)"[^"]*,"([^"]*)"/gm;
+            const messageGroups = {};
+            this.messageIndices = []; // 确保初始化messageIndices数组
+									// Ensure that the messageIndices array is initialized
 
-							// Find the start and end positions of the message
-							const startIndex = cmglRegex.lastIndex;
-							let endIndex = data.indexOf("+CMGL:", startIndex + 1);
-							if (endIndex === -1) {
-								// If no more +CMGL lines, set end index to end of string
-								endIndex = data.length;
-							}
+            let match;
+            while ((match = cmglRegex.exec(data)) !== null) {
+              const index = parseInt(match[1]);
+              const sender = match[2];
+              const date = match[3].replace(/\+\d{2}$/, "");
 
-							// Extract the message from start to end index
-							const message = data.substring(startIndex, endIndex).trim();
+              const startIndex = cmglRegex.lastIndex;
+              const endIndex =
+                data.indexOf("+CMGL:", startIndex) !== -1
+                  ? data.indexOf("+CMGL:", startIndex)
+                  : data.length;
+              const messageHex = data.substring(startIndex, endIndex).trim();
 
-							this.messages.push(message);
-							this.senders.push(sender);
-							this.dates.push(date);
-						}
-					},
+              // 判断 messageHex 是否为 UCS2 格式
+			  // Determine if messageHex is in UCS2 format
+              const message = /^[0-9a-fA-F]+$/.test(messageHex)
+                ? this.convertHexToText(messageHex)
+                : messageHex;
 
-					deleteAllSMS() {
-						const atcmd = "AT+CMGD=,4";
-						fetch(
-							"/cgi-bin/get_atcommand?" +
-								new URLSearchParams({
-									atcmd: atcmd,
-								})
-						)
-							.then((response) => response.text())
-							.then((data) => {
-								console.log(data);
-							})
-							.finally(() => {
-								this.requestSMS();
-							});
-					},
+              if (!messageGroups[date]) {
+                messageGroups[date] = { sender, messages: [], indices: [] };
+              }
+              messageGroups[date].messages.push(message);
+              messageGroups[date].indices.push(index);
+              this.messageIndices.push(index); // 填充 messageIndices 数组
+			  									// Fill the messageIndices array
+            }
 
-					sendSMS() {
-						this.isLoading = true;
-						fetch(
-							"/cgi-bin/send_sms?" +
-								new URLSearchParams({
-									phone_number: this.phoneNumber,
-									message: this.messageToSend,
-								})
-						)
-							.then((response) => response.text())
-							.then((data) => {
-								console.log(data);
-							})
-							.catch((error) => {
-								console.error("Error:", error);
-							})
-							.finally(() => {
-								this.isLoading = false;
-								this.requestSMS();
-							});
-					},
+            for (const date in messageGroups) {
+              this.dates.push(date);
+              this.senders.push(messageGroups[date].sender);
+              this.messages.push(messageGroups[date].messages.join(" "));
+            }
+          },
 
-					init() {
-						// Send AT+CMGF=1 once to set the modem to text mode
-						const atcmd = "AT+CMGF=1";
-						fetch(
-							"/cgi-bin/get_atcommand?" +
-								new URLSearchParams({
-									atcmd: atcmd,
-								})
-						)
-							.then((response) => response.text())
-							.then((data) => {
-								console.log(data);
-							})
-							.finally(() => {
-								this.requestSMS();
-							});
-					},
-				};
-			}
-		</script>
-	</body>
+          // 删除选中的短信
+		//   Delete selected SMS
+          deleteSelectedSMS() {
+            if (this.selectedMessages.length === 0) {
+              console.warn("No SMS selected");
+              return;
+            }
+
+            if (!this.messageIndices || this.messageIndices.length === 0) {
+              console.error("SMS index is not correctly initialized or is empty");
+              return;
+            }
+
+            // 检查是否全选
+			// Check if all are selected
+            const isAllSelected =
+              this.selectedMessages.length === this.messages.length;
+
+            if (isAllSelected) {
+              // 如果全选，则调用删除所有短信的方法
+			  // If all are selected, call the method to delete all SMS
+              this.deleteAllSMS();
+            } else {
+              // 否则，删除选中的短信
+			  // Otherwise, delete the selected SMS
+              const deletePromises = this.selectedMessages.map((index) => {
+                if (index >= this.messageIndices.length) {
+                  console.error("SMS index out of range");
+                  return Promise.resolve(); // 返回已解决的Promise，防止进一步错误
+				// Return a resolved Promise to prevent further errors
+                }
+                const actualIndex = this.messageIndices[index];
+                return fetch(
+                  `/cgi-bin/get_atcommand?${new URLSearchParams({
+                    atcmd: `AT+CMGD=${actualIndex}`,
+                  })}`
+                );
+              });
+
+              Promise.all(deletePromises).finally(() => {
+                this.selectedMessages = [];
+                this.requestSMS();
+              });
+            }
+          },
+
+          // 将十六进制转换为文本（假设使用 UTF-16BE 编码）
+		//   Convert hexadecimal to text (assuming UTF-16BE encoding)
+          convertHexToText(hex) {
+            const bytes = new Uint8Array(
+              hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))
+            );
+            return new TextDecoder("utf-16be").decode(bytes);
+          },
+
+          // 删除所有短信
+		//   Delete all SMS
+          deleteAllSMS() {
+            fetch(
+              `/cgi-bin/get_atcommand?${new URLSearchParams({
+                atcmd: "AT+CMGD=,4",
+              })}`
+            ).finally(() => {
+              this.init();
+            });
+          },
+          // 发送短信
+		//   Send SMS
+          toUCS2(message) {
+            let ucs2Message = "";
+            for (let i = 0; i < message.length; i++) {
+              const code = message.charCodeAt(i).toString(16).toUpperCase();
+              ucs2Message += ("0000" + code).slice(-4); // Ensure each code is 4 digits
+            }
+            return ucs2Message;
+          },
+
+          sendSMS() {
+            const ucs2Message = this.toUCS2(this.messageToSend);
+            const encodedMessage = encodeURIComponent(ucs2Message);
+            const params = new URLSearchParams({
+              number: this.phoneNumber,
+              msg: encodedMessage,
+            });
+            fetch(`/cgi-bin/send_sms?${params.toString()}`)
+              .then((response) => response.text())
+              .then((data) => {
+                console.log("Response from server:", data);
+                // 检查返回的数据中是否包含 '+CMS ERROR'
+				// Check if the returned data contains '+CMS ERROR'
+                if (data.includes("+CMS ERROR")) {
+                  // 解析错误代码，如果存在，获取更具体的错误信息
+				  // Parse the error code, if it exists, get more specific error information
+                  const errorCode = data.match(/\+CMS ERROR: (\d+)/)?.[1];
+                  console.error("SMS send error:", data);
+                  alert(`SMS sending failed!: ${errorCode}`);
+
+                } else {
+                  alert("SMS sent successfully!");
+                }
+              });
+          },
+
+          // 初始化
+		//   Initialize
+          init() {
+            this.clearData();
+            this.requestSMS();
+          },
+
+          // 全选/取消全选
+		//   Select all/deselect all
+          toggleAll(event) {
+            this.selectedMessages = event.target.checked
+              ? this.messages.map((_, index) => index)
+              : [];
+          },
+        };
+      }
+    </script>
+  </body>
 </html>
