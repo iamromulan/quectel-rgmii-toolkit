@@ -1,6 +1,5 @@
 [Unit]
 Description=Lighttpd Daemon
-Requires=opt.mount
 After=network.target opt.mount
 
 [Service]
