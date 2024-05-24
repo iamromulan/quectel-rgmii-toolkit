@@ -91,6 +91,7 @@
                         <th scope="col">Frequency</th>
                         <th scope="col">PCI</th>
                         <th scope="col">RSRP</th>
+                        <th scope="col">Signal</th>
                       </tr>
                     </thead>
                     <tbody id="cellScanTableBody">
@@ -129,8 +130,7 @@
                         x-on:click="startCellScan()"
                         :disabled='isLoading === true || cellScanMode === "Unspecified" || cellScanMode === "Select Scan Mode"'
                         x-text="isCellScanning ? 'Scanning... Please wait.' : 'Start Cell Scan'"
-                      >
-                      </button>
+                      ></button>
                       <button
                         class="btn btn-danger"
                         type="button"
@@ -159,6 +159,7 @@
                       <th scope="col">Frequency</th>
                       <th scope="col">PCI</th>
                       <th scope="col">RSRP</th>
+                      <th scope="col">Signal</th>
                     </tr>
                   </thead>
                   <tbody id="neighbourCellTableBody">
@@ -1961,6 +1962,9 @@
               // Generate rows for NR5G cells
               for (let i = 0; i < this.nr5g_cells_parsed.length; i++) {
                 const nr5Glines = this.nr5g_cells_parsed[i].split(",");
+
+                const signalSvg = this.signalIconSVG(nr5Glines[4]);
+
                 this.tableRows.push(`
           <tr>
             <th scope="row">NR5G</th>
@@ -1969,6 +1973,8 @@
             <td>${nr5Glines[2]}</td>
             <td>${nr5Glines[3]}</td>
             <td>${nr5Glines[4]}</td>
+            <td>${signalSvg}</td>
+
           </tr>
         `);
               }
@@ -1976,6 +1982,9 @@
               // Generate rows for LTE cells
               for (let i = 0; i < this.lte_cells_parsed.length; i++) {
                 const LTElines = this.lte_cells_parsed[i].split(",");
+
+                const signalSvg = this.signalIconSVG(LTElines[4]);
+
                 this.tableRows.push(`
           <tr>
             <th scope="row">LTE</th>
@@ -1984,6 +1993,7 @@
             <td>${LTElines[2]}</td>
             <td>${LTElines[3]}</td>
             <td>${LTElines[4]}</td>
+            <td>${signalSvg}</td>
           </tr>
         `);
               }
@@ -1991,6 +2001,9 @@
               // Generate rows for NR5G cells
               for (let i = 0; i < this.nr5g_cells_parsed.length; i++) {
                 const nr5Glines = this.nr5g_cells_parsed[i].split(",");
+
+                const signalSvg = this.signalIconSVG(nr5Glines[4]);
+
                 this.tableRows.push(`
           <tr>
             <th scope="row">NR5G</th>
@@ -1999,6 +2012,7 @@
             <td>${nr5Glines[2]}</td>
             <td>${nr5Glines[3]}</td>
             <td>${nr5Glines[4]}</td>
+            <td>${signalSvg}</td>
           </tr>
         `);
               }
@@ -2006,6 +2020,9 @@
               // Generate rows for LTE cells
               for (let i = 0; i < this.lte_cells_parsed.length; i++) {
                 const LTElines = this.lte_cells_parsed[i].split(",");
+
+                const signalSvg = this.signalIconSVG(LTElines[4]);
+
                 this.tableRows.push(`
           <tr>
             <th scope="row">LTE</th>
@@ -2014,6 +2031,7 @@
             <td>${LTElines[2]}</td>
             <td>${LTElines[3]}</td>
             <td>${LTElines[4]}</td>
+            <td>${signalSvg}</td>
           </tr>
         `);
               }
@@ -2135,12 +2153,16 @@
               // Generate rows for LTE neighbour cells
               for (let i = 0; i < this.lte_neighbourCellsParsed.length; i++) {
                 const LTElines = this.lte_neighbourCellsParsed[i].split(",");
+                // If rsrp is -55 and above then use this svg
+
+                const signalSvg = this.signalIconSVG(LTElines[2]);
                 this.neighbourCellsTableRows.push(`
           <tr>
             <th scope="row">LTE</th>
             <td>${LTElines[0]}</td>
             <td>${LTElines[1]}</td>
             <td>${LTElines[2]}</td>
+            <td>${signalSvg}</td>
           </tr>
         `);
               }
@@ -2148,12 +2170,16 @@
               // Generate rows for NR5G neighbour cells
               for (let i = 0; i < this.nr5g_neighbourCellsParsed.length; i++) {
                 const nr5Glines = this.nr5g_neighbourCellsParsed[i].split(",");
+
+                const signalSvg = this.signalIconSVG(nr5Glines[2]);
+
                 this.neighbourCellsTableRows.push(`
           <tr>
             <th scope="row">NR5G</th>
             <td>${nr5Glines[0]}</td>
             <td>${nr5Glines[1]}</td>
             <td>${nr5Glines[2]}</td>
+            <td>${signalSvg}</td>
           </tr>
         `);
               }
@@ -2161,12 +2187,16 @@
               // Generate rows for LTE neighbour cells
               for (let i = 0; i < this.lte_neighbourCellsParsed.length; i++) {
                 const LTElines = this.lte_neighbourCellsParsed[i].split(",");
+
+                const signalSvg = this.signalIconSVG(LTElines[2]);
+
                 this.neighbourCellsTableRows.push(`
           <tr>
             <th scope="row">LTE</th>
             <td>${LTElines[0]}</td>
             <td>${LTElines[1]}</td>
             <td>${LTElines[2]}</td>
+            <td>${signalSvg}</td>
           </tr>
           `);
               }
@@ -2175,12 +2205,16 @@
 
               for (let i = 0; i < this.nr5g_neighbourCellsParsed.length; i++) {
                 const nr5Glines = this.nr5g_neighbourCellsParsed[i].split(",");
+
+                const signalSvg = this.signalIconSVG(nr5Glines[2]);
+
                 this.neighbourCellsTableRows.push(`
           <tr>
             <th scope="row">NR5G</th>
             <td>${nr5Glines[0]}</td>
             <td>${nr5Glines[1]}</td>
             <td>${nr5Glines[2]}</td>
+            <td>${signalSvg}</td>
           </tr>
           `);
               }
@@ -2193,6 +2227,7 @@
                 <td>Empty</td>
                 <td>Empty</td>
                 <td>Empty</td>
+                <td>Empty</td>
             </tr>
         `);
             }
@@ -2201,6 +2236,21 @@
             for (let i = 0; i < this.neighbourCellsTableRows.length; i++) {
               tableBody.innerHTML += this.neighbourCellsTableRows[i];
             }
+          },
+
+          signalIconSVG(rsrp) {
+            // If rsrp is -55 and above then use this svg
+            if (parseInt(rsrp) >= -55) {
+              return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-signal-high"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/></svg>`;
+            } else if (parseInt(rsrp) >= -85) {
+              return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-signal-medium"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/></svg>`;
+            } else if (parseInt(rsrp) >= -95) {
+              return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-signal-low"><path d="M2 20h.01"/><path d="M7 20v-4"/></svg>`;
+            } else {
+              return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-signal-zero"><path d="M2 20h.01"/></svg>`;
+            }
+
+            return signalSvg;
           },
 
           clearTableRowsBodyCellScan() {
@@ -2218,6 +2268,7 @@
             this.tableRows.push(`
             <tr>
                 <th scope="row">Empty</th>
+                <td>Empty</td>
                 <td>Empty</td>
                 <td>Empty</td>
                 <td>Empty</td>
@@ -2247,6 +2298,7 @@
             this.neighbourCellsTableRows.push(`
             <tr>
                 <th scope="row">Empty</th>
+                <td>Empty</td>
                 <td>Empty</td>
                 <td>Empty</td>
                 <td>Empty</td>
