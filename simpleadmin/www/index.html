@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh" data-bs-theme="light">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -32,7 +33,7 @@
               <li class="nav-item"><a class="nav-link" href="network.html">网络</a></li>
               <li class="nav-item"><a class="nav-link" href="/settings.html">设置</a></li>
               <li class="nav-item"><a class="nav-link" href="/sms.html">短信</a></li>
-              <li class="nav-item"><a class="nav-link" href="/console">控制台</a></li>
+              <li class="nav-item"><a class="nav-link" href="/watchat.html">控制台</a></li>
               <li class="nav-item"><a class="nav-link" href="/deviceinfo.html">设备信息</a></li>
             </ul>
             <span class="navbar-text">
@@ -133,12 +134,9 @@
                       <td x-text="bandwidth"></td>
                     </tr>
                     <tr>
-                      <th scope="row">E/ARFCN<sup>4G/5G</sup></th>
-                      <td x-text="earfcns"></td>
-                    </tr>
-                    <th scope="row">PCI</th>
-                    <td x-show="scc_pci != '-'" x-text="pcc_pci + ', ' + scc_pci"></td>
-                    <td x-show="scc_pci == '-'" x-text="pcc_pci"></td>
+                      <th scope="row">PCI</th>
+                      <td x-show="scc_pci != '-'" x-text="pcc_pci + ', ' + scc_pci"></td>
+                      <td x-show="scc_pci == '-'" x-text="pcc_pci"></td>
                     </tr>
                     <tr>
                       <th scope="row">IPv<sup>4</sup></th>
@@ -198,6 +196,10 @@
                       <td x-text="eNBID"></td>
                     </tr>
                     <tr>
+                      <th scope="row">E/ARFCN<sup>4G/5G</sup></th>
+                      <td x-text="earfcns"></td>
+                    </tr>
+                    <tr>
                       <th scope="row">TAC<sup>4G/5G</sup></th>
                       <td x-text="tac"></td>
                     </tr>
@@ -207,105 +209,67 @@
                       <td x-show="rssi == '-'" class="fst-italic">None</td>
                     </tr>
                     <tr>
-                      <th scope="row">SS_RSRQ<sup>4G</sup></th>
-                      <td class="gap-4 align-items-center" x-data="{ getProgressBarClass: function() {
-                          var percentage = parseInt(this.rsrqLTEPercentage);
-                          return percentage >= 60 ? 'progress-bar bg-success' : percentage >= 40 ? 'progress-bar bg-warning' : 'progress-bar bg-danger';
-                        } }">
-                        <div x-show="rsrqLTE != '-' && rsrqLTEPercentage != '0'" class="progress w-100"
-                          role="progressbar" aria-label="RSRQ BAR" :aria-valuenow="rsrqLTEPercentage" aria-valuemin="0"
-                          aria-valuemax="100" style="height: 18px">
-                          <div :class="getProgressBarClass()" :style="'width: ' + rsrqLTEPercentage + '%'">
-                            <span x-text="rsrqLTE + ' / ' +  rsrqLTEPercentage + '%'"></span>
-                          </div>
-                        </div>
-                        <span x-show="rsrqLTEPercentage == '0'" x-text="rsrqLTE"></span>
-                        <span x-show="rsrqLTE == '-'" class="fst-italic">None</span>
-                      </td>
+                      <th scope="row">RSRP<sup>PRX/DRX/RX2/RX3</sup></th>
+                      <td x-text="prxqrsrp + '  ' + drxqrsrp + '  ' + rx2qrsrp + '  ' + rx3qrsrp"></td>
                     </tr>
                     <tr>
-                      <th scope="row">SS_RSRQ<sup>5G</sup></th>
-                      <td x-data="{ getProgressBarClass: function() {
-                          var percentage = parseInt(this.rsrqNRPercentage);
+                      <th scope="row">RSRQ<sup>4G/5G</sup></th>
+                      <td class="gap-4 align-items-center" x-data="{ getProgressBarClass: function(percentage) {
                           return percentage >= 60 ? 'progress-bar bg-success' : percentage >= 40 ? 'progress-bar bg-warning' : 'progress-bar bg-danger';
                         } }">
-                        <div x-show="rsrqNR != '-' && rsrqNRPercentage != '0'" class="progress w-100" role="progressbar"
-                          aria-label="RSRQ BAR" :aria-valuenow="rsrqNRPercentage" aria-valuemin="0" aria-valuemax="100"
-                          style="height: 18px">
-                          <div :class="getProgressBarClass()" :style="'width: ' + rsrqNRPercentage + '%'">
+                        <div x-show="rsrqLTE != '-' || rsrqNR != '-'" class="progress w-100" role="progressbar"
+                          aria-label="RSRQ BAR" aria-valuemin="0" aria-valuemax="100" style="height: 18px">
+                          <div x-show="rsrqLTE != '-' && rsrqLTEPercentage != '0'"
+                            :class="getProgressBarClass(rsrqLTEPercentage)"
+                            :style="'width: ' + rsrqLTEPercentage + '%'">
+                            <span x-text="rsrqLTE + ' / ' + rsrqLTEPercentage + '%'"></span>
+                          </div>
+                          <div x-show="rsrqNR != '-' && rsrqNRPercentage != '0'"
+                            :class="getProgressBarClass(rsrqNRPercentage)" :style="'width: ' + rsrqNRPercentage + '%'">
                             <span x-text="rsrqNR + ' / ' + rsrqNRPercentage + '%'"></span>
                           </div>
                         </div>
-                        <span x-show="rsrqNRPercentage == '0'" x-text="rsrqNR"></span>
-                        <span x-show="rsrqNR == '-'" class="fst-italic">None</span>
+                        <span x-show="rsrqLTE == '-' && rsrqNR == '-'" class="fst-italic">None</span>
                       </td>
                     </tr>
                     <tr>
-                      <th scope="row">RSRP<sup>4G</sup></th>
-                      <td class="gap-4 align-items-center" x-data="{ getProgressBarClass: function() {
-                          var percentage = parseInt(this.rsrpLTEPercentage);
+                      <th scope="row">RSRP<sup>4G/5G</sup></th>
+                      <td class="gap-4 align-items-center" x-data="{ getProgressBarClass: function(percentage) {
                           return percentage >= 60 ? 'progress-bar bg-success' : percentage >= 40 ? 'progress-bar bg-warning' : 'progress-bar bg-danger';
                         } }">
-                        <div x-show="rsrpLTE != '-' && rsrpLTEPercentage != '0'" class="progress w-100"
-                          role="progressbar" aria-label="RSRP BAR" :aria-valuenow="rsrpLTEPercentage" aria-valuemin="0"
-                          aria-valuemax="100" style="height: 18px">
-                          <div :class="getProgressBarClass()" :style="'width: ' + rsrpLTEPercentage + '%'">
+                        <div x-show="rsrpLTE != '-' || rsrpNR != '-'" class="progress w-100" role="progressbar"
+                          aria-label="RSRP BAR" aria-valuemin="0" aria-valuemax="100" style="height: 18px">
+                          <div x-show="rsrpLTE != '-' && rsrpLTEPercentage != '0'"
+                            :class="getProgressBarClass(rsrpLTEPercentage)"
+                            :style="'width: ' + rsrpLTEPercentage + '%'">
                             <span x-text="rsrpLTE + ' / ' + rsrpLTEPercentage + '%'"></span>
                           </div>
-                        </div>
-                        <span x-show="rsrpLTEPercentage == '0'" x-text="rsrpLTE"></span>
-                        <span x-show="rsrpLTE == '-'" class="fst-italic">None</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">SS_RSRP<sup>5G</sup></th>
-                      <td class="gap-4 align-items-center" x-data="{ getProgressBarClass: function() {
-                          var percentage = parseInt(this.rsrpNRPercentage);
-                          return percentage >= 60 ? 'progress-bar bg-success' : percentage >= 40 ? 'progress-bar bg-warning' : 'progress-bar bg-danger';
-                        } }">
-                        <div x-show="rsrpNR != '-' && rsrpNRPercentage != '0'" class="progress w-100" role="progressbar"
-                          aria-label="RSRP BAR" :aria-valuenow="rsrpNRPercentage" aria-valuemin="0" aria-valuemax="100"
-                          style="height: 18px">
-                          <div :class="getProgressBarClass()" :style="'width: ' + rsrpNRPercentage + '%'">
+                          <div x-show="rsrpNR != '-' && rsrpNRPercentage != '0'"
+                            :class="getProgressBarClass(rsrpNRPercentage)" :style="'width: ' + rsrpNRPercentage + '%'">
                             <span x-text="rsrpNR + ' / ' + rsrpNRPercentage + '%'"></span>
                           </div>
                         </div>
-                        <span x-show="rsrpNRPercentage == '0'" x-text="rsrpNR"></span>
-                        <span x-show="rsrpNR == '-'" class="fst-italic">None</span>
+                        <span x-show="rsrpLTE == '-' && rsrpNR == '-'" class="fst-italic">None</span>
                       </td>
                     </tr>
                     <tr>
-                      <th scope="row">SINR<sup>4G</sup></th>
-                      <td class="gap-4 align-items-center" x-data="{ getProgressBarClass: function() {
-                          var percentage = parseInt(this.sinrLTEPercentage);
+                      <th scope="row">SINR<sup>4G/5G</sup></th>
+                      <td class="gap-4 align-items-center" x-data="{ getProgressBarClass: function(percentage) {
                           return percentage >= 60 ? 'progress-bar bg-success' : percentage >= 40 ? 'progress-bar bg-warning' : 'progress-bar bg-danger';
                         } }">
-                        <div x-show="sinrLTE != '-' && sinrLTEPercentage != '0'" class="progress w-100"
-                          role="progressbar" aria-label="SINR BAR" :aria-valuenow="sinrLTEPercentage" aria-valuemin="0"
-                          aria-valuemax="100" style="height: 18px">
-                          <div :class="getProgressBarClass()" :style="'width: ' + sinrLTEPercentage +'%'">
-                            <span x-text="sinrLTE + ' / ' + sinrLTEPercentage +'%'"></span>
+                        <div x-show="sinrLTE != '-' || sinrNR != '-'" class="progress w-100" role="progressbar"
+                          aria-label="SINR BAR" aria-valuemin="0" aria-valuemax="100" style="height: 18px">
+                          <div x-show="sinrLTE != '-' && sinrLTEPercentage != '0'"
+                            :class="getProgressBarClass(sinrLTEPercentage)"
+                            :style="'width: ' + sinrLTEPercentage + '%'">
+                            <span x-text="sinrLTE + ' / ' + sinrLTEPercentage + '%'"></span>
+                          </div>
+                          <div x-show="sinrNR != '-' && sinrNRPercentage != '0'"
+                            :class="getProgressBarClass(sinrNRPercentage)" :style="'width: ' + sinrNRPercentage + '%'">
+                            <span x-text="sinrNR + ' / ' + sinrNRPercentage + '%'"></span>
                           </div>
                         </div>
-                        <span x-show="sinrLTEPercentage == '0'" x-text="sinrLTE"></span>
-                        <span x-show="sinrLTE == '-'" class="fst-italic">None</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">SINR<sup>5G</sup></th>
-                      <td class="gap-4 align-items-center" x-data="{ getProgressBarClass: function() {
-                          var percentage = parseInt(this.sinrNRPercentage);
-                          return percentage >= 60 ? 'progress-bar bg-success' : percentage >= 40 ? 'progress-bar bg-warning' : 'progress-bar bg-danger';
-                        } }">
-                        <div x-show="sinrNR != '-' && sinrNRPercentage != '0'" class="progress w-100" role="progressbar"
-                          aria-label="SINR BAR" :aria-valuenow="sinrNRPercentage" aria-valuemin="0" aria-valuemax="100"
-                          style="height: 18px">
-                          <div :class="getProgressBarClass()" :style="'width: ' + sinrNRPercentage +'%'">
-                            <span x-text="sinrNR + ' / ' + sinrNRPercentage +'%'"></span>
-                          </div>
-                        </div>
-                        <span x-show="sinrNRPercentage == '0'" x-text="sinrNR"></span>
-                        <span x-show="sinrNR == '-'" class="fst-italic">None</span>
+                        <span x-show="sinrLTE == '-' && sinrNR == '-'" class="fst-italic">None</span>
                       </td>
                     </tr>
                   </tbody>
@@ -315,8 +279,14 @@
             <div class="card-footer">
               <div class="card-text">
                 <div class="row">
-                  <div class="col"><div><p>更新时间</p></div></div>
-                  <div class="col"><p x-text="lastUpdate"></p></div>
+                  <div class="col">
+                    <div>
+                      <p>更新时间</p>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <p x-text="lastUpdate"></p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -340,6 +310,10 @@
         ipv6: "-",
         bands: "-",
         bandwidth: "-",
+        prxqrsrp: "-",
+        drxqrsrp: "-",
+        rx2qrsrp: "-",
+        rx3qrsrp: "-",
         earfcns: "-",
         pcc_pci: "-",
         scc_pci: "-",
@@ -368,15 +342,15 @@
         refreshRate: 3,
         intervalId: null,
         uptime: "未知",
-        
+
         fetchNetworkInfo() {
-          this.atcmd = 'AT+QTEMP;+QUIMSLOT?;+QSPN;+CGCONTRDP=1;+QMAP="WWANIP";+QENG="servingcell";+QCAINFO';
+          this.atcmd = 'AT+QTEMP;+QUIMSLOT?;+QSPN;+CGCONTRDP=1;+QMAP="WWANIP";+QENG="servingcell";+QCAINFO;+QRSRP';
 
           fetch(`/cgi-bin/get_atcommand?${new URLSearchParams({ atcmd: this.atcmd })}`)
             .then(response => response.text())
             .then(data => this.parseNetworkInfo(data.split("\n")));
         },
-        
+
         parseNetworkInfo(lines) {
           lines.shift();  // 删除数组中的第一个元素
           console.log(lines);
@@ -436,6 +410,16 @@
             this.earfcns = caInfoParts[1].replace(/"/g, "").trim();
           }
 
+          const qrsrpLine = lines.find(line => line.startsWith('+QRSRP:'));
+          if (qrsrpLine) {
+            const qrsrpParts = qrsrpLine.replace('+QRSRP:', '').trim().split(',').map(part => part.trim());
+            this.prxqrsrp = qrsrpParts[0] !== '-' ? qrsrpParts[0] : 'None';
+            this.drxqrsrp = qrsrpParts[1] !== '-' ? qrsrpParts[1] : 'None';
+            this.rx2qrsrp = qrsrpParts[2] !== '-' ? qrsrpParts[2] : 'None';
+            this.rx3qrsrp = qrsrpParts[3] !== '-' ? qrsrpParts[3] : 'None';
+            this.qrsrpType = qrsrpParts[4] !== '-' ? qrsrpParts[4] : 'None';
+          }
+
           // 解析带宽和小区 ID
           const servingCellLine = lines.find((line) => line.startsWith('+QENG: "servingcell"'));
           if (servingCellLine) this.parseServingCellInfo(servingCellLine.split(","));
@@ -443,7 +427,6 @@
 
         resetNetworkInfo() {
           this.network_mode = "网络已断开";
-          this.bands = this.bandwidth = this.earfcns = this.pcc_pci = this.scc_pci = this.csq = this.rssi = this.cellID = this.eNBID = this.tac = this.rsrqLTE = this.rsrqNR = this.rsrqLTEPercentage = this.rsrqNRPercentage = this.rsrpLTE = this.rsrpNR = this.rsrpLTEPercentage = this.rsrpNRPercentage = this.sinrLTE = this.sinrNR = this.sinrLTEPercentage = this.sinrNRPercentage = "未知";
           this.signalPercentage = "0";
           this.internetConnection = "未连接";
           this.lastUpdate = new Date().toLocaleString();
@@ -562,8 +545,13 @@
             .then(data => {
               const sim_status = data.split("\n")[1].split(":")[1].split(",")[1].trim();
               this.sim = sim_status === "1" ? "已激活" : "未激活";
-              this.fetchNetworkInfo();
-              setTimeout(() => this.fetchCSQ(), 1000);
+
+              if (this.sim === "已激活") {
+                this.fetchNetworkInfo();
+                setTimeout(() => this.fetchCSQ(), 1000);
+              } else {
+                this.resetNetworkInfo();
+              }
             });
         },
 
@@ -587,7 +575,7 @@
               const hoursAndMinutes = data.match(/(\d+):(\d+),/);
 
               if (hoursAndMinutes) {
-                this.uptime = `${days ? days[1] + " 天, " : ""}${hoursAndMinutes[1] + " 小时 "}${hoursAndMinutes[2] + " 分钟"}`;
+                this.uptime = `${days ? days[1] + " 天 " : ""}${hoursAndMinutes[1] + " 小时 "}${hoursAndMinutes[2] + " 分钟"}`;
               } else if (days) {
                 this.uptime = `${days[1] + " 天"}${hours ? ", " + hours[1] + " 小时" : ""}${minutes ? ", " + minutes[1] + " 分钟" : ""}`;
               } else if (hours) {
