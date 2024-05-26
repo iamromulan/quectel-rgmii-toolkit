@@ -82,7 +82,7 @@ install_update_tailscale() {
 		rm tailscale_1.66.4_arm.tgz
         cd /usrdata/tailscale_1.66.4_arm
         mv tailscale tailscaled "$TAILSCALE_DIR/"
-        rm -rf /usrdata/tailscale_1.64.0_arm
+        rm -rf /usrdata/tailscale_1.66.4_arm
         echo "Downloading systemd files..."
         cd "$TAILSCALE_SYSD_DIR"
         wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
