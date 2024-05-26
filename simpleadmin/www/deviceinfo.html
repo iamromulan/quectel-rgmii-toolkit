@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="zh" data-bs-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,11 +10,11 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     /> -->
-    <!-- Import all the bootstrap css files from css folder -->
+    <!-- 从 css 文件夹导入所有 Bootstrap CSS 文件 -->
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/bootstrap.min.css" />
 
-    <!--  Import BootStrap Javascript -->
+    <!-- 导入 BootStrap JavaScript -->
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/alpinejs.min.js" defer></script>
   </head>
@@ -33,38 +33,38 @@
               data-bs-target="#navbarText"
               aria-controls="navbarText"
               aria-expanded="false"
-              aria-label="Toggle navigation"
+              aria-label="切换导航"
             >
               <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarText">
               <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                  <a class="nav-link" href="/">Home</a>
+                  <a class="nav-link" href="/">首页</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/network.html">Simple Network</a>
+                  <a class="nav-link" href="/network.html">网络</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/settings.html">Simple Settings</a>
+                  <a class="nav-link" href="/settings.html">设置</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/sms.html">SMS</a>
+                  <a class="nav-link" href="/sms.html">短信</a>
                 </li>
 				<li class="nav-item">
-                  <a class="nav-link" href="/console">Console</a>
+                  <a class="nav-link" href="/watchat.html">控制台</a>
                 </li>
                   <a
                     class="nav-link active"
                     href="/deviceinfo.html"
                     aria-current="page"
-                    >Device Information</a
+                    >设备信息</a
                   >
                 </li>
               </ul>
               <span class="navbar-text">
                 <button class="btn btn-link text-reset" id="darkModeToggle">
-                  Dark Mode
+                  暗黑模式
                 </button>
               </span>
             </div>
@@ -74,26 +74,26 @@
         <div class="row mt-5 gap-3">
           <div class="col">
             <div class="card">
-              <div class="card-header">Device Information</div>
+              <div class="card-header">设备信息</div>
               <div class="card-body">
                 <div class="card-text">
                   <div class="table-responsive">
                     <table class="table">
                       <tbody>
                         <tr>
-                          <th scope="row">Manufacturer</th>
+                          <th scope="row">制造商</th>
                           <td x-text="manufacturer"></td>
                         </tr>
                         <tr>
-                          <th scope="row">Model Name</th>
+                          <th scope="row">型号名称</th>
                           <td x-text="modelName"></td>
                         </tr>
                         <tr>
-                          <th scope="row">Firmware version</th>
+                          <th scope="row">固件版本</th>
                           <td class="col-md-2" x-text="firmwareVersion"></td>
                         </tr>
                         <tr>
-                          <th scope="row">Phone Number</th>
+                          <th scope="row">电话号码</th>
                           <td class="col-md-2" x-text="phoneNumber"></td>
                         </tr>
                         <tr>
@@ -111,7 +111,7 @@
                               class="form-control"
                               type="text"
                               x-model="newImei"
-                              x-bind:placeholder="imei === '-' ? 'Fetching IMEI...' : imei"
+                              x-bind:placeholder="imei === '-' ? '获取IMEI中...' : imei"
                             />
                           </td>
                           <td>
@@ -120,25 +120,25 @@
                               class="btn btn-primary"
                               @click="openModal()"
                             >
-                              Update
+                              更新
                             </button>
                           </td>
                         </tr>
 
                         <tr>
-                          <th scope="row">LAN IP</th>
+                          <th scope="row">局域网IP</th>
                           <td class="col-md-2" x-text="lanIp"></td>
                         </tr>
                         <tr>
-                          <th scope="row">WWAN IPv<sup>4</sup></th>
+                          <th scope="row">广域网IPv<sup>4</sup></th>
                           <td class="col-md-2" x-text="wwanIpv4"></td>
                         </tr>
                         <tr>
-                          <th scope="row">WWAN IPv<sup>6</sup></th>
+                          <th scope="row">广域网IPv<sup>6</sup></th>
                           <td class="col-md-2" x-text="wwanIpv6"></td>
                         </tr>
                         <tr>
-                          <th scope="row">Simple Admin Version</th>
+                          <th scope="row">版本</th>
                           <td class="col-md-2">SimpleAdminRev-Alpha-0.9</td>
                         </tr>
                         <tr>
@@ -239,35 +239,35 @@
                 </div>
               </div>
               <div class="card-footer">
-                Visit our
+                访问
                 <a
                   href="https://github.com/iamromulan/quectel-rgmii-toolkit/tree/development"
                   target="_blank"
                   class="text-reset"
-                  >repository</a
+                  >代码库</a
                 >
-                or
+                或
                 <a
                   href="https://github.com/iamromulan/quectel-rgmii-configuration-notes.git"
                   target="_blank"
                   class="text-reset"
-                  >documentation</a
+                  >文档</a
                 >
-                for more information. All rights reserved. 2024
+                以获取更多信息。版权所有。2024
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Loading Modal for Reboot -->
+        <!-- 重启加载模态框 -->
         <div class="modal-overlay" x-show="showModal">
           <div class="loading-modal">
             <div
               class="loading-text"
               style="display: flex; flex-direction: column"
             >
-              <h3>This will reboot the modem.</h3>
-              <p style="margin-top: 0.5rem">Continue?</p>
+              <h3>这将重启调制解调器。</h3>
+              <p style="margin-top: 0.5rem">继续吗？</p>
             </div>
             <div class="d-grid gap-2 d-md-block">
               <button
@@ -275,20 +275,20 @@
                 type="button"
                 @click="updateIMEI()"
               >
-                Reboot
+                重启
               </button>
               <button
                 class="btn btn-danger"
                 type="button"
                 @click="closeModal()"
               >
-                Cancel
+                取消
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Reboot Modal Countdown -->
+        <!-- 重启倒计时模态框 -->
         <div class="modal-overlay" x-show="isRebooting">
           <div class="loading-modal">
             <div class="loader"></div>
@@ -296,11 +296,11 @@
               class="loading-text"
               style="display: flex; flex-direction: column"
             >
-              <h3>Rebooting...</h3>
+              <h3>重启中...</h3>
               <p style="margin-top: 0.5rem">
-                Please wait for
+                请等待
                 <span x-text="countdown" style="font-weight: 500"></span>
-                seconds.
+                秒。
               </p>
             </div>
           </div>
@@ -321,7 +321,7 @@
           lanIp: "-",
           wwanIpv4: "-",
           wwanIpv6: "-",
-          phoneNumber: "Unknown",
+          phoneNumber: "未知",
           simpleAdminVersion: "-",
           atcmd: null,
           atCommandResponse: "",
@@ -332,9 +332,9 @@
 
           sendATCommand() {
             if (!this.atcmd) {
-              // Use ATI as default command
+              // 使用 ATI 作为默认命令
               console.log(
-                "AT Command is empty, using ATI as default command: "
+                "AT 命令为空，使用 ATI 作为默认命令："
               );
             }
 
@@ -352,7 +352,7 @@
                 this.atCommandResponse = data;
               })
               .catch((error) => {
-                console.error("Error: ", error);
+                console.error("错误：", error);
                 this.showError = true;
               });
           },
@@ -375,7 +375,7 @@
                 this.parseFetchedData();
               })
               .catch((error) => {
-                console.error("Error: ", error);
+                console.error("错误：", error);
                 this.showError = true;
               });
           },
@@ -383,7 +383,7 @@
           parseFetchedData() {
             const lines = this.atCommandResponse.split("\n");
 
-            console.log("AT Command Response: ", lines);
+            console.log("AT 命令响应：", lines);
 
             this.manufacturer = lines[1].trim();
             this.modelName = lines[3].trim();
@@ -397,7 +397,7 @@
             this.phoneNumber = lines[18].trim().split(",")[1].replace(/"/g, "");
 
             if (this.phoneNumber === "") {
-              this.phoneNumber = "Unknown";
+              this.phoneNumber = "未知";
             }
 
             this.simpleAdminVersion = "SimpleAdminRev-Alpha-0.6";
@@ -432,20 +432,20 @@
 
           openModal() {
             if (!this.newImei) {
-              alert("No new IMEI provided.");
+              alert("没有提供新的 IMEI。");
               return;
             }
 
             if (this.newImei.length !== 15) {
-              alert("IMEI is invalid");
+              alert("IMEI 无效");
               return;
             }
 
             if (this.newImei === this.imei) {
-              alert("IMEI is the same as the current IMEI");
+              alert("IMEI 与当前 IMEI 相同");
               return;
             }
-            
+
             this.showModal = true;
           },
 

@@ -1,209 +1,106 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Simple Admin</title>
-    <!-- <link
-			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-			rel="stylesheet"
-			integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-			crossorigin="anonymous"
-		/> -->
-    <!-- Import all the bootstrap css files from css folder -->
-    <link rel="stylesheet" href="css/styles.css" />
-    <link rel="stylesheet" href="css/bootstrap.min.css" />
+<html lang="zh-CN" data-bs-theme="light">
 
-    <!-- Logo -->
-    <link rel="simpleadmin-logo" href="favicon.ico" />
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple Admin</title>
+  <!-- 从css文件夹导入所有Bootstrap css文件 -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
 
-    <!--  Import BootStrap Javascript -->
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/alpinejs.min.js" defer></script>
-  </head>
-  <body>
-    <main>
-      <div class="container my-4" x-data="cellScanner()">
-        <nav class="navbar navbar-expand-lg mt-2">
-          <div class="container-fluid">
-            <a class="navbar-brand" href="/"
-              ><span class="mb-0 h4">Simple Admin</span></a
-            >
-            <button
-              class="navbar-toggler"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#navbarText"
-              aria-controls="navbarText"
-              aria-expanded="false"
-              aria-label="Toggle navigation"
-            >
-              <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarText">
-              <ul class="navbar-nav me-auto mb-2 ml-4 mb-lg-0">
-                <li class="nav-item">
-                  <a class="nav-link" href="/">Home</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/network.html">Simple Network</a>
-                </li>
-                <li class="nav-item">
-                  <a
-                    class="nav-link active"
-                    href="/settings.html"
-                    aria-current="page"
-                    >Simple Settings</a
-                  >
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/sms.html">SMS</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/console">Console</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/deviceinfo.html"
-                    >Device Information</a
-                  >
-                </li>
-              </ul>
-              <span class="navbar-text">
-                <button class="btn btn-link text-reset" id="darkModeToggle">
-                  Dark Mode
-                </button>
-              </span>
-            </div>
-          </div>
-        </nav>
-        <div class="row mt-3 mb-4">
-          <div class="col">
-            <div class="card">
-              <div class="card-header">Cell Scanner</div>
-              <div class="card-body">
-                <div class="card-text">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th scope="col">Network</th>
-                        <th scope="col">Provider</th>
-                        <th scope="col">Band</th>
-                        <th scope="col">Frequency</th>
-                        <th scope="col">PCI</th>
-                        <th scope="col">RSRP</th>
-                        <th scope="col">Signal</th>
-                      </tr>
-                    </thead>
-                    <tbody id="cellScanTableBody">
-                      <!-- CELL ROWS HERE -->
-                    </tbody>
-                  </table>
-                  <div>
-                    <div class="col-md-4 mb-3">
-                      <div class="form-group">
-                        <label for="exampleFormControlSelect1"
-                          >Choose Scan Mode</label
-                        >
-                        <select
-                          class="form-select"
-                          id="cellSelect"
-                          x-model="cellScanMode"
-                        >
-                          <option selected>Select Scan Mode</option>
-                          <option value="Full Scan">Full Scan</option>
-                          <option value="LTE Only">LTE Only</option>
-                          <option value="NR5G Only">NR5G Only</option>
-                        </select>
-                        <div id="cellSelectHelper" class="form-text">
-                          Cell Scanner will scan all LTE and NR5G-SA cells in
-                          your area. Scanning might disconnect your network and
-                          take some minutes to complete.
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      class="d-grid gap-2 d-md-flex justify-content-md-start"
-                    >
-                      <button
-                        class="btn btn-primary me-md-2"
-                        type="button"
-                        x-on:click="startCellScan()"
-                        :disabled='isLoading === true || cellScanMode === "Unspecified" || cellScanMode === "Select Scan Mode"'
-                        x-text="isCellScanning ? 'Scanning... Please wait.' : 'Start Cell Scan'"
-                      ></button>
-                      <button
-                        class="btn btn-danger"
-                        type="button"
-                        x-on:click="clearTableRowsBodyCellScan()"
-                        :disabled="isLoading === true || resultDoneCell === false"
-                      >
-                        Clear
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+  <!-- Logo -->
+  <link rel="simpleadmin-logo" href="favicon.ico" />
+
+  <!-- 导入Bootstrap Javascript -->
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/alpinejs.min.js" defer></script>
+</head>
+
+<body>
+  <main>
+    <div class="container my-4" x-data="cellScanner()">
+      <nav class="navbar navbar-expand-lg mt-2">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="/"><span class="mb-0 h4">Simple Admin</span></a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
+            aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 ml-4 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" href="/">主页</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/network.html" aria-current="page">网络</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/settings.html">设置</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/sms.html">短信</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/console">控制台</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/deviceinfo.html">设备信息</a>
+              </li>
+            </ul>
+            <span class="navbar-text">
+              <button class="btn btn-link text-reset" id="darkModeToggle">
+                暗模式
+              </button>
+            </span>
           </div>
         </div>
-
-        <div class="row">
-          <div class="col">
-            <div class="card">
-              <div class="card-header">LTE and NR5G Neighbourcell Scan</div>
-              <div class="card-body">
+      </nav>
+      <div class="row mt-3 mb-4">
+        <div class="col">
+          <div class="card">
+            <div class="card-header">小区扫描</div>
+            <div class="card-body">
+              <div class="card-text">
                 <table class="table">
                   <thead>
                     <tr>
-                      <th scope="col">Network</th>
-                      <th scope="col">Frequency</th>
+                      <th scope="col">网络</th>
+                      <th scope="col">运营商</th>
+                      <th scope="col">频段</th>
+                      <th scope="col">频率</th>
                       <th scope="col">PCI</th>
                       <th scope="col">RSRP</th>
-                      <th scope="col">Signal</th>
+                      <th scope="col">信号</th>
                     </tr>
                   </thead>
-                  <tbody id="neighbourCellTableBody">
-                    <!-- NEIGHBOUR CELL ROWS HERE -->
+                  <tbody id="cellScanTableBody">
+                    <!-- 小区行在此 -->
                   </tbody>
                 </table>
                 <div>
                   <div class="col-md-4 mb-3">
                     <div class="form-group">
-                      <label for="exampleFormControlSelect1"
-                        >Choose Scan Mode</label
-                      >
-                      <select
-                        class="form-select"
-                        id="neighbourCellSelect"
-                        x-model="neighbourCellsScanMode"
-                      >
-                        <option selected>Select Scan Mode</option>
-                        <option value="LTE and NR5G">LTE and NR5G</option>
-                        <option value="LTE">LTE</option>
-                        <option value="NR5G">NR5G</option>
+                      <label for="exampleFormControlSelect1">选择扫描模式</label>
+                      <select class="form-select" id="cellSelect" x-model="cellScanMode">
+                        <option selected>选择扫描模式</option>
+                        <option value="Full Scan">全面扫描</option>
+                        <option value="LTE Only">仅LTE</option>
+                        <option value="NR5G Only">仅NR5G</option>
                       </select>
-                      <div id="neighbourCellSelectHelper" class="form-text">
-                        Neighbourcell scan will only scan LTE or NR5G cells from
-                        your network provider.
+                      <div id="cellSelectHelper" class="form-text">
+                        小区扫描将扫描您所在区域的所有LTE和NR5G-SA小区。扫描可能会断开您的网络连接，并需要几分钟完成。
                       </div>
                     </div>
                   </div>
                   <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                    <button
-                      class="btn btn-primary me-md-2"
-                      type="button"
-                      x-on:click="getNeighbourcellLTEandNR5G()"
-                      :disabled="isLoading === true || neighbourCellsScanMode === 'Unspecified' || neighbourCellsScanMode === 'Select Scan Mode'"
-                    >
-                      Start Neighbour Cell Scan
+                    <button class="btn btn-primary me-md-2" type="button" x-on:click="startCellScan()"
+                      :disabled='isLoading || cellScanMode === "Unspecified" || cellScanMode === "选择扫描模式"'
+                      x-text="isCellScanning ? '扫描中... 请稍候.' : '开始小区扫描'">
                     </button>
-                    <button
-                      class="btn btn-danger"
-                      type="button"
-                      x-on:click="clearTableRowsBodyNeighbourCells()"
-                      :disabled="isLoading === true || resultDoneNeighbourCell === false"
-                    >
-                      Clear
+                    <button class="btn btn-danger" type="button" x-on:click="clearTableRowsBodyCellScan()"
+                      :disabled="isLoading || !resultDoneCell">
+                      清除
                     </button>
                   </div>
                 </div>
@@ -212,2105 +109,376 @@
           </div>
         </div>
       </div>
-    </main>
-    <script src="js/dark-mode.js"></script>
-    <script>
-      function cellScanner() {
-        return {
-          networkNames: {
-            28967: "Aquafon JSC",
-            28988: "A-Mobile LLSC",
-            27601: "One Telecommunications",
-            27602: "Vodafone Albania",
-            27603: "Albtelecom",
-            21303: "Andorra Telecom",
-            28301: "Veon Armenia CJSC",
-            28304: "Karabakh Telecom",
-            28305: "K Telecom CJSC",
-            28310: "Ucom LLC",
-            23201: "A1 Telekom Austria",
-            23203: "T-Mobile Austria GmbH",
-            23205: "Hutchison Drei Austria",
-            23207: "T-Mobile Austria",
-            23208: "Lycamobile Austria",
-            23209: "A1 Telekom Austria",
-            23210: "Hutchison Drei Austria",
-            23211: "A1 Telekom Austria",
-            23212: "A1 Telekom Austria",
-            23213: "T-Mobile Austria GmbH",
-            23215: "Mundio Mobile Austria",
-            23217: "MASS Response Service GmbH",
-            23220: "MTEL Austrija GmbH",
-            23291: "ÖBB",
-            23292: "ArgoNET GmbH",
-            25701: "A1 Belarus",
-            25702: "Mobile TeleSystems",
-            25704: "Belarusian Telecommunications Network",
-            25706: "Belorussian Cloud Technologies",
-            20601: "Proximus SA",
-            20602: "Infrabel",
-            20603: "Citymesh NV",
-            20605: "Telenet",
-            20606: "Lycamobile sprl",
-            20608: "Nethys",
-            20610: "Orange S.A.",
-            20620: "Telenet",
-            20630: "Unleashed NV",
-            21803: "Public Enterprise Croatian Telecom Ltd.",
-            21805: "RS Telecommunications JSC Banja Luka",
-            21890: "BH Telecom",
-            28401: "A1 Bulgaria",
-            28403: "BTC",
-            28405: "Yettel Bulgaria",
-            28407: "НАЦИОНАЛНА КОМПАНИЯ ЖЕЛЕЗОПЪТНА ИНФРАСТРУКТУРА",
-            28411: "Bulsatcom",
-            28413: "Ti.com JSC",
-            21901: "T-Hrvatski Telekom",
-            21902: "Telemach",
-            21910: "A1 Hrvatska",
-            28001: "Cyprus Telecommunications Authority",
-            28010: "Monaco Telecom",
-            28020: "PrimeTel PLC",
-            28022: "Lemontel Ltd",
-            23001: "T-Mobile Czech Republic",
-            23002: "O2 Czech Republic",
-            23003: "Vodafone Czech Republic",
-            23004: "Nordic Telecom Regional s.r.o.",
-            23005: "PODA a.s.",
-            23006: "Nordic Telecom 5G a.s.",
-            23007: "T-Mobile Czech Republic",
-            23098: "Správa železniční dopravní cesty, s.o.",
-            23801: "TDC A/S",
-            23802: "Telenor Denmark",
-            23805: "Dansk Beredskabskommunikation A/S",
-            23806: "Hi3G Denmark ApS",
-            23808: "Voxbone mobile",
-            23809: "Dansk Beredskabskommunikation A/S",
-            23810: "TDC A/S",
-            23811: "Dansk Beredskabskommunikation A/S",
-            23812: "Lycamobile Denmark Ltd",
-            23815: "Cibicom",
-            23820: "Telia",
-            23823: "Banedanmark",
-            23842: "Greenwave Mobile IoT ApS",
-            23866: "TT-Netværket P/S",
-            23873: "Onomondo ApS",
-            24801: "Telia Eesti",
-            24802: "Elisa Eesti",
-            24803: "Tele2 Eesti",
-            24804: "OY Top Connect",
-            24805: "CSC Telecom Estonia OÜ",
-            24816: "SmartTel Plus OÜ",
-            24820: "DOTT Telecom OÜ",
-            24826: "IT-Decision Telecom OÜ",
-            28801: "Føroya Tele",
-            28802: "Nema",
-            24403: "DNA Oy",
-            24405: "Elisa Oyj",
-            24407: "Nokia Solutions and Networks Oy",
-            24412: "DNA Oy",
-            24414: "Ålands Telekommunikation Ab",
-            24417: "Liikennevirasto",
-            24419: "Nettia Oy",
-            24421: "Elisa Oyj",
-            24426: "Compatel Ltd",
-            24432: "Voxbone SA",
-            24433: "Suomen Turvallisuusverkko Oy",
-            24435: "Edzcom Oy",
-            24436: "Telia Finland Oyj / Suomen Yhteisverkko Oy",
-            24437: "Tismi BV",
-            24491: "Telia Finland Oyj",
-            20801: "Orange S.A.",
-            20802: "Orange S.A.",
-            20803: "MobiquiThings",
-            20805: "Globalstar Europe",
-            20806: "Globalstar Europe",
-            20807: "Globalstar Europe",
-            20808: "Altice",
-            20809: "Altice",
-            20810: "Altice",
-            20811: "Altice",
-            20812: "Truphone France",
-            20813: "Altice",
-            20814: "SNCF Réseau",
-            20815: "Free Mobile",
-            20816: "Free Mobile",
-            20819: "Haute-Garonne numérique",
-            20820: "Bouygues Telecom",
-            20823: "Syndicat mixte ouvert Charente Numérique",
-            20824: "Sierra Wireless",
-            20825: "LycaMobile",
-            20826: "Bouygues Telecom - Distribution",
-            20827: "Coriolis Telecom",
-            20828: "Airmob Infra Full",
-            20829: "Cubic télécom France",
-            20830: "Syma Mobile",
-            20831: "Mundio Mobile",
-            20834: "Cellhire France",
-            20835: "Free Mobile",
-            20836: "Free Mobile",
-            20838: "Lebara France Ltd",
-            20888: "Bouygues Telecom",
-            20896: "Région Bourgogne-Franche-Comté",
-            28201: "Silknet",
-            28202: "MagtiCom",
-            28203: "MagtiCom",
-            28204: "Mobitel",
-            28205: "Silknet",
-            28207: "GlobalCell",
-            28208: "Silknet",
-            28209: "Gmobile",
-            26201: "Telekom Deutschland GmbH",
-            26202: "Vodafone D2 GmbH",
-            26203: "Telefónica Germany GmbH & Co. oHG",
-            26209: "Vodafone D2 GmbH",
-            26210: "DB Netz AG",
-            26212: "sipgate GmbH",
-            26214: "Lebara Limited",
-            26215: "None",
-            26218: "NetCologne",
-            26219: "Alliander AG",
-            26220: "Enreach Germany GmbH",
-            26223: "Drillisch Online AG",
-            26243: "Lycamobile",
-            26260: "DB Telematik",
-            26270: "BDBOS",
-            26298: "private networks",
-            26601: "Gibtelecom",
-            20201: "COSMOTE - Mobile Telecommunications S.A.",
-            20202: "COSMOTE - Mobile Telecommunications S.A.",
-            20205: "Vodafone Greece",
-            20209: "NOVA",
-            20210: "NOVA",
-            20212: "Yuboto",
-            20214: "CYTA",
-            20216: "Inter Telecom",
-            29001: "Tusass A/S",
-            29002: "inu:it a/s",
-            23403: "Jersey Airtel Ltd",
-            23450: "JT Group Limited",
-            23455: "Sure (Guernsey) Limited",
-            21601: "Telenor Magyarország Zrt.",
-            21602: "MVM Net Ltd.",
-            21603: "DIGI Telecommunication Ltd.",
-            21630: "Magyar Telekom Plc",
-            21670: "Vodafone Magyarország Zrt.",
-            21671: "Vodafone Magyarország Zrt.",
-            21699: "Magyar Államvasutak",
-            27401: "Iceland Telecom",
-            27402: "Sýn",
-            27404: "IMC Island ehf",
-            27408: "Iceland Telecom",
-            27411: "Nova ehf",
-            27412: "IP fjarskipti",
-            27491: "Neyðarlínan",
-            27201: "Vodafone Ireland",
-            27202: "Hutchison 3G Ireland limited",
-            27203: "Eir Group plc",
-            27205: "Hutchison 3G Ireland limited",
-            27207: "Eir Group plc",
-            27211: "Liffey Telecom",
-            27213: "Lycamobile",
-            27215: "UPC",
-            27216: "Carphone Warehouse",
-            27218: "Cubic Telecom Limited",
-            27221: "Net Feasa Limited",
-            23436: "Sure Isle of Man Ltd.",
-            23458: "Manx Telecom",
-            23473: "Bluewave Communications Ltd",
-            22201: "Telecom Italia S.p.A.",
-            22206: "Vodafone Italia S.p.A.",
-            22207: "Noverca",
-            22208: "Fastweb S.p.A.",
-            22210: "Vodafone Italia S.p.A.",
-            22230: "Rete Ferroviaria Italiana",
-            22233: "Poste Mobile S.p.A.",
-            22234: "BT Italia",
-            22235: "Lycamobile",
-            22236: "Digi Italy S.r.l.",
-            22238: "OpNet S.p.A.",
-            22241: "GO internet S.p.A.",
-            22243: "Telecom Italia S.p.A.",
-            22247: "Fastweb S.p.A.",
-            22250: "Iliad Italia",
-            22253: "COOP Voce",
-            22254: "None",
-            22256: "Mass Response GmbH",
-            22288: "Wind Tre",
-            22299: "Wind Tre",
-            22101: "Telecom of Kosovo J.S.C.",
-            22102: "IPKO",
-            22106: "Dardaphone.Net LLC",
-            22107: "Dukagjini Telecommunications LLC",
-            24701: "Latvian Mobile Telephone",
-            24702: "Tele2",
-            24703: "Telekom Baltija",
-            24705: "Bite Latvija",
-            24707: "SIA MEGATEL",
-            24708: "SIA VENTAmobile",
-            24709: "Camel Mobile",
-            29501: "Swisscom Schweiz AG",
-            29502: "Salt Liechtenstein AG",
-            29505: "Telecom Liechtenstein AG",
-            29506: "Cubic Telecom AG",
-            24601: "Telia Lietuva",
-            24602: "UAB Bitė Lietuva",
-            24603: "UAB Tele2 (Tele2 AB, Sweden)",
-            24605: "Lietuvos geležinkeliai (Lithuanian Railways)",
-            24606: "UAB Mediafon",
-            24608: "Lietuvos radijo ir televizijos centras",
-            27001: "POST Luxembourg",
-            27071: "Société Nationale des Chemins de Fer Luxembourgeois",
-            27077: "Tango SA",
-            27099: "Orange S.A.",
-            27801: "Epic",
-            27821: "Mobile Communications Limited",
-            27877: "Melita",
-            25500: "Interdnestrcom",
-            25901: "Orange Moldova",
-            25902: "Moldcell",
-            25903: "Moldtelecom",
-            25905: "Moldtelecom",
-            25915: "Interdnestrcom",
-            25999: "Moldtelecom",
-            21210: "Monaco Telecom",
-            29701: "Telenor Montenegro",
-            29702: "Crnogorski Telekom",
-            29703: "m:tel Crna Gora",
-            20402: "T-Mobile Netherlands B.V",
-            20403: "Enreach Netherlands B.V.",
-            20404: "Vodafone Libertel B.V.",
-            20407: "Tata Communications MOVE B.V.",
-            20408: "KPN Mobile The Netherlands B.V.",
-            20409: "Lycamobile Netherlands Limited",
-            20410: "KPN B.V.",
-            20411: "Greenet Netwerk B.V",
-            20412: "KPN Mobile The Netherlands B.V.",
-            20415: "Ziggo B.V.",
-            20416: "T-Mobile Netherlands B.V",
-            20417: "Lebara Ltd",
-            20418: "Ziggo Services B.V.",
-            20420: "T-Mobile Netherlands B.V",
-            20421: "ProRail B.V.",
-            20423: "KORE Wireless Nederland B.V.",
-            20425: "CapX B.V.",
-            20427: "L-Mobi Mobile B.V.",
-            20433: "Truphone B.V.",
-            20462: "RGTN Wholesale Netherlands B.V.",
-            20466: "Utility Connect B.V.",
-            29401: "Makedonski Telekom",
-            29403: "A1 Macedonia DOOEL",
-            29404: "Lycamobile LLC",
-            24201: "Telenor Norge AS",
-            24202: "Telia Norge AS",
-            24206: "ICE Norge AS",
-            24208: "Telia Norge AS",
-            24209: "Com4 AS",
-            24214: "ICE Communication Norge AS",
-            24215: "eRate Norway AS",
-            24220: "Jernbaneverket AS",
-            24221: "Jernbaneverket AS",
-            24223: "Lyca Mobile Ltd",
-            24299: "TampNet AS",
-            26001: "Polkomtel Sp. z o.o.",
-            26002: "T-Mobile Polska S.A.",
-            26003: "Orange Polska S.A.",
-            26006: "P4 Sp. z o.o.",
-            26007: "Netia S.A.",
-            26009: "Lycamobile Sp. z o.o.",
-            26011: "Polkomtel Sp. z o.o.",
-            26012: "Cyfrowy Polsat S.A.",
-            26013: "Move Telecom S.A.",
-            26015: "Polkomtel Sp. z o.o.",
-            26016: "Polkomtel Sp. z o.o.",
-            26017: "Polkomtel Sp. z o.o.",
-            26025: "Claude ICT Poland Sp. z o.o.",
-            26033: "Truphone Poland Sp. z o.o.",
-            26034: "T-Mobile Polska S.A.",
-            26035: "PKP Polskie Linie Kolejowe S.A.",
-            26039: "VOXBONE SA",
-            26045: "P4 Sp. z o.o.",
-            26801: "Vodafone Portugal",
-            26803: "NOS Comunicações",
-            26804: "LycaMobile",
-            26806: "MEO - Serviços de Comunicações e Multimédia, S.A.",
-            26812: "Infraestruturas de Portugal, S.A.",
-            26880: "MEO - Serviços de Comunicações e Multimédia, S.A.",
-            22601: "Vodafone România",
-            22603: "Telekom Romania",
-            22605: "RCS&RDS",
-            22610: "Orange România",
-            22616: "Lycamobile Romania",
-            25001: "Mobile TeleSystems",
-            25002: "MegaFon PJSC",
-            25008: "CS VainahTelecom",
-            25009: "Khabarovsky Cellular Phone",
-            25011: "Scartel",
-            25016: "Miatel",
-            25020: "Tele2",
-            25021: "JSC GlobalTel",
-            25022: "Vainakh Telecom",
-            25023: "GTNT",
-            25026: "VTB Mobile",
-            25027: "Tattelecom",
-            25029: "Iridium Communications",
-            25032: "K-Telecom",
-            25033: "Sevtelekom",
-            25034: "Krymtelekom",
-            25035: "EKATERINBURG-2000",
-            25040: "Voentelecom",
-            25045: "PJSC New Mobile Communications",
-            25050: "Sberbank-Telecom",
-            25059: "NetbyNet",
-            25060: "KTK Telecom",
-            25062: "Tinkoff Mobile",
-            25096: "K-Telecom",
-            25097:
-              "State Unitary Enterprise of DPR Republican Telecommunications Operator",
-            25598: "OOO MKS",
-            25099: "OJSC Vimpel-Communications",
-            29201: "San Marino Telecom",
-            22001: "Telenor Serbia",
-            22003: "Telekom Srbija",
-            22005: "A1 Srbija d.o.o.",
-            22011: "GLOBALTEL d.o.o.",
-            23101: "Orange Slovensko",
-            23102: "Slovak Telekom",
-            23103: "SWAN Mobile, a.s.",
-            23104: "Slovak Telekom",
-            23105: "Orange Slovensko",
-            23106: "O2 Slovakia",
-            23199: "Železnice Slovenskej Republiky",
-            29310: "SŽ - Infrastruktura, d.o.o.",
-            29340: "A1 Slovenija",
-            29341: "Telekom Slovenije",
-            29364: "T-2 d.o.o.",
-            29370: "Tušmobil d.o.o.",
-            21401: "Vodafone Spain",
-            21402: "Fibracat Telecom SLU",
-            21403: "Orange Espagne S.A.U",
-            21404: "Xfera Moviles SA",
-            21405: "Telefónica Móviles España",
-            21406: "Vodafone Spain",
-            21407: "Telefónica Móviles España",
-            21408: "None",
-            21409: "Orange Espagne S.A.U",
-            21414: "AVATEL MÓVIL, S.L.U.",
-            21416: "R Cable y Telecomunicaciones Galicia S.A.",
-            21417: "R Cable y Telecomunicaciones Galicia S.A.",
-            21419: "Orange España Virtual Sl.",
-            21422: "Best Spain Telecom",
-            21424: "VODAFONE ESPAÑA, S.A.U.",
-            21427: "SCN Truphone, S.L.",
-            21428: "Consorcio de Telecomunicaciones Avanzadas, S.A.",
-            21429: "Xfera Moviles S.A.U.",
-            21434: "Aire Networks del Mediterráneo, S.L.U.",
-            21451: "Administrador de Infraestructuras Ferroviarias",
-            24001: "Telia Sverige AB",
-            24002: "HI3G Access AB",
-            24003: "Teracom AB",
-            24004: "3G Infrastructure Services AB",
-            24005: "Svenska UMTS-Nät AB",
-            24006: "Telenor Sverige AB",
-            24007: "Tele2 Sverige AB",
-            24010: "Tele2 Sverige AB",
-            24012: "Lycamobile Sweden Limited",
-            24016: "42 Telecom AB",
-            24017: "Götalandsnätet AB",
-            24019: "Mundio Mobile (Sweden) Limited",
-            24020: "Sierra Wireless Messaging AB",
-            24021: "Trafikverket ICT",
-            24024: "Net4Mobility HB",
-            24027: "GlobeTouch AB",
-            24038: "Voxbone mobile",
-            24063: "Fink Telecom Services",
-            22801: "Swisscom AG",
-            22802: "Sunrise UPC",
-            22803: "Salt Mobile SA",
-            22806: "SBB AG",
-            22808: "Sunrise Communications AG",
-            22851: "relario AG",
-            22853: "Sunrise UPC GmbH",
-            22854: "Lycamobile AG",
-            22858: "Beeone Communications SA",
-            22862: "Telecom26 AG",
-            22863: "Fink Telecom Services",
-            22864: "Nth AG",
-            28601: "Turkcell Iletisim Hizmetleri A.S.",
-            28602: "Vodafone Turkey",
-            28603: "Türk Telekom",
-            25501: "PRJSC VF Ukraine",
-            25502: "PRJSC Kyivstar",
-            25503: "PRJSC Kyivstar",
-            25504: "Intertelecom LLC",
-            25506: "lifecell LLC",
-            25507: "Trimob LLC",
-            25521: "PRJSC Telesystems of Ukraine",
-            23400: "BT Group",
-            23401: "Mundio Mobile Limited",
-            23402: "Telefónica Europe",
-            23408: "BT OnePhone (UK) Ltd",
-            23410: "Telefónica Europe",
-            23411: "Telefónica Europe",
-            23412: "Network Rail Infrastructure Ltd",
-            23413: "Network Rail Infrastructure Ltd",
-            23414: "Link Mobility UK Ltd",
-            23415: "Vodafone",
-            23416: "TalkTalk Communications Limited",
-            23418: "Wireless Logic Limited",
-            23419: "Teleware plc",
-            23420: "Hutchison 3G UK Ltd",
-            23424: "Stour Marine Limited",
-            23425: "Truphone",
-            23426: "Lycamobile UK Limited",
-            23427: "Tata Communications Move UK Ltd",
-            23428: "Marathon Telecom Limited",
-            23430: "EE",
-            23433: "EE",
-            23434: "EE",
-            23451: "UK Broadband Limited",
-            23453: "Tango Networks UK Ltd",
-            23454: "The Carphone Warehouse Limited",
-            23472: "Hanhaa Limited",
-            23476: "BT Group",
-            23478: "Airwave Solutions Ltd",
-            23488: "Telet Research (N.I.) Limited",
-            23588: "Telet Research (N.I.) Limited",
-            365010: "Digicel",
-            365840: "Cable & Wireless",
-            344030: "Antigua Public Utilities Authority",
-            344050: "Antigua Wireless Ventures Limited",
-            344920: "Cable & Wireless Caribbean Cellular (Antigua) Limited",
-            36301: "Servicio di Telecomunicacion di Aruba",
-            36302: "Digicel Aruba",
-            36439: "The Bahamas Telecommunications Company Ltd (BaTelCo)",
-            36449: "Cable Bahamas Ltd",
-            342600: "LIME (formerly known as Cable & Wireless)",
-            342750: "Digicel (Barbados) Limited",
-            31059: "None",
-            338050: "Digicel (Turks & Caicos) Limited",
-            35000: "Bermuda Digital Communications Ltd.",
-            348170: "Cable & Wireless",
-            348570: "Caribbean Cellular Telephone",
-            348770: "Digicel (BVI) Limited",
-            302130: "Xplore Inc.",
-            302131: "Xplore Inc.",
-            302220: "Telus Mobility",
-            302270: "Bragg Communications",
-            302300: "Ecotel inc.",
-            302310: "Ecotel inc.",
-            302320: "Rogers Communications",
-            302340: "Execulink",
-            302370: "Fido Solutions (Rogers Wireless)",
-            302380: "Keewaytinook Okimakanak Mobile",
-            302420: "A.B.C. Allen Business Communications Ltd.",
-            302480: "SSi Connexions",
-            302490: "Shaw Communications",
-            302500: "Videotron",
-            302510: "Videotron",
-            302520: "Videotron",
-            302530: "Keewaytinook Okimakanak Mobile",
-            302590: "Quadro Communications Co-op",
-            302610: "Bell Mobility",
-            302620: "ICE Wireless",
-            302650: "Thunder Bay Telephone",
-            302660: "Bell MTS",
-            302680: "SaskTel Mobility",
-            302690: "Bell Mobility",
-            302710: "None",
-            302720: "Rogers Communications",
-            302760: "Telus Mobility",
-            302770: "TNW Wireless Inc.",
-            302780: "SaskTel Mobility",
-            302790: "NetSet Communications",
-            302880: "Shared Telus, Bell, and SaskTel",
-            302940: "Wightman Telecom",
-            33805: "Digicel",
-            346001: "WestTel Ltd.",
-            346140: "Cable & Wireless (Cayman Islands) Limited",
-            36801: "Empresa de Telecomunicaciones de Cuba, SA",
-            366020: "Digicel Group Limited",
-            366110: "Cable &  Wireless",
-            37001: "Altice Group",
-            37002: "Compañía Dominicana de Teléfonos",
-            37003: "Altice Group",
-            37004: "Trilogy Dominicana, S.A.",
-            37005: "WIND Telecom, S.A",
-            34001: "Orange Caraïbe Mobiles",
-            34002: "Outremer Telecom",
-            34003: "UTS Caraïbe",
-            34008: "Dauphin Telecom",
-            34020: "DIGICEL Antilles Française Guyane",
-            352030: "Digicel Grenada Ltd.",
-            352110: "Cable & Wireless Grenada Ltd.",
-            310032: "IT&E Overseas, Inc",
-            310140: "Teleguam Holdings, LLC",
-            310370: "NTT DoCoMo Pacific",
-            310400: "IT&E Overseas, Inc",
-            310480: "IT&E Overseas, Inc",
-            311120: "IT&E Overseas, Inc",
-            311250: "IT&E Overseas, Inc",
-            37202: "Unigestion Holding S.A.",
-            37203: "NATCOM S.A.",
-            338110: "Cable & Wireless Communications",
-            338180: "Cable & Wireless Communications",
-            334020: "América Móvil",
-            334030: "Telefónica",
-            334050: "AT&T Mexico",
-            334090: "AT&T Mexico",
-            334130: "ALESTRA SERVICIOS MÓVILES, S.A. DE C.V.",
-            334140: "Altán Redes S.A.P.I. de C.V.",
-            334150: "Ultravisión, S.A. de C.V.",
-            334180: "FREEDOMPOP MÉXICO, S.A. DE C.V.",
-            334190: "VIASAT TECNOLOGÍA, S.A. DE C.V.",
-            354860: "Cable & Wireless",
-            36251: "Telcell N.V.",
-            36254: "East Caribbean Cellular",
-            36260: "Liberty Latin America",
-            36268: "Curaçao Telecom N.V.",
-            36269: "Curaçao Telecom N.V.",
-            36276: "Antiliano Por N.V.",
-            36278: "Telefonia Bonairiano N.V.",
-            36291: "Liberty Latin America",
-            36294: "Bòbò Frus N.V.",
-            310110: "PTI Pacifica Inc.",
-            310260: "T-Mobile US",
-            313790: "Liberty Cablevision of Puerto Rico LLC",
-            330000: "PR Wireless",
-            330110: "América Móvil",
-            330120: "PR Wireless",
-            356050: "Wireless Ventures (St Kitts-Nevis) Limited",
-            356070: "UTS",
-            356110: "Cable & Wireless St. Kitts & Nevis Ltd",
-            358110: "Cable &  Wireless",
-            30801: "St. Pierre-et-Miquelon Télécom",
-            30802: "GLOBALTEL",
-            360050: "Digicel (St. Vincent and the Grenadines) Limited",
-            360110: "Cable & Wireless (St. Vincent & the Grenadines) Ltd",
-            37412: "TSTT",
-            374130: "Digicel (Trinidad & Tobago) Limited",
-            376350: "Cable & Wireless West Indies Ltd (Turks & Caicos)",
-            310004: "Verizon Wireless",
-            310006: "Verizon Wireless",
-            310012: "Verizon Wireless",
-            310020: "Union Telephone Company",
-            310030: "AT&T Mobility",
-            310034: "Airpeak",
-            310050: "Alaska Communications",
-            310053: "T-Mobile US",
-            310054: "Alltel US",
-            310066: "U.S. Cellular",
-            310070: "AT&T Mobility",
-            310080: "AT&T Mobility",
-            310090: "AT&T Mobility",
-            310100: "New Mexico RSA 4 East LP",
-            310120: "T-Mobile US",
-            310130: "Carolina West Wireless",
-            310150: "AT&T Mobility",
-            310160: "T-Mobile US",
-            310170: "AT&T Mobility",
-            310180: "West Central Wireless",
-            310190: "Alaska Communications",
-            310320: "Smith Bagley, Inc.",
-            310340: "Limitless Mobile, LLC",
-            310360: "Cellular Network Partnership",
-            310390: "TX-11 Acquisition, LLC",
-            310410: "AT&T Mobility",
-            310430: "GCI Communications Corp.",
-            310440: "Numerex",
-            310450: "Viaero Wireless",
-            310460: "NewCore Wireless LLC",
-            310490: "T-Mobile",
-            310500: "Public Service Cellular Inc.",
-            310540: "Hilliary Communications",
-            310570: "Broadpoint, LLC",
-            310580: "Inland Cellular Telephone Company",
-            310600: "NewCell Inc.",
-            310640: "Numerex",
-            310650: "Jasper Technologies",
-            310680: "AT&T Mobility",
-            310690: "Limitless Mobile, LLC",
-            310710: "Arctic Slope Telephone Association Cooperative",
-            310740: "Viaero Wireless",
-            310840: "Telecom North America Mobile, Inc.",
-            310850: "Aeris Communications, Inc.",
-            310860: "TX RSA 15B2, LP",
-            310880: "Advantage Cellular Systems, Inc.",
-            310900: "Cable & Communications Corporation",
-            310920: "James Valley Wireless, LLC",
-            310930: "Copper Valley Wireless",
-            310950: "AT&T Mobility",
-            310960: "UBET Wireless",
-            310970: "Globalstar",
-            310990: "Evolve Cellular Inc.",
-            311000: "Mid-Tex Cellular Ltd.",
-            311020: "Missouri RSA 5 Partnership",
-            311030: "Americell PA 3 Partnership",
-            311040: "Commnet Wireless",
-            311050: "Thumb Cellular LP",
-            311060: "Space Data Corporation",
-            311070: "AT&T Mobility",
-            311080: "Pine Telephone Company",
-            311090: "AT&T Mobility",
-            311100: "Nex-Tech Wireless",
-            311140: "Cross Telephone Company",
-            311150: "Wilkes Cellular",
-            311170: "Tampnet",
-            311210: "Telnyx LLC",
-            311220: "U.S. Cellular",
-            311230: "Cellular South Inc.",
-            311240: "Cordova Wireless",
-            311320: "Commnet Wireless",
-            311330: "Bug Tussel Wireless LLC",
-            311340: "Illinois Valley Cellular",
-            311350: "Sagebrush Cellular, Inc.",
-            311370: "General Communication Inc.",
-            311380: "New Dimension Wireless Ltd.",
-            311410: "Iowa RSA No. 2 LP",
-            311420: "Northwest Missouri Cellular LP",
-            311450: "Panhandle Telecommunication Systems Inc.",
-            311470: "Vitelcom Cellular Inc.",
-            311480: "Verizon Wireless",
-            311490: "T-Mobile US",
-            311530: "NewCore Wireless LLC",
-            311550: "Commnet Wireless LLC",
-            311560: "OTZ Communications, Inc.",
-            311580: "U.S. Cellular",
-            311600: "Limitless Mobile, LLC",
-            311640: "Standing Rock Telecommunications",
-            311650: "United Wireless",
-            311660: "Metro by T-Mobile",
-            311670: "Pine Belt Cellular Inc.",
-            311690: "TeleBEEPER of New Mexico",
-            311740: "Telalaska Cellular",
-            311780: "American Samoa Telecommunications",
-            311800: "Verizon Wireless",
-            311810: "Verizon Wireless",
-            311830: "Thumb Cellular LP",
-            311840: "Nsight",
-            311850: "Nsight",
-            311860: "Uintah Basin Electronic Telecommunications",
-            311882: "T-Mobile US",
-            311900: "GigSky",
-            311950: "Enhanced Telecommmunications Corp.",
-            311970: "Big River Broadband, LLC",
-            311990: "VTel Wireless",
-            312020: "Infrastructure Networks, LLC",
-            312030: "Cross Wireless",
-            312040: "Custer Telephone Co-op (CTCI)",
-            312080: "South Georgia Regional Information Technology Authority",
-            312120: "East Kentucky Network, LLC",
-            312130: "East Kentucky Network, LLC",
-            312150: "Northwest Missouri Cellular LP",
-            312160: "RSA1 Limited Partnership",
-            312170: "Iowa RSA No. 2 LP",
-            312180: "Limitless Mobile LLC",
-            312210: "Aspenta International, Inc.",
-            312220: "Chariton Valley Communications Corporation, Inc.",
-            312250: "T-Mobile US",
-            312270: "Cellular Network Partnership",
-            312280: "Cellular Network Partnership",
-            312300: "Telecom North America Mobile, Inc.",
-            312310: "Clear Stream Communications, LLC",
-            312320: "RTC Communications LLC",
-            312330: "Nemont Communications, Inc.",
-            312350: "Triangle Communication System Inc.",
-            312370: "Commnet Wireless",
-            312380: "Copper Valley Wireless",
-            312390: "FTC Communications LLC",
-            312400: "Mid-Rivers Telephone Cooperative",
-            312420: "Nex-Tech Wireless",
-            312430: "Silver Star Communications",
-            312460: "Ketchikan Public Utilities (KPU)",
-            312470: "Carolina West Wireless",
-            312530: "T-Mobile US",
-            312590: "Northern Michigan University",
-            312620: "GlobeTouch Inc.",
-            312670: "AT&T Mobility",
-            312690: "TGS, LLC",
-            312700: "Wireless Partners, LLC",
-            312710: "Great North Woods Wireless LLC",
-            312720: "Southern Communications Services",
-            312780: "Redzone Wireless",
-            312810: "Bristol Bay Telephone Cooperative",
-            312830: "Kings County Office of Education",
-            312870: "GigSky Mobile, LLC",
-            312900: "Flat West Wireless, LLC",
-            312940: "Webformix",
-            312950: "Custer Telephone Co-op (CTCI)",
-            313000: "Tennessee Wireless",
-            313020: "Cambridge Telephone Company Inc.",
-            313040: "Nucla-Naturita Telephone Company",
-            313060: "Country Wireless",
-            313080: "Speedwavz LLP",
-            313090: "Vivint Wireless, Inc.",
-            313100: "AT&T FirstNet",
-            313200: "Mercury Network Corporation",
-            313260: "Expeto Wireless Inc.",
-            313300: "Cambio WiFi of Delmarva, LLC",
-            313340: "Dish Wireless",
-            313460: "Mobi, Inc.",
-            313510: "Puerto Rico Telephone Company",
-            313520: "Florida Broadband, Inc.",
-            313550: "Mile High Networks LLC",
-            313560: "Transit Wireless LLC",
-            313690: "Shenandoah Cable Television, LLC",
-            313760: "Hologram, Inc.",
-            313810: "Watch Communications",
-            313850: "Softcom Internet Communications, Inc",
-            313860: "AMG Technology Investment Group",
-            313870: "ElektraFi LLC",
-            313890: "Tulare County Office of Education",
-            313930: "Standing Rock Telecom",
-            41201: "Afghan Wireless Communication Company",
-            41220: "Telecom Development Company Afghanistan Ltd.",
-            41240: "MTN Group Afghanistan",
-            41250: "Etisalat Afghanistan",
-            41255: "WASEL Afghanistan",
-            41280: "Afghan Telecom",
-            41288: "Afghan Telecom",
-            40001: "None",
-            40002: "None",
-            40003: "CATEL",
-            40004: "Azerfon",
-            40006: "Nakhtel LLC",
-            42601: "Bahrain Telecommunications Company",
-            42602: "Zain Bahrain",
-            42604: "Stc Bahrain",
-            42605: "Bahrain Telecommunications Company",
-            47001: "Grameenphone Ltd.",
-            47002: "Axiata Bangladesh Ltd.",
-            47003: "Banglalink Digital Communications Ltd.",
-            47004: "Teletalk Bangladesh Limited",
-            47007: "Bharti Airtel Bangladesh Ltd.",
-            47010: "Banglalion Communications Ltd.",
-            40211: "Bhutan Telecom Limited",
-            40277: "Tashi InfoComm Limited",
-            45601: "CamGSM / The Royal Group",
-            45602: "Smart Axiata Co. Ltd",
-            45605: "Smart Axiata Co. Ltd",
-            45606: "Smart Axiata Co. Ltd",
-            45608: "Viettel",
-            45609: "Viettel",
-            45611: "SEATEL Cambodia",
-            45618: "The Royal Group",
-            46000: "China Mobile",
-            46001: "China Unicom",
-            46003: "China Telecom",
-            46009: "China Unicom",
-            46011: "China Telecom",
-            46015: "China Broadnet",
-            46020: "China Tietong",
-            45400: "CSL Limited",
-            45401: "CITIC Telecom 1616",
-            45402: "CSL Limited",
-            45403: "Hutchison Telecom",
-            45406: "SmarTone Mobile Communications Limited",
-            45407: "China Unicom (Hong Kong) Limited",
-            45408: "Truphone Limited",
-            45411: "China-Hong Kong Telecom",
-            45412: "China Mobile Hong Kong Company Limited",
-            45413: "China Mobile Hong Kong Company Limited",
-            45416: "PCCW",
-            45419: "PCCW-HKT",
-            45420: "PCCW-HKT",
-            45422: "263 Mobile Communications (HongKong) Limited",
-            45424: "Multibyte Info Technology Ltd",
-            45429: "PCCW-HKT",
-            45431: "China Telecom Global Limited",
-            45432: "Hong Kong Broadband Network Ltd",
-            45435: "Webbing Hong Kong Ltd",
-            40401: "Haryana",
-            40402: "Punjab",
-            40403: "Himachal Pradesh",
-            40405: "Gujarat",
-            40407: "Andhra Pradesh and Telangana",
-            40409: "Assam",
-            40410: "Delhi & NCR",
-            40411: "Delhi & NCR",
-            40414: "Punjab",
-            40415: "Uttar Pradesh (East)",
-            40416: "North East",
-            40418: "Himachal Pradesh",
-            40420: "Mumbai",
-            40422: "Maharashtra & Goa",
-            40430: "Kolkata",
-            40431: "Kolkata",
-            40434: "Haryana",
-            40436: "Bihar & Jharkhand",
-            40438: "Assam",
-            40440: "Chennai",
-            40443: "Tamil Nadu",
-            40445: "Karnataka",
-            40446: "Kerala",
-            40449: "Andhra Pradesh and Telangana",
-            40450: "North East",
-            40451: "Himachal Pradesh",
-            40452: "Odisha",
-            40453: "Punjab",
-            40454: "Uttar Pradesh (West)",
-            40455: "Uttar Pradesh (East)",
-            40456: "Uttar Pradesh (West)",
-            40457: "Gujarat",
-            40458: "Madhya Pradesh & Chhattisgarh",
-            40459: "Rajasthan",
-            40460: "Rajasthan",
-            40462: "Jammu & Kashmir",
-            40464: "Chennai",
-            40466: "Maharashtra & Goa",
-            40467: "Madhya Pradesh & Chhattisgarh",
-            40468: "Delhi & NCR",
-            40469: "Mumbai",
-            40470: "Rajasthan",
-            40471: "Karnataka (Bangalore)",
-            40472: "Kerala",
-            40473: "Andhra Pradesh and Telangana",
-            40474: "West Bengal",
-            40475: "Bihar",
-            40476: "Odisha",
-            40477: "North East",
-            40478: "Madhya Pradesh & Chattishgarh",
-            40479: "Andaman Nicobar",
-            40480: "Tamil Nadu",
-            40481: "Kolkata",
-            40482: "Himachal Pradesh",
-            40483: "Kolkata",
-            40485: "West Bengal",
-            40486: "Karnataka",
-            40490: "Maharashtra",
-            40492: "Mumbai",
-            40493: "Madhya Pradesh",
-            40494: "Tamil Nadu",
-            40495: "Kerala",
-            40496: "Haryana",
-            40497: "Uttar Pradesh (West)",
-            40498: "Gujarat",
-            40503: "Bihar",
-            40504: "Chennai",
-            40505: "Delhi & NCR",
-            40506: "Gujarat",
-            40507: "Haryana",
-            40508: "Himachal Pradesh",
-            40509: "Jammu & Kashmir",
-            40510: "Karnataka",
-            40511: "Kerala",
-            40512: "Kolkata",
-            40513: "Maharashtra & Goa",
-            40514: "Madhya Pradesh",
-            40515: "Mumbai",
-            40517: "Odisha",
-            40518: "Punjab",
-            40519: "Rajasthan",
-            40520: "Tamil Nadu",
-            40521: "Uttar Pradesh (East)",
-            40522: "Uttar Pradesh (West)",
-            40523: "West Bengal",
-            40551: "West Bengal",
-            40552: "Bihar & Jharkhand",
-            40553: "Odisha",
-            40554: "Uttar Pradesh (East)",
-            40555: "Jammu & Kashmir",
-            40556: "Assam",
-            40567: "West Bengal",
-            40570: "Bihar & Jharkhand",
-            405750: "Jammu & Kashmir",
-            405751: "Assam",
-            405753: "Odisha",
-            405755: "North East",
-            405840: "West Bengal",
-            405854: "Andhra Pradesh",
-            405855: "Assam",
-            405856: "Bihar",
-            405857: "Gujarat",
-            405858: "Haryana",
-            405859: "Himachal Pradesh",
-            405860: "Jammu & Kashmir",
-            405861: "Karnataka",
-            405862: "Kerala",
-            405863: "Madhya Pradesh",
-            405864: "Maharashtra",
-            405865: "North East",
-            405866: "Odisha",
-            405867: "Punjab",
-            405868: "Rajasthan",
-            405869: "Tamil Nadu (incl. Chennai)",
-            405870: "Uttar Pradesh (West)",
-            405871: "Uttar Pradesh (East)",
-            405872: "Delhi",
-            405873: "Kolkata",
-            405874: "Mumbai",
-            405908: "Andhra Pradesh and Telangana",
-            43201: "Kish Cell Pars",
-            43202: "Negin Ertebatat Ava",
-            43203: "Parsian Hamrah Lotus",
-            43206: "Ertebatat-e Arian Tel Co.",
-            43207: "Hooshmand Amin Mobile",
-            43208: "Shatel Group",
-            43210: "Samantel Mobile",
-            43211: "Mobile Communications Company of Iran (MCI)",
-            43212: "Dadeh Dostar asr Novin PJSC",
-            43214: "Kish Free Zone Organization",
-            43220: "Social Security Investment Co.",
-            43221: "Social Security Investment Co.",
-            43232: "Telecommunication Company of Iran (TCI)",
-            43235: "MTN Irancell Telecommunications Services Company",
-            43240: "Ertebatat Mobinnet",
-            43244: "Ertebatat Mobinnet",
-            43245: "Farabord Dadeh Haye Iranian Co.",
-            43250: "Shatel Group",
-            43270: "Telecommunication Company of Iran (TCI)",
-            43271: "ERTEBATAT KOOHE NOOR",
-            43290: "IRAPHONE GHESHM of Iran",
-            43293: "Farzanegan Pars",
-            43299: "TCI of Iran and Rightel",
-            41800: "Asia Cell Telecommunications Company",
-            41805: "Asia Cell Telecommunications Company",
-            41808: "None",
-            41820: "Zain Iraq",
-            41830: "Zain Iraq",
-            41840: "Telecom Ltd",
-            41845: "Mobitel Co. Ltd.",
-            41862: "Itisaluna Wireless CO.",
-            41892: "Omnnea Wireless",
-            42501: "Partner Communications Company Ltd.",
-            42502: "Cellcom Israel Ltd.",
-            42503: "Pelephone Communications Ltd.",
-            42505: "Palestine Cellular Communications, Ltd.",
-            42506: "Ooredoo Palestine",
-            42507: "Hot Mobile Ltd.",
-            42508: "Golan Telecom Ltd.",
-            42509: "Marathon 018 Xphone Ltd.",
-            42510: "Partner Communications Company Ltd.",
-            42512: "Widely Mobile",
-            42516: "Rami Levy Communications Ltd.",
-            42518: "Cellact Communications Ltd.",
-            42519: "019 Communication Services Ltd. / TELZAR",
-            42524: "Partner Communications Company Ltd.",
-            42525: "Israel Ministry of Defense",
-            42526: "LB Annatel Ltd.",
-            44000: "SoftBank Corp.",
-            44001: "KDDI Corporation",
-            44003: "Internet Initiative Japan Inc.",
-            44005: "Wireless City Planning Inc.",
-            44009: "Marubeni Network Solutions Inc.",
-            44010: "NTT DoCoMo, Inc.",
-            44011: "Rakuten Mobile Network, Inc.",
-            44020: "SoftBank Corp.",
-            44021: "SoftBank Corp.",
-            44050: "KDDI Corporation",
-            44051: "KDDI Corporation",
-            44052: "KDDI Corporation",
-            44053: "KDDI Corporation",
-            44100: "Wireless City Planning Inc.",
-            44101: "SoftBank Corp.",
-            441200: "Soracom Inc.",
-            441205: "Katch Network Inc.",
-            41601: "Jordan Mobile Telephone Services",
-            41603: "Umniah Mobile Company",
-            41677:
-              "Petra Jordanian Mobile Telecommunications Company (MobileCom)",
-            40101: "KaR-Tel LLP",
-            40102: "Kcell JSC",
-            40107: "Altel",
-            40108: "None",
-            40177: "MTS",
-            46705: "Cheo Technology Jv Company",
-            46706: "Korea Posts and Telecommunications Corporation",
-            45001: "Globalstar Asia Pacific",
-            45002: "KT",
-            45004: "KT",
-            45005: "SK Telecom",
-            45006: "LG Telecom",
-            45008: "KT",
-            45011: "Korea Cable Telecom",
-            45012: "SK Telecom",
-            41902: "Zain Kuwait",
-            41903: "National Mobile Telecommunications",
-            41904: "Saudi Telecom Company",
-            43701: "Sky Mobile LLC",
-            43705: "Alfa Telecom CJSC",
-            43709: "NurTelecom LLC",
-            43710: "Saima Telecom",
-            45701: "Lao Telecom",
-            45702: "Enterprise of Telecommunications Lao",
-            45703: "Star Telecom Co., Ltd",
-            45707: "Best Telecom Co., Ltd",
-            45708: "TPLUS Digital Sole Co., Ltd",
-            41501: "MIC 1",
-            41503: "MIC 2",
-            45500: "Smartone – Comunicações Móveis, S.A.",
-            45501: "Companhia de Telecomunicações de Macau, S.A.R.L.",
-            45504: "Companhia de Telecomunicações de Macau, S.A.R.L.",
-            45505: "Hutchison Telephone (Macau), Limitada",
-            45506: "Smartone – Comunicações Móveis, S.A.",
-            45507: "China Telecom (Macau) Limitada",
-            47201: "Dhivehi Raajjeyge Gulhun",
-            47202: "Ooredoo Maldives",
-            42888: "Unitel LLC",
-            42891: "Skytel LLC",
-            42898: "G-Mobile LLC",
-            42899: "Mobicom Corporation",
-            41401: "Myanmar Posts and Telecommunications",
-            41403: "Myanmar Economic Corporation",
-            41405: "Ooredoo Myanmar",
-            41406: "Telenor Myanmar",
-            41409: "Myanmar National Tele & Communication Co., Ltd",
-            41420: "Amara Communication Co., Ltd",
-            41421: "Amara Communication Co., Ltd",
-            42901: "Nepal Telecom (NDCL)",
-            42902: "Ncell Pvt. Ltd.",
-            42903: "United Telecom Limited",
-            42904: "Smart Telecom Pvt. Ltd. (STPL)",
-            42202: "Oman Telecommunications Company",
-            42203: "Omani Qatari Telecommunications Company SAOC",
-            42206: "Oman Future Telecommunications Company SAOC",
-            41001: "Mobilink-PMCL",
-            41002: "PTCL",
-            41003: "Pakistan Telecommunication Mobile Ltd",
-            41004: "China Mobile",
-            41005: "SCO Mobile Ltd",
-            41006: "Telenor Pakistan",
-            41007: "WaridTel",
-            41008: "SCO Mobile Ltd",
-            42701: "Ooredoo",
-            42702: "Vodafone Qatar",
-            42705: "Ministry of Interior",
-            42706: "Ministry of Interior",
-            42001: "Saudi Telecom Company",
-            42003: "Etihad Etisalat Company",
-            42004: "Zain Saudi Arabia",
-            42005: "Virgin Mobile Saudi Arabia",
-            42006: "Lebara Mobile",
-            42021: "Saudi Railways GSM",
-            41301: "Mobitel (Pvt) Ltd",
-            41302: "Dialog Axiata PLC",
-            41304: "Lanka Bell Ltd",
-            41305: "Bharti Airtel Lanka (Pvt) Ltd",
-            41308: "Hutchison Telecommunications Lanka (Pvt) Ltd",
-            41311: "Dialog Broadband Networks (Pvt) Ltd",
-            41312: "Sri Lanka Telecom PLC",
-            41701: "Syriatel Mobile Telecom",
-            41702: "MTN Syria",
-            46601: "Far EasTone Telecommunications Co Ltd",
-            46605: "Asia Pacific Telecom",
-            46609: "Vmax Telecom",
-            46610: "Global Mobile Corp.",
-            46612: "Ambit Microsystems",
-            46689: "Taiwan Star Telecom",
-            46692: "Chunghwa Telecom",
-            46697: "Taiwan Mobile Co. Ltd",
-            43601: "JV Somoncom",
-            43602: "Indigo Tajikistan",
-            43603: "TT Mobile",
-            43604: "Babilon-Mobile",
-            43605: "Tacom",
-            43610: "Babilon-T",
-            43802: "Altyn Asyr",
-            43803: "AŞTU",
-            42402: "Emirates Telecom Corp",
-            42403: "Emirates Integrated Telecommunications Company",
-            43403: "Uzbektelekom",
-            43404: "Unitel LLC",
-            43405: "Coscom",
-            43406: "RUBICON WIRELESS COMMUNICATION",
-            43407: "Universal Mobile Systems (UMS)",
-            43408: "Uzbektelekom",
-            43409: "OOO «Super iMAX»",
-            45201: "Vietnam Mobile Telecom Services Company",
-            45202: "Vietnam Telecom Services Company",
-            45204: "Viettel Telecom",
-            45205: "Hanoi Telecom",
-            45207: "GTEL Mobile JSC",
-            45208: "Indochina Telecom",
-            45209: "MOBICAST JSC",
-            42101: "SabaFon",
-            42102: "Yemen Oman United Telecom",
-            42103: "Yemen Mobile",
-            42104: "HiTS-UNITEL",
-            42110: "PTC/Yemen-Telecom",
-            42111: "Yemen Mobile",
-            54411: "Bluesky",
-            50501: "Telstra Corporation Limited",
-            50502: "Singtel Optus Pty Ltd",
-            50503: "Vodafone Hutchison Australia Pty Ltd",
-            50504: "Department of Defence",
-            50510: "Norfolk Telecom",
-            50513: "Railcorp, Transport for NSW",
-            50514: "TPG Telecom",
-            50516: "Victorian Rail Track",
-            50517: "Optus",
-            50519: "Lycamobile Pty Ltd",
-            50523: "Challenge Networks Pty Ltd",
-            50538: "Truphone Pty Ltd",
-            50550: "Pivotel Group Pty Ltd",
-            50552: "OptiTel Australia",
-            50562: "National Broadband Network Co.",
-            50568: "National Broadband Network Co.",
-            50571: "Telstra Corporation Limited",
-            50572: "Telstra Corporation Limited",
-            50588: "Pivotel Group Pty Ltd",
-            50590: "Singtel Optus Proprietary Ltd",
-            52802: "Progresif Cellular Sdn Bhd",
-            52811: "Data Stream Technology Sdn Bhd",
-            54801: "Telecom Cook Islands",
-            51401: "PT Telekomunikasi Indonesia International",
-            51402: "Timor Telecom",
-            51403: "Viettel Timor-Leste",
-            54201: "Vodafone Fiji",
-            54202: "Digicel Fiji",
-            54203: "Telecom Fiji Ltd",
-            54705: "VITI",
-            54715: "Pacific Mobile Telecom",
-            54720: "Onati S.A.S.",
-            51000: "PT Pasifik Satelit Nusantara",
-            51001: "PT Indosat Tbk",
-            51009: "PT Smartfren Telecom",
-            51010: "PT Telekomunikasi Selular",
-            51011: "PT XL Axiata Tbk",
-            51021: "PT Indosat Tbk",
-            51028: "PT Mobile-8 Telecom",
-            51089: "PT Hutchison 3 Indonesia",
-            54501: "Amalgamated Telecom Holdings Kiribati Limited",
-            54509: "Amalgamated Telecom Holdings Kiribati Limited",
-            50210: "Celcom, DiGi, Maxis, Tune Talk, U Mobile, Unifi, XOX, Yes",
-            50211: "Telekom Malaysia Bhd",
-            50212: "Maxis Communications Berhad",
-            50213: "Celcom Axiata Berhad",
-            502150: "Tune Talk Sdn Bhd",
-            502152: "YTL Communications Sdn Bhd",
-            502153: "Webe Digital Sdn Bhd",
-            502156: "Altel Communications Sdn Bhd",
-            502157: "Telekomunikasi Indonesia International (M) Sdn Bhd",
-            50216: "DiGi Telecommunications",
-            50217: "Maxis Communications Berhad",
-            50218: "U Mobile Sdn Bhd",
-            50219: "Celcom Axiata Berhad",
-            55101:
-              "Marshall Islands National Telecommunications Authority (MINTA)",
-            55001: "FSMTC",
-            53602: "Digicel (Nauru) Corporation",
-            54601: "OPT New Caledonia",
-            53001: "Vodafone New Zealand",
-            53005: "Spark New Zealand",
-            53024: "2degrees",
-            55501: "Telecom Niue",
-            55201: "Palau National Communications Corp.",
-            55202: "Palau Equipment Company Inc.",
-            55299: "Palau Mobile Communications Inc.",
-            53701: "Bemobile Limited",
-            53702: "Telikom PNG Ltd.",
-            53703: "Digicel PNG",
-            51502: "Globe Telecom",
-            51503: "Smart Communications",
-            51505: "Digital Telecommunications Philippines",
-            51524: "ABS-CBN Convergence with Globe Telecom",
-            51566: "Dito Telecommunity Corp.",
-            51588: "Next Mobile Inc.",
-            54901: "Digicel Pacific Ltd.",
-            54927: "Vodafone Samoa Ltd.",
-            52501: "Singapore Telecom",
-            52503: "M1 Limited",
-            52505: "StarHub Mobile",
-            52509: "Liberty Wireless Pte Ltd",
-            52510: "SIMBA Telecom Pte Ltd",
-            52512: "GRID Communications Pte Ltd.",
-            54001: "Our Telekom",
-            54002: "BMobile (SI) Ltd",
-            52000: "National Telecom Public Company Limited",
-            52001: "Advanced Info Service",
-            52002: "National Telecom Public Company Limited",
-            52003: "Advanced Wireless Network Company Ltd.",
-            52004: "True Move H Universal Communication Company Ltd.",
-            52005: "DTAC TriNet Company Ltd.",
-            52009: "Royal Thai Police",
-            52015: "National Telecom Public Company Limited",
-            52017: "National Telecom Public Company Limited",
-            52018: "Total Access Communications Public Company Ltd.",
-            52047: "National Telecom Public Company Limited",
-            52099: "True Corporation",
-            55401: "Teletok",
-            53901: "Tonga Communications Corporation",
-            53943: "Shoreline Communication",
-            53988: "Digicel (Tonga) Limited",
-            55301: "Tuvalu Telecom",
-            54100: "ACeS International (AIL)",
-            54101: "Telecom Vanuatu Ltd",
-            54105: "Digicel Vanuatu Ltd",
-            54107: "WanTok Vanuatu Ltd",
-            54301:
-              "Service des Postes et Télécommunications des Îles Wallis et Futuna (SPT)",
-            60301: "Algérie Télécom",
-            60302: "Optimum Telecom Algérie Spa",
-            60303: "Wataniya Telecom Algérie",
-            60307: "Algérie Télécom",
-            60309: "Algérie Télécom",
-            63102: "UNITEL S.a.r.l.",
-            63104: "MOVICEL Telecommunications S.A.",
-            63105: "Africell",
-            61601: "Benin Telecoms Mobile",
-            61602: "Telecel Benin",
-            61603: "Spacetel Benin",
-            61604: "Bell Benin Communications",
-            65201: "Mascom Wireless (Pty) Limited",
-            65202: "Orange (Botswana) Pty Limited",
-            65204: "Botswana Telecommunications Corporation",
-            61301: "Onatel",
-            61302: "Orange Burkina Faso",
-            61303: "Telecel Faso SA",
-            64201: "Econet Wireless Burundi PLC",
-            64203: "Onatel",
-            64208: "Viettel Burundi",
-            64282: "Econet Wireless Burundi PLC",
-            62401: "Mobile Telephone Network Cameroon Ltd",
-            62402: "Orange Cameroun S.A.",
-            62403: "Camtel",
-            62404: "Viettel Cameroun",
-            62501: "CVMóvel, S.A.",
-            62502: "UNITEL T+ TELECOMUNICACÕES, S.A.",
-            62301: "Atlantique Telecom Centrafrique SA",
-            62302: "Telecel Centrafrique",
-            62303: "Orange RCA",
-            62304: "Azur RCA",
-            62201: "Bharti Airtel SA",
-            62202: "SotelTchad",
-            62203: "Millicom",
-            62207: "SotelTchad",
-            65401: "Comores Telecom",
-            65402: "Telecom Malagasy (Telma)",
-            62901: "Celtel Congo",
-            62907: "Warid Telecom",
-            62910: "MTN CONGO S.A",
-            63001: "Vodacom Congo RDC sprl",
-            63002: "Airtel sprl",
-            63005: "Supercell SPRL",
-            63086: "Orange RDC sarl",
-            63089: "Orange RDC sarl",
-            63090: "Africell RDC sprl",
-            63801: "Djibouti Telecom SA",
-            60201: "Orange Egypt",
-            60202: "Vodafone Egypt",
-            60203: "Etisalat Egypt",
-            60204: "Telecom Egypt",
-            62701: "GETESA",
-            62703: "Green Com S.A.",
-            65701: "Eritrea Telecommunications Services Corporation",
-            65302: "Eswatini Mobile Limited",
-            65310: "MTN Eswatini Limited",
-            63601: "Ethio Telecom",
-            64700: "Orange La Réunion",
-            64701: "BJT Partners",
-            64702: "Telco OI",
-            64703: "Telco OI",
-            64710: "Société Réunionnaise du Radiotéléphone",
-            62801: "Gabon Telecom S.A.",
-            62802: "Gabon Telecom S.A.",
-            62803: "Airtel Gabon S.A.",
-            60701: "Gamcel",
-            60702: "Africell",
-            60703: "Comium",
-            60704: "QCell Gambia",
-            60706: "NETPAGE",
-            62001: "MTN Group",
-            62002: "Vodafone Group",
-            62003: "Millicom Ghana",
-            62004: "Kasapa / Hutchison Telecom",
-            62006: "Airtel",
-            62007: "Globacom Group",
-            62010: "Blu Telecommunications",
-            62014: "BusyInternet",
-            62015: "Lebara",
-            62016: "Telesol",
-            61101: "Orange S.A.",
-            61102: "Sotelgui Lagui",
-            61104: "Areeba Guinea",
-            61105: "Cellcom",
-            63201: "Guinétel S.A.",
-            63202: "Spacetel Guiné-Bissau S.A.",
-            63203: "None",
-            63207: "Guinétel S.A.",
-            61202: "Atlantique Cellulaire",
-            61203: "Orange",
-            61204: "Comium Ivory Coast Inc",
-            61205: "Loteny Telecom",
-            61206: "Oricel",
-            61207: "Aircomm",
-            61218: "YooMee",
-            63902: "Safaricom Limited",
-            63903: "Bharti Airtel",
-            63907: "Telkom Kenya",
-            63910: "Jamii Telecommunications Limited",
-            65101: "Vodacom Lesotho (Pty) Ltd",
-            65102: "Econet Ezi-cel",
-            61801: "Lonestar Communications Corporation",
-            61804: "Novafone Inc.",
-            61807: "Orange Liberia",
-            61820: "Liberia Telecommunications Corporation",
-            60600: "Libyana",
-            60601: "Al-Madar Al-Jadeed",
-            60602: "Al-Jeel Al-Jadeed",
-            60603: "Libya Telecom & Technology (LTT)",
-            60606: "Hatef Libya",
-            64601: "Bharti Airtel",
-            64602: "Orange Madagascar S.A.",
-            64604: "Telma Mobile S.A.",
-            64605: "Gulfsat Madagascar S.A.",
-            65001: "Telecom Network Malawi",
-            65002: "Access Communications Ltd",
-            65003: "Malawi Telecommunications Limited",
-            65010: "Airtel Malawi Limited",
-            61001: "Malitel SA",
-            61002: "Orange Mali SA",
-            61003: "Alpha Telecommunication Mali S.A.",
-            60901: "Mattel",
-            60902: "Chinguitel",
-            60910: "Mauritel Mobiles",
-            61701: "Cellplus Mobile Communications Ltd.",
-            61702: "Mahanagar Telephone Mauritius Limited (MTML)",
-            61703: "Mahanagar Telephone Mauritius Limited (MTML)",
-            61710: "Emtel Ltd.",
-            60400: "Médi Télécom",
-            60401: "Ittissalat Al-Maghrib (Maroc Telecom)",
-            60402: "Wana Corporate",
-            60405: "Wana Corporate",
-            64301: "Mocambique Celular S.A.",
-            64303: "Movitel, SA",
-            64304: "Vodacom Mozambique, S.A.",
-            64901: "MTC Namibia",
-            64902: "Telecom Namibia",
-            64903: "Telecom Namibia",
-            64904: "Paratus Telecommunications (Pty)",
-            64906: "MTN Namibia",
-            61401: "La Société Sahélienne de Télécommunications (SahelCom)",
-            61402: "Bharti Airtel Limited",
-            61403: "Atlantique Telecom (subsidiary of Etisalat)",
-            61404: "Orange Niger",
-            62120: "Bharti Airtel Limited",
-            62122: "InterC Network Ltd.",
-            62124: "Spectranet",
-            62126: "Swift",
-            62127: "Smile Communications Nigeria",
-            62130: "MTN Nigeria Communications Limited",
-            62140: "Nigerian Mobile Telecommunications Limited",
-            62150: "Globacom Ltd",
-            62160: "Emerging Markets Telecommunication Services Ltd.",
-            63510: "MTN Rwandacell SARL",
-            63513: "Airtel RWANDA",
-            63517: "Olleh Rwanda Networks",
-            65801: "Sure South Atlantic Ltd.",
-            62601: "Companhia Santomense de Telecomunicações",
-            62602: "Unitel São Tomé and Príncipe",
-            60801: "Sonatel",
-            60802: "Saga Africa Holdings Limited",
-            60803: "Expresso Telecom",
-            63301: "Cable & Wireless Seychelles",
-            63310: "Telecom Seychelles Ltd",
-            61901: "Orange SL Limited",
-            61903: "Lintel Sierra Leone Limited",
-            61905: "Lintel Sierra Leone Limited",
-            61906: "Sierra Leone Telephony",
-            61909: "InterGroup Telecom SL",
-            63701: "Telesom",
-            63704: "Somafone FZLLC",
-            63710: "NationLink Telecom",
-            63720: "SOMNET",
-            63750: "Hormuud Telecom Somalia Inc",
-            63730: "Golis Telecom Somalia",
-            63757: "UNITEL S.a.r.l.",
-            63760: "Nationlink Telecom",
-            63767: "HTG Group Somalia",
-            63771: "Somtel",
-            63782: "Telcom Somalia",
-            65501: "Vodacom",
-            65502: "Telkom SA SOC Ltd",
-            65506: "Sentech (Pty) Ltd",
-            65507: "Cell C (Pty) Ltd",
-            65510: "MTN Group",
-            65514: "Neotel Pty Ltd",
-            65519: "Wireless Business Solutions (Pty) Ltd",
-            65530: "Bokamoso Consortium",
-            65531: "Karabo Telecoms (Pty) Ltd.",
-            65532: "Ilizwi Telecommunications",
-            65533: "Thinta Thinta Telecommunications Pty Ltd",
-            65546: "SMS Cellular Services (Pty) Ltd",
-            65576: "Comsol Networks (Pty) Ltd",
-            65902: "MTN South Sudan",
-            65903: "Gemtel",
-            65906: "Zain South Sudan",
-            65907: "Sudani",
-            63401: "Zain Group - Sudan",
-            63402: "MTN Sudan",
-            63405: "Canar Telecom",
-            63407: "Sudatel Group",
-            63409: "NEC",
-            64002: "MIC Tanzania Limited",
-            64003: "Zanzibar Telecom Ltd",
-            64004: "Vodacom Tanzania Limited",
-            64005: "Bharti Airtel",
-            64006: "WIA Company Limited",
-            64007: "Tanzania Telecommunication Company LTD (TTCL)",
-            64009: "Viettel Tanzania Limited",
-            64011: "Smile Telecoms Holdings Ltd.",
-            61501: "Togo Telecom",
-            61503: "Moov Togo",
-            60501: "Orange Tunisie",
-            60502: "Tunisie Telecom",
-            60503: "Ooredoo Tunisiana",
-            64101: "Bharti Airtel",
-            64104: "Tangerine Uganda Limited",
-            64110: "MTN Uganda",
-            64111: "Uganda Telecom Ltd.",
-            64114: "Africell Uganda",
-            64122: "Bharti Airtel",
-            64133: "Smile Communications Uganda Limited",
-            64144: "K2 Telecom Ltd",
-            64501: "Bharti Airtel",
-            64502: "MTN Group",
-            64503: "Zambia Telecommunications Company Ltd",
-            64801: "Net*One Cellular (Pvt) Ltd",
-            64803: "Telecel Zimbabwe (PVT) Ltd",
-            64804: "Econet Wireless",
-            722010: "Telefónica Móviles Argentina S.A.",
-            722034: "Telecom Personal S.A.",
-            722040: "TE.SA.M Argentina S.A.",
-            722070: "Telefónica Móviles Argentina S.A.",
-            722310: "AMX Argentina S.A.",
-            722320: "AMX Argentina S.A.",
-            722330: "AMX Argentina S.A.",
-            722341: "Telecom Personal S.A.",
-            70267: "Belize Telemedia Limited (BTL)",
-            70269: "Speednet Communications Limited",
-            70299: "Speednet Communications Limited",
-            73601: "Nuevatel PCS De Bolivia SA",
-            73602: "Entel SA",
-            73603: "Telefónica Celular De Bolivia S.A",
-            72402: "Telecom Italia Mobile",
-            72403: "Telecom Italia Mobile",
-            72404: "Telecom Italia Mobile",
-            72405: "Claro",
-            72406: "Telefônica Brasil S.A.",
-            72410: "Telefônica Brasil S.A.",
-            72411: "Telefônica Brasil S.A.",
-            72415: "Sercomtel Celular",
-            72417: "Correios Celula",
-            72418: "Datora (Vodafone)",
-            72421: "Ligue Telecom",
-            72423: "Telefônica Brasil S.A.",
-            72428: "None",
-            72429: "Unifique Telecomunicações S/A",
-            72432: "Algar Telecom S.A.",
-            72433: "Algar Telecom S.A.",
-            72434: "Algar Telecom S.A.",
-            72438: "Claro",
-            72439: "NII Holdings, Inc.",
-            72454: "PORTO SEGURO TELECOMUNICAÇÔES",
-            72499: "None",
-            73001: "Entel Telefonía Móvil S.A.",
-            73002: "Telefónica Móvil de Chile",
-            73003: "Claro Chile S.A.",
-            73004: "Novator Partners",
-            73006: "Blue Two Chile S.A.",
-            73008: "VTR S.A.",
-            73009: "Novator Partners",
-            73010: "Entel Telefonía Móvil S.A.",
-            73012: "Telestar Móvil S.A.",
-            73013: "Tribe Mobile Chile SPA",
-            73019: "Sociedad Falabella Móvil SPA",
-            73099: "WILL Telefonía",
-            732001: "Colombia Telecomunicaciones S.A. ESP",
-            732020: "Une EPM Telecomunicaciones S.A. E.S.P.",
-            732099: "Empresas Municipales de Cali",
-            732101: "Comunicacion Celular S.A. (Comcel)",
-            732103: "Colombia Móvil S.A. ESP",
-            732111: "Colombia Móvil S.A. ESP",
-            732123: "Colombia Telecomunicaciones S.A. ESP",
-            732130: "Avantel S.A.S",
-            732154: "Virgin Mobile Colombia S.A.S.",
-            732176: "DirecTV Colombia Ltda",
-            732187: "Empresa de Telecomunicaciones de Bogotá S.A. ESP",
-            732240: "Logistica Flash Colombia SAS",
-            732360: "Partners Telecom Colombia SAS",
-            71201: "Instituto Costarricense de Electricidad",
-            71202: "Instituto Costarricense de Electricidad",
-            71203: "Claro CR Telecomunicaciones (Aló)",
-            71204: "Liberty Latin America",
-            74000: "Otecel S.A.",
-            74001: "CONECEL S.A.",
-            74002: "Corporación Nacional de Telecomunicaciones (CNT EP)",
-            74003: "Otecel S.A.",
-            70601: "CTE Telecom Personal, S.A. de C.V.",
-            70602: "Digicel, S.A. de C.V.",
-            70603: "Telemovil El Salvador S.A.",
-            70604: "Telefónica Móviles El Salvador",
-            70605: "INTELFON, S.A. de C.V.",
-            750001: "Sure South Atlantic Ltd.",
-            70401: "Telecomunicaciones de Guatemala, S.A.",
-            70402: "Millicom / Local partners",
-            70403: "Telecomunicaciones de Guatemala, S.A.",
-            7040: "INTELFON Guatemala",
-            73800: "E-Networks Inc.",
-            73801: "U-Mobile (Cellular) Inc.",
-            738002: "Guyana Telephone & Telegraph Co.",
-            738003: "Quark Communications Inc.",
-            708001: "Servicios de Comunicaciones de Honduras S.A. de C.V.",
-            708002: "Celtel",
-            708030: "Empresa Hondureña de Telecomunicaciones",
-            71021:
-              "Empresa Nicaragüense de Telecomunicaciones, S.A. (ENITEL) (América Móvil)",
-            710300: "Telefonía Celular de Nicaragua, S.A.",
-            71073: "Servicios de Comunicaciones S.A.",
-            71401: "Cable & Wireless Panama S.A.",
-            71402: "Grupo de Comunicaciones Digitales, S.A.",
-            714020: "Grupo de Comunicaciones Digitales, S.A.",
-            71403: "América Móvil",
-            71404: "Digicel Group",
-            74401: "Hola Paraguay S.A.",
-            74402: "AMX Paraguay S.A.",
-            74404: "Telefónica Celular Del Paraguay S.A. (Telecel)",
-            74405: "Núcleo S.A. (TIM)",
-            74406: "Copaco S.A.",
-            71606: "Telefónica del Perú S.A.A.",
-            71607: "Entel Perú S.A.",
-            71610: "América Móvil Perú",
-            71615: "Viettel Peru S.A.C.",
-            71617: "Entel Perú S.A.",
-            74602: "Telecommunications Company Suriname (Telesur)",
-            74603: "Digicel Group Limited",
-            74801: "Administración Nacional de Telecomunicaciones",
-            74807: "Telefónica Móviles Uruguay",
-            74810: "AM Wireless Uruguay S.A.",
-            73402: "Corporacion Digitel C.A.",
-            73404: "Telefónica Móviles Venezuela",
-            73406: "Telecomunicaciones Movilnet",
-            101: "Test network",
-            1001: "Test network",
-            99999: "Internal use",
-            999999: "Internal use",
-            90103: "None",
-            90105: "Thuraya RMSS Network",
-            90106: "Thuraya Satellite Telecommunications Company",
-            90111: "None",
-            90112: "Telenor Maritime AS",
-            90114: "AeroMobile AS",
-            90115: "OnAir Switzerland Sarl",
-            90116: "Cisco Systems, Inc.",
-            90118: "AT&T Mobility",
-            90119: "Monaco Telecom",
-            90121: "Wins Limited",
-            90126: "Telecom Italia Mobile",
-            90127: "Monaco Telecom",
-            90128: "GDSP (Vodafone's Global Data Service Platform)",
-            90131: "Orange S.A.",
-            90135: "Globecomm Network Services",
-            90136: "Azerfon",
-            90137: "TraNR5Gtel",
-            90138: "Multiregional TransitTelecom (MTT)",
-            90139: "MTX Connect Ltd",
-            90140: "Deutsche Telekom AG",
-            90141: "One Network B.V.",
-            90143: "EMnify GmbH",
-            90146: "Telecom26 AG",
-            90153: "Inmarsat Ltd.",
-            90162: "Twilio Inc.",
-            90166: "Limitless Mobile LLC",
-            90167: "1NCE GmbH",
-            90175: "Podsystem Ltd.",
-            90189: "DIDWW Ireland Limited",
-            90190: "Truphone Limited",
-            90201: "MulteFire Alliance",
-            99501: "Sure (Diego Garcia) Ltd",
-          },
 
-          nr5g_cells: [],
-          lte_cells: [],
-          nr5g_cells_parsed: [],
-          lte_cells_parsed: [],
-          atcmd: "",
-          tableRows: [],
-          nr5g_neighbourCells: [],
-          lte_neighbourCells: [],
-          nr5g_neighbourCellsParsed: [],
-          lte_neighbourCellsParsed: [],
-          neighbourCellsTableRows: [],
-          cellScanMode: "Unspecified",
-          neighbourCellsScanMode: "Unspecified",
-          isLoading: false,
-          isCellScanning: false,
-          resultDoneCell: false,
-          resultDoneNeighbourCell: false,
+      <div class="row">
+        <div class="col">
+          <div class="card">
+            <div class="card-header">LTE和NR5G邻区扫描</div>
+            <div class="card-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">网络</th>
+                    <th scope="col">频率</th>
+                    <th scope="col">PCI</th>
+                    <th scope="col">RSRP</th>
+                    <th scope="col">信号</th>
+                  </tr>
+                </thead>
+                <tbody id="neighbourCellTableBody">
+                  <!-- 邻区行在此 -->
+                </tbody>
+              </table>
+              <div>
+                <div class="col-md-4 mb-3">
+                  <div class="form-group">
+                    <label for="exampleFormControlSelect1">选择扫描模式</label>
+                    <select class="form-select" id="neighbourCellSelect" x-model="neighbourCellsScanMode">
+                      <option selected>选择扫描模式</option>
+                      <option value="LTE and NR5G">LTE和NR5G</option>
+                      <option value="LTE">LTE</option>
+                      <option value="NR5G">NR5G</option>
+                    </select>
+                    <div id="neighbourCellSelectHelper" class="form-text">
+                      邻区扫描将仅扫描您网络提供商的LTE或NR5G小区。
+                    </div>
+                  </div>
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                  <button class="btn btn-primary me-md-2" type="button" x-on:click="getNeighbourcellLTEandNR5G()"
+                    :disabled="isLoading || neighbourCellsScanMode === 'Unspecified' || neighbourCellsScanMode === '选择扫描模式'">
+                    开始邻区扫描
+                  </button>
+                  <button class="btn btn-danger" type="button" x-on:click="clearTableRowsBodyNeighbourCells()"
+                    :disabled="isLoading || !resultDoneNeighbourCell">
+                    清除
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="js/dark-mode.js"></script>
+  <script>
+    function cellScanner() {
+      return {
+        networkNames: {
+          46000: "中国移动",
+          46001: "中国联通",
+          46003: "中国电信",
+          46009: "中国联通",
+          46011: "中国电信",
+          46015: "中国广电",
+          46020: "中国铁通",
+        },
 
-          init() {
-            this.generateNeighbourCellsTableRow();
-            this.clearTableRowsBodyCellScan();
-          },
-          startCellScan() {
-            // Make all arrays empty before starting a new scan
-            this.nr5g_cells = [];
-            this.lte_cells = [];
-            this.nr5g_cells_parsed = [];
-            this.lte_cells_parsed = [];
-            this.tableRows = [];
-            this.atcmd = "AT+QSCAN=3,1";
+        nr5g_cells: [],
+        lte_cells: [],
+        nr5g_cells_parsed: [],
+        lte_cells_parsed: [],
+        atcmd: "",
+        tableRows: [],
+        nr5g_neighbourCells: [],
+        lte_neighbourCells: [],
+        nr5g_neighbourCellsParsed: [],
+        lte_neighbourCellsParsed: [],
+        neighbourCellsTableRows: [],
+        cellScanMode: "Unspecified",
+        neighbourCellsScanMode: "Unspecified",
+        isLoading: false,
+        isCellScanning: false,
+        resultDoneCell: false,
+        resultDoneNeighbourCell: false,
 
-            // Send the AT command to the device
-            this.isLoading = true;
-            this.isCellScanning = true;
+        init() {
+          this.generateNeighbourCellsTableRow();
+          this.clearTableRowsBodyCellScan();
+        },
+        startCellScan() {
+          this.clearCellScanData();
 
-            fetch(
-              "/cgi-bin/get_atcommand?" +
-                new URLSearchParams({
-                  atcmd: this.atcmd,
-                })
-            )
-              .then((res) => {
-                return res.text();
-              })
-              .then((data) => {
-                const rawdata = data;
-                console.log("Rawdata: ", rawdata);
-                const lines = rawdata.split("\n");
-                console.log("Lines: ", lines);
+          // 根据扫描模式设置AT命令
+          this.atcmd = this.getATCommandForScanMode(this.cellScanMode);
 
-                // Get the length of the lines array and remove the first element.
-                const linesLength = lines.length;
-                lines.splice(0, 1);
+          // 将AT命令发送到设备
+          this.isLoading = true;
+          this.isCellScanning = true;
 
-                // Get the new length of the lines array and remove the last 3 elements.
-                const newLinesLength = lines.length;
-                lines.splice(newLinesLength - 3, 3);
+          fetch(`/cgi-bin/get_atcommand?${new URLSearchParams({ atcmd: this.atcmd })}`)
+            .then(res => res.text())
+            .then(data => this.processScanData(data))
+            .then(() => {
+              this.isLoading = false;
+              this.isCellScanning = false;
+              this.resultDoneCell = true;
+            })
+            .catch(error => {
+              console.error("Error processing scan data:", error);
+              this.isLoading = false;
+              this.isCellScanning = false;
+            });
+        },
+        getATCommandForScanMode(scanMode) {
+          const commands = {
+            "Full Scan": "AT+QSCAN=3,1",
+            "LTE Only": "AT+QSCAN=1,1",
+            "NR5G Only": "AT+QSCAN=2,1"
+          };
+          return commands[scanMode] || "";
+        },
+        processScanData(data) {
+          const lines = data.split("\n").filter(line => line && line !== "OK");
+          if (lines.length <= 4) return; // 处理无效数据的情况
 
-                console.log("New Lines: ", lines);
+          lines.splice(0, 1); // 移除第一个元素
+          lines.splice(lines.length - 3, 3); // 移除最后三个元素
 
-                // Loop through all of the lines. If the line starts with NR5G then add it to the nr5g_cells array. If it starts with LTE then add it to the lte_cells array.
-
-                for (let i = 0; i < lines.length; i++) {
-                  if (
-                    lines[i] !== "OK" &&
-                    lines[i] !== "" &&
-                    lines[i] !== "\r"
-                  ) {
-                    if (lines[i].match(/NR5G/g)) {
-                      this.nr5g_cells.push(lines[i]);
-                    } else if (lines[i].match(/LTE/g)) {
-                      this.lte_cells.push(lines[i]);
-                    }
-                  }
-                }
-              })
-              .then(() => {
-                this.parseNr5gCells();
-              })
-              .then(() => {
-                this.parseLTECells();
-              })
-              .then(() => {
-                this.generateTableRow();
-                this.isLoading = false;
-                this.isCellScanning = false;
-                this.resultDoneCell = true;
-              });
-          },
-          parseNr5gCells() {
-            // Parse the NR5G cells
-            for (let i = 0; i < this.nr5g_cells.length; i++) {
-              let mcc, mnc, freq, pci, rsrp, band, provider;
-              const lines = this.nr5g_cells[i].split(",");
-              mcc = this.nr5g_cells[i].split(":")[1].split(",")[1];
-              mnc = this.nr5g_cells[i].split(":")[1].split(",")[2];
-              freq = this.nr5g_cells[i].split(":")[1].split(",")[3];
-              pci = this.nr5g_cells[i].split(":")[1].split(",")[4];
-              rsrp = this.nr5g_cells[i].split(":")[1].split(",")[5];
-              band = this.nr5g_cells[i].split(":")[1].split(",")[12];
-
-              provider = this.convertMCCMNCtoNetworkName(mcc, mnc);
-
-              /// Append the value to lte_cells_parsed with this layout:
-              // mcc mnc, band, freq, pci, rsrp
-              this.nr5g_cells_parsed.push(
-                `${provider}, ${band}, ${freq}, ${pci}, ${rsrp}`
-              );
+          lines.forEach(line => {
+            if (line.includes("NR5G")) {
+              this.nr5g_cells.push(line);
+            } else if (line.includes("LTE")) {
+              this.lte_cells.push(line);
             }
-          },
+          });
 
-          parseLTECells() {
-            for (let i = 0; i < this.lte_cells.length; i++) {
-              let mcc, mnc, freq, pci, rsrp, band, provider;
-              const lines = this.lte_cells[i].split(",");
-              mcc = this.lte_cells[i].split(":")[1].split(",")[1];
-              mnc = this.lte_cells[i].split(":")[1].split(",")[2];
-              freq = this.lte_cells[i].split(":")[1].split(",")[3];
-              pci = this.lte_cells[i].split(":")[1].split(",")[4];
-              rsrp = this.lte_cells[i].split(":")[1].split(",")[5];
-              band = this.lte_cells[i].split(":")[1].split(",")[12];
+          this.nr5g_cells.forEach(cell => this.nr5g_cells_parsed.push(this.parseCellData(cell, "NR5G")));
+          this.lte_cells.forEach(cell => this.lte_cells_parsed.push(this.parseCellData(cell, "LTE")));
 
-              provider = this.convertMCCMNCtoNetworkName(mcc, mnc);
+          this.generateTableRow();
+        },
+        parseCellData(cell, type) {
+          const parts = cell.split(":")[1]?.split(",") || [];
+          const provider = this.convertMCCMNCtoNetworkName(parts[1], parts[2]);
+          return {
+            type: type,
+            provider: provider,
+            band: parts[12],
+            freq: parts[3],
+            pci: parts[4],
+            rsrp: parts[5]
+          };
+        },
+        generateTableRow() {
+          const tableBody = document.getElementById("cellScanTableBody");
+          tableBody.innerHTML = ""; // 在生成新行之前清空表格主体
+          this.tableRows = []; // 在生成新行之前重置数组
 
-              // Append the value to lte_cells_parsed with this layout:
-              // mcc mnc, band, freq, pci, rsrp
-              this.lte_cells_parsed.push(
-                `${provider}, ${band}, ${freq}, ${pci}, ${rsrp}`
-              );
-            }
-          },
+          const cells = this.cellScanMode === "Full Scan"
+            ? [...this.nr5g_cells_parsed, ...this.lte_cells_parsed]
+            : this.cellScanMode === "NR5G Only"
+              ? this.nr5g_cells_parsed
+              : this.lte_cells_parsed;
 
-          generateTableRow() {
-            this.convertMCCMNCtoNetworkName();
-            const tableBody = document.getElementById("cellScanTableBody");
-            tableBody.innerHTML = ""; // Clear the table body before generating new rows
-            this.tableRows = []; // Reset the array before generating new rows
-
-            if (this.cellScanMode === "Full Scan") {
-              // Generate rows for NR5G cells
-              for (let i = 0; i < this.nr5g_cells_parsed.length; i++) {
-                const nr5Glines = this.nr5g_cells_parsed[i].split(",");
-
-                const signalSvg = this.signalIconSVG(nr5Glines[4]);
-
-                this.tableRows.push(`
-          <tr>
-            <th scope="row">NR5G</th>
-            <td>${nr5Glines[0]}</td>
-            <td>${nr5Glines[1]}</td>
-            <td>${nr5Glines[2]}</td>
-            <td>${nr5Glines[3]}</td>
-            <td>${nr5Glines[4]}</td>
-            <td>${signalSvg}</td>
-
-          </tr>
-        `);
-              }
-
-              // Generate rows for LTE cells
-              for (let i = 0; i < this.lte_cells_parsed.length; i++) {
-                const LTElines = this.lte_cells_parsed[i].split(",");
-
-                const signalSvg = this.signalIconSVG(LTElines[4]);
-
-                this.tableRows.push(`
-          <tr>
-            <th scope="row">LTE</th>
-            <td>${LTElines[0]}</td>
-            <td>${LTElines[1]}</td>
-            <td>${LTElines[2]}</td>
-            <td>${LTElines[3]}</td>
-            <td>${LTElines[4]}</td>
-            <td>${signalSvg}</td>
-          </tr>
-        `);
-              }
-            } else if (this.cellScanMode === "NR5G Only") {
-              // Generate rows for NR5G cells
-              for (let i = 0; i < this.nr5g_cells_parsed.length; i++) {
-                const nr5Glines = this.nr5g_cells_parsed[i].split(",");
-
-                const signalSvg = this.signalIconSVG(nr5Glines[4]);
-
-                this.tableRows.push(`
-          <tr>
-            <th scope="row">NR5G</th>
-            <td>${nr5Glines[0]}</td>
-            <td>${nr5Glines[1]}</td>
-            <td>${nr5Glines[2]}</td>
-            <td>${nr5Glines[3]}</td>
-            <td>${nr5Glines[4]}</td>
-            <td>${signalSvg}</td>
-          </tr>
-        `);
-              }
-            } else if (this.cellScanMode === "LTE Only") {
-              // Generate rows for LTE cells
-              for (let i = 0; i < this.lte_cells_parsed.length; i++) {
-                const LTElines = this.lte_cells_parsed[i].split(",");
-
-                const signalSvg = this.signalIconSVG(LTElines[4]);
-
-                this.tableRows.push(`
-          <tr>
-            <th scope="row">LTE</th>
-            <td>${LTElines[0]}</td>
-            <td>${LTElines[1]}</td>
-            <td>${LTElines[2]}</td>
-            <td>${LTElines[3]}</td>
-            <td>${LTElines[4]}</td>
-            <td>${signalSvg}</td>
-          </tr>
-        `);
-              }
-            }
-
-            // Append the rows to the table body
-            for (let i = 0; i < this.tableRows.length; i++) {
-              tableBody.innerHTML += this.tableRows[i];
-            }
-          },
-
-          convertMCCMNCtoNetworkName(mcc, mnc) {
-            const mccmnc = mcc + mnc;
-            return this.networkNames[mccmnc] || `${mcc} ${mnc}`;
-          },
-
-          getNeighbourcellLTEandNR5G() {
-            // this.clearTableRowsBodyNeighbourCells();
-            // Reset the array before generating new rows
-            this.lte_neighbourCells = [];
-            this.nr5g_neighbourCells = [];
-            this.lte_neighbourCellsParsed = [];
-            this.nr5g_neighbourCellsParsed = [];
-            this.neighbourCellsTableRows = [];
-            this.atcmd =
-              'AT+QENG="neighbourcell";+QNWCFG="nr5g_meas_info",1;+QNWCFG="nr5g_meas_info"';
-            this.isLoading = true;
-
-            fetch(
-              "/cgi-bin/get_atcommand?" +
-                new URLSearchParams({
-                  atcmd: this.atcmd,
-                })
-            )
-              .then((res) => {
-                return res.text();
-              })
-              .then((data) => {
-                const rawdata = data;
-                console.log(rawdata);
-
-                let lines = rawdata.split("\n");
-                console.log("Lines: ", lines);
-
-                // Get the length of the lines array and remove the first element.
-                const linesLength = lines.length;
-                lines.splice(0, 1);
-
-                // Get the new length of the lines array and remove the last 3 elements.
-                const newLinesLength = lines.length;
-                lines.splice(newLinesLength - 3, 3);
-
-                // Remove an index with "" from the array.
-                for (let i = 0; i < lines.length; i++) {
-                  if (lines[i] === "" || lines[i] === "\r") {
-                    lines.splice(i, 1);
-                  }
-                }
-
-                console.log("Modified: ", lines);
-
-                // Loop through all of the lines. If the line match with LTE then add it to the lte_neighbourCells array. Otherwise, add it to the nr5g_neighbourCells array.
-                for (let i = 0; i < lines.length; i++) {
-                  if (lines[i].match(/LTE/g)) {
-                    this.lte_neighbourCells.push(lines[i]);
-                  } else {
-                    this.nr5g_neighbourCells.push(lines[i]);
-                  }
-                }
-              })
-              .then(() => {
-                this.lteNeighbourCellsParse();
-              })
-              .then(() => {
-                this.nr5gNeighbourCellsParse();
-              })
-              .then(() => {
-                this.generateNeighbourCellsTableRow();
-                this.isLoading = false;
-                this.resultDoneNeighbourCell = true;
-              });
-          },
-
-          lteNeighbourCellsParse() {
-            for (let i = 0; i < this.lte_neighbourCells.length; i++) {
-              let freq, pci, rsrp;
-              const lines = this.lte_neighbourCells[i].split(",");
-              freq = this.lte_neighbourCells[i].split(":")[1].split(",")[2];
-              pci = this.lte_neighbourCells[i].split(":")[1].split(",")[3];
-              rsrp = this.lte_neighbourCells[i].split(":")[1].split(",")[5];
-
-              // // Append the value to lte_neighbourCellsParsed with this layout:
-              // //freq, pci, rsrp
-              this.lte_neighbourCellsParsed.push(`${freq}, ${pci}, ${rsrp}`);
-            }
-          },
-
-          nr5gNeighbourCellsParse() {
-            for (let i = 0; i < this.nr5g_neighbourCells.length; i++) {
-              let freq, pci, rsrp;
-              const lines = this.nr5g_neighbourCells[i].split(",");
-              freq = this.nr5g_neighbourCells[i].split(":")[1].split(",")[2];
-              pci = this.nr5g_neighbourCells[i].split(":")[1].split(",")[3];
-              rsrp = this.nr5g_neighbourCells[i].split(":")[1].split(",")[4];
-
-              // // Append the value to lte_neighbourCellsParsed with this layout:
-              // //freq, pci, rsrp
-              this.nr5g_neighbourCellsParsed.push(`${freq}, ${pci}, ${rsrp}`);
-            }
-          },
-
-          generateNeighbourCellsTableRow() {
-            console.log(this.neighbourCellsScanMode);
-            this.neighbourCellsTableRows = []; // Reset the array before generating new rows
-            const tableBody = document.getElementById("neighbourCellTableBody");
-            tableBody.innerHTML = "";
-
-            if (this.neighbourCellsScanMode === "LTE and NR5G") {
-              // Generate rows for LTE neighbour cells
-              for (let i = 0; i < this.lte_neighbourCellsParsed.length; i++) {
-                const LTElines = this.lte_neighbourCellsParsed[i].split(",");
-                // If rsrp is -55 and above then use this svg
-
-                const signalSvg = this.signalIconSVG(LTElines[2]);
-                this.neighbourCellsTableRows.push(`
-          <tr>
-            <th scope="row">LTE</th>
-            <td>${LTElines[0]}</td>
-            <td>${LTElines[1]}</td>
-            <td>${LTElines[2]}</td>
-            <td>${signalSvg}</td>
-          </tr>
-        `);
-              }
-
-              // Generate rows for NR5G neighbour cells
-              for (let i = 0; i < this.nr5g_neighbourCellsParsed.length; i++) {
-                const nr5Glines = this.nr5g_neighbourCellsParsed[i].split(",");
-
-                const signalSvg = this.signalIconSVG(nr5Glines[2]);
-
-                this.neighbourCellsTableRows.push(`
-          <tr>
-            <th scope="row">NR5G</th>
-            <td>${nr5Glines[0]}</td>
-            <td>${nr5Glines[1]}</td>
-            <td>${nr5Glines[2]}</td>
-            <td>${signalSvg}</td>
-          </tr>
-        `);
-              }
-            } else if (this.neighbourCellsScanMode === "LTE") {
-              // Generate rows for LTE neighbour cells
-              for (let i = 0; i < this.lte_neighbourCellsParsed.length; i++) {
-                const LTElines = this.lte_neighbourCellsParsed[i].split(",");
-
-                const signalSvg = this.signalIconSVG(LTElines[2]);
-
-                this.neighbourCellsTableRows.push(`
-          <tr>
-            <th scope="row">LTE</th>
-            <td>${LTElines[0]}</td>
-            <td>${LTElines[1]}</td>
-            <td>${LTElines[2]}</td>
-            <td>${signalSvg}</td>
-          </tr>
-          `);
-              }
-            } else if (this.neighbourCellsScanMode === "NR5G") {
-              // Generate rows for NR5G neighbour cells
-
-              for (let i = 0; i < this.nr5g_neighbourCellsParsed.length; i++) {
-                const nr5Glines = this.nr5g_neighbourCellsParsed[i].split(",");
-
-                const signalSvg = this.signalIconSVG(nr5Glines[2]);
-
-                this.neighbourCellsTableRows.push(`
-          <tr>
-            <th scope="row">NR5G</th>
-            <td>${nr5Glines[0]}</td>
-            <td>${nr5Glines[1]}</td>
-            <td>${nr5Glines[2]}</td>
-            <td>${signalSvg}</td>
-          </tr>
-          `);
-              }
-            }
-
-            if (this.neighbourCellsTableRows.length === 0) {
-              this.neighbourCellsTableRows.push(`
-            <tr>
-                <th scope="row">Empty</th>
-                <td>Empty</td>
-                <td>Empty</td>
-                <td>Empty</td>
-                <td>Empty</td>
-            </tr>
-        `);
-            }
-
-            // Append the rows to the table body
-            for (let i = 0; i < this.neighbourCellsTableRows.length; i++) {
-              tableBody.innerHTML += this.neighbourCellsTableRows[i];
-            }
-          },
-
-          signalIconSVG(rsrp) {
-            // If rsrp is -55 and above then use this svg
-            if (parseInt(rsrp) >= -55) {
-              return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-signal-high"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/></svg>`;
-            } else if (parseInt(rsrp) >= -85) {
-              return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-signal-medium"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/></svg>`;
-            } else if (parseInt(rsrp) >= -95) {
-              return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-signal-low"><path d="M2 20h.01"/><path d="M7 20v-4"/></svg>`;
-            } else {
-              return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-signal-zero"><path d="M2 20h.01"/></svg>`;
-            }
-
-            return signalSvg;
-          },
-
-          clearTableRowsBodyCellScan() {
-            // Make all arrays empty
-            this.lte_cells = [];
-            this.nr5g_cells = [];
-            this.lte_cells_parsed = [];
-            this.nr5g_cells_parsed = [];
-            this.tableRows = [];
-
-            this.resultDoneCell = false;
-
-            const tableBody = document.getElementById("cellScanTableBody");
-            tableBody.innerHTML = "";
+          cells.forEach(cell => {
+            const signalSvg = this.signalIconSVG(cell.rsrp);
             this.tableRows.push(`
+              <tr>
+                <th scope="row">${cell.type}</th>
+                <td>${cell.provider}</td>
+                <td>${cell.band}</td>
+                <td>${cell.freq}</td>
+                <td>${cell.pci}</td>
+                <td>${cell.rsrp}</td>
+                <td>${signalSvg}</td>
+              </tr>
+            `);
+          });
+
+          if (this.tableRows.length === 0) {
+            this.tableRows.push(`
+              <tr>
+                <th scope="row">空</th>
+                <td>空</td>
+                <td>空</td>
+                <td>空</td>
+                <td>空</td>
+                <td>空</td>
+                <td>空</td>
+              </tr>
+            `);
+          }
+
+          tableBody.innerHTML = this.tableRows.join('');
+        },
+        signalIconSVG(rsrp) {
+          const levels = [
+            { min: -55, svg: `<line x1="2" y1="20" x2="2" y2="20" /><line x1="7" y1="20" x2="7" y2="16" /><line x1="12" y1="20" x2="12" y2="12" /><line x1="17" y1="20" x2="17" y2="8" /><line x1="22" y1="20" x2="22" y2="4" />` },
+            { min: -85, svg: `<line x1="2" y1="20" x2="2" y2="20" /><line x1="7" y1="20" x2="7" y2="16" /><line x1="12" y1="20" x2="12" y2="12" /><line x1="17" y1="20" x2="17" y2="8" />` },
+            { min: -95, svg: `<line x1="2" y1="20" x2="2" y2="20" /><line x1="7" y1="20" x2="7" y2="16" /><line x1="12" y1="20" x2="12" y2="12" />` },
+            { min: -Infinity, svg: `<line x1="2" y1="20" x2="2" y2="20" /><line x1="7" y1="20" x2="7" y2="16" />` }
+          ];
+          const level = levels.find(l => rsrp >= l.min);
+          return level ? `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${level.svg}</svg>` : '';
+        },
+        convertMCCMNCtoNetworkName(mcc, mnc) {
+          const mccmnc = mcc + mnc;
+          return this.networkNames[mccmnc] || `${mcc} ${mnc}`;
+        },
+        clearCellScanData() {
+          this.nr5g_cells = [];
+          this.lte_cells = [];
+          this.nr5g_cells_parsed = [];
+          this.lte_cells_parsed = [];
+          this.tableRows = [];
+        },
+        clearTableRowsBodyCellScan() {
+          this.clearCellScanData();
+          this.resultDoneCell = false;
+          const tableBody = document.getElementById("cellScanTableBody");
+          tableBody.innerHTML = `
             <tr>
-                <th scope="row">Empty</th>
-                <td>Empty</td>
-                <td>Empty</td>
-                <td>Empty</td>
-                <td>Empty</td>
-                <td>Empty</td>
-                <td>Empty</td>
+              <th scope="row">空</th>
+              <td>空</td>
+              <td>空</td>
+              <td>空</td>
+              <td>空</td>
+              <td>空</td>
+              <td>空</td>
             </tr>
-        `);
+          `;
+        },
+        getNeighbourcellLTEandNR5G() {
+          this.clearNeighbourCellData();
 
-            // Append the rows to the table body
-            for (let i = 0; i < this.tableRows.length; i++) {
-              tableBody.innerHTML += this.tableRows[i];
+          let commands = [];
+          if (this.neighbourCellsScanMode === "NR5G") {
+            commands = ['AT+QNWCFG="nr5g_meas_info"'];
+          } else if (this.neighbourCellsScanMode === "LTE") {
+            commands = ['AT+QENG="neighbourcell"'];
+          } else if (this.neighbourCellsScanMode === "LTE and NR5G") {
+            commands = ['AT+QNWCFG="nr5g_meas_info";+QENG="neighbourcell"'];
+          }
+
+          this.isLoading = true;
+
+          Promise.all(commands.map(cmd => fetch(`/cgi-bin/get_atcommand?${new URLSearchParams({ atcmd: cmd })}`).then(res => res.text())))
+            .then(responses => {
+              responses.forEach(data => this.processNeighbourCellData(data));
+            })
+            .then(() => {
+              this.isLoading = false;
+              this.resultDoneNeighbourCell = true;
+            })
+            .catch(error => {
+              console.error("Error processing neighbour cell data:", error);
+              this.isLoading = false;
+            });
+        },
+        processNeighbourCellData(data) {
+          const lines = data.split("\n").filter(line => line && line !== "OK");
+
+          if (this.neighbourCellsScanMode === "NR5G") {
+            lines.shift(); // 移除第一行
+          }
+          if (this.neighbourCellsScanMode === "LTE and NR5G") {
+            lines.shift(); // 移除第一行
+          }
+
+          lines.forEach(line => {
+            if (line.includes("WCDMA") || line.includes("LTE")) {
+              this.lte_neighbourCells.push(line);
+            } else if (line.includes("nr5g_meas_info")) {
+              this.nr5g_neighbourCells.push(line);
             }
-          },
+          });
 
-          clearTableRowsBodyNeighbourCells() {
-            // Make all arrays empty
-            this.lte_neighbourCells = [];
-            this.nr5g_neighbourCells = [];
-            this.lte_neighbourCellsParsed = [];
-            this.nr5g_neighbourCellsParsed = [];
-            this.neighbourCellsTableRows = [];
+          this.lte_neighbourCells.forEach(cell => this.lte_neighbourCellsParsed.push(this.parseNeighbourCellData(cell)));
+          this.nr5g_neighbourCells.forEach(cell => this.nr5g_neighbourCellsParsed.push(this.parseNeighbourCellData(cell)));
 
-            this.resultDoneNeighbourCell = false;
+          this.generateNeighbourCellsTableRow();
+        },
+        parseNeighbourCellData(cell) {
+          if (cell.includes("WCDMA")) {
+            const parts = cell.split(",");
+            return {
+              type: "WCDMA",
+              freq: parts[2],
+              pci: parts[4],
+              rsrp: parts[5],
+            };
+          } else if (cell.includes("LTE")) {
+            const parts = cell.split(",");
+            return {
+              type: "LTE",
+              freq: parts[2],
+              pci: parts[3],
+              rsrp: parts[4],
+            };
+          } else if (cell.includes("nr5g_meas_info")) {
+            const parts = cell.split(",");
+            return {
+              type: "NR5G",
+              freq: parts[2],
+              pci: parts[3],
+              rsrp: parts[4],
+            };
+          }
+        },
+        generateNeighbourCellsTableRow() {
+          const tableBody = document.getElementById("neighbourCellTableBody");
+          tableBody.innerHTML = ""; // 在生成新行之前清空表格主体
+          this.neighbourCellsTableRows = []; // 在生成新行之前重置数组
 
-            const tableBody = document.getElementById("neighbourCellTableBody");
-            tableBody.innerHTML = "";
+          const cells = this.neighbourCellsScanMode === "LTE and NR5G"
+            ? [...this.lte_neighbourCellsParsed, ...this.nr5g_neighbourCellsParsed]
+            : this.neighbourCellsScanMode === "LTE"
+              ? this.lte_neighbourCellsParsed
+              : this.nr5g_neighbourCellsParsed;
+
+          cells.forEach(cell => {
+            const signalSvg = this.signalIconSVG(cell.rsrp);
             this.neighbourCellsTableRows.push(`
+              <tr>
+                <th scope="row">${cell.type}</th>
+                <td>${cell.freq}</td>
+                <td>${cell.pci}</td>
+                <td>${cell.rsrp}</td>
+                <td>${signalSvg}</td>
+              </tr>
+            `);
+          });
+
+          if (this.neighbourCellsTableRows.length === 0) {
+            this.neighbourCellsTableRows.push(`
+              <tr>
+                <th scope="row">空</th>
+                <td>空</td>
+                <td>空</td>
+                <td>空</td>
+                <td>空</td>
+              </tr>
+            `);
+          }
+
+          tableBody.innerHTML = this.neighbourCellsTableRows.join('');
+        },
+        clearNeighbourCellData() {
+          this.lte_neighbourCells = [];
+          this.nr5g_neighbourCells = [];
+          this.lte_neighbourCellsParsed = [];
+          this.nr5g_neighbourCellsParsed = [];
+          this.neighbourCellsTableRows = [];
+        },
+        clearTableRowsBodyNeighbourCells() {
+          this.clearNeighbourCellData();
+          this.resultDoneNeighbourCell = false;
+          const tableBody = document.getElementById("neighbourCellTableBody");
+          tableBody.innerHTML = `
             <tr>
-                <th scope="row">Empty</th>
-                <td>Empty</td>
-                <td>Empty</td>
-                <td>Empty</td>
-                <td>Empty</td>
+              <th scope="row">空</th>
+              <td>空</td>
+              <td>空</td>
+              <td>空</td>
+              <td>空</td>
             </tr>
-        `);
-            // Append the rows to the table body
-            for (let i = 0; i < this.neighbourCellsTableRows.length; i++) {
-              tableBody.innerHTML += this.neighbourCellsTableRows[i];
-            }
-          },
-        };
-      }
-    </script>
-  </body>
+          `;
+        },
+      };
+    }
+  </script>
+</body>
+
 </html>
