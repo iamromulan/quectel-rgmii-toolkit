@@ -20,35 +20,12 @@ fi
 phone_number="$number"
 message_encoded="$msg"
 
-phone_number="+86$phone_number"
 
 send_at_command() {
     local cmd=$1
-    echo "Sending command: $cmd" >&2
-    echo -en "$cmd\r" | microcom -t 1000 /dev/ttyOUT2
-    sleep 2
-    local response=$(microcom -t 1000 /dev/ttyOUT2)
-    echo "Response: $response" >&2
-    echo "$response"
+    echo -en "$cmd\r" | microcom -t 100 /dev/ttyOUT2
 }
 
-send_at_command "AT+CMGF=1"
-send_at_command "AT+CSCS=\"UCS2\""
-
-encode_ucs2() {
-    local input="$1"
-    local output=""
-    local i
-    for ((i=0; i<${#input}; i++)); do
-        hex=$(printf "%04X" "'${input:$i:1}")
-        output="$output$hex"
-    done
-    echo "$output"
-}
-
-phone_number_ucs2=$(encode_ucs2 "$phone_number")
-ATCMD="AT+CMGS=\"$phone_number_ucs2\""
-send_at_command "$ATCMD"
-
-runcmd=$((echo -en "$message_encoded"; sleep 1; echo -en "\x1A") | microcom -t 1000 /dev/ttyOUT2)
+send_at_command "AT+CMGS=\"$phone_number\","$Command""
+runcmd=$((echo -en "$message_encoded"; echo -en "\x1A") | microcom -t 500 /dev/ttyOUT2)
 echo "$runcmd"
