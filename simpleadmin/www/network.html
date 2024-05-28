@@ -814,7 +814,7 @@
           },
           cellLockDisableLTE() {
             // Send the atcmd command to reset the locked bands
-            const atcmd = 'AT+QNWLOCK="common/4g,0"';
+            const atcmd = 'AT+QNWLOCK="common/4g",0';
             this.showModal = true;
 
             this.sendATcommand(atcmd);
