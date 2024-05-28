@@ -604,24 +604,27 @@
                 atcmd = `AT+QNWPREFCFG="lte_band",${newCheckedValues.join(
                   ":"
                 )}`;
+                console.log(atcmd);
                 this.sendATcommand(atcmd);
               } else if (selectedMode === "NSA") {
                 atcmd = `AT+QNWPREFCFG="nsa_nr5g_band",${newCheckedValues.join(
                   ":"
                 )}`;
+                console.log(atcmd);
                 this.sendATcommand(atcmd);
               } else if (selectedMode === "SA") {
                 atcmd = `AT+QNWPREFCFG="nr5g_band",${newCheckedValues.join(
                   ":"
                 )}`;
+                console.log(atcmd);
                 this.sendATcommand(atcmd);
               } else {
                 alert("Invalid network mode selected");
               }
 
-              // Do a 5 second countdown
+              // Do a 2 second countdown
               this.showModal = true;
-              this.countdown = 5;
+              this.countdown = 2;
               const interval = setInterval(() => {
                 this.countdown--;
                 if (this.countdown === 0) {
