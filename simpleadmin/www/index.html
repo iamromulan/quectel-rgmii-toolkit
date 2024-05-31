@@ -23,7 +23,7 @@
   </head>
   <body>
     <main>
-      <div class="container my-4" x-data="getStaticNetworkInfo()">
+      <div class="container my-4" x-data="processAllInfos()">
         <nav class="navbar navbar-expand-lg mt-2">
           <div class="container-fluid">
             <a class="navbar-brand" href="/"
@@ -116,9 +116,9 @@
                     d="M64 0H242.7c17 0 33.3 6.7 45.3 18.7L365.3 96c12 12 18.7 28.3 18.7 45.3V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64C0 28.7 28.7 0 64 0zM96 192c-17.7 0-32 14.3-32 32v32h64V192H96zM64 352h80 96 80V288H240 144 64v64zM320 224c0-17.7-14.3-32-32-32H256v64h64V224zM160 192v64h64V192H160zM288 448c17.7 0 32-14.3 32-32V384H256v64h32zM160 384v64h64V384H160zM64 416c0 17.7 14.3 32 32 32h32V384H64v32z"
                   />
                 </svg>
-                <h1 class="card-text mt-4" x-text="sim"></h1>
+                <h1 class="card-text mt-4" x-text="simStatus"></h1>
               </div>
-              <div class="card-footer">SIM</div>
+              <div class="card-footer">SIM Status</div>
             </div>
           </div>
 
@@ -160,7 +160,10 @@
                     d="M0 336c0 79.5 64.5 144 144 144H512c70.7 0 128-57.3 128-128c0-61.9-44-113.6-102.4-125.4c4.1-10.7 6.4-22.4 6.4-34.6c0-53-43-96-96-96c-19.7 0-38.1 6-53.3 16.2C367 64.2 315.3 32 256 32C167.6 32 96 103.6 96 192c0 2.7 .1 5.4 .2 8.1C40.2 219.8 0 273.2 0 336z"
                   />
                 </svg>
-                <h1 class="card-text mt-4" x-text="internetConnection"></h1>
+                <h1
+                  class="card-text mt-4"
+                  x-text="internetConnectionStatus"
+                ></h1>
               </div>
               <div class="card-footer">Internet Connection</div>
             </div>
@@ -177,11 +180,11 @@
                     <tbody>
                       <tr>
                         <th scope="row">Active Sim</th>
-                        <td x-text="active_sim"></td>
+                        <td x-text="activeSim"></td>
                       </tr>
                       <tr>
                         <th scope="row">Network Provider</th>
-                        <td x-text="network_provider"></td>
+                        <td x-text="networkProvider"></td>
                       </tr>
                       <tr>
                         <th scope="row">MCCMNC</th>
@@ -193,7 +196,7 @@
                       </tr>
                       <tr>
                         <th scope="row">Network Mode</th>
-                        <td x-text="network_mode"></td>
+                        <td x-text="networkMode"></td>
                       </tr>
                       <tr>
                         <th scope="row">Bands</th>
@@ -210,11 +213,11 @@
                       <tr>
                         <th scope="row">PCI</th>
                         <td
-                          x-show="scc_pci != '-'"
-                          x-text="pcc_pci + ', ' + scc_pci"
+                          x-show="sccPCI != '-'"
+                          x-text="pccPCI + ', ' + sccPCI"
                         ></td>
 
-                        <td x-show="scc_pci == '-'" x-text="pcc_pci"></td>
+                        <td x-show="sccPCI == '-'" x-text="pccPCI"></td>
                       </tr>
                       <tr>
                         <th scope="row">IPv<sup>4</sup></th>
@@ -272,7 +275,7 @@
                         <th scope="row">Assesment</th>
                         <td x-text="signalAssessment"></td>
                       </tr>
-                      <tr>
+                      <tr x-show="csq != 'NR-SA Mode'">
                         <th scope="row">CSQ</th>
                         <td x-show="csq != '-'" x-text="csq"></td>
                         <td x-show="csq == '-'" class="fst-italic">None</td>
@@ -289,12 +292,14 @@
                         <th scope="row">TAC<sup>4G/5G</sup></th>
                         <td x-text="tac"></td>
                       </tr>
-                      <tr>
-                        <th scope="row">RSSI</th>
+                      <tr x-show="rssi != '-'">
+                        <th scope="row">RSSI<sup>4G</sup></th>
                         <td x-show="rssi != '-'" x-text="rssi"></td>
                         <td x-show="rssi == '-'" class="fst-italic">None</td>
                       </tr>
-                      <tr>
+                      <tr
+                      x-show="rsrqLTE != '-'"
+                      >
                         <th scope="row">SS_RSRQ<sup>4G</sup></th>
                         <td
                           class="gap-4 align-items-center"
@@ -339,7 +344,9 @@
                           </span>
                         </td>
                       </tr>
-                      <tr>
+                      <tr
+                      x-show="rsrqNR != '-'"
+                      >
                         <th scope="row">SS_RSRQ<sup>5G</sup></th>
                         <td
                           x-data="{ getProgressBarClass: function() {
@@ -383,7 +390,9 @@
                           </span>
                         </td>
                       </tr>
-                      <tr>
+                      <tr
+                      x-show="rsrpLTE != '-'"
+                      >
                         <th scope="row">RSRP<sup>4G</sup></th>
                         <td
                           class="gap-4 align-items-center"
@@ -430,7 +439,9 @@
                           </span>
                         </td>
                       </tr>
-                      <tr>
+                      <tr
+                      x-show="rsrpNR != '-'"
+                      >
                         <th scope="row">SS_RSRP<sup>5G</sup></th>
                         <td
                           class="gap-4 align-items-center"
@@ -477,7 +488,9 @@
                           </span>
                         </td>
                       </tr>
-                      <tr>
+                      <tr
+                      x-show="sinrLTE != '-'"
+                      >
                         <th scope="row">SINR<sup>4G</sup></th>
                         <td
                           class="gap-4 align-items-center"
@@ -524,7 +537,9 @@
                           </span>
                         </td>
                       </tr>
-                      <tr>
+                      <tr
+                      x-show="sinrNR != '-'"
+                      >
                         <th scope="row">SINR<sup>5G</sup></th>
                         <td
                           class="gap-4 align-items-center"
@@ -596,52 +611,53 @@
       </div>
     </main>
     <script src="js/dark-mode.js"></script>
+
     <script>
-      function getStaticNetworkInfo() {
+      function processAllInfos() {
         return {
-          sim: "Inactive",
-          atcmd: null,
+          atcmd: "",
+          internetConnectionStatus: "Disconnected",
           temperature: "0",
-          active_sim: "?",
-          network_provider: "?",
-          mccmnc: "?",
-          apn: "?",
-          network_mode: "?",
-          ipv4: "?",
-          ipv6: "?",
-          bands: "?",
-          bandwidth: "?",
-          earfcns: "?",
-          pcc_pci: "?",
-          scc_pci: "-",
-          signalAssessment: "Unknown",
+          simStatus: "No SIM",
+          activeSim: "No SIM",
+          networkProvider: "N/A",
+          mccmnc: "00000",
+          apn: "Unknown",
+          networkMode: "Disconnected",
+          bands: "Unknown Bands",
+          bandwidth: "Unknown Bandwidth",
+          earfcns: "000",
+          pccPCI: "0",
+          sccPCI: "-",
+          ipv4: "000.000.000.000",
+          ipv6: "0000:0000:0000:0000:0000:0000:0000:0000",
+          cellID: "Unknown",
+          eNBID: "Unknown",
+          tac: "Unknown",
           csq: "-",
           rssi: "-",
-          cellID: "?",
-          eNBID: "?",
-          tac: "?",
-          rsrqLTE: "-",
-          rsrqNR: "-",
-          rsrqLTEPercentage: "0%",
-          rsrqNRPercentage: "0%",
           rsrpLTE: "-",
           rsrpNR: "-",
           rsrpLTEPercentage: "0%",
           rsrpNRPercentage: "0%",
+          rsrqLTE: "-",
+          rsrqNR: "-",
+          rsrqLTEPercentage: "0%",
+          rsrqNRPercentage: "0%",
           sinrLTE: "-",
           sinrNR: "-",
           sinrLTEPercentage: "0%",
           sinrNRPercentage: "0%",
           signalPercentage: "0",
-          internetConnection: "Disconnected",
+          signalAssessment: "Unknown",
+          uptime: "Unknown",
           lastUpdate: new Date().toLocaleString(),
           newRefreshRate: null,
           refreshRate: 3,
-          intervalId: null,
-          uptime: "Unknown",
-          fetchNetworkInfo() {
+
+          fetchAllInfo() {
             this.atcmd =
-              'AT+QTEMP;+QUIMSLOT?;+QSPN;+CGCONTRDP=1;+QMAP="WWANIP";+QENG="servingcell";+QCAINFO';
+              'AT+QTEMP;+QUIMSLOT?;+QSPN;+CGCONTRDP=1;+QMAP="WWANIP";+QENG="servingcell";+QCAINFO;+QSIMSTAT?;+CSQ';
 
             fetch(
               "/cgi-bin/get_atcommand?" +
@@ -649,219 +665,593 @@
                   atcmd: this.atcmd,
                 })
             ).then((response) => {
-              response
-                .text()
-                .then((data) => {
+              response.text().then((data) => {
+                // content here
+                if (data.includes("ERROR")) {
+                  console.log("Error fetching data");
+                  this.activeSim = "Something went wrong.";
+                  return;
+                } else {
                   const rawdata = data;
                   const lines = rawdata.split("\n");
-                  // delete first element of the array
-                  lines.shift();
+
                   console.log(lines);
 
-                  // Parse the temperature
-                  const temp1 = lines[15]
+                  // --- Temperature ---
+                  // find this example value from lines "+QTEMP:"cpuss-0-usr","50"
+                  this.temperature = lines
+                    .find((line) => line.includes('+QTEMP:"cpuss-0-usr"'))
                     .split(",")[1]
-                    .replace(/"/g, "")
-                    .trim();
-                  const temp2 = lines[16]
-                    .split(",")[1]
-                    .replace(/"/g, "")
-                    .trim();
-                  // Average the 2 temperatures then add degree symbol
-                  this.temperature = (parseInt(temp1) + parseInt(temp2)) / 2;
-                  // Round the temperature to only show whole numbers
-                  this.temperature = Math.round(this.temperature).toString();
+                    .replace(/"/g, "");
 
-                  // Parse the active sim
-                  this.active_sim = lines[18]
-                    .split(":")[1]
+                  // --- SIM Status ---
+                  // find this example value from lines "+QSIMSTAT: 0,1"
+                  // Only get the last digit of 0,1
+                  const sim_status = lines
+                    .find((line) => line.includes("+QSIMSTAT:"))
+                    .split(" ")[1]
                     .replace(/"/g, "")
-                    .trim();
+                    .split(",")[1];
 
-                  // Parse the network provider
-                  this.network_provider = lines[20]
-                    .split(",")[1]
+                  if (sim_status == 1) {
+                    this.simStatus = "Active";
+                  } else if (sim_status == 0) {
+                    this.simStatus = "No SIM";
+                  }
+
+                  // --- Active SIM ---
+                  // find this example value from lines "+QUIMSLOT: 1"
+                  const current_sim = lines
+                    .find((line) => line.includes("+QUIMSLOT:"))
+                    .split(" ")[1]
+                    .replace(/"/g, "");
+
+                  if (current_sim == 1) {
+                    this.activeSim = "SIM 1";
+                  } else if (current_sim == 2) {
+                    this.activeSim = "SIM 2";
+                  } else {
+                    this.activeSim = "No SIM";
+                  }
+
+                  // --- Network Provider ---
+                  // find this example value from lines "+QSPN: \"515 66\",\"515 66\",\"DITO\",0,\"51566\""
+                  // remove any spaces
+                  const network_provider = lines
+                    .find((line) => line.includes("+QSPN:"))
+                    .split(",")[0]
+                    .replace("+QSPN: ", "")
                     .replace(/"/g, "")
                     .replace(/ /g, "");
 
-                  // Check if the network provider is only numbers and no letters
-                  if (this.network_provider.match(/^[0-9]+$/) != null) {
-                    // If it is only numbers, then it is the MCCMNC
-                    this.mccmnc = this.network_provider;
-                    this.network_provider = lines[20]
+                  // if network provider is composed of numbers and spaces, and no letters then use .split(",")[2]
+                  if (network_provider.match(/^[0-9]+$/) != null) {
+                    this.networkProvider = lines
+                      .find((line) => line.includes("+QSPN:"))
                       .split(",")[2]
                       .replace(/"/g, "");
                   } else {
-                    // If it is not only numbers, then it is the network provider
-                    this.mccmnc = lines[20].split(",")[4].replace(/"/g, "");
+                    this.networkProvider = network_provider;
                   }
 
-                  // Parse the APN
-                  this.apn = lines[22].split(",")[2].replace(/"/g, "");
+                  // --- MCCMNC ---
+                  this.mccmnc = lines
+                    .find((line) => line.includes("+QSPN:"))
+                    .split(",")[4]
+                    .replace(/"/g, "");
 
-                  // Parse the WAN IPs
-                  this.ipv4 = lines[24].split(",")[4].replace(/"/g, "");
-                  this.ipv6 = lines[25].split(",")[4].replace(/"/g, "");
+                  // --- APN ---
+                  // find this example value from lines "+CGCONTRDP: 1,0,\"internet.dito.ph\",\"100.65.141.236\",\"36.5.141.64.76.204.39.68.23.210.251.16.49.239.42.149\", \"254.128.0.0.0.0.0.0.0.0.0.0.0.0.0.1\",\"131.226.72.19\",\"131.226.73.19\"\r"
+                  this.apn = lines
+                    .find((line) => line.includes("+CGCONTRDP:"))
+                    .split(",")[2]
+                    .replace(/"/g, "");
 
-                  // If no network IP detected, consider as disconnected. Return all values as unknown (except temperature, sim, network provider, mccmnc, and apn)
-                  if (
-                    this.ipv4 == "0.0.0.0" &&
-                    this.ipv6 == "0:0:0:0:0:0:0:0"
-                  ) {
-                    this.temperature = this.temperature;
-                    this.active_sim = this.active_sim;
-                    this.network_provider = this.network_provider;
-                    this.mccmnc = this.mccmnc;
-                    this.apn = this.apn;
-                    this.network_mode =
-                      "Network Disconnected. Please check your SIM card and network settings.";
-                    this.bands = "Unknown";
-                    this.bandwidth = "Unknown";
-                    this.earfcns = "Unknown";
-                    this.pcc_pci = "Unknown";
-                    this.scc_pci = "Unknown";
-                    this.csq = "Unknown";
-                    this.rssi = "Unknown";
-                    this.cellID = "Unknown";
-                    this.eNBID = "Unknown";
-                    this.tac = "Unknown";
-                    this.rsrqLTE = "Unknown";
-                    this.rsrqNR = "Unknown";
-                    this.rsrqLTEPercentage = "0%";
-                    this.rsrqNRPercentage = "0%";
-                    this.rsrpLTE = "Unknown";
-                    this.rsrpNR = "Unknown";
-                    this.rsrpLTEPercentage = "0%";
-                    this.rsrpNRPercentage = "0%";
-                    this.sinrLTE = "Unknown";
-                    this.sinrNR = "Unknown";
-                    this.sinrLTEPercentage = "0%";
-                    this.sinrNRPercentage = "0%";
-                    this.signalPercentage = "0";
-                    this.internetConnection = "Disconnected";
-                    this.lastUpdate = new Date().toLocaleString();
-                    return;
+                  // --- Network Mode ---
+                  // find this example value from lines "+QENG: \"servingcell\",\"NOCONN\",\"NR5G-SA\",\"TDD\",515,66,7000C4001,475,702000,620640,78,12,-83,-3,16,1,-\r"
+
+                  try {
+                    const network_mode = lines
+                      .find((line) => line.includes('+QENG: "servingcell"'))
+                      .split(",")[2]
+                      .replace(/"/g, "");
+                    
+                    const duplex_mode = lines
+                      .find((line) => line.includes('+QENG: "servingcell"'))
+                      .split(",")[3]
+                      .replace(/"/g, "");
+
+                    if (network_mode == "NR5G-SA") {
+                      if (duplex_mode == "TDD") {
+                        this.networkMode = "5G SA TDD";
+                      } else if (duplex_mode == "FDD") {
+                        this.networkMode = "5G SA FDD";
+                      }
+                    }
+
+                    if (network_mode == "LTE") {
+                      // get the FDD | TDD value
+                      const is_tdd = lines
+                        .find((line) => line.includes('+QENG: "servingcell"'))
+                        .split(",")[3]
+                        .replace(/"/g, "");
+
+                      if (is_tdd == "TDD") {
+                        this.networkMode = "4G LTE TDD";
+                      } else if (is_tdd == "FDD") {
+                        this.networkMode = "4G LTE FDD";
+                      }
+                    }
+                  } catch (error) {
+                    // find this example value from lines "+QENG: \"LTE\",\"FDD\",515,03,22AE76D,398,1350,3,4,4,BF82,-110,-13,-78,10,6,200,-\r"
+
+                    const network_mode_lte = lines
+                      .find((line) => line.includes('+QENG: "LTE"'))
+                      .split(",")[0]
+                      .replace("+QENG: ", "")
+                      .replace(/"/g, "");
+
+                    try {
+                      // find this example value from lines "+QENG: \"NR5G-NSA\",515,03,843,-95,20,-11,528030,41,8,1\r"
+                      const network_mode_5g = lines
+                        .find((line) => line.includes('+QENG: "NR5G-NSA"'))
+                        .split(",")[0]
+                        .replace("+QENG: ", "")
+                        .replace(/"/g, "");
+
+                      this.networkMode = "5G NSA";
+                    } catch (error) {
+                      if (network_mode_lte == "FDD") {
+                        this.networkMode = "4G LTE FDD";
+                      } else if (network_mode_lte == "TDD") {
+                        this.networkMode = "4G LTE TDD";
+                      }
+                    }
                   }
 
-                  // Parse the network mode
-                  const networkMode1 = lines[27].split(",")[2];
+                  // --- Bands ---
+                  // Get all the values with LTE BAND n (for example, LTE BAND 3, LTE BAND 1) and then store them in an array
+                  const bands = lines.filter((line) =>
+                    line.includes("LTE BAND")
+                  );
 
-                  if (networkMode1 === '"NR5G-SA"') {
-                    this.network_mode = networkMode1;
-                    this.network_mode = this.network_mode.replace(/"/g, "");
+                  // since it includes the whole line, we need to extract the band part only
+                  for (let i = 0; i < bands.length; i++) {
+                    bands[i] = bands[i].split(",")[3].replace(/"/g, "");
+                  }
+
+                  // Get all the values with NR BAND n (for example, NR BAND 3, NR BAND 1) and then store them in an array
+                  const bands_5g = lines.filter((line) =>
+                    line.includes("NR5G BAND")
+                  );
+
+                  // since it includes the whole line, we need to extract the band number only
+                  for (let i = 0; i < bands_5g.length; i++) {
+                    bands_5g[i] = bands_5g[i].split(",")[3].replace(/"/g, "");
+                  }
+
+                  // Combine the bands and bands_5g arrays seperated by a comma. however, bands or bands_5g can be empty
+                  if (bands.length > 0 && bands_5g.length > 0) {
+                    this.bands = bands.join(", ") + ", " + bands_5g.join(", ");
+                  } else if (bands.length > 0) {
+                    this.bands = bands.join(", ");
+                  } else if (bands_5g.length > 0) {
+                    this.bands = bands_5g.join(", ");
                   } else {
-                    let networkMode2, networkMode3;
-
-                    if (
-                      lines[27] !== undefined &&
-                      lines[27] !== "OK" &&
-                      lines[27] !== "" &&
-                      lines[27] !== "/r"
-                    ) {
-                      // Check if lines[27] doesnt have TDD or FDD
-                      if (
-                        lines[27].match(/FDD/) != null ||
-                        lines[27].match(/TDD/) != null
-                      ) {
-                        networkMode2 = lines[27]
-                          .split(",")[2]
-                          .replace(/"/g, "");
-                        networkMode2 = networkMode2.split(",")[0].trim();
-                      }
-
-                      if (networkMode2 !== "LTE") {
-                        networkMode2 = lines[28]
-                          .split(":")[1]
-                          .replace(/"/g, "");
-                        networkMode2 = networkMode2.split(",")[0];
-
-                        if (
-                          lines[29] !== undefined &&
-                          lines[29] !== "OK" &&
-                          lines[29] !== ""
-                        ) {
-                          networkMode3 = lines[29]
-                            .split(":")[1]
-                            .split(",")[0]
-                            .replace(/"/g, "");
-                          networkMode3 = networkMode3.split(",")[0];
-                        }
-                      }
-                    }
-
-                    // Check if networkMode3 is not empty
-                    if (networkMode3 !== undefined) {
-                      this.network_mode = networkMode2 + ", " + networkMode3;
-                    } else {
-                      this.network_mode = networkMode2;
-                    }
+                    this.bands = "No Bands";
                   }
 
-                  // Parse the bands
-                  let bands = [];
-                  let earfcns = [];
-                  let earfcnValues;
-                  let bandValues;
+                  // --- Bandwidth ---
+                  if (this.networkMode == "5G SA TDD" || this.networkMode == "5G SA FDD") {
+                    // find this example value from lines "+QENG: \"servingcell\"
+                    const bandwidth_line = lines.find((line) =>
+                      line.includes('+QENG: "servingcell"')
+                    );
+                    const nr_bw = bandwidth_line.split(",")[11];
+                    const calculated_bandwidth = this.calculate_nr_bw(nr_bw);
+                    this.bandwidth = "NR " + calculated_bandwidth + " MHz";
+                  } else if (
+                    this.networkMode == "4G LTE FDD" ||
+                    this.networkMode == "4G LTE TDD"
+                  ) {
+                    // find this example value from lines "+QENG: \"servingcell\"
+                    const bandwidth_line = lines.find((line) =>
+                      line.includes('+QENG: "servingcell"')
+                    );
 
-                  // get lines length
-                  const linesLength = lines.length;
-
-                  // Only lines 31 - 35 have the bands information
-                  for (let i = 29; i <= 35; i++) {
-                    if (i < linesLength) {
-                      // Check if the line is not "OK" or empty
-                      if (lines[i] !== "OK" && lines[i] !== "") {
-                        bandValues = lines[i].split(",")[3];
-                        earfcnValues = lines[i].split(",")[1];
-                        // If bandvalues is only numbers and no letters or undefined, then move to the next line
-                        if (bandValues !== undefined) {
-                          if (bandValues.match(/^[0-9]+$/) != null) {
-                            continue;
-                          } else {
-                            bandValues = bandValues.replace(/"/g, "");
-                            earfcnValues = earfcnValues.replace(/"/g, "");
-                            earfcns.push(earfcnValues);
-                            bands.push(bandValues);
-                          }
-                        } else {
-                          continue;
-                        }
-                      } else {
-                        continue;
-                      }
-                    } else {
-                      break;
-                    }
-                  }
-
-                  // Convert bands to a single string seperated by a comma
-                  this.bands = bands.join(", ");
-                  this.earfcns = earfcns.join(", ");
-
-                  // Parse the bandwidth
-                  if (this.network_mode === "NR5G-SA") {
-                    let nr_bw = lines[27].split(",")[11].replace(/"/g, "");
-                    nr_bw = parseInt(nr_bw);
-
-                    // Calculate the NR bandwidth
+                    const lte_bw_ul = bandwidth_line.split(",")[10];
+                    const lte_bw_dl = bandwidth_line.split(",")[11];
+                    const calculated_bandwidth_ul =
+                      this.calculate_lte_bw(lte_bw_ul);
+                    const calculated_bandwidth_dl =
+                      this.calculate_lte_bw(lte_bw_dl);
                     this.bandwidth =
-                      "NR " + this.calculate_nr_bw(nr_bw).toString() + " MHz";
+                      calculated_bandwidth_ul +
+                      " UL / " +
+                      calculated_bandwidth_dl +
+                      " DL MHz";
+                  } else if (this.networkMode == "5G NSA") {
+                    // find this example value from lines "+QENG: \"LTE\" for LTE
+                    const lte_bandwidth_line = lines.find((line) =>
+                      line.includes('+QENG: "LTE"')
+                    );
 
-                    // Parse the PCIs
-                    this.pcc_pci = lines[27].split(",")[7].replace(/"/g, "");
-                    //TODO: Add the scc_pci for NR-CA SA later
+                    const lte_bw_ul = lte_bandwidth_line.split(",")[8];
+                    const lte_bw_dl = lte_bandwidth_line.split(",")[9];
 
-                    // Parse the Cell ID
-                    const longCID = lines[27].split(",")[6].replace(/"/g, "");
+                    const calculated_bandwidth_ul =
+                      this.calculate_lte_bw(lte_bw_ul);
+                    const calculated_bandwidth_dl =
+                      this.calculate_lte_bw(lte_bw_dl);
+
+                    // find this example value from lines "+QENG: \"NR5G-NSA\" for NR5G
+                    const nr_bandwidth_line = lines.find((line) =>
+                      line.includes('+QENG: "NR5G-NSA"')
+                    );
+
+                    const nr_bw = nr_bandwidth_line.split(",")[9];
+                    const calculated_bandwidth = this.calculate_nr_bw(nr_bw);
+
+                    // combine the bandwidths
+                    this.bandwidth =
+                      calculated_bandwidth_ul +
+                      " UL / " +
+                      calculated_bandwidth_dl +
+                      " DL MHz" +
+                      " / NR " +
+                      calculated_bandwidth +
+                      " MHz";
+                  } else {
+                    this.bandwidth = "Unknown Bandwidth";
+                  }
+
+                  // --- E/ARFCN ---
+                  if (this.networkMode == "5G SA TDD" || this.networkMode == "5G SA FDD") {
+                    // find this value from lines "+QCAINFO: \"PCC\"
+                    const nr_pcc_arfcn = lines
+                      .find((line) => line.includes('+QCAINFO: "PCC"'))
+                      .split(",")[1];
+
+                    try {
+                      // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
+                      const nr_scc_arfcn = lines.filter((line) =>
+                        line.includes('+QCAINFO: "SCC"')
+                      );
+
+                      // if empty, then proceed to error block
+                      if (nr_scc_arfcn.length == 0) {
+                        throw "No SCC ARFCN";
+                      }
+
+                      // process all the values in the array and extract the ARFCN part only
+                      for (let i = 0; i < nr_scc_arfcn.length; i++) {
+                        nr_scc_arfcn[i] = nr_scc_arfcn[i].split(",")[1];
+                      }
+
+                      // combine the PCC and SCC ARFCN values
+                      this.earfcns =
+                        nr_pcc_arfcn + ", " + nr_scc_arfcn.join(", ");
+                    } catch (error) {
+                      this.earfcns = nr_pcc_arfcn.replace(/,/g, "");
+                    }
+                  } else if (
+                    this.networkMode == "4G LTE FDD" ||
+                    this.networkMode == "4G LTE TDD"
+                  ) {
+                    // find this value from lines "+QCAINFO: \"PCC\"
+                    const lte_pcc_arfcn = lines
+                      .find((line) => line.includes('+QCAINFO: "PCC"'))
+                      .split(",")[1];
+
+                    try {
+                      // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
+                      const lte_scc_arfcn = lines.filter((line) =>
+                        line.includes('+QCAINFO: "SCC"')
+                      );
+
+                      // if empty, then proceed to error block
+                      if (lte_scc_arfcn.length == 0) {
+                        throw "No SCC ARFCN";
+                      }
+
+                      // process all the values in the array and extract the ARFCN part only
+                      for (let i = 0; i < lte_scc_arfcn.length; i++) {
+                        lte_scc_arfcn[i] = lte_scc_arfcn[i].split(",")[1];
+                      }
+
+                      // combine the PCC and SCC ARFCN values
+                      this.earfcns =
+                        lte_pcc_arfcn + ", " + lte_scc_arfcn.join(", ");
+                    } catch (error) {
+                      this.earfcns = lte_pcc_arfcn.replace(/,/g, "");
+                    }
+                  } else if (this.networkMode == "5G NSA") {
+                    // find this value from lines "+QCAINFO: \"PCC\"
+                    const lte_pcc_arfcn = lines
+                      .find((line) => line.includes('+QCAINFO: "PCC"'))
+                      .split(",")[5];
+
+                    try {
+                      // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
+                      const lte_scc_arfcn = lines.filter((line) =>
+                        line.includes('+QCAINFO: "SCC"')
+                      );
+
+                      // If empty, then proceed to error block
+                      if (lte_scc_arfcn.length == 0) {
+                        throw "No SCC ARFCN";
+                      }
+
+                      // process all the values in the array and extract the ARFCN part only
+                      for (let i = 0; i < lte_scc_arfcn.length; i++) {
+                        lte_scc_arfcn[i] = lte_scc_arfcn[i].split(",")[1];
+                      }
+
+                      // combine the PCC and SCC ARFCN values
+                      this.earfcns =
+                        lte_pcc_arfcn + ", " + lte_scc_arfcn.join(", ");
+                    } catch (error) {
+                      this.earfcns = lte_pcc_arfcn.replace(/,/g, "");
+                    }
+                  } else {
+                    this.earfcns = "Unknown E/ARFCN";
+                  }
+
+                  // --- PCI ---
+                  if (this.networkMode == "5G SA TDD" || this.networkMode == "5G SA FDD") {
+                    const nr_pcc_pci = lines
+                      .find((line) => line.includes('+QCAINFO: "PCC"'))
+                      .split(",")[4];
+
+                    try {
+                      // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
+                      const nr_scc_pci = lines.filter((line) =>
+                        line.includes('+QCAINFO: "SCC"')
+                      );
+
+                      // if empty, then proceed to error block
+                      if (nr_scc_pci.length == 0) {
+                        throw "No SCC PCI";
+                      }
+
+                      // process all the values in the array and extract the PCI part only
+                      for (let i = 0; i < nr_scc_pci.length; i++) {
+                        nr_scc_pci[i] = nr_scc_pci[i].split(",")[5];
+                      }
+
+                      // combine the PCC and SCC PCI values
+                      this.pccPCI = nr_pcc_pci;
+                      this.sccPCI = nr_scc_pci.join(", ");
+                    } catch (error) {
+                      // remove comma if only one value
+                      this.pccPCI = nr_pcc_pci.replace(/,/g, "");
+                      this.sccPCI = "-";
+                    }
+                  } else if (
+                    this.networkMode == "4G LTE FDD" ||
+                    this.networkMode == "4G LTE TDD"
+                  ) {
+                    // find this value from lines "+QCAINFO: \"PCC\"
+                    const lte_pcc_pci = lines
+                      .find((line) => line.includes('+QCAINFO: "PCC"'))
+                      .split(",")[5];
+
+                    try {
+                      // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
+                      const lte_scc_pci = lines.filter((line) =>
+                        line.includes('+QCAINFO: "SCC"')
+                      );
+
+                      // if empty, then proceed to error block
+                      if (lte_scc_pci.length == 0) {
+                        throw "No SCC PCI";
+                      }
+
+                      // process all the values in the array and extract the PCI part only
+                      for (let i = 0; i < lte_scc_pci.length; i++) {
+                        lte_scc_pci[i] = lte_scc_pci[i].split(",")[5];
+                      }
+
+                      // combine the PCC and SCC PCI values
+                      this.pccPCI = lte_pcc_pci;
+                      this.sccPCI = lte_scc_pci.join(", ");
+                    } catch (error) {
+                      this.pccPCI = lte_pcc_pci;
+                      this.sccPCI = "-";
+                    }
+                  } else if (this.networkMode == "5G NSA") {
+                    // find this value from lines "+QCAINFO: \"PCC\"
+                    const lte_pcc_pci = lines
+                      .find((line) => line.includes('+QCAINFO: "PCC"'))
+                      .split(",")[5];
+
+                    try {
+                      // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
+                      const lte_scc_pci = lines.filter((line) =>
+                        line.includes('+QCAINFO: "SCC"')
+                      );
+
+                      // if empty, then proceed to error block
+                      if (lte_scc_pci.length == 0) {
+                        throw "No SCC PCI";
+                      }
+
+                      // process all the values in the array and extract the PCI part only
+                      for (let i = 0; i < lte_scc_pci.length; i++) {
+                        // if line contains LTE BAND then do this process
+                        if (lte_scc_pci[i].includes("LTE BAND")) {
+                          lte_scc_pci[i] = lte_scc_pci[i].split(",")[5];
+                        } else {
+                          lte_scc_pci[i] = lte_scc_pci[i].split(",")[4];
+                        }
+                      }
+
+                      // combine the PCC and SCC PCI values
+                      this.pccPCI = lte_pcc_pci;
+                      this.sccPCI = lte_scc_pci.join(", ");
+                    } catch (error) {
+                      this.pccPCI = lte_pcc_pci.replace(/,/g, "");
+                      this.sccPCI = "-";
+                    }
+                  } else {
+                    this.pccPCI = "0";
+                    this.sccPCI = "-";
+                  }
+
+                  // --- IPv4 and IPv6 ---
+                  // find the value from line "IPV4"
+                  this.ipv4 = lines
+                    .find((line) => line.includes("IPV4"))
+                    .split(",")[4]
+                    .replace(/"/g, "");
+
+                  // find the value from line "IPV6"
+                  this.ipv6 = lines
+                    .find((line) => line.includes("IPV6"))
+                    .split(",")[4]
+                    .replace(/"/g, "");
+
+                  // Signal Informations
+
+                  const currentNetworkMode = this.networkMode;
+
+                  if (
+                    currentNetworkMode == "5G SA TDD" ||
+                    currentNetworkMode == "5G SA FDD" ||
+                    currentNetworkMode == "4G LTE FDD" ||
+                    currentNetworkMode == "4G LTE TDD"
+                  ) {
+                    // find the value from line "+QENG: \"servingcell\""
+                    // CellID
+                    const longCID = lines
+                      .find((line) => line.includes('+QENG: "servingcell"'))
+                      .split(",")[6]
+                      .replace(/"/g, "");
 
                     // Get the eNBID. Its just Cell ID minus the last 2 characters
                     this.eNBID = longCID.substring(0, longCID.length - 2);
 
                     // Get the short Cell ID (Last 2 characters of the Cell ID)
                     const shortCID = longCID.substring(longCID.length - 2);
+                    
+                    if (currentNetworkMode == "5G SA TDD" || currentNetworkMode == "5G SA FDD") {
+                      // TAC
+                      this.tac = lines
+                        .find((line) => line.includes('+QENG: "servingcell"'))
+                        .split(",")[8]
+                        .replace(/"/g, "");
 
-                    // Get the TAC
-                    this.tac = lines[27].split(",")[8].replace(/"/g, "");
+                      // CSQ
+                      this.csq = "NR-SA Mode";
+
+                      // RSRP
+                      this.rsrpNR = lines
+                        .find((line) => line.includes('+QENG: "servingcell"'))
+                        .split(",")[12]
+                        .replace(/"/g, "");
+
+                      // RSRQ
+                      this.rsrqNR = lines
+                        .find((line) => line.includes('+QENG: "servingcell"'))
+                        .split(",")[13]
+                        .replace(/"/g, "");
+
+                      // SINR
+                      this.sinrNR = lines
+                        .find((line) => line.includes('+QENG: "servingcell"'))
+                        .split(",")[14]
+                        .replace(/"/g, "");
+
+                      // Calculate the RSRP Percentage
+                      this.rsrpNRPercentage = this.calculateRSRPPercentage(
+                        parseInt(this.rsrpNR)
+                      );
+
+                      // Calculate the RSRQ Percentage
+                      this.rsrqNRPercentage = this.calculateRSRQPercentage(
+                        parseInt(this.rsrqNR)
+                      );
+
+                      // Calculate the SINR Percentage
+                      this.sinrNRPercentage = this.calculateSINRPercentage(
+                        parseInt(this.sinrNR)
+                      );
+
+                      // Calculate the Signal Percentage
+                      this.signalPercentage = this.calculateSignalPercentage(
+                        this.rsrpNRPercentage,
+                        this.sinrNRPercentage
+                      );
+
+                      // Calculate the Signal Assessment
+                      this.signalAssessment = this.signalQuality(
+                        this.signalPercentage
+                      );
+                    } else {
+                      // LTE Only
+                      // TAC
+                      this.tac = lines
+                        .find((line) => line.includes('+QENG: "servingcell"'))
+                        .split(",")[12]
+                        .replace(/"/g, "");
+
+                      // CSQ
+                      this.csq = lines
+                        .find((line) => line.includes("+CSQ:"))
+                        .split(" ")[1]
+                        .replace("+CSQ: ", "")
+                        .replace(/"/g, "");
+
+                      // RSRP
+                      this.rsrpLTE = lines
+                        .find((line) => line.includes('+QENG: "servingcell"'))
+                        .split(",")[13]
+                        .replace(/"/g, "");
+
+                      // RSRQ
+                      this.rsrqLTE = lines
+                        .find((line) => line.includes('+QENG: "servingcell"'))
+                        .split(",")[14]
+                        .replace(/"/g, "");
+
+                      // RSSI
+                      this.rssi = lines
+                        .find((line) => line.includes('+QENG: "servingcell"'))
+                        .split(",")[15]
+                        .replace(/"/g, "");
+
+                      // SINR
+                      this.sinrLTE = lines
+                        .find((line) => line.includes('+QENG: "servingcell"'))
+                        .split(",")[16]
+                        .replace(/"/g, "");
+
+                      // Calculate the RSRP Percentage
+                      this.rsrpLTEPercentage = this.calculateRSRPPercentage(
+                        parseInt(this.rsrpLTE)
+                      );
+
+                      // Calculate the RSRQ Percentage
+                      this.rsrqLTEPercentage = this.calculateRSRQPercentage(
+                        parseInt(this.rsrqLTE)
+                      );
+
+                      // Calculate the SINR Percentage
+                      this.sinrLTEPercentage = this.calculateSINRPercentage(
+                        parseInt(this.sinrLTE)
+                      );
+
+                      // Calculate the Signal Percentage
+                      this.signalPercentage = this.calculateSignalPercentage(
+                        this.rsrpLTEPercentage,
+                        this.sinrLTEPercentage
+                      );
+
+                      // Calculate the Signal Assessment
+                      this.signalAssessment = this.signalQuality(
+                        this.signalPercentage
+                      );
+                    }
 
                     this.cellID =
                       "Short " +
@@ -875,297 +1265,160 @@
                       "(" +
                       parseInt(longCID, 16) +
                       ")";
+                  } else if (currentNetworkMode == "5G NSA") {
+                    // find the value from line "+QENG: \"LTE\" for LTE
+                    // LongCID
+                    const longCID = lines
+                      .find((line) => line.includes('+QENG: "LTE"'))
+                      .split(",")[4]
+                      .replace(/"/g, "");
 
-                    // Get the RSRQ
-                    this.rsrqNR = lines[27].split(",")[13].replace(/"/g, "");
-                    let rsrq = parseInt(this.rsrqNR);
+                    // Get the eNBID. Its just Cell ID minus the last 2 characters
+                    this.eNBID = longCID.substring(0, longCID.length - 2);
 
-                    // Calculate the RSRQ percentage
-                    this.rsrqNRPercentage = this.calculateRSRQPercentage(rsrq);
+                    // Get the short Cell ID (Last 2 characters of the Cell ID)
+                    const shortCID = longCID.substring(longCID.length - 2);
 
-                    // Get the RSRP
-                    this.rsrpNR = lines[27].split(",")[12].replace(/"/g, "");
+                    // cellID
+                    this.cellID =
+                      "Short " +
+                      shortCID +
+                      "(" +
+                      parseInt(shortCID, 16) +
+                      ")" +
+                      ", " +
+                      "Long " +
+                      longCID +
+                      "(" +
+                      parseInt(longCID, 16) +
+                      ")";
 
-                    // Calculate the RSRP percentage
+                    // TAC
+                    this.tac = lines
+                      .find((line) => line.includes('+QENG: "LTE"'))
+                      .split(",")[10]
+                      .replace(/"/g, "");
+
+                    // CSQ
+                    this.csq = lines
+                      .find((line) => line.includes("+CSQ:"))
+                      .split(" ")[1]
+                      .replace("+CSQ: ", "")
+                      .replace(/"/g, "");
+
+                    // RSRP LTE
+                    this.rsrpLTE = lines
+                      .find((line) => line.includes('+QENG: "LTE"'))
+                      .split(",")[11]
+                      .replace(/"/g, "");
+
+                    // RSRQ LTE
+                    this.rsrqLTE = lines
+                      .find((line) => line.includes('+QENG: "LTE"'))
+                      .split(",")[12]
+                      .replace(/"/g, "");
+
+                    // RSSI LTE
+                    this.rssi = lines
+                      .find((line) => line.includes('+QENG: "LTE"'))
+                      .split(",")[13]
+                      .replace(/"/g, "");
+
+                    // SINR LTE
+                    this.sinrLTE = lines
+                      .find((line) => line.includes('+QENG: "LTE"'))
+                      .split(",")[14]
+                      .replace(/"/g, "");
+
+                    // Calculate the RSRP LTE Percentage
+                    this.rsrpLTEPercentage = this.calculateRSRPPercentage(
+                      parseInt(this.rsrpLTE)
+                    );
+
+                    // Calculate the RSRQ LTE Percentage
+                    this.rsrqLTEPercentage = this.calculateRSRQPercentage(
+                      parseInt(this.rsrqLTE)
+                    );
+
+                    // Calculate the SINR LTE Percentage
+                    this.sinrLTEPercentage = this.calculateSINRPercentage(
+                      parseInt(this.sinrLTE)
+                    );
+
+                    // Calculate the Signal Percentage
+                    const lte_signal_percentage =
+                      this.calculateSignalPercentage(
+                        this.rsrpLTEPercentage,
+                        this.sinrLTEPercentage
+                      );
+
+                    // find the value from line "+QENG: \"NR5G-NSA\" for NR5G
+                    // RSRP NR
+                    this.rsrpNR = lines
+                      .find((line) => line.includes('+QENG: "NR5G-NSA"'))
+                      .split(",")[4]
+                      .replace(/"/g, "");
+
+                    // RSRQ NR
+                    this.rsrqNR = lines
+                      .find((line) => line.includes('+QENG: "NR5G-NSA"'))
+                      .split(",")[5]
+                      .replace(/"/g, "");
+
+                    // SINR NR
+                    this.sinrNR = lines
+                      .find((line) => line.includes('+QENG: "NR5G-NSA"'))
+                      .split(",")[6]
+                      .replace(/"/g, "");
+
+                    // Calculate the RSRP NR Percentage
                     this.rsrpNRPercentage = this.calculateRSRPPercentage(
                       parseInt(this.rsrpNR)
                     );
 
-                    // Get the SINR
-                    this.sinrNR = lines[27].split(",")[14].replace(/"/g, "");
+                    // Calculate the RSRQ NR Percentage
+                    this.rsrqNRPercentage = this.calculateRSRQPercentage(
+                      parseInt(this.rsrqNR)
+                    );
 
-                    // Calculate the SINR percentage
+                    // Calculate the SINR NR Percentage
                     this.sinrNRPercentage = this.calculateSINRPercentage(
                       parseInt(this.sinrNR)
                     );
 
-                    // Calculate Signal Percentage
-                    this.signalPercentage = this.calculateSignalPercentage(
-                      parseInt(this.rsrpNRPercentage),
-                      parseInt(this.sinrNRPercentage)
+                    // Calculate the Signal Percentage
+                    const nr_signal_percentage = this.calculateSignalPercentage(
+                      this.rsrpNRPercentage,
+                      this.sinrNRPercentage
                     );
 
-                    // Get the Signal Assessment
+                    // Average the LTE and NR Signal Percentages
+                    this.signalPercentage =
+                      (lte_signal_percentage + nr_signal_percentage) / 2;
+
+                    // Calculate the Signal Assessment
                     this.signalAssessment = this.signalQuality(
                       this.signalPercentage
                     );
                   } else {
-                    if (
-                      this.network_mode.match(/LTE/) != null &&
-                      this.network_mode.match(/NR5G-NSA/) == null
-                    ) {
-                      let lte_bw_ul = lines[27]
-                        .split(",")[10]
-                        .replace(/"/g, "");
-                      let lte_bw_dl = lines[27]
-                        .split(",")[11]
-                        .replace(/"/g, "");
-
-                      lte_bw_dl = parseInt(lte_bw_dl);
-                      lte_bw_ul = parseInt(lte_bw_ul);
-
-                      // Calculate the LTE bandwidth
-                      this.bandwidth =
-                        "UL " +
-                        this.calculate_lte_bw(lte_bw_ul) +
-                        " MHz / " +
-                        "DL " +
-                        this.calculate_lte_bw(lte_bw_dl) +
-                        " MHz";
-
-                      // Get the Cell ID
-                      const longCID = lines[27].split(",")[6].replace(/"/g, "");
-
-                      // Get the eNBID. Its just Cell ID minus the last 2 characters
-                      this.eNBID = longCID.substring(0, longCID.length - 2);
-
-                      // Get the short Cell ID (Last 2 characters of the Cell ID)
-                      const shortCID = longCID.substring(longCID.length - 2);
-
-                      // Get the TAC
-                      this.tac = lines[27].split(",")[12].replace(/"/g, "");
-                      this.tac = this.tac + " (" + parseInt(this.tac, 16) + ")";
-
-                      this.cellID =
-                        "Short " +
-                        shortCID +
-                        "(" +
-                        parseInt(shortCID, 16) +
-                        ")" +
-                        ", " +
-                        "Long " +
-                        longCID +
-                        "(" +
-                        parseInt(longCID, 16) +
-                        ")";
-
-                      // Parse the PCIs
-                      this.pcc_pci = lines[27].split(",")[7].replace(/"/g, "");
-
-                      // Get the RSRQ
-                      this.rsrqLTE = lines[27].split(",")[14].replace(/"/g, "");
-                      let rsrq = parseInt(this.rsrqLTE);
-
-                      // Calculate the RSRQ percentage
-                      this.rsrqLTEPercentage =
-                        this.calculateRSRQPercentage(rsrq);
-
-                      // Get the RSRP
-                      this.rsrpLTE = lines[27].split(",")[13].replace(/"/g, "");
-
-                      // Calculate the RSRP percentage
-                      this.rsrpLTEPercentage = this.calculateRSRPPercentage(
-                        parseInt(this.rsrpLTE)
-                      );
-
-                      // Get the RSSI
-                      this.rssi = lines[27].split(",")[15].replace(/"/g, "");
-
-                      // Get the SINR
-                      this.sinrLTE = lines[27].split(",")[16].replace(/"/g, "");
-
-                      // Calculate the SINR percentage
-                      this.sinrLTEPercentage = this.calculateSINRPercentage(
-                        parseInt(this.sinrLTE)
-                      );
-
-                      // Calculate Signal Percentage
-                      this.signalPercentage = this.calculateSignalPercentage(
-                        parseInt(this.rsrpLTEPercentage),
-                        parseInt(this.sinrLTEPercentage)
-                      );
-
-                      // Get the Signal Assessment
-                      this.signalAssessment = this.signalQuality(
-                        this.signalPercentage
-                      );
-                    }
-
-                    if (this.network_mode.match(/NR5G-NSA/) != null) {
-                      let lte_bw_ul = lines[28].split(",")[8].replace(/"/g, "");
-                      let lte_bw_dl = lines[28].split(",")[9].replace(/"/g, "");
-
-                      lte_bw_dl = parseInt(lte_bw_dl);
-                      lte_bw_ul = parseInt(lte_bw_ul);
-
-                      // Calculate the LTE bandwidth
-                      this.bandwidth =
-                        "UL " +
-                        this.calculate_lte_bw(lte_bw_ul) +
-                        " MHz / " +
-                        "DL " +
-                        this.calculate_lte_bw(lte_bw_dl) +
-                        " MHz";
-
-                      // Get the RSSI
-                      this.rssi = lines[28].split(",")[13].replace(/"/g, "");
-
-                      // Get the Cell ID
-                      const longCID = lines[28].split(",")[4].replace(/"/g, "");
-
-                      // Get the eNBID. Its just Cell ID minus the last 2 characters
-                      this.eNBID = longCID.substring(0, longCID.length - 2);
-
-                      // Get the short Cell ID (Last 2 characters of the Cell ID)
-                      const shortCID = longCID.substring(longCID.length - 2);
-
-                      // Get the TAC
-                      this.tac = lines[28].split(",")[10].replace(/"/g, "");
-                      this.tac = this.tac + " (" + parseInt(this.tac, 16) + ")";
-
-                      this.cellID =
-                        "Short " +
-                        shortCID +
-                        "(" +
-                        parseInt(shortCID, 16) +
-                        ")" +
-                        ", " +
-                        "Long " +
-                        longCID +
-                        "(" +
-                        parseInt(longCID, 16) +
-                        ")";
-
-                      // Parse the PCIs
-                      this.pcc_pci = lines[28].split(",")[5].replace(/"/g, "");
-
-                      // Get the RSRQ
-                      this.rsrqLTE = lines[28].split(",")[12].replace(/"/g, "");
-                      let rsrq = parseInt(this.rsrqLTE);
-
-                      // Calculate the RSRQ percentage
-                      this.rsrqLTEPercentage =
-                        this.calculateRSRQPercentage(rsrq);
-
-                      // Get the RSRP
-                      this.rsrpLTE = lines[28].split(",")[11].replace(/"/g, "");
-
-                      // Calculate the RSRP percentage
-                      this.rsrpLTEPercentage = this.calculateRSRPPercentage(
-                        parseInt(this.rsrpLTE)
-                      );
-
-                      // Get the SINR
-                      this.sinrLTE = lines[28].split(",")[14].replace(/"/g, "");
-
-                      // Calculate the SINR percentage
-                      this.sinrLTEPercentage = this.calculateSINRPercentage(
-                        parseInt(this.sinrLTE)
-                      );
-
-                      // Calculate Signal Percentage
-                      this.signalPercentage = this.calculateSignalPercentage(
-                        parseInt(this.rsrpLTEPercentage),
-                        parseInt(this.sinrLTEPercentage)
-                      );
-
-                      // Get the Signal Assessment
-                      this.signalAssessment = this.signalQuality(
-                        this.signalPercentage
-                      );
-
-                      let nr_bw = lines[29].split(",")[9].replace(/"/g, "");
-
-                      nr_bw = parseInt(nr_bw);
-
-                      // Calculate the NR bandwidth
-                      this.bandwidth +=
-                        " / NR " +
-                        this.calculate_nr_bw(nr_bw).toString() +
-                        " MHz";
-
-                      // Parse the PCIs
-                      this.pcc_pci = lines[28].split(",")[5].replace(/"/g, "");
-                      this.scc_pci = lines[29].split(",")[3].replace(/"/g, "");
-
-                      // Get the RSSI
-                      this.rssi = lines[28].split(",")[13].replace(/"/g, "");
-
-                      // Get the RSRQ NR
-                      this.rsrqNR = lines[29].split(",")[6].replace(/"/g, "");
-                      rsrq = parseInt(this.rsrqNR);
-
-                      // Calculate the RSRQ percentage
-                      this.rsrqNRPercentage =
-                        this.calculateRSRQPercentage(rsrq);
-
-                      // Get the RSRP NR
-                      this.rsrpNR = lines[29].split(",")[4].replace(/"/g, "");
-
-                      // Calculate the RSRP percentage
-                      this.rsrpNRPercentage = this.calculateRSRPPercentage(
-                        parseInt(this.rsrpNR)
-                      );
-
-                      // Get the SINR NR
-                      this.sinrNR = lines[29].split(",")[5].replace(/"/g, "");
-
-                      // Calculate the SINR percentage
-                      this.sinrNRPercentage = this.calculateSINRPercentage(
-                        parseInt(this.sinrNR)
-                      );
-
-                      // Calculate Signal Percentage
-                      const nrSignalPercentage = this.calculateSignalPercentage(
-                        parseInt(this.rsrpNRPercentage),
-                        parseInt(this.sinrNRPercentage)
-                      );
-
-                      // Get the average of the LTE and NR Signal Percentage
-                      this.signalPercentage =
-                        (this.signalPercentage + nrSignalPercentage) / 2;
-
-                      // Round the signalPercentage value
-                      this.signalPercentage = Math.round(this.signalPercentage);
-
-                      // Get the Signal Assessment
-                      this.signalAssessment = this.signalQuality(
-                        this.signalPercentage
-                      );
-                    }
+                    this.signalAssessment = "No Signal";
                   }
-                })
-                .then(() => {
-                  if (this.network_mode !== "NR5G-SA") {
-                    this.atcmd = "AT+CSQ";
-                    fetch(
-                      "/cgi-bin/get_atcommand?" +
-                        new URLSearchParams({
-                          atcmd: this.atcmd,
-                        })
-                    ).then((response) => {
-                      response.text().then((data) => {
-                        const rawdata = data;
-
-                        const lines = rawdata.split("\n");
-                        console.log("CSQ: ", lines);
-
-                        this.csq = lines[1].split(":")[1].split(",")[0].trim();
-                      });
-                    });
-                  }
-                });
+                }
+              });
             });
+          },
+
+          requestPing() {
+            return fetch("/cgi-bin/get_ping")
+              .then((response) => response.text())
+              .then((data) => {
+                return data;
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                // Throw the error again to ensure it's propagated
+                throw error;
+              });
           },
 
           calculate_lte_bw(lte_bw) {
@@ -1178,7 +1431,7 @@
               case lte_bw >= 2 && lte_bw <= 5:
                 return (lte_bw - 1) * 5;
               default:
-                return "-";
+                return "Unknown";
             }
           },
 
@@ -1193,8 +1446,26 @@
               case nr_bw === 14:
                 return "400";
               default:
-                return "-";
+                return "Unknown";
             }
+          },
+
+          calculateRSRPPercentage(rsrp) {
+            let RSRP_min = -135;
+            let RSRP_max = -65;
+
+            // If rsrp is null, return 0%
+            if (isNaN(rsrp) || rsrp < -140) {
+              return 0;
+            }
+
+            let percentage = ((rsrp - RSRP_min) / (RSRP_max - RSRP_min)) * 100;
+
+            if (percentage > 100) {
+              percentage = 100;
+            }
+
+            return Math.round(percentage);
           },
 
           calculateRSRQPercentage(rsrq) {
@@ -1207,24 +1478,6 @@
             }
 
             let percentage = ((rsrq - RSRQ_min) / (RSRQ_max - RSRQ_min)) * 100;
-
-            if (percentage > 100) {
-              percentage = 100;
-            }
-
-            return Math.round(percentage);
-          },
-
-          calculateRSRPPercentage(rsrp) {
-            let RSRP_min = -140;
-            let RSRP_max = -60;
-
-            // If rsrp is null, return 0%
-            if (isNaN(rsrp) || rsrp < -140) {
-              return 0;
-            }
-
-            let percentage = ((rsrp - RSRP_min) / (RSRP_max - RSRP_min)) * 100;
 
             if (percentage > 100) {
               percentage = 100;
@@ -1270,53 +1523,6 @@
             } else {
               return "No Signal";
             }
-          },
-
-          fetchSIMInfo() {
-            this.atcmd = "AT+QSIMSTAT?";
-
-            fetch(
-              "/cgi-bin/get_atcommand?" +
-                new URLSearchParams({
-                  atcmd: this.atcmd,
-                })
-            ).then((response) => {
-              response
-                .text()
-                .then((data) => {
-                  const rawdata = data;
-
-                  const lines = rawdata.split("\n");
-                  console.log("SIM: ", lines);
-
-                  const sim_status = lines[1]
-                    .split(":")[1]
-                    .split(",")[1]
-                    .trim();
-                  if (sim_status === "1") {
-                    this.sim = "Active";
-                  } else {
-                    this.sim = "Inactive";
-                  }
-                  console.log("SIM: ", this.sim);
-                })
-                .then(() => {
-                  this.fetchNetworkInfo();
-                });
-            });
-          },
-
-          requestPing() {
-            return fetch("/cgi-bin/get_ping")
-              .then((response) => response.text())
-              .then((data) => {
-                return data;
-              })
-              .catch((error) => {
-                console.error("Error:", error);
-                // Throw the error again to ensure it's propagated
-                throw error;
-              });
           },
 
           fetchUpTime() {
@@ -1493,40 +1699,42 @@
           },
 
           init() {
+            // Fetch uptime
+            this.fetchUpTime();
+
             // Retrieve the refresh rate from local storage or session storage
             const storedRefreshRate = localStorage.getItem("refreshRate");
 
             // If a refresh rate is stored, use it; otherwise, use a default value
             this.refreshRate = storedRefreshRate
               ? parseInt(storedRefreshRate)
-              : 3; // Change 5 to your desired default value
+              : 3; // Change 3 to your desired default value
 
-            // Ensure fetchSIMInfo returns a promise
-            this.fetchSIMInfo();
+            this.fetchAllInfo();
 
             this.requestPing()
               .then((data) => {
                 const response = data.trim();
                 // Trim any leading/trailing spaces
                 if (response === "OK") {
-                  this.internetConnection = "Connected";
+                  this.internetConnectionStatus = "Connected";
                 } else {
-                  this.internetConnection = "Disconnected";
+                  this.internetConnectionStatus = "Disconnected";
                 }
               })
               .catch((error) => {
                 console.error("Error:", error);
-                this.internetConnection = "Disconnected";
+                this.internetConnectionStatus = "Disconnected";
               });
-
-            this.fetchUpTime();
 
             this.lastUpdate = new Date().toLocaleString();
             console.log("Initialized");
 
-            // Set the refresh rate
+            // Set the refresh rate for interval
             this.intervalId = setInterval(() => {
-              this.fetchSIMInfo();
+              this.fetchUpTime();
+
+              this.fetchAllInfo();
 
               this.requestPing()
                 .then((data) => {
@@ -1542,8 +1750,6 @@
                   console.error("Error:", error);
                   this.internetConnection = "Disconnected";
                 });
-
-              this.fetchUpTime();
 
               this.lastUpdate = new Date().toLocaleString();
               console.log("Refreshed");
