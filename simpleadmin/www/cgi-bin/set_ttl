@@ -48,6 +48,9 @@ if [ -n "${setTTL}" ]; then
         ttlenabled=false
         ttlvalue=0
     fi
+
+    log_debug "Starting service to apply rules"
+    /usrdata/simplefirewall/ttl-override start
 fi
 
 echo "Content-type: text/text"

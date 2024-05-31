@@ -128,7 +128,7 @@
                         class="btn btn-primary me-md-2"
                         type="button"
                         x-on:click="startCellScan()"
-                        :disabled='isLoading === true || cellScanMode === "Unspecified" || cellScanMode === "Select Scan Mode"'
+                        :disabled="isLoading === true || cellScanMode === 'Unspecified' || cellScanMode === 'Select Scan Mode'"
                         x-text="isCellScanning ? 'Scanning... Please wait.' : 'Start Cell Scan'"
                       ></button>
                       <button
