@@ -1,0 +1,35 @@
+#!/bin/bash
+QUERY_STRING=$(echo "${QUERY_STRING}" | sed 's/;//g')
+function urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
+
+if [ "${QUERY_STRING}" ]; then
+    export IFS="&"
+    for cmd in ${QUERY_STRING}; do
+        if [ "$(echo $cmd | grep '=')" ]; then
+            key=$(echo $cmd | awk -F '=' '{print $1}')
+            value=$(echo $cmd | awk -F '=' '{print $2}')
+            eval $key=$value
+        fi
+    done
+fi
+
+x=$(urldecode "$atcmd")
+MYATCMD=$(printf '%b\n' "${atcmd//%/\\x}")
+if [ -n "${MYATCMD}" ]; then
+    # Initialize wait time to 200 ms
+    wait_time=100
+    while true; do
+        runcmd=$(echo -en "$x\r\n" | microcom -t $wait_time /dev/ttyOUT2)
+        # Check if "OK" or "ERROR" is present in the response
+        if [[ $runcmd =~ "OK" ]] || [[ $runcmd =~ "ERROR" ]]; then
+            break  # Exit the loop if "OK" or "ERROR" is found
+        fi
+        # If neither "OK" nor "ERROR" is found, increment wait time by 1 second
+        ((wait_time++))
+    done
+fi
+
+echo "Content-type: text/plain"
+echo $x
+echo ""
+echo $runcmd

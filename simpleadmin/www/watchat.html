@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simple Admin</title>
+    <!-- 从css文件夹导入所有Bootstrap css文件 -->
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+
+    <!-- Logo -->
+    <link rel="simpleadmin-logo" href="favicon.ico" />
+
+    <!-- 导入Bootstrap Javascript -->
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/alpinejs.min.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <div class="container my-4" x-data="simpleWatchCat()">
+        <nav class="navbar navbar-expand-lg mt-2">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="/"
+              ><span class="mb-0 h4">Simple Admin</span></a
+            >
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarText"
+              aria-controls="navbarText"
+              aria-expanded="false"
+              aria-label="切换导航"
+            >
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarText">
+              <ul class="navbar-nav me-auto mb-2 ml-4 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link" href="/">主页</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/network.html">网络</a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link" href="/settings.html" >设置</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/sms.html">短信</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link active" href="/watchat.html" aria-current="page" >控制台</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/deviceinfo.html">设备信息</a>
+                </li>
+              </ul>
+              <span class="navbar-text">
+                <button class="btn btn-link text-reset" id="darkModeToggle">
+                  暗模式
+                </button>
+              </span>
+            </div>
+          </div>
+        </nav>
+        <div class="row mt-3 mb-4">
+          <div class="col">
+            <div class="card">
+              <div class="card-header">看门狗</div>
+              <div class="card-body">
+                <div class="card-text">
+                  <div>
+                    <label
+                      class="form-check-label m-lg-3"
+                      for="flexSwitchCheckDefault"
+                      >选择看门狗状态</label
+                    >
+                    <!-- 如果watchCatStatus为Enabled，则将其选中 -->
+                    <input
+                      type="radio"
+                      class="btn-check"
+                      name="Enable"
+                      id="Enable"
+                      autocomplete="off"
+                      x-bind:checked="wacthCatStatus === 'Enable'"
+                      x-bind:disabled="wacthCatStatus === 'Enable'"
+                      x-model="wacthCatStatus"
+                    />
+                    <label class="btn btn-primary" for="Enable">启用</label>
+
+                    <input
+                      type="radio"
+                      class="btn-check"
+                      name="Disable"
+                      id="Disable"
+                      autocomplete="off"
+                      x-bind:checked="wacthCatStatus === 'Disable'"
+                      x-bind:disabled="wacthCatStatus === 'Disable'"
+                      x-model="wacthCatStatus"
+                    />
+                    <label class="btn btn-danger" for="Disable">禁用</label>
+                  </div>
+                  <div class="input-group mb-3 mt-3">
+                    <span
+                      class="input-group-text"
+                      id="inputGroup-sizing-default"
+                      >要Ping的IP或DNS</span
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      aria-label="Ping Timeout"
+                      aria-describedby="inputGroup-sizing-default"
+                      x-bind:placeholder="ipDNS"
+                    />
+                  </div>
+
+                  <div class="input-group mb-3 mt-3">
+                    <span
+                      class="input-group-text"
+                      id="inputGroup-sizing-default"
+                      >Ping超时时间（秒）</span
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      aria-label="Ping Failure Count"
+                      aria-describedby="inputGroup-sizing-default"
+                      x-bind:placeholder="pingTimeout + ' 秒'"
+                    />
+                  </div>
+
+                  <div class="input-group mb-3 mt-3">
+                    <span
+                      class="input-group-text"
+                      id="inputGroup-sizing-default"
+                      >Ping失败次数</span
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      aria-label="Sizing example input"
+                      aria-describedby="inputGroup-sizing-default"
+                      x-bind:placeholder="pingFailures"
+                    />
+                  </div>
+
+                  <div>
+                    <select
+                      class="form-select"
+                      aria-label="Default select example"
+                    >
+                      <option selected>选择操作</option>
+                      <option value="1">无</option>
+                      <option value="2">重启</option>
+                      <option value="3">切换SIM卡</option>
+                    </select>
+                    <label class="mt-1">
+                      当前操作: <span x-text="action"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                设置较低的Ping超时和Ping失败计数可能会由于高灵敏度导致间歇性断开连接。 <br />
+                根据您的需要选择适当的值。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="js/dark-mode.js"></script>
+    <script>
+      function simpleWatchCat() {
+        return {
+          wacthCatStatus: "Enable",
+          ipDNS: "1.1.1.1",
+          pingTimeout: "30",
+          pingFailures: "5",
+          action: "Reboot",
+        };
+      }
+    </script>
+  </body>
+</html>

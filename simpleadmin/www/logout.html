@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 更改为更简单的标签标题 -->
+    <title>正在注销...</title>
+
+    <link rel="stylesheet" href="css/bulma.css" />
+    <link rel="stylesheet" type="text/css" href="css/admin.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <!-- 开始导航 -->
+    <nav class="navbar is-black" x-data="{ isOpen: false }">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item brand-text" href="/"> 正在注销... </a>
+          <a
+            role="button"
+            class="navbar-burger burger"
+            @click="isOpen = !isOpen"
+          >
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+        <div
+          id="navMenu"
+          class="navbar-menu"
+          :class="isOpen ? 'is-active' : ''"
+        >
+          <div class="navbar-start">
+          </div>
+        </div>
+      </div>
+    </nav>
+    <!-- 结束导航 -->
+
+   <script>
+     window.location=window.location.href.replace(/:\/\//, '://log:out@');
+   </script>
+  </body>
+</html>

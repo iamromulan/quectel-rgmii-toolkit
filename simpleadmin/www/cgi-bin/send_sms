@@ -1,0 +1,31 @@
+#!/bin/bash
+QUERY_STRING=$(echo "${QUERY_STRING}" | sed 's/;//g')
+urldecode() {
+    local data
+    data="${*//+/ }"
+    echo -e "${data//%/\\x}"
+}
+
+if [ "${QUERY_STRING}" ]; then
+    export IFS="&"
+    for cmd in ${QUERY_STRING}; do
+        if [[ "$cmd" == *=* ]]; then
+            key=$(echo "$cmd" | awk -F '=' '{print $1}')
+            value=$(echo "$cmd" | awk -F '=' '{print $2}')
+            eval "$key"="$(urldecode "$value")"
+        fi
+    done
+fi
+
+phone_number="$number"
+message_encoded="$msg"
+
+
+send_at_command() {
+    local cmd=$1
+    echo -en "$cmd\r" | microcom -t 100 /dev/ttyOUT2
+}
+
+send_at_command "AT+CMGS=\"$phone_number\","$Command""
+runcmd=$((echo -en "$message_encoded"; echo -en "\x1A") | microcom -t 500 /dev/ttyOUT2)
+echo "$runcmd"

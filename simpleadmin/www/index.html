@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh" data-bs-theme="light">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple Admin</title>
+  <!-- 从 css 文件夹导入所有 Bootstrap css 文件 -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+
+  <!-- 图标 -->
+  <link rel="simpleadmin-logo" href="favicon.ico" />
+
+  <!-- 导入 Bootstrap JavaScript -->
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/alpinejs.min.js" defer></script>
+</head>
+
+<body>
+  <main>
+    <div class="container my-4" x-data="getStaticNetworkInfo()">
+      <nav class="navbar navbar-expand-lg mt-2">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="/"><span class="mb-0 h4">Simple Admin</span></a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
+            aria-controls="navbarText" aria-expanded="false" aria-label="切换导航">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item"><a class="nav-link active" aria-current="page" href="/">首页</a></li>
+              <li class="nav-item"><a class="nav-link" href="network.html">网络</a></li>
+              <li class="nav-item"><a class="nav-link" href="/settings.html">设置</a></li>
+              <li class="nav-item"><a class="nav-link" href="/sms.html">短信</a></li>
+              <li class="nav-item"><a class="nav-link" href="/watchat.html">控制台</a></li>
+              <li class="nav-item"><a class="nav-link" href="/deviceinfo.html">设备信息</a></li>
+            </ul>
+            <span class="navbar-text">
+              <button class="btn btn-link text-reset" id="darkModeToggle">黑暗模式</button>
+            </span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="row align-items-center mt-5 gap-md-3 gap-2">
+        <div class="col align-self-center">
+          <div class="card">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="85" width="85">
+                <path fill="#fdb53c"
+                  d="M160 64c-26.5 0-48 21.5-48 48V276.5c0 17.3-7.1 31.9-15.3 42.5C86.2 332.6 80 349.5 80 368c0 44.2 35.8 80 80 80s80-35.8 80-80c0-18.5-6.2-35.4-16.7-48.9c-8.2-10.6-15.3-25.2-15.3-42.5V112c0-26.5-21.5-48-48-48zM48 112C48 50.2 98.1 0 160 0s112 50.1 112 112V276.5c0 .1 .1 .3 .2 .6c.2 .6 .8 1.6 1.7 2.8c18.9 24.4 30.1 55 30.1 88.1c0 79.5-64.5 144-144 144S16 447.5 16 368c0-33.2 11.2-63.8 30.1-88.1c.9-1.2 1.5-2.2 1.7-2.8c.1-.3 .2-.5 .2-.6V112zM208 368c0 26.5-21.5 48-48 48s-48-21.5-48-48c0-20.9 13.4-38.7 32-45.3V272c0-8.8 7.2-16 16-16s16 7.2 16 16v50.7c18.6 6.6 32 24.4 32 45.3z" />
+              </svg>
+              <h1 class="card-text mt-4" x-text="temperature + ' &deg;C'"></h1>
+            </div>
+            <div class="card-footer text-center">温度</div>
+          </div>
+        </div>
+
+        <div class="col align-self-center">
+          <div class="card">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" height="85" width="85">
+                <path fill="#6a46d8"
+                  d="M64 0H242.7c17 0 33.3 6.7 45.3 18.7L365.3 96c12 12 18.7 28.3 18.7 45.3V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64C0 28.7 28.7 0 64 0zM96 192c-17.7 0-32 14.3-32 32v32h64V192H96zM64 352h80 96 80V288H240 144 64v64zM320 224c0-17.7-14.3-32-32-32H256v64h64V224zM160 192v64h64V192H160zM288 448c17.7 0 32-14.3 32-32V384H256v64h32zM160 384v64h64V384H160zM64 416c0 17.7 14.3 32 32 32h32V384H64v32z" />
+              </svg>
+              <h1 class="card-text mt-4" x-text="sim"></h1>
+            </div>
+            <div class="card-footer text-center">SIM 卡</div>
+          </div>
+        </div>
+
+        <div class="col align-self-center">
+          <div class="card">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" height="85" width="85">
+                <path fill="#2fa7fb"
+                  d="M576 0c17.7 0 32 14.3 32 32V480c0 17.7-14.3 32-32 32s-32-14.3-32-32V32c0-17.7 14.3-32 32-32zM448 96c17.7 0 32 14.3 32 32V480c0 17.7-14.3 32-32 32s-32-14.3-32-32V128c0-17.7 14.3-32 32-32zM352 224V480c0 17.7-14.3 32-32 32s-32-14.3-32-32V224c0-17.7 14.3-32 32-32s32 14.3 32 32zM192 288c17.7 0 32 14.3 32 32V480c0 17.7-14.3 32-32 32s-32-14.3-32-32V320c0-17.7 14.3-32 32-32zM96 416v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V416c0-17.7 14.3-32 32-32s32 14.3 32 32z" />
+              </svg>
+              <h1 class="card-text mt-4" x-text="signalPercentage + '%'"></h1>
+            </div>
+            <div class="card-footer text-center">信号百分比</div>
+          </div>
+        </div>
+
+        <div class="col align-self-center">
+          <div class="card">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" height="85" width="85">
+                <path fill="#20c0ae"
+                  d="M0 336c0 79.5 64.5 144 144 144H512c70.7 0 128-57.3 128-128c0-61.9-44-113.6-102.4-125.4c4.1-10.7 6.4-22.4 6.4-34.6c0-53-43-96-96-96c-19.7 0-38.1 6-53.3 16.2C367 64.2 315.3 32 256 32C167.6 32 96 103.6 96 192c0 2.7 .1 5.4 .2 8.1C40.2 219.8 0 273.2 0 336z" />
+              </svg>
+              <h1 class="card-text mt-4" x-text="internetConnection"></h1>
+            </div>
+            <div class="card-footer text-center">互联网连接</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-5 gap-3">
+        <div class="col">
+          <div class="card">
+            <div class="card-header">网络信息</div>
+            <div class="card-body">
+              <div class="card-text table-responsive-sm">
+                <table class="table">
+                  <tbody>
+                    <tr>
+                      <th scope="row">激活 SIM</th>
+                      <td x-text="active_sim"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">运营商</th>
+                      <td x-text="network_provider"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">MCCMNC</th>
+                      <td x-text="mccmnc"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">APN</th>
+                      <td x-text="apn"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">网络模式</th>
+                      <td x-text="network_mode"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">频段</th>
+                      <td x-text="bands"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">带宽</th>
+                      <td x-text="bandwidth"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">PCI</th>
+                      <td x-show="scc_pci != '-'" x-text="pcc_pci + ', ' + scc_pci"></td>
+                      <td x-show="scc_pci == '-'" x-text="pcc_pci"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">IPv<sup>4</sup></th>
+                      <td x-text="ipv4"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">IPv<sup>6</sup></th>
+                      <td x-text="ipv6"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">在线时长</th>
+                      <td x-text="uptime"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="row row-cols-2">
+                <div class="col">
+                  <p class="btn">刷新频率（最少 3 秒）</p>
+                </div>
+                <div class="col">
+                  <div class="input-group">
+                    <input x-model="newRefreshRate" class="form-control" type="number" min="3" max="60"
+                      x-bind:placeholder="refreshRate + 's'" />
+                    <button @click="updateRefreshRate()" class="btn btn-outline-secondary" type="button">设置</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card">
+            <div class="card-header">信号信息</div>
+            <div class="card-body">
+              <div class="card-text table-responsive-sm">
+                <table class="table">
+                  <tbody>
+                    <tr>
+                      <th scope="row">信号评估</th>
+                      <td x-text="signalAssessment"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">CSQ</th>
+                      <td x-show="csq != '-'" x-text="csq"></td>
+                      <td x-show="csq == '-'" class="fst-italic">None</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">CELL ID</th>
+                      <td x-text="cellID"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">eNB ID <sup>4G/5G</sup></th>
+                      <td x-text="eNBID"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">E/ARFCN<sup>4G/5G</sup></th>
+                      <td x-text="earfcns"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">TAC<sup>4G/5G</sup></th>
+                      <td x-text="tac"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">RSSI</th>
+                      <td x-show="rssi != '-'" x-text="rssi"></td>
+                      <td x-show="rssi == '-'" class="fst-italic">None</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">RSRP<sup>PRX/DRX/RX2/RX3</sup></th>
+                      <td x-text="prxqrsrp + '  ' + drxqrsrp + '  ' + rx2qrsrp + '  ' + rx3qrsrp"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">RSRQ<sup>4G/5G</sup></th>
+                      <td class="gap-4 align-items-center" x-data="{ getProgressBarClass: function(percentage) {
+                          return percentage >= 60 ? 'progress-bar bg-success' : percentage >= 40 ? 'progress-bar bg-warning' : 'progress-bar bg-danger';
+                        } }">
+                        <div x-show="rsrqLTE != '-' || rsrqNR != '-'" class="progress w-100" role="progressbar"
+                          aria-label="RSRQ BAR" aria-valuemin="0" aria-valuemax="100" style="height: 18px">
+                          <div x-show="rsrqLTE != '-' && rsrqLTEPercentage != '0'"
+                            :class="getProgressBarClass(rsrqLTEPercentage)"
+                            :style="'width: ' + rsrqLTEPercentage + '%'">
+                            <span x-text="rsrqLTE + ' / ' + rsrqLTEPercentage + '%'"></span>
+                          </div>
+                          <div x-show="rsrqNR != '-' && rsrqNRPercentage != '0'"
+                            :class="getProgressBarClass(rsrqNRPercentage)" :style="'width: ' + rsrqNRPercentage + '%'">
+                            <span x-text="rsrqNR + ' / ' + rsrqNRPercentage + '%'"></span>
+                          </div>
+                        </div>
+                        <span x-show="rsrqLTE == '-' && rsrqNR == '-'" class="fst-italic">None</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">RSRP<sup>4G/5G</sup></th>
+                      <td class="gap-4 align-items-center" x-data="{ getProgressBarClass: function(percentage) {
+                          return percentage >= 60 ? 'progress-bar bg-success' : percentage >= 40 ? 'progress-bar bg-warning' : 'progress-bar bg-danger';
+                        } }">
+                        <div x-show="rsrpLTE != '-' || rsrpNR != '-'" class="progress w-100" role="progressbar"
+                          aria-label="RSRP BAR" aria-valuemin="0" aria-valuemax="100" style="height: 18px">
+                          <div x-show="rsrpLTE != '-' && rsrpLTEPercentage != '0'"
+                            :class="getProgressBarClass(rsrpLTEPercentage)"
+                            :style="'width: ' + rsrpLTEPercentage + '%'">
+                            <span x-text="rsrpLTE + ' / ' + rsrpLTEPercentage + '%'"></span>
+                          </div>
+                          <div x-show="rsrpNR != '-' && rsrpNRPercentage != '0'"
+                            :class="getProgressBarClass(rsrpNRPercentage)" :style="'width: ' + rsrpNRPercentage + '%'">
+                            <span x-text="rsrpNR + ' / ' + rsrpNRPercentage + '%'"></span>
+                          </div>
+                        </div>
+                        <span x-show="rsrpLTE == '-' && rsrpNR == '-'" class="fst-italic">None</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">SINR<sup>4G/5G</sup></th>
+                      <td class="gap-4 align-items-center" x-data="{ getProgressBarClass: function(percentage) {
+                          return percentage >= 60 ? 'progress-bar bg-success' : percentage >= 40 ? 'progress-bar bg-warning' : 'progress-bar bg-danger';
+                        } }">
+                        <div x-show="sinrLTE != '-' || sinrNR != '-'" class="progress w-100" role="progressbar"
+                          aria-label="SINR BAR" aria-valuemin="0" aria-valuemax="100" style="height: 18px">
+                          <div x-show="sinrLTE != '-' && sinrLTEPercentage != '0'"
+                            :class="getProgressBarClass(sinrLTEPercentage)"
+                            :style="'width: ' + sinrLTEPercentage + '%'">
+                            <span x-text="sinrLTE + ' / ' + sinrLTEPercentage + '%'"></span>
+                          </div>
+                          <div x-show="sinrNR != '-' && sinrNRPercentage != '0'"
+                            :class="getProgressBarClass(sinrNRPercentage)" :style="'width: ' + sinrNRPercentage + '%'">
+                            <span x-text="sinrNR + ' / ' + sinrNRPercentage + '%'"></span>
+                          </div>
+                        </div>
+                        <span x-show="sinrLTE == '-' && sinrNR == '-'" class="fst-italic">None</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="card-text">
+                <div class="row">
+                  <div class="col">
+                    <div>
+                      <p class="btn">更新时间</p>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <p class="btn" x-text="lastUpdate"></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="js/dark-mode.js"></script>
+  <script>
+    function getStaticNetworkInfo() {
+      return {
+        sim: "未激活",
+        temperature: "0",
+        active_sim: "-",
+        network_provider: "-",
+        mccmnc: "-",
+        apn: "-",
+        network_mode: "-",
+        ipv4: "-",
+        ipv6: "-",
+        bands: "-",
+        bandwidth: "-",
+        prxqrsrp: "-",
+        drxqrsrp: "-",
+        rx2qrsrp: "-",
+        rx3qrsrp: "-",
+        earfcns: "-",
+        pcc_pci: "-",
+        scc_pci: "-",
+        signalAssessment: "未知",
+        csq: "-",
+        rssi: "-",
+        cellID: "-",
+        eNBID: "-",
+        tac: "-",
+        rsrqLTE: "-",
+        rsrqNR: "-",
+        rsrqLTEPercentage: "0%",
+        rsrqNRPercentage: "0%",
+        rsrpLTE: "-",
+        rsrpNR: "-",
+        rsrpLTEPercentage: "0%",
+        rsrpNRPercentage: "0%",
+        sinrLTE: "-",
+        sinrNR: "-",
+        sinrLTEPercentage: "0%",
+        sinrNRPercentage: "0%",
+        signalPercentage: "0",
+        internetConnection: "未连接",
+        lastUpdate: new Date().toLocaleString(),
+        newRefreshRate: null,
+        refreshRate: 3,
+        intervalId: null,
+        uptime: "未知",
+
+        fetchNetworkInfo() {
+          this.atcmd = 'AT+QSIMSTAT?;+CSQ;+QTEMP;+QUIMSLOT?;+QSPN;+CGCONTRDP=1;+QMAP="WWAN";+QENG="servingcell";+QNWINFO;+QRSRP';
+
+          fetch(`/cgi-bin/get_atcommand?${new URLSearchParams({ atcmd: this.atcmd })}`)
+            .then(response => response.text())
+            .then(data => this.parseNetworkInfo(data.split("\n")));
+
+        },
+
+        parseNetworkInfo(lines) {
+          lines.shift();  // 删除数组中的第一个元素
+
+          // 处理 SIM 状态
+          const simStatusLine = lines.find(line => line.startsWith('+QSIMSTAT:'));
+          if (simStatusLine) {
+            const simStatusParts = simStatusLine.replace('+QSIMSTAT:', '').trim().split(',').map(part => part.trim());
+            if (simStatusParts[1] === "1") {
+              this.sim = "已激活";
+            } else {
+              this.resetNetworkInfo();
+              return;
+            }
+          }
+
+          // 处理 CSQ 信号强度
+          const csqLine = lines.find(line => line.startsWith('+CSQ:'));
+          if (csqLine) {
+            const csqParts = csqLine.replace('+CSQ:', '').trim().split(',').map(part => part.trim());
+            this.csq = csqParts[0];
+          }
+
+          // 解析温度
+          const tempLines = lines.filter(line => line.startsWith('+QTEMP:'));
+          let tempSum = 0, tempCount = 0;
+          tempLines.forEach(line => {
+            const temp = parseInt(line.split(",")[1].replace(/"/g, "").trim());
+            if (!isNaN(temp) && temp !== -273 && temp !== 0) {
+              tempSum += temp;
+              tempCount++;
+            }
+          });
+          this.temperature = tempCount > 0 ? Math.round(tempSum / tempCount).toString() : "N/A";
+
+          // 解析激活的 SIM
+          this.active_sim = lines.find(line => line.startsWith('+QUIMSLOT:'))?.split(":")[1];
+
+          // 解析网络提供商
+          const spnLine = lines.find(line => line.startsWith('+QSPN:'));
+          if (spnLine) {
+            const spnParts = spnLine.split(",");
+            const alphabet = parseInt(spnParts[3].replace(/"/g, "").trim());
+            this.network_provider = alphabet === 0 ? spnParts[1].replace(/"/g, "").trim() : this.ucs2ToUtf8(spnParts[2].replace(/"/g, "").trim());
+            this.mccmnc = spnParts[4].replace(/"/g, "").trim();
+          }
+
+          // 解析 APN
+          const apnLine = lines.find(line => line.startsWith('+CGCONTRDP:'));
+          if (apnLine) this.apn = apnLine.split(",")[2].replace(/"/g, "").trim();
+
+          // 解析 WAN IPs
+          const ipv4Line = lines.find(line => line.startsWith('+QMAP:') && line.includes('IPV4'));
+          const ipv6Line = lines.find(line => line.startsWith('+QMAP:') && line.includes('IPV6'));
+          if (ipv4Line) this.ipv4 = ipv4Line.split(",")[4].replace(/"/g, "").trim();
+          if (ipv6Line) this.ipv6 = ipv6Line.split(",")[4].replace(/"/g, "").trim();
+
+          // 如果未检测到网络 IP，则视为未连接。返回所有值为未知
+          if (this.ipv4 == "0.0.0.0" && this.ipv6 == "0:0:0:0:0:0:0:0") {
+            this.resetNetworkInfo();
+            return;
+          }
+
+          // 解析网络模式
+          const networkModeLine = lines.find(line => line.startsWith('+QENG:'));
+          if (networkModeLine) {
+            const networkModeParts = networkModeLine.split(",");
+            this.network_mode = networkModeParts[2].replace(/"/g, "").trim() + (networkModeParts[3] ? ` ${networkModeParts[3].replace(/"/g, "").trim()}` : '');
+          }
+
+          // 解析频段
+          const caInfoLine = lines.find(line => line.startsWith('+QNWINFO:'));
+          if (caInfoLine) {
+            const caInfoParts = caInfoLine.split(",");
+            this.bands = caInfoParts[2].replace(/"/g, "").trim();
+            this.earfcns = caInfoParts[3].replace(/"/g, "").trim();
+          }
+
+          const qrsrpLine = lines.find(line => line.startsWith('+QRSRP:'));
+          if (qrsrpLine) {
+            const qrsrpParts = qrsrpLine.replace('+QRSRP:', '').trim().split(',').map(part => part.trim());
+            this.prxqrsrp = qrsrpParts[0] !== '-' ? qrsrpParts[0] : 'None';
+            this.drxqrsrp = qrsrpParts[1] !== '-' ? qrsrpParts[1] : 'None';
+            this.rx2qrsrp = qrsrpParts[2] !== '-' ? qrsrpParts[2] : 'None';
+            this.rx3qrsrp = qrsrpParts[3] !== '-' ? qrsrpParts[3] : 'None';
+            this.qrsrpType = qrsrpParts[4] !== '-' ? qrsrpParts[4] : 'None';
+          }
+
+
+
+          // 解析带宽和小区 ID
+          const servingCellLine = lines.find((line) => line.startsWith('+QENG: "servingcell"'));
+          if (servingCellLine) this.parseServingCellInfo(servingCellLine.split(","));
+
+        },
+
+        resetNetworkInfo() {
+          this.network_mode = "网络已断开";
+          this.lastUpdate = new Date().toLocaleString();
+          this.sim = "未激活";
+          this.temperature = "0";
+          this.active_sim = "-";
+          this.network_provider = "-";
+          this.mccmnc = "-";
+          this.apn = "-";
+          this.ipv4 = "-";
+          this.ipv6 = "-";
+          this.bands = "-";
+          this.bandwidth = "-";
+          this.prxqrsrp = "-";
+          this.drxqrsrp = "-";
+          this.rx2qrsrp = "-";
+          this.rx3qrsrp = "-";
+          this.earfcns = "-";
+          this.pcc_pci = "-";
+          this.scc_pci = "-";
+          this.signalAssessment = "未知";
+          this.csq = "-";
+          this.rssi = "-";
+          this.cellID = "-";
+          this.eNBID = "-";
+          this.tac = "-";
+          this.rsrqLTE = "-";
+          this.rsrqNR = "-";
+          this.rsrqLTEPercentage = "0%";
+          this.rsrqNRPercentage = "0%";
+          this.rsrpLTE = "-";
+          this.rsrpNR = "-";
+          this.rsrpLTEPercentage = "0%";
+          this.rsrpNRPercentage = "0%";
+          this.sinrLTE = "-";
+          this.sinrNR = "-";
+          this.sinrLTEPercentage = "0%";
+          this.sinrNRPercentage = "0%";
+          this.signalPercentage = "0";
+          this.internetConnection = "未连接";
+          this.lastUpdate = new Date().toLocaleString();
+        },
+
+        parseServingCellInfo(servingCellParts) {
+          const networkType = servingCellParts[2].replace(/"/g, "").trim();
+          if (networkType === "NR5G-SA") {
+            this.parseNR5GInfo(servingCellParts);
+          } else if (networkType === "LTE") {
+            this.parseLTEInfo(servingCellParts);
+          }
+        },
+
+        parseNR5GInfo(parts) {
+          this.bandwidth = "NR " + this.calculate_nr_bw(parseInt(parts[11].replace(/"/g, "").trim())) + " MHz";
+          const longCID = parts[6].replace(/"/g, "").trim();
+          this.eNBID = longCID.substring(0, longCID.length - 2);
+          const shortCID = longCID.substring(longCID.length - 2);
+          this.tac = parts[8].replace(/"/g, "").trim() + " (" + parseInt(parts[8].replace(/"/g, "").trim(), 16) + ")";
+          this.cellID = `${shortCID}(${parseInt(shortCID, 16)}), ${longCID}(${parseInt(longCID, 16)})`;
+          this.rsrqNR = parts[13].replace(/"/g, "").trim();
+          this.rsrqNRPercentage = this.calculateRSRQPercentage(parseInt(this.rsrqNR));
+          this.rsrpNR = parts[12].replace(/"/g, "").trim();
+          this.rsrpNRPercentage = this.calculateRSRPPercentage(parseInt(this.rsrpNR));
+          this.sinrNR = parts[14].replace(/"/g, "").trim();
+          this.sinrNRPercentage = this.calculateSINRPercentage(parseInt(this.sinrNR));
+          this.signalPercentage = this.calculateSignalPercentage(parseInt(this.rsrpNRPercentage), parseInt(this.sinrNRPercentage));
+          this.signalAssessment = this.signalQuality(this.signalPercentage);
+          this.pcc_pci = parts[7];
+        },
+
+        parseLTEInfo(parts) {
+          this.bandwidth = "UL " + this.calculate_lte_bw(parseInt(parts[10].replace(/"/g, "").trim())) + " MHz / " + "DL " + this.calculate_lte_bw(parseInt(parts[11].replace(/"/g, "").trim())) + " MHz";
+          const longCID = parts[6].replace(/"/g, "").trim();
+          this.eNBID = longCID.substring(0, longCID.length - 2);
+          const shortCID = longCID.substring(longCID.length - 2);
+          this.tac = parts[12].replace(/"/g, "").trim() + " (" + parseInt(parts[12].replace(/"/g, "").trim(), 16) + ")";
+          this.cellID = `${shortCID}(${parseInt(shortCID, 16)}), ${longCID}(${parseInt(longCID, 16)})`;
+          this.rsrqLTE = parts[14].replace(/"/g, "").trim();
+          this.rsrqLTEPercentage = this.calculateRSRQPercentage(parseInt(this.rsrqLTE));
+          this.rsrpLTE = parts[13].replace(/"/g, "").trim();
+          this.rsrpLTEPercentage = this.calculateRSRPPercentage(parseInt(this.rsrpLTE));
+          this.sinrLTE = parts[16].replace(/"/g, "").trim();
+          this.sinrLTEPercentage = this.calculateSINRPercentage(parseInt(this.sinrLTE));
+          this.signalPercentage = this.calculateSignalPercentage(parseInt(this.rsrpLTEPercentage), parseInt(this.sinrLTEPercentage));
+          this.signalAssessment = this.signalQuality(this.signalPercentage);
+          this.rssi = parts[15];
+          this.pcc_pci = parts[7];
+        },
+
+        calculate_lte_bw(lte_bw) {
+          if (lte_bw === 0) return 1.4;
+          if (lte_bw === 1) return 3;
+          if (lte_bw >= 2 && lte_bw <= 5) return (lte_bw - 1) * 5;
+          return "-";
+        },
+
+        calculate_nr_bw(nr_bw) {
+          if (nr_bw >= 0 && nr_bw <= 5) return (nr_bw + 1) * 5;
+          if (nr_bw >= 6 && nr_bw <= 12) return (nr_bw - 2) * 10;
+          if (nr_bw === 13) return "200";
+          if (nr_bw === 14) return "400";
+          return "-";
+        },
+
+        ucs2ToUtf8(ucs2String) {
+          return ucs2String.match(/.{1,4}/g).map(hex => String.fromCodePoint(parseInt(hex, 16))).join('');
+        },
+
+        calculateRSRQPercentage(rsrq) {
+          const RSRQ_min = -20, RSRQ_max = -8;
+          if (isNaN(rsrq) || rsrq < -20) return 0;
+          let percentage = ((rsrq - RSRQ_min) / (RSRQ_max - RSRQ_min)) * 100;
+          return Math.round(percentage > 100 ? 100 : percentage);
+        },
+
+        calculateRSRPPercentage(rsrp) {
+          const RSRP_min = -140, RSRP_max = -60;
+          if (isNaN(rsrp) || rsrp < -140) return 0;
+          let percentage = ((rsrp - RSRP_min) / (RSRP_max - RSRP_min)) * 100;
+          return Math.round(percentage > 100 ? 100 : percentage);
+        },
+
+        calculateSINRPercentage(sinr) {
+          const SINR_min = -10, SINR_max = 35;
+          if (isNaN(sinr) || sinr < -10) return 0;
+          let percentage = ((sinr - SINR_min) / (SINR_max - SINR_min)) * 100;
+          return Math.round(percentage > 100 ? 100 : percentage);
+        },
+
+        calculateSignalPercentage(rsrpPercentage, sinrPercentage) {
+          return Math.round((rsrpPercentage + sinrPercentage) / 2);
+        },
+
+        signalQuality(percentage) {
+          return percentage >= 80 ? "优秀" : percentage >= 60 ? "良好" : percentage >= 40 ? "一般" : percentage >= 0 ? "差" : "无信号";
+        },
+
+        fetchUpTime() {
+          fetch("/cgi-bin/get_uptime")
+            .then(response => response.text())
+            .then(data => {
+              const days = data.match(/(\d+) day/);
+              const hours = data.match(/(\d+) hour/);
+              const minutes = data.match(/(\d+) min/);
+              const hoursAndMinutes = data.match(/(\d+):(\d+),/);
+
+              if (hoursAndMinutes) {
+                this.uptime = `${days ? days[1] + " 天 " : ""}${hoursAndMinutes[1] + " 小时 "}${hoursAndMinutes[2] + " 分钟"}`;
+              } else if (days) {
+                this.uptime = `${days[1] + " 天"}${hours ? ", " + hours[1] + " 小时" : ""}${minutes ? ", " + minutes[1] + " 分钟" : ""}`;
+              } else if (hours) {
+                this.uptime = `${hours[1] + " 小时"}${minutes ? ", " + minutes[1] + " 分钟" : ""}`;
+              } else if (minutes) {
+                this.uptime = `${minutes[1] + " 分钟"}`;
+              } else {
+                this.uptime = "未知时间";
+              }
+            });
+        },
+
+        // 方法：带超时时间的 Ping 请求
+        requestPingWithTimeout(timeout = 5000) {
+          return new Promise((resolve, reject) => {
+            const timeoutId = setTimeout(() => {
+              reject(new Error('Ping request timed out'));
+            }, timeout);
+
+            this.requestPing()
+              .then(response => {
+                clearTimeout(timeoutId);
+                resolve(response);
+              })
+              .catch(error => {
+                clearTimeout(timeoutId);
+                reject(error);
+              });
+          });
+        },
+
+        // 方法：Ping 请求
+        requestPing() {
+            return fetch("/cgi-bin/get_ping")
+              .then((response) => response.text())
+              .then((data) => {
+                return data;
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                // Throw the error again to ensure it's propagated
+                throw error;
+              });
+          },
+
+        // 更新刷新频率
+        updateRefreshRate() {
+          if (this.newRefreshRate < 3) this.newRefreshRate = 3;
+          clearInterval(this.intervalId);
+          this.refreshRate = this.newRefreshRate;
+          localStorage.setItem("refreshRate", this.refreshRate);
+          this.init();
+        },
+
+        // 初始化方法
+        init() {
+          const storedRefreshRate = localStorage.getItem("refreshRate");
+          this.refreshRate = storedRefreshRate ? parseInt(storedRefreshRate) : 3;
+
+          this.fetchNetworkInfo();
+
+          if (this.sim !== "未激活") {
+            this.requestPing().then((data) => {
+                const response = data.trim();
+                if (response === "OK") {
+                  this.internetConnection = "已连接";
+                } else {
+                  this.internetConnection = "未连接";
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                this.internetConnection = "未连接";
+              });
+          }
+
+          this.fetchUpTime();
+          this.lastUpdate = new Date().toLocaleString();
+          console.log("已初始化");
+
+          this.intervalId = setInterval(() => {
+            this.fetchNetworkInfo();
+
+            if (this.sim !== "未激活") {
+            this.requestPing().then((data) => {
+                const response = data.trim();
+                if (response === "OK") {
+                  this.internetConnection = "已连接";
+                } else {
+                  this.internetConnection = "未连接";
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                this.internetConnection = "未连接";
+              });
+          }
+
+            this.fetchUpTime();
+            this.lastUpdate = new Date().toLocaleString();
+          }, this.refreshRate * 1000);
+        },
+      };
+    }
+  </script>
+</body>
+
+</html>

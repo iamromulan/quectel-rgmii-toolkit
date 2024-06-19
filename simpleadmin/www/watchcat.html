@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simple Admin</title>
+    <!-- <link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+			crossorigin="anonymous"
+		/> -->
+    <!-- Import all the bootstrap css files from css folder -->
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+
+    <!-- Logo -->
+    <link rel="simpleadmin-logo" href="favicon.ico" />
+
+    <!--  Import BootStrap Javascript -->
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/alpinejs.min.js" defer></script>
+
+    <style>
+      .form-switch .form-check-input {
+        width: 3em;
+        height: 1.5em;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="container my-4" x-data="simpleWatchCat()">
+        <nav class="navbar navbar-expand-lg mt-2">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="/"
+              ><span class="mb-0 h4">Simple Admin</span></a
+            >
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarText"
+              aria-controls="navbarText"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarText">
+              <ul class="navbar-nav me-auto mb-2 ml-4 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/network.html">Simple Network</a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link active"
+                    href="/settings.html"
+                    aria-current="page"
+                    >Simple Settings</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/sms.html">SMS</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/console">Console</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/deviceinfo.html"
+                    >Device Information</a
+                  >
+                </li>
+              </ul>
+              <span class="navbar-text">
+                <button class="btn btn-link text-reset" id="darkModeToggle">
+                  Dark Mode
+                </button>
+              </span>
+            </div>
+          </div>
+        </nav>
+        <div class="row mt-3 mb-4">
+          <div class="col">
+            <div class="card">
+              <div class="card-header">Simple Watchcat</div>
+              <div class="card-body">
+                <div class="card-text">
+                  <div class="row mt-3 mb-5 align-content-center mx-4">
+                    <div class="col">
+                      <div class="mt-3">
+                        <label> Enable Watchcat </label>
+                      </div>
+                    </div>
+                    <div class="col-5">
+                      <div class="mt-2">
+                        <div class="form-check form-switch form-switch-lg">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="watchCatSwitch"
+                            x-model="watchCatStatus"
+                            disabled
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row mt-3 mb-3 align-items-center mx-4">
+                    <div class="col">
+                      <div class="mt-3 mb-4">
+                        <label> Track IP </label>
+                      </div>
+
+                      <div class="mt-3 mb-4">
+                        <label> Ping Request Timeout </label>
+                      </div>
+
+                      <div class="mt-3 mb-4">
+                        <label> Ping Failure Amount </label>
+                      </div>
+                    </div>
+
+                    <div class="col-5">
+                      <div class="mt-3 mb-4">
+                        <select
+                          class="form-select"
+                          aria-label="Select Site to Ping"
+                          x-model="trackIP"
+                        >
+                          <option selected>Select IP</option>
+                          <option value="1.1.1.1">1.1.1.1</option>
+                          <option value="8.8.8.8">8.8.8.8</option>
+                          <option value="9.9.9.9">9.9.9.9</option>
+                        </select>
+                      </div>
+
+                      <div class="mt-3 mb-4">
+                        <input
+                          type="number"
+                          class="form-control"
+                          aria-label="Ping Timeout"
+                          aria-describedby="inputGroup-sizing-default"
+                          placeholder="Enter Ping Timeout in Seconds."
+                          x-model="cooldown"
+                        />
+                      </div>
+
+                      <div class="mt-3 mb-4">
+                        <input
+                          type="number"
+                          class="form-control"
+                          aria-label="Sizing example input"
+                          aria-describedby="inputGroup-sizing-default"
+                          placeholder="Enter Ping Failure Amount."
+                          x-model="failures"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row mt-3 mb-5 align-content-center mx-4">
+                    <div class="col">
+                      <div class="mt-3">
+                        <label>Sim Auto Switch</label>
+                      </div>
+                    </div>
+                    <div class="col-5">
+                      <div class="mt-2">
+                        <div class="form-check form-switch form-switch-lg">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="simAutoSwitch"
+                            x-model="simAutoSwitchStatus"
+                            disabled
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row mt-3 mb-3 align-items-center mx-4">
+                    <div class="col">
+                      <div class="mt-3 mb-4">
+                        <label> Select Preferred SIM </label>
+                      </div>
+
+                      <div class="mt-3 mb-4">
+                        <label> SIM 1 APN </label>
+                      </div>
+
+                      <div class="mt-3 mb-4">
+                        <label> SIM 2 APN </label>
+                      </div>
+
+                      <div class="mt-3 mb-4">
+                        <label> Failover Interval </label>
+                      </div>
+
+                      <div class="mt-3 mb-4">
+                        <label> Scheduled SIM Hot Swap</label>
+                      </div>
+                    </div>
+
+                    <div class="col-5">
+                      <div class="mt-3 mb-3">
+                        <select
+                          class="form-select"
+                          aria-label="Select Sim"
+                          x-model="preferredSim"
+                        >
+                          <option selected>Select SIM</option>
+                          <option value="1">SIM 1</option>
+                          <option value="2">SIM 2</option>
+                        </select>
+                      </div>
+
+                      <div class="mt-3 mb-3">
+                        <input
+                          type="number"
+                          class="form-control"
+                          aria-label="SIM 1 APN"
+                          aria-describedby="inputGroup-sizing-default"
+                          placeholder="Input APN for SIM 1. (Optional)"
+                          x-model="sim1APN"
+                        />
+                      </div>
+
+                      <div class="mt-3 mb-3">
+                        <input
+                          type="number"
+                          class="form-control"
+                          aria-label="SIM 2 APN"
+                          aria-describedby="inputGroup-sizing-default"
+                          placeholder="Input APN for SIM 2. (Optional)"
+                          x-model="sim2APN"
+                        />
+                      </div>
+
+                      <div class="mt-3 mb-3 d-flex align-items-center">
+                        <select
+                          class="form-select"
+                          aria-label="Failover Interval"
+                        >
+                          <option selected>Failover Interval</option>
+                          <option value="5">5</option>
+                          <option value="10">10</option>
+                          <option value="15">15</option>
+                          <option value="20">20</option>
+                        </select>
+                        <label class="mx-3">Minutes</label>
+                      </div>
+
+                      <div class="mt-3 mb-3">
+                        <input
+                          type="time"
+                          class="form-control"
+                          aria-label="Scheduled SIM Hot Swap"
+                          aria-describedby="inputGroup-sizing-default"
+                          x-model="scheduledSIMHotSwap"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <!-- Setting a low ping timeout and ping failure count may cause
+                intermittent disconnections due to high sensitivity. <br />
+                Select appropriate values for both based on your needs.<br /> -->
+                Still under development. Coming soon...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="js/dark-mode.js"></script>
+    <script>
+      function simpleWatchCat() {
+        return {
+          watchCatStatus: "",
+          trackIP: "",
+          cooldown: "",
+          failures: "",
+          response: "",
+          formCompleted: false,
+
+          simAutoSwitchStatus: "",
+          scheduledSIMHotSwap: "",
+          sim1APN: "",
+          sim2APN: "",
+          preferredSim: "",
+          simFormCompleted: false,
+
+          modifyWatchCatScript() {
+            // If one of the params is empty then use their corresponding default values
+            if (this.IpDNS === "") {
+              this.IpDNS = "1.1.1.1";
+            } else if (this.cooldown === "") {
+              this.cooldown = "30";
+            } else if (this.failures === "") {
+              this.failures = "5";
+            } else if (this.action === "") {
+              this.action = "Reboot";
+            }
+
+            fetch(
+              "/cgi-bin/get_atcommand?" +
+                new URLSearchParams({
+                  status: this.status,
+                  IpDNS: this.IpDNS,
+                  cooldown: this.cooldown,
+                  failures: this.failures,
+                  action: this.action,
+                })
+            )
+              .then((response) => {
+                return res.text();
+              })
+              .then((data) => {
+                this.response = data;
+              });
+          },
+
+          formCompletedChecker() {
+            this.formCompleted =
+              this.watchCatStatus !== "" &&
+              this.trackIP !== "" &&
+              this.cooldown !== "" &&
+              this.failures !== "";
+          },
+
+          simFormCompletedChecker() {
+            if (
+              this.simAutoSwitchStatus !== "" &&
+              this.scheduledSIMHotSwap !== "" &&
+              this.preferredSim !== ""
+            ) {
+              this.simFormCompleted = true;
+            } else {
+              this.simFormCompleted = false;
+            }
+          },
+
+          init() {
+            this.$watch("watchCatStatus", this.formCompletedChecker.bind(this));
+            this.$watch("trackIP", this.formCompletedChecker.bind(this));
+            this.$watch("cooldown", this.formCompletedChecker.bind(this));
+            this.$watch("failures", this.formCompletedChecker.bind(this));
+          },
+        };
+      }
+    </script>
+  </body>
+</html>

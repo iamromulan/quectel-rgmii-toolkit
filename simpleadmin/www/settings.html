@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-bs-theme="light">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple Admin</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+
+  <!-- Logo -->
+  <link rel="simpleadmin-logo" href="favicon.ico" />
+
+  <!-- 导入 Bootstrap Javascript -->
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/alpinejs.min.js" defer></script>
+</head>
+
+<body>
+  <main>
+    <div class="container my-4" x-data="simpleSettings()">
+      <nav class="navbar navbar-expand-lg mt-2">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="/"><span class="mb-0 h4">Simple Admin</span></a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
+            aria-controls="navbarText" aria-expanded="false" aria-label="切换导航">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" href="/">主页</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/network.html">网络</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/settings.html" aria-current="page">设置</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/sms.html">短信</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/watchat.html">控制台</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/deviceinfo.html">设备信息</a>
+              </li>
+            </ul>
+            <span class="navbar-text">
+              <button class="btn btn-link text-reset" id="darkModeToggle">
+                暗模式
+              </button>
+            </span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="row mt-5 mb-4">
+        <div class="col">
+          <div class="card">
+            <div class="card-header">AT 终端</div>
+            <div class="card-body">
+              <div class="card-text">
+                <div class="form-floating mb-4">
+                  <!-- AT 命令输出 -->
+                  <textarea class="form-control" placeholder="ATI" id="atOutputBox" style="height: 210px"
+                    x-text="atCommandResponse" readonly>
+                    <label for="floatingTextarea">ATI</label>
+                    </textarea>
+                </div>
+                <div>
+                  <div class="col-md-4 mb-3">
+                    <label for="exampleInputEmail1" class="form-label">AT 命令</label>
+                    <input type="text" class="form-control" id="atCommandInput" placeholder="ATI"
+                      aria-describedby="atCommandInput" x-model="atcmd" @keydown.enter="sendATCommand()" />
+                    <div id="atCommandInputHelper" class="form-text">
+                      用逗号（,）分隔多个命令。
+                    </div>
+                  </div>
+                  <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <button class="btn btn-primary me-md-2" type="button" @click="sendATCommand()"
+                      :disabled="isLoading">
+                      提交
+                    </button>
+                    <button class="btn btn-danger" type="button" @click="clearResponses()" :disabled="isClean">
+                      清除
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <div class="card">
+            <div class="card-header">一键实用工具</div>
+            <div class="card-body">
+              <div class="card-text">
+                <div class="table-responsive">
+                  <table class="table">
+                    <tbody>
+                      <tr>
+                        <th scope="row">重启</th>
+                        <td>
+                          <button type="submit" class="btn btn-danger" @click="showRebootModal()" :disabled="isLoading">
+                            重启
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">重置 AT 命令设置</th>
+                        <td>
+                          <button type="submit" class="btn btn-danger" @click="resetATCommands()" :disabled="isLoading">
+                            重置
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">IP 透传</th>
+                        <td>
+                          <select class="form-select" id="ipPassModeSelect" x-model="ipPassMode">
+                            <option selected>透传模式</option>
+                            <option value="ETH">ETH</option>
+                            <option value="USB">USB (ECM/RNDIS)</option>
+                          </select>
+                        </td>
+                        <td>
+                          <button type="submit" class="btn btn-primary" @click="ipPassThroughEnable()"
+                            x-show="ipPassStatus === false" :disabled="isLoading">
+                            启用
+                          </button>
+                          <button type="submit" class="btn btn-danger" @click="ipPassThroughDisable()"
+                            x-show="ipPassStatus === true" :disabled="isLoading">
+                            禁用
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">USB 调制解调器协议</th>
+                        <td>
+                          <select class="form-select" id="usbNetModeSelect" x-model="usbNetMode">
+                            <option selected x-text="currentUsbNetMode"></option>
+                            <option value="RMNET">RMNET</option>
+                            <option value="ECM">ECM (推荐)</option>
+                            <option value="MBIM">MBIM</option>
+                            <option value="RNDIS">RNDIS</option>
+                          </select>
+                        </td>
+                        <td>
+                          <button type="submit" class="btn btn-primary" @click="usbNetModeChanger()"
+                            :disabled="isLoading">
+                            更改
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">板载 DNS<sup>V6</sup>代理</th>
+                        <td>
+                          <button type="submit" class="btn btn-primary" @click="onBoardDNSV6ProxyEnable()"
+                            x-show="DNSV6ProxyStatus === false" :disabled="isLoading">
+                            启用
+                          </button>
+                          <button type="submit" class="btn btn-danger" @click="onBoardDNSV6ProxyDisable()"
+                            x-show="DNSV6ProxyStatus === true" :disabled="isLoading">
+                            禁用
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">板载 DNS<sup>V4</sup>代理</th>
+                        <td>
+                          <button type="submit" class="btn btn-primary" @click="onBoardDNSV4ProxyEnable()"
+                            x-show="DNSV4ProxyStatus === false" :disabled="isLoading">
+                            启用
+                          </button>
+                          <button type="submit" class="btn btn-danger" @click="onBoardDNSV4ProxyDisable()"
+                            x-show="DNSV4ProxyStatus === true" :disabled="isLoading">
+                            禁用
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card mb-3">
+            <div class="card-header">TTL设置</div>
+            <div class="card-body">
+              <label for="TTLState" class="form-label">TTL 状态和值</label>
+              <div class="row">
+                <div class="col">
+                  <div class="p-3 text-primary-emphasis bg-primary-subtle border border-primary-subtle rounded-3"
+                    x-show="ttlStatus === true">
+                    TTL 是激活的
+                  </div>
+
+                  <div class="p-3 text-danger-emphasis bg-danger-subtle border border-danger-subtle rounded-3"
+                    x-show="ttlStatus === false">
+                    TTL 是未激活的
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="p-3 text-info-emphasis bg-info-subtle border border-info-subtle rounded-3 mb-4"
+                    x-text="ttlvalue"></div>
+                </div>
+              </div>
+              <div class="card-text mb-3">
+                <div class="mb-4">
+                  <input type="text" class="form-control" id="ttlInput" placeholder="TTL 值" x-model="newTTL" />
+                  <div id="ttlValueHelper" class="form-text">
+                    设置 TTL 值为 0 以禁用。
+                  </div>
+                </div>
+                <div class="d-grid gap-1">
+                  <button class="btn btn-primary" type="button" @click="setTTL()">
+                    更新
+                  </button>
+                </div>
+              </div>
+              <div class="card-text">
+                <div class="d-flex flex-row gap-4 w-full">
+                  <p><a class="link-info link-opacity-50-hover link-offset-2" href="/watchcat.html">Go to WatchCat</a></p>
+                  <!-- </a> -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 重启加载模态框 -->
+      <div class="modal-overlay" x-show="showModal">
+        <div class="loading-modal">
+          <div class="loading-text" style="display: flex; flex-direction: column">
+            <h3>这将重启调制解调器。</h3>
+            <p style="margin-top: 0.5rem">继续？</p>
+          </div>
+          <div class="d-grid gap-2 d-md-block">
+            <button class="btn btn-primary" type="button" @click="rebootDevice()">
+              重启
+            </button>
+            <button class="btn btn-danger" type="button" @click="closeModal()">
+              取消
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 重启倒计时模态框 -->
+      <div class="modal-overlay" x-show="isRebooting">
+        <div class="loading-modal">
+          <div class="loader"></div>
+          <div class="loading-text" style="display: flex; flex-direction: column">
+            <h3>重启中...</h3>
+            <p style="margin-top: 0.5rem">
+              请等待
+              <span x-text="countdown" style="font-weight: 500"></span>
+              秒。
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="js/dark-mode.js"></script>
+  <script>
+    function simpleSettings() {
+      return {
+        isLoading: false,
+        showSuccess: false,
+        showError: false,
+        isClean: true,
+        showModal: false,
+        isRebooting: false,
+        atcmd: "",
+        fetchATCommand: "",
+        countdown: 0,
+        atCommandResponse: "",
+        currentSettingsResponse: "",
+        ttldata: null,
+        ttlvalue: 0,
+        ttlStatus: false,
+        newTTL: null,
+        ipPassMode: "未指定",
+        ipPassStatus: false,
+        usbNetMode: "未指定",
+        currentUsbNetMode: "未知",
+        DNSV6ProxyStatus: true,
+        DNSV4ProxyStatus: true,
+
+        closeModal() {
+          this.confirmModal = false;
+          this.showModal = false;
+        },
+
+        showRebootModal() {
+          this.showModal = true;
+        },
+
+        sendATCommand() {
+          if (!this.atcmd) {
+            // 使用 ATI 作为默认命令
+            this.atcmd = "ATI";
+            console.log(
+              "AT 命令为空，使用 ATI 作为默认命令: ",
+              this.atcmd
+            );
+          }
+          this.isLoading = true;
+          const encodedATCmd = encodeURIComponent(this.atcmd);
+          const url = `/cgi-bin/get_atcommand?atcmd=${encodedATCmd}`;
+
+          fetch(url)
+            .then((res) => {
+              if (!res.ok) {
+                throw new Error(`HTTP 错误！状态: ${res.status}`);
+              }
+              return res.text();
+            })
+            .then((data) => {
+              this.atCommandResponse = data;
+              this.isLoading = false;
+              this.isClean = false;
+              this.fetchCurrentSettings();
+            })
+            .catch((error) => {
+              console.error("错误: ", error);
+              this.showError = true;
+              this.isLoading = false;
+            });
+        },
+
+        clearResponses() {
+          this.atCommandResponse = "";
+          this.isClean = true;
+        },
+
+        rebootDevice() {
+          this.atcmd = "AT+CFUN=1,1";
+          this.sendATCommand();
+
+          this.atCommandResponse = "";
+          this.showModal = false;
+          this.isRebooting = true;
+          this.countdown = 40;
+
+          // 进行倒计时
+          const interval = setInterval(() => {
+            this.countdown--;
+            if (this.countdown === 0) {
+              clearInterval(interval);
+              this.isRebooting = false;
+              this.init();
+            }
+          }, 1000);
+        },
+
+        resetATCommands() {
+          this.atcmd = "AT&F";
+          this.sendATCommand();
+          console.log("重置 AT 命令");
+          this.atcmd = "";
+          this.atCommandResponse = "";
+          this.showRebootModal();
+        },
+
+        ipPassThroughEnable() {
+          if (this.ipPassMode != "未指定") {
+            if (this.ipPassMode == "ETH") {
+              this.atcmd =
+                'AT+QMAP="MPDN_RULE",0,1,0,1,1,"FF:FF:FF:FF:FF:FF"';
+              this.sendATCommand();
+            } else if (this.ipPassMode == "USB") {
+              this.atcmd =
+                'AT+QMAP="MPDN_RULE",0,1,0,3,1,"FF:FF:FF:FF:FF:FF"';
+              this.sendATCommand();
+            } else {
+              console.error("无效的 IP 透传模式");
+            }
+          } else {
+            console.error("未指定 IP 透传模式");
+          }
+        },
+
+        ipPassThroughDisable() {
+          this.atcmd = 'AT+QMAP="MPDN_RULE",0;+QMAPWAC=1';
+          this.sendATCommand();
+        },
+
+        onBoardDNSV6ProxyEnable() {
+          this.atcmd = 'AT+QMAP="DHCPV6DNS","enable"';
+          this.sendATCommand().then(() => {
+            this.fetchCurrentSettings();
+          });
+        },
+        onBoardDNSV4ProxyEnable() {
+          this.atcmd = 'AT+QMAP="DHCPV4DNS","enable"';
+          this.sendATCommand().then(() => {
+            this.fetchCurrentSettings();
+          });
+        },
+
+        onBoardDNSV6ProxyDisable() {
+          this.atcmd = 'AT+QMAP="DHCPV6DNS","disable"';
+          this.sendATCommand().then(() => {
+            this.fetchCurrentSettings();
+          });
+        },
+        onBoardDNSV4ProxyDisable() {
+          this.atcmd = 'AT+QMAP="DHCPV4DNS","disable"';
+          this.sendATCommand().then(() => {
+            this.fetchCurrentSettings();
+          });
+        },
+
+
+        usbNetModeChanger() {
+          if (this.usbNetMode != "未指定") {
+            if (this.usbNetMode == "RMNET") {
+              this.atcmd = 'AT+QCFG="usbnet",0;';
+              this.sendATCommand().then(() => {
+                this.rebootDevice();
+              });
+            } else if (this.usbNetMode == "ECM") {
+              this.atcmd = 'AT+QCFG="usbnet",1;';
+              this.sendATCommand().then(() => {
+                this.rebootDevice();
+              });
+            } else if (this.usbNetMode == "MBIM") {
+              this.atcmd = 'AT+QCFG="usbnet",2;';
+              this.sendATCommand().then(() => {
+                this.rebootDevice();
+              });
+            } else if (this.usbNetMode == "RNDIS") {
+              this.atcmd = 'AT+QCFG="usbnet",3;';
+              this.sendATCommand().then(() => {
+                this.rebootDevice();
+              });
+            } else {
+              console.log("USB 网络模式无效");
+            }
+          } else {
+            console.error("未指定 USB 网络模式");
+          }
+        },
+
+        fetchCurrentSettings() {
+          this.fetchATCommand =
+            'AT+QMAP="MPDN_RULE";+QMAP="DHCPV6DNS";+QCFG="usbnet"';
+          fetch(
+            "/cgi-bin/get_atcommand?" +
+            new URLSearchParams({
+              atcmd: this.fetchATCommand,
+            })
+          )
+            .then((res) => {
+              return res.text();
+            })
+            .then((data) => {
+              // 设置 currentSettingsResponse 的值
+              this.currentSettingsResponse = data;
+              const currentData = data.split("\n");
+              console.log("行: ", currentData);
+
+              const testEthpass = currentData[1].match(
+                /\+QMAP: "MPDN_rule",0,0,0,0,0/
+              );
+
+              if (testEthpass) {
+                this.ipPassStatus = false;
+              } else {
+                this.ipPassStatus = true;
+              }
+
+              const testDNSV6Proxy = currentData[6].match(
+                /\+QMAP: "DHCPV6DNS","enable"/
+              );
+
+              if (testDNSV6Proxy) {
+                this.DNSV6ProxyStatus = true;
+              } else {
+                this.DNSV6ProxyStatus = false;
+              }
+
+              const testUSBNet = currentData[9].match(
+                /\+QCFG: "usbnet",(\d)/
+              );
+
+              if (testUSBNet[1] == "0") {
+                this.currentUsbNetMode = "RMNET";
+              } else if (testUSBNet[1] == "1") {
+                this.currentUsbNetMode = "ECM";
+              } else if (testUSBNet[1] == "2") {
+                this.currentUsbNetMode = "MBIM";
+              } else if (testUSBNet[1] == "3") {
+                this.currentUsbNetMode = "RNDIS";
+              } else {
+                this.currentUsbNetMode = "未知";
+              }
+
+              // 清空 atcmd
+              this.atcmd = "";
+            })
+            .catch((error) => {
+              console.error("错误: ", error);
+              this.showError = true;
+            });
+        },
+
+        fetchTTL() {
+          fetch("/cgi-bin/get_ttl_status")
+            .then((res) => res.json())
+            .then((data) => {
+              this.ttldata = data;
+              this.ttlStatus = this.ttldata.isEnabled;
+              this.ttlvalue = this.ttldata.ttl;
+            });
+        },
+
+        setTTL() {
+          this.isLoading = true; // 设置 TTL 更新期间的加载状态
+          const ttlval = this.newTTL;
+          fetch(
+            "/cgi-bin/set_ttl?" + new URLSearchParams({ ttlvalue: ttlval })
+          )
+            .then((res) => res.text()) // 使用 res.text() 而不是 res.json()
+            .then((data) => {
+              // 手动处理响应数据
+              console.log("服务器响应: ", data);
+              // 你可以尝试手动解析 JSON 或根据需要处理响应
+
+              // 一旦 TTL 更新，获取更新的 TTL 数据
+              this.fetchTTL();
+              this.isLoading = false; // 将加载状态设置回 false
+            })
+            .catch((error) => {
+              console.error("更新 TTL 时出错: ", error);
+              this.isLoading = false; // 确保在出现错误时正确处理加载状态
+            });
+        },
+        init() {
+          this.fetchCurrentSettings();
+          this.fetchTTL();
+        },
+      };
+    }
+  </script>
+</body>
+
+</html>

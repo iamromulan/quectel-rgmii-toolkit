@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Execute the uptime command and store the result
+uptime_output=$(uptime)
+
+# Set header for plain text content
+echo "Content-Type: text/plain"
+echo ""
+
+# Output the uptime result
+echo "$uptime_output"

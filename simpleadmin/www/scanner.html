@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-bs-theme="light">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple Admin</title>
+  <!-- 从css文件夹导入所有Bootstrap css文件 -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+
+  <!-- Logo -->
+  <link rel="simpleadmin-logo" href="favicon.ico" />
+
+  <!-- 导入Bootstrap Javascript -->
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/alpinejs.min.js" defer></script>
+</head>
+
+<body>
+  <main>
+    <div class="container my-4" x-data="cellScanner()">
+      <nav class="navbar navbar-expand-lg mt-2">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="/"><span class="mb-0 h4">Simple Admin</span></a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
+            aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 ml-4 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" href="/">主页</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/network.html" aria-current="page">网络</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/settings.html">设置</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/sms.html">短信</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/console">控制台</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/deviceinfo.html">设备信息</a>
+              </li>
+            </ul>
+            <span class="navbar-text">
+              <button class="btn btn-link text-reset" id="darkModeToggle">
+                暗模式
+              </button>
+            </span>
+          </div>
+        </div>
+      </nav>
+      <div class="row mt-3 mb-4">
+        <div class="col">
+          <div class="card">
+            <div class="card-header">小区扫描</div>
+            <div class="card-body">
+              <div class="card-text">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">网络</th>
+                      <th scope="col">运营商</th>
+                      <th scope="col">频段</th>
+                      <th scope="col">频率</th>
+                      <th scope="col">PCI</th>
+                      <th scope="col">RSRP</th>
+                      <th scope="col">信号</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cellScanTableBody">
+                    <!-- 小区行在此 -->
+                  </tbody>
+                </table>
+                <div>
+                  <div class="col-md-4 mb-3">
+                    <div class="form-group">
+                      <label for="exampleFormControlSelect1">选择扫描模式</label>
+                      <select class="form-select" id="cellSelect" x-model="cellScanMode">
+                        <option selected>选择扫描模式</option>
+                        <option value="Full Scan">全面扫描</option>
+                        <option value="LTE Only">仅LTE</option>
+                        <option value="NR5G Only">仅NR5G</option>
+                      </select>
+                      <div id="cellSelectHelper" class="form-text">
+                        小区扫描将扫描您所在区域的所有LTE和NR5G-SA小区。扫描可能会断开您的网络连接，并需要几分钟完成。
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <button class="btn btn-primary me-md-2" type="button" x-on:click="startCellScan()"
+                      :disabled='isLoading || cellScanMode === "Unspecified" || cellScanMode === "选择扫描模式"'
+                      x-text="isCellScanning ? '扫描中... 请稍候.' : '开始小区扫描'">
+                    </button>
+                    <button class="btn btn-danger" type="button" x-on:click="clearTableRowsBodyCellScan()"
+                      :disabled="isLoading || !resultDoneCell">
+                      清除
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <div class="card">
+            <div class="card-header">LTE和NR5G邻区扫描</div>
+            <div class="card-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">网络</th>
+                    <th scope="col">频率</th>
+                    <th scope="col">PCI</th>
+                    <th scope="col">RSRP</th>
+                    <th scope="col">信号</th>
+                  </tr>
+                </thead>
+                <tbody id="neighbourCellTableBody">
+                  <!-- 邻区行在此 -->
+                </tbody>
+              </table>
+              <div>
+                <div class="col-md-4 mb-3">
+                  <div class="form-group">
+                    <label for="exampleFormControlSelect1">选择扫描模式</label>
+                    <select class="form-select" id="neighbourCellSelect" x-model="neighbourCellsScanMode">
+                      <option selected>选择扫描模式</option>
+                      <option value="LTE and NR5G">LTE和NR5G</option>
+                      <option value="LTE">LTE</option>
+                      <option value="NR5G">NR5G</option>
+                    </select>
+                    <div id="neighbourCellSelectHelper" class="form-text">
+                      邻区扫描将仅扫描您网络提供商的LTE或NR5G小区。
+                    </div>
+                  </div>
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                  <button class="btn btn-primary me-md-2" type="button" x-on:click="getNeighbourcellLTEandNR5G()"
+                    :disabled="isLoading || neighbourCellsScanMode === 'Unspecified' || neighbourCellsScanMode === '选择扫描模式'"
+                    x-text="isneighbourScanning ? '扫描中... 请稍候.' : '开始邻区扫描'">
+                    
+                  </button>
+                  <button class="btn btn-danger" type="button" x-on:click="clearTableRowsBodyNeighbourCells()"
+                    :disabled="isLoading || !resultDoneNeighbourCell">
+                    清除
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="js/dark-mode.js"></script>
+  <script>
+    function cellScanner() {
+      return {
+        networkNames: {
+          46000: "中国移动",
+          46001: "中国联通",
+          46003: "中国电信",
+          46009: "中国联通",
+          46011: "中国电信",
+          46015: "中国广电",
+          46020: "中国铁通",
+        },
+
+        nr5g_cells: [],
+        lte_cells: [],
+        nr5g_cells_parsed: [],
+        lte_cells_parsed: [],
+        atcmd: "",
+        tableRows: [],
+        nr5g_neighbourCells: [],
+        lte_neighbourCells: [],
+        nr5g_neighbourCellsParsed: [],
+        lte_neighbourCellsParsed: [],
+        neighbourCellsTableRows: [],
+        cellScanMode: "Unspecified",
+        neighbourCellsScanMode: "Unspecified",
+        isLoading: false,
+        isCellScanning: false,
+        isneighbourScanning: false,
+        resultDoneCell: false,
+        resultDoneNeighbourCell: false,
+
+        init() {
+          this.generateNeighbourCellsTableRow();
+          this.clearTableRowsBodyCellScan();
+        },
+        startCellScan() {
+          this.clearCellScanData();
+
+          // 根据扫描模式设置AT命令
+          this.atcmd = this.getATCommandForScanMode(this.cellScanMode);
+
+          // 将AT命令发送到设备
+          this.isLoading = true;
+          this.isCellScanning = true;
+
+          fetch(`/cgi-bin/get_atcommand?${new URLSearchParams({ atcmd: this.atcmd })}`)
+            .then(res => res.text())
+            .then(data => this.processScanData(data))
+            .then(() => {
+              this.isLoading = false;
+              this.isCellScanning = false;
+              this.resultDoneCell = true;
+            })
+            .catch(error => {
+              console.error("Error processing scan data:", error);
+              this.isLoading = false;
+              this.isCellScanning = false;
+            });
+        },
+        getATCommandForScanMode(scanMode) {
+          const commands = {
+            "Full Scan": "AT+QSCAN=3,1",
+            "LTE Only": "AT+QSCAN=1,1",
+            "NR5G Only": "AT+QSCAN=2,1"
+          };
+          return commands[scanMode] || "";
+        },
+        processScanData(data) {
+          const lines = data.split("\n").filter(line => line && line !== "OK");
+          if (lines.length <= 2) return; // 处理无效数据的情况
+
+          lines.splice(0, 1); // 移除第一个元素
+          lines.splice(lines.length - 2, 2); // 移除最后三个元素
+
+          lines.forEach(line => {
+            if (line.includes("NR5G")) {
+              this.nr5g_cells.push(line);
+            } else if (line.includes("LTE")) {
+              this.lte_cells.push(line);
+            }
+          });
+
+          this.nr5g_cells.forEach(cell => this.nr5g_cells_parsed.push(this.parseCellData(cell, "NR5G")));
+          this.lte_cells.forEach(cell => this.lte_cells_parsed.push(this.parseCellData(cell, "LTE")));
+
+          this.generateTableRow();
+        },
+        parseCellData(cell, type) {
+          const parts = cell.split(":")[1]?.split(",") || [];
+          const provider = this.convertMCCMNCtoNetworkName(parts[1], parts[2]);
+          return {
+            type: type,
+            provider: provider,
+            band: parts[12],
+            freq: parts[3],
+            pci: parts[4],
+            rsrp: parts[5]
+          };
+        },
+        generateTableRow() {
+          const tableBody = document.getElementById("cellScanTableBody");
+          tableBody.innerHTML = ""; // 在生成新行之前清空表格主体
+          this.tableRows = []; // 在生成新行之前重置数组
+
+          const cells = this.cellScanMode === "Full Scan"
+            ? [...this.nr5g_cells_parsed, ...this.lte_cells_parsed]
+            : this.cellScanMode === "NR5G Only"
+              ? this.nr5g_cells_parsed
+              : this.lte_cells_parsed;
+
+          cells.forEach(cell => {
+            const signalSvg = this.signalIconSVG(cell.rsrp);
+            this.tableRows.push(`
+              <tr>
+                <th scope="row">${cell.type}</th>
+                <td>${cell.provider}</td>
+                <td>${cell.band}</td>
+                <td>${cell.freq}</td>
+                <td>${cell.pci}</td>
+                <td>${cell.rsrp}</td>
+                <td>${signalSvg}</td>
+              </tr>
+            `);
+          });
+
+          if (this.tableRows.length === 0) {
+            this.tableRows.push(`
+              <tr>
+                <th scope="row">空</th>
+                <td>空</td>
+                <td>空</td>
+                <td>空</td>
+                <td>空</td>
+                <td>空</td>
+                <td>空</td>
+              </tr>
+            `);
+          }
+
+          tableBody.innerHTML = this.tableRows.join('');
+        },
+        signalIconSVG(rsrp) {
+          const levels = [
+            { min: -55, svg: `<line x1="2" y1="20" x2="2" y2="20" /><line x1="7" y1="20" x2="7" y2="16" /><line x1="12" y1="20" x2="12" y2="12" /><line x1="17" y1="20" x2="17" y2="8" /><line x1="22" y1="20" x2="22" y2="4" />` },
+            { min: -85, svg: `<line x1="2" y1="20" x2="2" y2="20" /><line x1="7" y1="20" x2="7" y2="16" /><line x1="12" y1="20" x2="12" y2="12" /><line x1="17" y1="20" x2="17" y2="8" />` },
+            { min: -95, svg: `<line x1="2" y1="20" x2="2" y2="20" /><line x1="7" y1="20" x2="7" y2="16" /><line x1="12" y1="20" x2="12" y2="12" />` },
+            { min: -Infinity, svg: `<line x1="2" y1="20" x2="2" y2="20" /><line x1="7" y1="20" x2="7" y2="16" />` }
+          ];
+          const level = levels.find(l => rsrp >= l.min);
+          return level ? `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${level.svg}</svg>` : '';
+        },
+        convertMCCMNCtoNetworkName(mcc, mnc) {
+          const mccmnc = mcc + mnc;
+          return this.networkNames[mccmnc] || `${mcc} ${mnc}`;
+        },
+        clearCellScanData() {
+          this.nr5g_cells = [];
+          this.lte_cells = [];
+          this.nr5g_cells_parsed = [];
+          this.lte_cells_parsed = [];
+          this.tableRows = [];
+        },
+        clearTableRowsBodyCellScan() {
+          this.clearCellScanData();
+          this.resultDoneCell = false;
+          const tableBody = document.getElementById("cellScanTableBody");
+          tableBody.innerHTML = `
+            <tr>
+              <th scope="row">空</th>
+              <td>空</td>
+              <td>空</td>
+              <td>空</td>
+              <td>空</td>
+              <td>空</td>
+              <td>空</td>
+            </tr>
+          `;
+        },
+        getNeighbourcellLTEandNR5G() {
+          this.clearNeighbourCellData();
+
+          let commands = [];
+          if (this.neighbourCellsScanMode === "NR5G") {
+            commands = ['AT+QNWCFG="nr5g_meas_info"'];
+          } else if (this.neighbourCellsScanMode === "LTE") {
+            commands = ['AT+QENG="neighbourcell"'];
+          } else if (this.neighbourCellsScanMode === "LTE and NR5G") {
+            commands = ['AT+QNWCFG="nr5g_meas_info";+QENG="neighbourcell"'];
+          }
+
+          this.isLoading = true;
+          this.isneighbourScanning = true;
+
+          Promise.all(commands.map(cmd => fetch(`/cgi-bin/get_atcommand?${new URLSearchParams({ atcmd: cmd })}`).then(res => res.text())))
+          
+            .then(responses => {
+              responses.forEach(data => this.processNeighbourCellData(data));
+            })
+            .then(() => {
+              this.isneighbourScanning = false;
+              this.isLoading = false;
+              this.resultDoneNeighbourCell = true;
+            })
+            .catch(error => {
+              console.error("Error processing neighbour cell data:", error);
+              this.isLoading = false;
+              this.isneighbourScanning = false;
+            });
+        },
+        processNeighbourCellData(data) {
+          const lines = data.split("\n").filter(line => line && line !== "OK");
+
+          if (this.neighbourCellsScanMode === "NR5G") {
+            lines.shift(); // 移除第一行
+          }
+          if (this.neighbourCellsScanMode === "LTE and NR5G") {
+            lines.shift(); // 移除第一行
+          }
+
+          lines.forEach(line => {
+            if (line.includes("WCDMA") || line.includes("LTE")) {
+              this.lte_neighbourCells.push(line);
+            } else if (line.includes("nr5g_meas_info")) {
+              this.nr5g_neighbourCells.push(line);
+            }
+          });
+
+          this.lte_neighbourCells.forEach(cell => this.lte_neighbourCellsParsed.push(this.parseNeighbourCellData(cell)));
+          this.nr5g_neighbourCells.forEach(cell => this.nr5g_neighbourCellsParsed.push(this.parseNeighbourCellData(cell)));
+
+          this.generateNeighbourCellsTableRow();
+        },
+        parseNeighbourCellData(cell) {
+          if (cell.includes("WCDMA")) {
+            const parts = cell.split(",");
+            return {
+              type: "WCDMA",
+              freq: parts[2],
+              pci: parts[4],
+              rsrp: parts[5],
+            };
+          } else if (cell.includes("LTE")) {
+            const parts = cell.split(",");
+            return {
+              type: "LTE",
+              freq: parts[2],
+              pci: parts[3],
+              rsrp: parts[5],
+            };
+          } else if (cell.includes("nr5g_meas_info")) {
+            const parts = cell.split(",");
+            return {
+              type: "NR5G",
+              freq: parts[2],
+              pci: parts[3],
+              rsrp: parts[4],
+            };
+          }
+        },
+        generateNeighbourCellsTableRow() {
+          const tableBody = document.getElementById("neighbourCellTableBody");
+          tableBody.innerHTML = ""; // 在生成新行之前清空表格主体
+          this.neighbourCellsTableRows = []; // 在生成新行之前重置数组
+
+          const cells = this.neighbourCellsScanMode === "LTE and NR5G"
+            ? [...this.lte_neighbourCellsParsed, ...this.nr5g_neighbourCellsParsed]
+            : this.neighbourCellsScanMode === "LTE"
+              ? this.lte_neighbourCellsParsed
+              : this.nr5g_neighbourCellsParsed;
+
+          cells.forEach(cell => {
+            const signalSvg = this.signalIconSVG(cell.rsrp);
+            this.neighbourCellsTableRows.push(`
+              <tr>
+                <th scope="row">${cell.type}</th>
+                <td>${cell.freq}</td>
+                <td>${cell.pci}</td>
+                <td>${cell.rsrp}</td>
+                <td>${signalSvg}</td>
+              </tr>
+            `);
+          });
+
+          if (this.neighbourCellsTableRows.length === 0) {
+            this.neighbourCellsTableRows.push(`
+              <tr>
+                <th scope="row">空</th>
+                <td>空</td>
+                <td>空</td>
+                <td>空</td>
+                <td>空</td>
+              </tr>
+            `);
+          }
+
+          tableBody.innerHTML = this.neighbourCellsTableRows.join('');
+        },
+        clearNeighbourCellData() {
+          this.lte_neighbourCells = [];
+          this.nr5g_neighbourCells = [];
+          this.lte_neighbourCellsParsed = [];
+          this.nr5g_neighbourCellsParsed = [];
+          this.neighbourCellsTableRows = [];
+        },
+        clearTableRowsBodyNeighbourCells() {
+          this.clearNeighbourCellData();
+          this.resultDoneNeighbourCell = false;
+          const tableBody = document.getElementById("neighbourCellTableBody");
+          tableBody.innerHTML = `
+            <tr>
+              <th scope="row">空</th>
+              <td>空</td>
+              <td>空</td>
+              <td>空</td>
+              <td>空</td>
+            </tr>
+          `;
+        },
+      };
+    }
+  </script>
+</body>
+
+</html>

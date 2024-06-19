@@ -1,0 +1,95 @@
+/* import poppins */
+@import url("/css/Poppins.css");
+
+/* import fontawesome icons */
+@import url("/css/all.min.css");
+
+* {
+  font-family: "Poppins", sans-serif;
+}
+
+.custom-checkbox .form-check-input {
+  margin-right: 1px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-modal {
+  background-color: #fff;
+  padding: 3rem;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.loading-text {
+  font-size: 18px;
+  color: #333;
+}
+
+.loader {
+  width: 64px;
+  height: 64px;
+  border: 3px dotted #000;
+  border-style: solid solid dotted dotted;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  animation: rotation 2s linear infinite;
+  margin-bottom: 2rem;
+}
+
+.loader::after {
+  content: "";
+  box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  border: 3px dotted #0b5ed7;
+  border-style: solid solid dotted;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  animation: rotationBack 1s linear infinite;
+  transform-origin: center center;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes rotationBack {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+.is-warning {
+  background-color: #ffb70f !important;
+  color: #000 !important;
+}
+
+.is-medium {
+  font-weight: 600;
+}
