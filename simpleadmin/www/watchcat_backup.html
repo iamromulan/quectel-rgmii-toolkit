@@ -4,6 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Simple Admin</title>
+    <!-- <link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+			crossorigin="anonymous"
+		/> -->
     <!-- Import all the bootstrap css files from css folder -->
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/bootstrap.min.css" />
@@ -11,7 +17,7 @@
     <!-- Logo -->
     <link rel="simpleadmin-logo" href="favicon.ico" />
 
-    <!-- Import BootStrap Javascript -->
+    <!--  Import BootStrap Javascript -->
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/alpinejs.min.js" defer></script>
 
@@ -48,9 +54,6 @@
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="/network.html">Simple Network</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/scanner.html">Simple Scan</a>
                 </li>
                 <li class="nav-item">
                   <a
@@ -102,7 +105,7 @@
                             id="watchCatSwitch"
                             x-model="watchCatStatus"
                             :disabled="!isFormComplete"
-                            x-on:change="setWatchCatSettings"
+                            x:onchange="setWatchCatSettings"
                           />
                         </div>
                       </div>
@@ -161,9 +164,118 @@
                       </div>
                     </div>
                   </div>
+
+                  <!-- <div class="row mt-3 mb-5 align-content-center mx-4">
+                    <div class="col">
+                      <div class="mt-3">
+                        <label>Sim Auto Switch</label>
+                      </div>
+                    </div>
+                    <div class="col-5">
+                      <div class="mt-2">
+                        <div class="form-check form-switch form-switch-lg">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="simAutoSwitch"
+                            x-model="simAutoSwitchStatus"
+                            disabled
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div> -->
+
+                  <!-- <div class="row mt-3 mb-3 align-items-center mx-4">
+                    <div class="col">
+                      <div class="mt-3 mb-4">
+                        <label> Select Preferred SIM </label>
+                      </div>
+
+                      <div class="mt-3 mb-4">
+                        <label> SIM 1 APN </label>
+                      </div>
+
+                      <div class="mt-3 mb-4">
+                        <label> SIM 2 APN </label>
+                      </div>
+
+                      <div class="mt-3 mb-4">
+                        <label> Failover Interval </label>
+                      </div>
+
+                      <div class="mt-3 mb-4">
+                        <label> Scheduled SIM Hot Swap</label>
+                      </div>
+                    </div>
+
+                    <div class="col-5">
+                      <div class="mt-3 mb-3">
+                        <select
+                          class="form-select"
+                          aria-label="Select Sim"
+                          x-model="preferredSim"
+                        >
+                          <option selected>Select SIM</option>
+                          <option value="1">SIM 1</option>
+                          <option value="2">SIM 2</option>
+                        </select>
+                      </div>
+
+                      <div class="mt-3 mb-3">
+                        <input
+                          type="number"
+                          class="form-control"
+                          aria-label="SIM 1 APN"
+                          aria-describedby="inputGroup-sizing-default"
+                          placeholder="Input APN for SIM 1. (Optional)"
+                          x-model="sim1APN"
+                        />
+                      </div>
+
+                      <div class="mt-3 mb-3">
+                        <input
+                          type="number"
+                          class="form-control"
+                          aria-label="SIM 2 APN"
+                          aria-describedby="inputGroup-sizing-default"
+                          placeholder="Input APN for SIM 2. (Optional)"
+                          x-model="sim2APN"
+                        />
+                      </div>
+
+                      <div class="mt-3 mb-3 d-flex align-items-center">
+                        <select
+                          class="form-select"
+                          aria-label="Failover Interval"
+                        >
+                          <option selected>Failover Interval</option>
+                          <option value="5">5</option>
+                          <option value="10">10</option>
+                          <option value="15">15</option>
+                          <option value="20">20</option>
+                        </select>
+                        <label class="mx-3">Minutes</label>
+                      </div>
+
+                      <div class="mt-3 mb-3">
+                        <input
+                          type="time"
+                          class="form-control"
+                          aria-label="Scheduled SIM Hot Swap"
+                          aria-describedby="inputGroup-sizing-default"
+                          x-model="scheduledSIMHotSwap"
+                        />
+                      </div>
+                    </div>
+                  </div> -->
                 </div>
               </div>
               <div class="card-footer">
+                <!-- Setting a low ping timeout and ping failure count may cause
+                intermittent disconnections due to high sensitivity. <br />
+                Select appropriate values for both based on your needs.<br /> -->
                 Still under development. Coming soon...
               </div>
             </div>
@@ -184,12 +296,9 @@
                       x-text="response"
                       readonly
                     ></textarea>
-                    <label for="floatingTextarea2">Logs</label>
+                    <label for="floatingTextarea2">Logs Here</label>
                   </div>
                 </div>
-              </div>
-              <div class="card-footer">
-                No log is provided when successfully enabling the watchcat.
               </div>
             </div>
           </div>
@@ -200,7 +309,7 @@
     <script>
       function simpleWatchCat() {
         return {
-          watchCatStatus: false, // Initialize as false (not enabled)
+          watchCatStatus: false,
           trackIP: "",
           pingTimeout: "",
           pingFailureCount: "",
@@ -210,7 +319,7 @@
             fetch(
               "/cgi-bin/watchcat_maker?" +
                 new URLSearchParams({
-                  WATCHCAT_ENABLED: this.watchCatStatus ? "enable" : "disable",
+                  WATCHCAT_ENABLED: this.watchCatStatus,
                   TRACK_IP: this.trackIP,
                   PING_TIMEOUT: this.pingTimeout,
                   PING_FAILURE_COUNT: this.pingFailureCount,
@@ -220,9 +329,6 @@
               .then((data) => {
                 this.response = data; // Store the response data
                 console.log(data); // Log the response for debugging
-              })
-              .then(() => {
-                this.fetchWatchCatSettings();
               })
               .catch((error) => {
                 console.error("Error:", error); // Handle any errors
@@ -237,36 +343,6 @@
               this.pingTimeout !== "" &&
               this.pingFailureCount !== ""
             );
-          },
-
-          // Fetch the current watchcat settings
-          fetchWatchCatSettings() {
-            fetch("/cgi-bin/get_watchcat_status")
-              .then((response) => {
-                if (!response.ok) {
-                  throw new Error("Network response was not ok");
-                }
-                return response.json(); // Parse response as JSON
-              })
-              .then((data) => {
-                console.log(data); // Log the parsed data for debugging
-
-                // Check if the JSON is not empty
-                if (data) {
-                  this.watchCatStatus = data.enabled === true;
-                  this.trackIP = data.track_ip;
-                  this.pingTimeout = data.ping_timeout;
-                  this.pingFailureCount = data.ping_failure_count;
-                }
-              })
-              .catch((error) => {
-                console.error("Error:", error); // Handle any errors
-                this.response = "An error occurred.";
-              });
-          },
-
-          init() {
-            this.fetchWatchCatSettings();
           },
         };
       }

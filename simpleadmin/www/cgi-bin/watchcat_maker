@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# Decode URL-encoded strings
+function urldecode() { 
+    local data=${1//+/ }
+    printf '%b' "${data//%/\\x}"
+}
+
+# Parse QUERY_STRING
+QUERY_STRING=$(echo "${QUERY_STRING}" | sed 's/;//g')
+if [ "${QUERY_STRING}" ]; then
+    export IFS="&"
+    for cmd in ${QUERY_STRING}; do
+        if [[ "$cmd" == *"="* ]]; then
+            key=$(echo $cmd | awk -F '=' '{print $1}')
+            value=$(echo $cmd | awk -F '=' '{print $2}')
+            eval $key=$(urldecode $value)
+        fi
+    done
+fi
+
+# Set default values
+WATCHCAT_ENABLED=${WATCHCAT_ENABLED:-"disable"}
+TRACK_IP=${TRACK_IP:-"1.1.1.1"}
+PING_TIMEOUT=${PING_TIMEOUT:-30}
+PING_FAILURE_COUNT=${PING_FAILURE_COUNT:-3}
+
+# Validate input
+if ! [[ "$WATCHCAT_ENABLED" =~ ^(enable|disable)$ ]]; then
+    echo "Content-type: text/plain"
+    echo ""
+    echo "Invalid value for WATCHCAT_ENABLED. Use 'enable' or 'disable'."
+    exit 1
+fi
+
+if ! [[ "$TRACK_IP" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+    echo "Content-type: text/plain"
+    echo ""
+    echo "Invalid IP address format for TRACK_IP."
+    exit 1
+fi
+
+if ! [[ "$PING_TIMEOUT" =~ ^[0-9]+$ ]] || [ "$PING_TIMEOUT" -le 0 ]; then
+    echo "Content-type: text/plain"
+    echo ""
+    echo "PING_TIMEOUT must be a positive integer."
+    exit 1
+fi
+
+if ! [[ "$PING_FAILURE_COUNT" =~ ^[0-9]+$ ]] || [ "$PING_FAILURE_COUNT" -le 0 ]; then
+    echo "Content-type: text/plain"
+    echo ""
+    echo "PING_FAILURE_COUNT must be a positive integer."
+    exit 1
+fi
+
+# Implement the Watchcat logic
+if [ "$WATCHCAT_ENABLED" == "enable" ]; then
+    echo "Content-type: text/plain"
+    echo ""
+    echo "Watchcat is enabled. Tracking IP: $TRACK_IP, Ping timeout: $PING_TIMEOUT seconds, Ping failure count: $PING_FAILURE_COUNT"
+    # Call the create script here and use the needed parameters
+    sudo /usrdata/simpleadmin/script/create_watchcat.sh "$TRACK_IP" "$PING_TIMEOUT" "$PING_FAILURE_COUNT"
+else
+    echo "Content-type: text/plain"
+    echo ""
+    echo "Watchcat is disabled."
+    # Call the remove script here
+    sudo /usrdata/simpleadmin/script/remove_watchcat.sh
+fi
+
+exit 0

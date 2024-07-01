@@ -20,6 +20,8 @@
     <!--  Import BootStrap Javascript -->
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/alpinejs.min.js" defer></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <main>
@@ -51,10 +53,13 @@
                 <li class="nav-item">
                   <a
                     class="nav-link active"
-                    href="/settings.html"
+                    href="/scanner.html"
                     aria-current="page"
-                    >Simple Settings</a
+                    >Simple Scan</a
                   >
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/settings.html">Simple Settings</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="/sms.html">SMS</a>
@@ -76,6 +81,23 @@
             </div>
           </div>
         </nav>
+
+        <div class="row mt-3 mb-4">
+          <div class="col">
+            <div class="card">
+              <div class="card-header">Live Signal</div>
+              <div class="card-body">
+                <div class="row mt-2 mb-2">
+                  <p>Signal Graph</p>
+                  <div>
+                    <canvas id="myChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="row mt-3 mb-4">
           <div class="col">
             <div class="card">
@@ -128,7 +150,7 @@
                         class="btn btn-primary me-md-2"
                         type="button"
                         x-on:click="startCellScan()"
-                        :disabled='isLoading === true || cellScanMode === "Unspecified" || cellScanMode === "Select Scan Mode"'
+                        :disabled="isLoading === true || cellScanMode === 'Unspecified' || cellScanMode === 'Select Scan Mode'"
                         x-text="isCellScanning ? 'Scanning... Please wait.' : 'Start Cell Scan'"
                       ></button>
                       <button
@@ -2311,6 +2333,61 @@
           },
         };
       }
+
+      const ctx = document.getElementById("myChart");
+
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [
+            "0m",
+            "1m",
+            "2m",
+            "3m",
+            "4m",
+            "5m",
+            "6m",
+            "7m",
+            "8m",
+            "9m",
+            "10m",
+            "11m",
+            "12m",
+            "13m",
+            "14m",
+            "15m",
+
+          ],
+          datasets: [
+            {
+              label: "LTE",
+              data: [0, 10, 5, 2, 20, 30, 45, 50, 60, 70, 80],
+              borderColor: "rgb(255, 99, 132)",
+              backgroundColor: "rgba(255, 99, 132, 0.5)",
+              borderWidth: 1,
+            },
+            {
+              label: "NR5G",
+              data: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+              borderColor: "rgb(54, 162, 235)",
+              backgroundColor: "rgba(54, 162, 235, 0.5)",
+              borderWidth: 1,
+            },
+          ],
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "Chart.js Line Chart",
+              },
+            },
+          },
+        },
+      });
     </script>
   </body>
 </html>

@@ -4,15 +4,14 @@
 echo "Content-type: application/json"
 echo ""
 
-# This script fetches the watchCat parameters from the /tmp/watchCatParams.json file and returns it as JSON
+# This script fetches the watchCat parameters from the /tmp/watchcat.json and returns it as JSON
+# Example content of /tmp/watchcat:
+# {"watchcat": {"enabled": true, "track_ip": "1.1.1.1", "ping_timeout": 30, "ping_failure_count": 10}}
 
 # Check if the file exists
-if [ -f /tmp/watchCatParams.json ]; then
-    # Read the file and return the content
-    cat /tmp/watchCatParams.json
+if [ -f /tmp/watchcat.json ]; then
+    cat /tmp/watchcat.json
 else
-    # Return an empty JSON object
+    # return an empty JSON object
     echo "{}"
 fi
-
-exit 0

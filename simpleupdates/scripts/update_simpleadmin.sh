@@ -143,6 +143,8 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 			sleep 1
 			cd $SIMPLE_ADMIN_DIR/script
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/script/ttl_script.sh
+			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/script/remove_watchcat.sh
+			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/script/create_watchcat.sh
 			sleep 1
 			cd $SIMPLE_ADMIN_DIR/console
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/console/.profile
@@ -160,7 +162,6 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
     		wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/network.html
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/settings.html
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/sms.html
-   			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/logout.html
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/scanner.html
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/watchcat.html
 			sleep 1
@@ -186,6 +187,7 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/cgi-bin/get_uptime
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/cgi-bin/get_watchcat_status
 			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/cgi-bin/set_watchcat
+			wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleadmin/www/cgi-bin/watchcat_maker
 			sleep 1
 			cd /
             chmod +x $SIMPLE_ADMIN_DIR/www/cgi-bin/*
