@@ -51,6 +51,9 @@
                   <a class="nav-link" href="network.html">Simple Network</a>
                 </li>
                 <li class="nav-item">
+                  <a class="nav-link" href="/scanner.html">Simple Scan</a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link" href="/settings.html">Simple Settings</a>
                 </li>
                 <li class="nav-item">
@@ -275,6 +278,10 @@
                         <th scope="row">Assesment</th>
                         <td x-text="signalAssessment"></td>
                       </tr>
+                      <tr>
+                        <th scope="row">Traffic Stats</th>
+                        <td x-text="downloadStat + ' DL / ' + uploadStat + ' UL'"></td>
+                      </tr>
                       <tr x-show="csq != 'NR-SA Mode'">
                         <th scope="row">CSQ</th>
                         <td x-show="csq != '-'" x-text="csq"></td>
@@ -292,14 +299,12 @@
                         <th scope="row">TAC<sup>4G/5G</sup></th>
                         <td x-text="tac"></td>
                       </tr>
-                      <tr x-show="rssi != '-'">
+                      <!-- <tr x-show="rssi != '-'">
                         <th scope="row">RSSI<sup>4G</sup></th>
                         <td x-show="rssi != '-'" x-text="rssi"></td>
                         <td x-show="rssi == '-'" class="fst-italic">None</td>
-                      </tr>
-                      <tr
-                      x-show="rsrqLTE != '-'"
-                      >
+                      </tr> -->
+                      <tr x-show="rsrqLTE != '-'">
                         <th scope="row">SS_RSRQ<sup>4G</sup></th>
                         <td
                           class="gap-4 align-items-center"
@@ -344,9 +349,7 @@
                           </span>
                         </td>
                       </tr>
-                      <tr
-                      x-show="rsrqNR != '-'"
-                      >
+                      <tr x-show="rsrqNR != '-'">
                         <th scope="row">SS_RSRQ<sup>5G</sup></th>
                         <td
                           x-data="{ getProgressBarClass: function() {
@@ -390,9 +393,7 @@
                           </span>
                         </td>
                       </tr>
-                      <tr
-                      x-show="rsrpLTE != '-'"
-                      >
+                      <tr x-show="rsrpLTE != '-'">
                         <th scope="row">RSRP<sup>4G</sup></th>
                         <td
                           class="gap-4 align-items-center"
@@ -439,9 +440,7 @@
                           </span>
                         </td>
                       </tr>
-                      <tr
-                      x-show="rsrpNR != '-'"
-                      >
+                      <tr x-show="rsrpNR != '-'">
                         <th scope="row">SS_RSRP<sup>5G</sup></th>
                         <td
                           class="gap-4 align-items-center"
@@ -488,9 +487,7 @@
                           </span>
                         </td>
                       </tr>
-                      <tr
-                      x-show="sinrLTE != '-'"
-                      >
+                      <tr x-show="sinrLTE != '-'">
                         <th scope="row">SINR<sup>4G</sup></th>
                         <td
                           class="gap-4 align-items-center"
@@ -537,9 +534,7 @@
                           </span>
                         </td>
                       </tr>
-                      <tr
-                      x-show="sinrNR != '-'"
-                      >
+                      <tr x-show="sinrNR != '-'">
                         <th scope="row">SINR<sup>5G</sup></th>
                         <td
                           class="gap-4 align-items-center"
@@ -635,7 +630,7 @@
           eNBID: "Unknown",
           tac: "Unknown",
           csq: "-",
-          rssi: "-",
+          // rssi: "-",
           rsrpLTE: "-",
           rsrpNR: "-",
           rsrpLTEPercentage: "0%",
@@ -654,10 +649,16 @@
           lastUpdate: new Date().toLocaleString(),
           newRefreshRate: null,
           refreshRate: 3,
+          nrDownload: "0",
+          nrUpload: "0",
+          nonNrDownload: "0",
+          nonNrUpload: "0",
+          downloadStat: "0",
+          uploadStat: "0",
 
           fetchAllInfo() {
             this.atcmd =
-              'AT+QTEMP;+QUIMSLOT?;+QSPN;+CGCONTRDP=1;+QMAP="WWANIP";+QENG="servingcell";+QCAINFO;+QSIMSTAT?;+CSQ';
+              'AT+QTEMP;+QUIMSLOT?;+QSPN;+CGCONTRDP=1;+QMAP="WWANIP";+QENG="servingcell";+QCAINFO;+QSIMSTAT?;+CSQ;+QGDNRCNT?;+QGDCNT?';
 
             fetch(
               "/cgi-bin/get_atcommand?" +
@@ -755,7 +756,7 @@
                       .find((line) => line.includes('+QENG: "servingcell"'))
                       .split(",")[2]
                       .replace(/"/g, "");
-                    
+
                     const duplex_mode = lines
                       .find((line) => line.includes('+QENG: "servingcell"'))
                       .split(",")[3]
@@ -842,7 +843,10 @@
                   }
 
                   // --- Bandwidth ---
-                  if (this.networkMode == "5G SA TDD" || this.networkMode == "5G SA FDD") {
+                  if (
+                    this.networkMode == "5G SA TDD" ||
+                    this.networkMode == "5G SA FDD"
+                  ) {
                     // find this example value from lines "+QENG: \"servingcell\"
                     const bandwidth_line = lines.find((line) =>
                       line.includes('+QENG: "servingcell"')
@@ -906,7 +910,10 @@
                   }
 
                   // --- E/ARFCN ---
-                  if (this.networkMode == "5G SA TDD" || this.networkMode == "5G SA FDD") {
+                  if (
+                    this.networkMode == "5G SA TDD" ||
+                    this.networkMode == "5G SA FDD"
+                  ) {
                     // find this value from lines "+QCAINFO: \"PCC\"
                     const nr_pcc_arfcn = lines
                       .find((line) => line.includes('+QCAINFO: "PCC"'))
@@ -998,7 +1005,10 @@
                   }
 
                   // --- PCI ---
-                  if (this.networkMode == "5G SA TDD" || this.networkMode == "5G SA FDD") {
+                  if (
+                    this.networkMode == "5G SA TDD" ||
+                    this.networkMode == "5G SA FDD"
+                  ) {
                     const nr_pcc_pci = lines
                       .find((line) => line.includes('+QCAINFO: "PCC"'))
                       .split(",")[4];
@@ -1111,6 +1121,44 @@
                     .split(",")[4]
                     .replace(/"/g, "");
 
+                  // Traffic Stats
+                  // for NR traffic stats: +QGDNRCNT: 3263753367,109876105
+                  this.nrDownload = lines
+                    .find((line) => line.includes("+QGDNRCNT:"))
+                    .split(",")[0]
+                    // remove the +QGDNRCNT: part
+                    .replace("+QGDNRCNT: ", "");
+
+                  this.nrUpload = lines
+                    .find((line) => line.includes("+QGDNRCNT:"))
+                    .split(",")[1];
+                    
+
+                  // for non-NR traffic stats: +QGDCNT: 247357510,6864571506
+                  this.nonNrDownload = lines
+                    .find((line) => line.includes("+QGDCNT:"))
+                    .split(",")[1];
+
+                  this.nonNrUpload = lines
+                    .find((line) => line.includes("+QGDCNT:"))
+                    .split(",")[0]
+                    // remove the +QGDCNT: part
+                    .replace("+QGDCNT: ", "");
+                  
+
+                  // Add the nrDownload and nonNrDownload together
+                  this.downloadStat = parseInt(this.nrDownload) + parseInt(this.nonNrDownload);
+
+                  // Add the nrUpload and nonNrUpload together
+                  this.uploadStat = parseInt(this.nrUpload) + parseInt(this.nonNrUpload);
+
+                  // Convert the downloadStat and uploadStat bytes to readable size
+                  this.downloadStat = this.bytesToSize(this.downloadStat);
+                  this.uploadStat = this.bytesToSize(this.uploadStat);
+
+                  console.log(this.downloadStat);
+                  console.log(this.uploadStat);
+
                   // Signal Informations
 
                   const currentNetworkMode = this.networkMode;
@@ -1133,8 +1181,11 @@
 
                     // Get the short Cell ID (Last 2 characters of the Cell ID)
                     const shortCID = longCID.substring(longCID.length - 2);
-                    
-                    if (currentNetworkMode == "5G SA TDD" || currentNetworkMode == "5G SA FDD") {
+
+                    if (
+                      currentNetworkMode == "5G SA TDD" ||
+                      currentNetworkMode == "5G SA FDD"
+                    ) {
                       // TAC
                       this.tac = lines
                         .find((line) => line.includes('+QENG: "servingcell"'))
@@ -1214,11 +1265,11 @@
                         .split(",")[14]
                         .replace(/"/g, "");
 
-                      // RSSI
-                      this.rssi = lines
-                        .find((line) => line.includes('+QENG: "servingcell"'))
-                        .split(",")[15]
-                        .replace(/"/g, "");
+                      // // RSSI
+                      // this.rssi = lines
+                      //   .find((line) => line.includes('+QENG: "servingcell"'))
+                      //   .split(",")[15]
+                      //   .replace(/"/g, "");
 
                       // SINR
                       this.sinrLTE = lines
@@ -1318,11 +1369,11 @@
                       .split(",")[12]
                       .replace(/"/g, "");
 
-                    // RSSI LTE
-                    this.rssi = lines
-                      .find((line) => line.includes('+QENG: "LTE"'))
-                      .split(",")[13]
-                      .replace(/"/g, "");
+                    // // RSSI LTE
+                    // this.rssi = lines
+                    //   .find((line) => line.includes('+QENG: "LTE"'))
+                    //   .split(",")[13]
+                    //   .replace(/"/g, "");
 
                     // SINR LTE
                     this.sinrLTE = lines
@@ -1406,6 +1457,13 @@
                 }
               });
             });
+          },
+
+          bytesToSize(bytes) {
+            const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+            if (bytes == 0) return "0 Byte";
+            const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+            return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
           },
 
           requestPing() {

@@ -54,6 +54,9 @@
                   >
                 </li>
                 <li class="nav-item">
+                  <a class="nav-link" href="/scanner.html">Simple Scan</a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link" href="/settings.html">Simple Settings</a>
                 </li>
                 <li class="nav-item">
@@ -156,6 +159,28 @@
                         x-bind:placeholder="apn === '-' ? 'Fetching...' : apn"
                       />
                     </div>
+
+                    <!-- <div class="mb-4">
+                      <label for="disableCA" class="form-label"
+                        >Disable Carrier Aggregation</label
+                      >
+                      <select
+                        class="form-select"
+                        id="disableCA"
+                        x-model="disableCA"
+                        aria-label="disableCA"
+                      >
+                        <option
+                          selected
+                          x-text="disableCA === '-' ? 'Fetching...' : 'Current: ' + disableCA"
+                        ></option>
+                        <option value="enableAll">Enable All</option>
+                        <option value="LTE">Disable LTE</option>
+                        <option value="NR5G">Disable NR5G</option>
+                        <option value="both">Disable Both</option>
+                      </select>
+                    </div> -->
+
                     <div class="mb-4 input-group grid gap-3">
                       <label for="SIM1" class="form-label"> Change SIM</label>
                       <div class="form-check form-check-inline">
@@ -377,6 +402,10 @@
                     Unlock NR5G-SA Cells
                   </button>
                 </div>
+              </div>
+              <div class="card-footer">
+                Cell Locking only works for the primary cell and is not
+                persistent across reboots.
               </div>
             </div>
           </div>
@@ -697,7 +726,7 @@
 
               // If atcmd has QUIMSLOT,  do a reboot instead
               if (atcmd.includes("QUIMSLOT")) {
-                atcmd = atcmd +"+CFUN=1,1";
+                atcmd = atcmd + "+CFUN=1,1";
                 this.sendATcommand(atcmd);
                 this.countdown = 45;
 
