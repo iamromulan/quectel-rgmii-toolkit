@@ -280,7 +280,9 @@
                       </tr>
                       <tr>
                         <th scope="row">Traffic Stats</th>
-                        <td x-text="downloadStat + ' DL / ' + uploadStat + ' UL'"></td>
+                        <td
+                          x-text="downloadStat + ' DL / ' + uploadStat + ' UL'"
+                        ></td>
                       </tr>
                       <tr x-show="csq != 'NR-SA Mode'">
                         <th scope="row">CSQ</th>
@@ -1132,7 +1134,6 @@
                   this.nrUpload = lines
                     .find((line) => line.includes("+QGDNRCNT:"))
                     .split(",")[1];
-                    
 
                   // for non-NR traffic stats: +QGDCNT: 247357510,6864571506
                   this.nonNrDownload = lines
@@ -1144,13 +1145,14 @@
                     .split(",")[0]
                     // remove the +QGDCNT: part
                     .replace("+QGDCNT: ", "");
-                  
 
                   // Add the nrDownload and nonNrDownload together
-                  this.downloadStat = parseInt(this.nrDownload) + parseInt(this.nonNrDownload);
+                  this.downloadStat =
+                    parseInt(this.nrDownload) + parseInt(this.nonNrDownload);
 
                   // Add the nrUpload and nonNrUpload together
-                  this.uploadStat = parseInt(this.nrUpload) + parseInt(this.nonNrUpload);
+                  this.uploadStat =
+                    parseInt(this.nrUpload) + parseInt(this.nonNrUpload);
 
                   // Convert the downloadStat and uploadStat bytes to readable size
                   this.downloadStat = this.bytesToSize(this.downloadStat);
@@ -1410,14 +1412,14 @@
                       .split(",")[4]
                       .replace(/"/g, "");
 
-                    // RSRQ NR
-                    this.rsrqNR = lines
+                    // SINR NR
+                    this.sinrNR = lines
                       .find((line) => line.includes('+QENG: "NR5G-NSA"'))
                       .split(",")[5]
                       .replace(/"/g, "");
 
-                    // SINR NR
-                    this.sinrNR = lines
+                    // RSRQ NR
+                    this.rsrqNR = lines
                       .find((line) => line.includes('+QENG: "NR5G-NSA"'))
                       .split(",")[6]
                       .replace(/"/g, "");
@@ -1523,6 +1525,11 @@
               percentage = 100;
             }
 
+            // if percentage is less than 15%, make it 15%
+            if (percentage < 15) {
+              percentage = 15;
+            }
+
             return Math.round(percentage);
           },
 
@@ -1541,6 +1548,11 @@
               percentage = 100;
             }
 
+            // if percentage is less than 15%, make it 15%
+            if (percentage < 15) {
+              percentage = 15;
+            }
+
             return Math.round(percentage);
           },
 
@@ -1557,6 +1569,11 @@
 
             if (percentage > 100) {
               percentage = 100;
+            }
+
+            // if percentage is less than 15%, make it 15%
+            if (percentage < 15) {
+              percentage = 15;
             }
 
             return Math.round(percentage);
