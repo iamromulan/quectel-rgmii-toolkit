@@ -62,7 +62,7 @@ start() {
 
     # Pivot root to the new root
     /bin/echo "Pivoting Root / to /rootfs; Be back soon!!" >> /tmp/mount-fix.log
-    /bin/pivot_root /rootfs /rootfs/real_rootfs >> /tmp/mount-fix.log
+    /sbin/pivot_root /rootfs /rootfs/real_rootfs >> /tmp/mount-fix.log
 
     # Move the mounted filesystems to the new locations
     /bin/mount --move /real_rootfs/sys /sys >> /tmp/mount-fix.log
@@ -99,7 +99,7 @@ stop() {
     /bin/mount --move /data /real_rootfs/data >> /tmp/mount-fix.log
 
     # Pivot root back to the original root
-    /bin/pivot_root /real_rootfs /real_rootfs/rootfs >> /tmp/mount-fix.log
+    /sbin/pivot_root /real_rootfs /real_rootfs/rootfs >> /tmp/mount-fix.log
 
     /bin/echo "Reverted pivot_root" >> /tmp/mount-fix.log
 	/bin/echo "Previous root overlay avalible at /rootfs" >> /tmp/mount-fix.log
