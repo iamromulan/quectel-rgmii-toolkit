@@ -101,6 +101,14 @@ send_at_commands() {
 }
 
 basic_55x_setup() {
+    # Check if neither /etc nor /real_rootfs is mounted
+    if ! grep -qs '/etc ' /proc/mounts && ! grep -qs '/real_rootfs ' /proc/mounts; then
+        # Echo message in red
+        echo -e "\033[31mSomething is wrong or this is not an SDXPINN modem.\033[0m"
+        echo -e "\033[31mI was expecting either /etc or /real_rootfs to be a mount point.\033[0m"
+        exit 1
+    fi
+	
     # Check if /etc is mounted
     if grep -qs '/etc ' /proc/mounts; then
         echo "Unmounting /etc..."
@@ -111,14 +119,6 @@ basic_55x_setup() {
     if grep -qs '/real_rootfs ' /proc/mounts; then
         # Echo message in red
         echo -e "\033[31mThe environment has already been setup. If you want to undo the changes temporarily run service mount-fix stop.\033[0m"
-        exit 1
-    fi
-
-    # Check if neither /etc nor /real_rootfs is mounted
-    if ! grep -qs '/etc ' /proc/mounts && ! grep -qs '/real_rootfs ' /proc/mounts; then
-        # Echo message in red
-        echo -e "\033[31mSomething is wrong or this is not an SDXPINN modem.\033[0m"
-        echo -e "\033[31mI was expecting either /etc or /real_rootfs to be a mount point.\033[0m"
         exit 1
     fi
     
