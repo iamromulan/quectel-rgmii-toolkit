@@ -125,6 +125,9 @@ basic_55x_setup() {
 cd /etc/init.d/
 wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development-SDXPINN/init.d/mount-fix
 wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development-SDXPINN/init.d/init-overlay-watchdog
+# Set executable permissions
+chmod +x mount-fix
+chmod +x init-overlay-watchdog
 cd /
 service mount-fix enable
 service init-overlay-watchdog enable
