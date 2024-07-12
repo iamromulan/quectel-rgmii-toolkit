@@ -279,7 +279,9 @@ echo "                                           :+##+.            "
             send_at_commands
             ;;
         2)
-            basic_55x_setup
+            remount_rw
+			basic_55x_setup
+			remount_ro
             ;;
 		98)	
 			# Blank
