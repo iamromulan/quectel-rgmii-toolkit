@@ -337,4 +337,3 @@ echo "                                           :+##+.            "
             ;;
     esac
 done
-wget https://raw.githubusercontent.com/ieamromulan/quectel-rgmii-toolkit/development-SDXPINN/init.d/mount-fix
