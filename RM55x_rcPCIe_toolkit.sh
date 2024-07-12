@@ -101,8 +101,42 @@ send_at_commands() {
 }
 
 basic_55x_setup() {
- #To be built out soon
- echo -e "\e[1;31mComing soon.\e[0m"
+    # Check the mount environment
+    df -h
+    
+    # Check if /etc is mounted
+    if mountpoint -q /etc; then
+        echo "Unmounting /etc..."
+        umount -lf /etc
+    fi
+    
+    # Check if /real_rootfs is mounted
+    if mountpoint -q /real_rootfs; then
+        # Echo message in red
+        echo -e "\033[31mThe environment has already been setup. If you want to undo the changes temporarily run service mount-fix stop.\033[0m"
+        exit 1
+    fi
+
+    # Check if neither /etc nor /real_rootfs exists
+    if ! mountpoint -q /etc && ! mountpoint -q /real_rootfs; then
+        # Echo message in red
+        echo -e "\033[31mSomething is wrong or this is not an SDXPINN modem.\033[0m"
+		echo -e "\033[31mI was expecting either /etc or /real_rootfs to be a mount point.\033[0m"
+        exit 1
+    fi
+    
+cd /etc/init.d/
+wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development-SDXPINN/init.d/mount-fix
+wget https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development-SDXPINN/init.d/init-overlay-watchdog
+cd /
+service mount-fix enable
+service init-overlay-watchdog enable
+service mount-fix start
+service init-overlay-watchdog start
+echo -e "\e[92m"
+echo "Mount fix completed!"
+echo "Visit https://github.com/iamromulan for more!"
+echo -e "\e[0m"
 }
 
 # Function for Tailscale Submenu
@@ -306,3 +340,4 @@ echo "                                           :+##+.            "
             ;;
     esac
 done
+wget https://raw.githubusercontent.com/ieamromulan/quectel-rgmii-toolkit/development-SDXPINN/init.d/mount-fix

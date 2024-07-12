@@ -74,6 +74,28 @@ start() {
     /bin/mount --move /real_rootfs/cache /cache >> /tmp/mount-fix.log
     /bin/mount --move /real_rootfs/data /data >> /tmp/mount-fix.log
 
+    # Synchronize /etc/rc.d/ and /real_rootfs/etc/rc.d/
+    /bin/echo "Synchronizing /etc/rc.d/ and /real_rootfs/etc/rc.d/" >> /tmp/mount-fix.log
+    for link in /etc/rc.d/*; do
+        if [ -L "$link" ]; then
+            link_name=$(basename "$link")
+            if [ ! -e "/real_rootfs/etc/rc.d/$link_name" ]; then
+                /bin/echo "Copying $link_name to /real_rootfs/etc/rc.d/" >> /tmp/mount-fix.log
+                cp -a "$link" "/real_rootfs/etc/rc.d/$link_name" >> /tmp/mount-fix.log
+            fi
+        fi
+    done
+
+    for link in /real_rootfs/etc/rc.d/*; do
+        if [ -L "$link" ]; then
+            link_name=$(basename "$link")
+            if [ ! -e "/etc/rc.d/$link_name" ]; then
+                /bin/echo "Removing $link_name from /real_rootfs/etc/rc.d/" >> /tmp/mount-fix.log
+                rm "/real_rootfs/etc/rc.d/$link_name" >> /tmp/mount-fix.log
+            fi
+        fi
+    done
+
     # Final logs and remount the original root as read-only
     /bin/echo "...and we're back! The original root now lives at /real_rootfs" >> /tmp/mount-fix.log
     /bin/echo "Lets mount it as read-only for now, If you need it just remount it as read-write" >> /tmp/mount-fix.log
@@ -82,9 +104,8 @@ start() {
 }
 
 stop() {
-	# Stop function is untested
     /bin/echo "Stopping and reverting overlay and pivot_root" >> /tmp/mount-fix.log
-    
+
     # Remount the original root filesystem as read-write
     /bin/mount -o remount,rw /real_rootfs >> /tmp/mount-fix.log
 
@@ -102,10 +123,11 @@ stop() {
     /sbin/pivot_root /real_rootfs /real_rootfs/rootfs >> /tmp/mount-fix.log
 
     /bin/echo "Reverted pivot_root" >> /tmp/mount-fix.log
-	/bin/echo "Previous root overlay avalible at /rootfs" >> /tmp/mount-fix.log
+    /bin/echo "Previous root overlay available at /rootfs" >> /tmp/mount-fix.log
 }
 
 restart() {
     /bin/echo "This script should only be executed once at boot"
     /bin/echo "Use Stop to undo the pivot"
+	/bin/echo "Use Start to put it back"
 }

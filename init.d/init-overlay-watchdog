@@ -1,0 +1,37 @@
+#!/bin/sh /etc/rc.common
+
+START=04
+STOP=10
+
+start() {
+    while true; do
+        /bin/mount -o remount,rw /real_rootfs
+        /bin/echo "Synchronizing /etc/rc.d/ and /real_rootfs/etc/rc.d/" >> /tmp/overlay-watchdog.log
+        for link in /etc/rc.d/*; do
+            if [ -L "$link" ]; then
+                link_name=$(basename "$link")
+                if [ ! -e "/real_rootfs/etc/rc.d/$link_name" ]; then
+                    /bin/echo "Copying $link_name to /real_rootfs/etc/rc.d/" >> /tmp/overlay-watchdog.log
+                    cp -a "$link" "/real_rootfs/etc/rc.d/$link_name" >> /tmp/overlay-watchdog.log
+                fi
+            fi
+        done
+
+        for link in /real_rootfs/etc/rc.d/*; do
+            if [ -L "$link" ]; then
+                link_name=$(basename "$link")
+                if [ ! -e "/etc/rc.d/$link_name" ]; then
+                    /bin/echo "Removing $link_name from /real_rootfs/etc/rc.d/" >> /tmp/overlay-watchdog.log
+                    rm "/real_rootfs/etc/rc.d/$link_name" >> /tmp/overlay-watchdog.log
+                fi
+            fi
+        done
+        /bin/mount -o remount,ro /real_rootfs
+        sleep 5
+    done
+}
+
+stop() {
+    /bin/echo "Stopping overlay watchdog" >> /tmp/overlay-watchdog.log
+    exit 0
+}
