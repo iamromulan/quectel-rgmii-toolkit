@@ -160,26 +160,26 @@
                       />
                     </div>
 
-                    <!-- <div class="mb-4">
-                      <label for="disableCA" class="form-label"
-                        >Disable Carrier Aggregation</label
+                    <div class="mb-4">
+                      <label for="ipForAPN" class="form-label"
+                        >Choose APN PDP Type</label
                       >
                       <select
                         class="form-select"
-                        id="disableCA"
-                        x-model="disableCA"
-                        aria-label="disableCA"
+                        id="ipAPN"
+                        x-model="newApnIP"
+                        aria-label="ipForAPN"
                       >
                         <option
                           selected
-                          x-text="disableCA === '-' ? 'Fetching...' : 'Current: ' + disableCA"
+                          x-text="apnIP === '-' ? 'Fetching...' : 'Current: ' + apnIP"
                         ></option>
-                        <option value="enableAll">Enable All</option>
-                        <option value="LTE">Disable LTE</option>
-                        <option value="NR5G">Disable NR5G</option>
-                        <option value="both">Disable Both</option>
+                        <option value="1">IPv4 Only</option>
+                        <option value="2">IPv6 Only</option>
+                        <option value="3">IPv4v6</option>
+                        <option value="4">P2P Protocol</option>
                       </select>
-                    </div> -->
+                    </div>
 
                     <div class="mb-4 input-group grid gap-3">
                       <label for="SIM1" class="form-label"> Change SIM</label>
@@ -465,6 +465,8 @@
           scs: null,
           band: null,
           apn: "-",
+          apnIP: "-",
+          newApnIP: null,
           newApn: null,
           prefNetwork: "-",
           prefNetworkMode: null,
@@ -608,16 +610,20 @@
           },
           getCurrentSettings() {
             const atcmd =
-              'AT+QUIMSLOT?;+CGCONTRDP=1;+QNWLOCK="common/4g";+QNWLOCK="common/5g";+QNWPREFCFG="mode_pref";+QNWPREFCFG="nr5g_disable_mode";+QCAINFO';
+              'AT+QUIMSLOT?;+CGCONTRDP=1;+QNWLOCK="common/4g";+QNWLOCK="common/5g";+QNWPREFCFG="mode_pref";+QNWPREFCFG="nr5g_disable_mode";+QCAINFO;+CGDCONT?';
 
             this.sendATcommand(atcmd).then((rawdata) => {
+              console.log(rawdata);
               const settings = parseCurrentSettings(rawdata);
               this.sim = settings.sim;
               this.apn = settings.apn;
+              this.apnIP = settings.apnIP;
               this.cellLockStatus = settings.cellLockStatus;
               this.prefNetwork = settings.prefNetwork;
               this.nrModeControl = settings.nrModeControl;
               this.bands = settings.bands;
+
+              console.log(settings);
             });
           },
           lockSelectedBands() {
@@ -701,8 +707,21 @@
             ATNetwork = "";
             ATNRMode = "";
 
+            console.log(this.newApnIP);
+
             if (newApn !== null) {
-              atAPN = `+CGDCONT=1,"IP","${newApn}";`;
+              if (this.newApnIP === "1") {
+                atAPN = `+CGDCONT=1,"IPV4","${newApn}";`;
+              } else if (this.newApnIP === "2") {
+                atAPN = `+CGDCONT=1,"IPV6","${newApn}";`;
+              } else if (this.newApnIP === "3") {
+                atAPN = `+CGDCONT=1,"IPV4V6","${newApn}";`;
+              } else if (this.newApnIP === "4") {
+                atAPN = `+CGDCONT=1,"PPP","${newApn}";`;
+              } else {
+                console.log("No changes made");
+                atAPN = `+CGDCONT=1,"IPV4V6","${newApn}";`;
+              }
             }
 
             if (newSim !== null) {
