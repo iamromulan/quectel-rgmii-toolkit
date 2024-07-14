@@ -104,7 +104,7 @@
                         placeholder="ATI"
                         aria-describedby="atCommandInput"
                         x-model="atcmd"
-                        @keydown.enter="sendATCommand()"
+                        @keydown.enter="sendUserATCommand()"
                       />
                       <div id="atCommandInputHelper" class="form-text">
                         Seperate multiple commands with comma (,).
@@ -116,7 +116,7 @@
                       <button
                         class="btn btn-primary me-md-2"
                         type="button"
-                        @click="sendATCommand()"
+                        @click="sendUserATCommand()"
                         :disabled="isLoading"
                       >
                         Submit
@@ -435,6 +435,30 @@
                 this.isLoading = false;
                 this.isClean = false;
                 this.fetchCurrentSettings();
+              })
+              .catch((error) => {
+                console.error("Error: ", error);
+                this.showError = true;
+                this.isLoading = false;
+              });
+          },
+
+          sendUserATCommand() {
+            this.isLoading = true;
+            const encodedATCmd = encodeURIComponent(this.atcmd);
+            const url = `/cgi-bin/user_atcommand?atcmd=${encodedATCmd}`;
+
+            fetch(url)
+              .then((res) => {
+                if (!res.ok) {
+                  throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.text();
+              })
+              .then((data) => {
+                this.atCommandResponse = data;
+                this.isLoading = false;
+                this.isClean = false;
               })
               .catch((error) => {
                 console.error("Error: ", error);

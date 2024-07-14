@@ -17,7 +17,7 @@ x=$(urldecode "$atcmd")
 MYATCMD=$(printf '%b\n' "${atcmd//%/\\x}")
 if [ -n "${MYATCMD}" ]; then
     # Capture the response and remove ANSI color codes using awk
-    runcmd=$(atcmd11 "$x" | awk '{ gsub(/\x1B\[[0-9;]*[mG]/, "") }1')
+    runcmd=$(atcmd "$x" | awk '{ gsub(/\x1B\[[0-9;]*[mG]/, "") }1')
 fi
 
 echo "Content-type: text/plain"
