@@ -16,7 +16,7 @@ function parseCurrentSettings(rawdata) {
 
   try {
     this.apn = lines
-      .find((line) => line.includes("+CGCONTRDP: 1,0"))
+      .find((line) => line.includes("+CGCONTRDP: 1"))
       .split(",")[2]
       .replace(/\"/g, "");
   } catch (error) {
@@ -49,10 +49,22 @@ function parseCurrentSettings(rawdata) {
     .replace(/\"/g, "");
 
   try {
-    this.bands = lines
-      .find((line) => line.includes("+QCAINFO:"))
+    const PCCbands = lines
+      .find((line) => line.includes('+QCAINFO: "PCC"'))
       .split(",")[3]
       .replace(/\"/g, "");
+    
+    // Loop over all QCAINFO: "SCC" lines and get the bands
+    try {
+      const SCCbands = lines
+        .filter((line) => line.includes('+QCAINFO: "SCC"'))
+        .map((line) => line.split(",")[3].replace(/\"/g, ""))
+        .join(", ");
+      this.bands = `${PCCbands}, ${SCCbands}`;
+    } catch (error) {
+      this.bands = PCCbands;
+    }
+    
   } catch (error) {
     this.bands = "Failed fetching bands";
   }
