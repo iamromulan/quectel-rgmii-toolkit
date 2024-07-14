@@ -15,7 +15,7 @@ function populateCheckboxes(lte_band, nsa_nr5g_band, nr5g_band, locked_lte_bands
   checkboxesForm.innerHTML = ""; // Clear existing checkboxes
 
   var bandsArray;
-  if (bands !== null) {
+  if (bands !== null && bands !== "0") {
     bandsArray = bands.split(":");
     bandsArray.forEach(function(band, index) {
       if (index % 5 === 0) {
@@ -68,7 +68,11 @@ function populateCheckboxes(lte_band, nsa_nr5g_band, nr5g_band, locked_lte_bands
       currentRow.appendChild(checkboxDiv);
     });
   } else {
-    // Do nothing
+    // Create a text saying that no bands are available 
+    var noBandsText = document.createElement("p");
+    noBandsText.className = "text-center";
+    noBandsText.innerText = "No supported bands available";
+    checkboxesForm.appendChild(noBandsText);
   }
 
   var currentRow;

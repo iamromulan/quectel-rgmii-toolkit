@@ -682,10 +682,17 @@
 
                   // --- Temperature ---
                   // find this example value from lines "+QTEMP:"cpuss-0-usr","50"
-                  this.temperature = lines
-                    .find((line) => line.includes('+QTEMP:"cpuss-0-usr"'))
-                    .split(",")[1]
-                    .replace(/"/g, "");
+                  try {
+                    this.temperature = lines
+                      .find((line) => line.includes('+QTEMP:"cpuss-0-usr"'))
+                      .split(",")[1]
+                      .replace(/"/g, "");
+                  } catch (error) {
+                    this.temperature = lines
+                      .find((line) => line.includes('+QTEMP:"cpu0-a7-usr"'))
+                      .split(",")[1]
+                      .replace(/"/g, "");
+                  }
 
                   // --- SIM Status ---
                   // find this example value from lines "+QSIMSTAT: 0,1"
