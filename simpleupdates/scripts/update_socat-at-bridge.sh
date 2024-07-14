@@ -88,6 +88,7 @@ install_at_socat() {
     wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/socat-armel-static
     wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/killsmd7bridge
     wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/atcmd
+	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/atcmd11
     cd $SOCAT_AT_SYSD_DIR
     wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11.service
     wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-from-ttyIN.service
@@ -102,9 +103,11 @@ install_at_socat() {
     chmod +x socat-armel-static
     chmod +x killsmd7bridge
     chmod +x atcmd
+	chmod +x atcmd11
 	
     # Link new command for AT Commands from the shell
     ln -sf $SOCAT_AT_DIR/atcmd /bin
+	ln -sf $SOCAT_AT_DIR/atcmd11 /bin
 	
     # Install service units
     echo -e "\033[0;32mAdding AT Socat Bridge systemd service units...\033[0m"
