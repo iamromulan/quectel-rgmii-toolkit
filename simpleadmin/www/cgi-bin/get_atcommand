@@ -16,11 +16,20 @@ fi
 x=$(urldecode "$atcmd")
 MYATCMD=$(printf '%b\n' "${atcmd//%/\\x}")
 if [ -n "${MYATCMD}" ]; then
-    # Capture the response and remove ANSI color codes using awk
-    runcmd=$(atcmd11 '$x' | awk '{ gsub(/\x1B\[[0-9;]*[mG]/, "") }1')
+    # Initialize wait time to 200 ms
+    wait_time=200
+    while true; do
+        runcmd=$(echo -en "$x\r\n" | microcom -t $wait_time /dev/ttyOUT2)
+        # Check if "OK" or "ERROR" is present in the response
+        if [[ $runcmd =~ "OK" ]] || [[ $runcmd =~ "ERROR" ]]; then
+            break  # Exit the loop if "OK" or "ERROR" is found
+        fi
+        # If neither "OK" nor "ERROR" is found, increment wait time by 1 second
+        ((wait_time++))
+    done
 fi
 
 echo "Content-type: text/plain"
 echo $x
 echo ""
-echo "$runcmd"
+echo $runcmd
