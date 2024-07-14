@@ -132,6 +132,18 @@
                       Reset
                     </button>
                   </div>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      value=""
+                      id="providerBands"
+                      onchange="saveCheckboxState()"
+                    />
+                    <label class="form-check-label" for="providerBands">
+                      Show Provider Supported Bands
+                    </label>
+                  </div>
                 </div>
               </div>
               <div class="card-footer">
@@ -488,15 +500,34 @@
           rawdata: null,
 
           getSupportedBands() {
-            const atcmd = 'AT+QNWPREFCFG="policy_band"';
-            this.sendATcommand(atcmd)
-              .then((rawdata) => {
-                this.rawdata = rawdata;
-                this.parseSupportedBands(rawdata);
-              })
-              .then(() => {
-                this.getLockedBands();
-              });
+            // Load the checkbox state from localStorage
+            const isChecked =
+              localStorage.getItem("providerBandsChecked") === "true";
+            const providerBands = document.getElementById("providerBands");
+            providerBands.checked = isChecked;
+
+            // If the checkbox is checked, then show only the provider bands
+            if (providerBands.checked) {
+              const atcmd = 'AT+QNWPREFCFG="ue_capability_band"';
+              this.sendATcommand(atcmd)
+                .then((rawdata) => {
+                  this.rawdata = rawdata;
+                  this.parseSupportedBands(rawdata);
+                })
+                .then(() => {
+                  this.getLockedBands();
+                });
+            } else {
+              const atcmd = 'AT+QNWPREFCFG="policy_band"';
+              this.sendATcommand(atcmd)
+                .then((rawdata) => {
+                  this.rawdata = rawdata;
+                  this.parseSupportedBands(rawdata);
+                })
+                .then(() => {
+                  this.getLockedBands();
+                });
+            }
           },
 
           parseSupportedBands(rawdata) {
@@ -613,7 +644,6 @@
               'AT+QUIMSLOT?;+CGCONTRDP=1;+QNWLOCK="common/4g";+QNWLOCK="common/5g";+QNWPREFCFG="mode_pref";+QNWPREFCFG="nr5g_disable_mode";+QCAINFO;+CGDCONT?';
 
             this.sendATcommand(atcmd).then((rawdata) => {
-              console.log(rawdata);
               const settings = parseCurrentSettings(rawdata);
               this.sim = settings.sim;
               this.apn = settings.apn;
@@ -622,8 +652,6 @@
               this.prefNetwork = settings.prefNetwork;
               this.nrModeControl = settings.nrModeControl;
               this.bands = settings.bands;
-
-              console.log(settings);
             });
           },
           lockSelectedBands() {
@@ -639,19 +667,16 @@
                 atcmd = `AT+QNWPREFCFG="lte_band",${newCheckedValues.join(
                   ":"
                 )}`;
-                console.log(atcmd);
                 this.sendATcommand(atcmd);
               } else if (selectedMode === "NSA") {
                 atcmd = `AT+QNWPREFCFG="nsa_nr5g_band",${newCheckedValues.join(
                   ":"
                 )}`;
-                console.log(atcmd);
                 this.sendATcommand(atcmd);
               } else if (selectedMode === "SA") {
                 atcmd = `AT+QNWPREFCFG="nr5g_band",${newCheckedValues.join(
                   ":"
                 )}`;
-                console.log(atcmd);
                 this.sendATcommand(atcmd);
               } else {
                 alert("Invalid network mode selected");
@@ -706,8 +731,6 @@
             atSIM = "";
             ATNetwork = "";
             ATNRMode = "";
-
-            console.log(this.newApnIP);
 
             if (newApn !== null) {
               if (this.newApnIP === "1") {
@@ -945,6 +968,32 @@
               checkbox.checked = false;
             });
         });
+
+      // Function for setting the provider bands checkbox and fetching the bands
+      document
+        .getElementById("providerBands")
+        .addEventListener("change", function () {
+          cellLocking().getSupportedBands();
+        });
+
+      document.addEventListener("DOMContentLoaded", (event) => {
+        loadCheckboxState();
+      });
+
+      function saveCheckboxState() {
+        const providerBandsCheckbox = document.getElementById("providerBands");
+        localStorage.setItem(
+          "providerBandsChecked",
+          providerBandsCheckbox.checked
+        );
+      }
+
+      function loadCheckboxState() {
+        const providerBandsCheckbox = document.getElementById("providerBands");
+        const isChecked =
+          localStorage.getItem("providerBandsChecked") === "true";
+        providerBandsCheckbox.checked = isChecked;
+      }
     </script>
     <script src="js/dark-mode.js"></script>
   </body>
