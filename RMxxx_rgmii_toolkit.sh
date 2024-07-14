@@ -766,6 +766,19 @@ install_sshd() {
 
 
 # Main menu
+
+ARCH=$(uname -a)
+if echo "$ARCH" | grep -q "aarch64"; then
+    cd /tmp && wget -O RM55x_rcPCIe_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development-SDXPINN/RM55x_rcPCIe_toolkit.sh && chmod +x RM55x_rcPCIe_toolkit.sh && ./RM55x_rcPCIe_toolkit.sh && cd /
+    exit 0
+elif echo "$ARCH" | grep -q "armv7l"; then
+    # Continue if architecture is armv7l
+    echo "Architecture is armv7l, continuing..."
+else
+    echo "Unsupported architecture."
+    exit 1
+fi
+
 while true; do
 echo "                           .%+:                              "
 echo "                             .*@@@-.                         "
