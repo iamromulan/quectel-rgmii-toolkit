@@ -29,10 +29,14 @@ Fork development, and PR development to development :)
 **My goal** is for this to also include any new useful scripts or software for this modem and others that support RGMII mode.
 ## Screenshots
 
-![Home Page](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulansimpleindex.png?raw=true)
-![AT Commands](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulanatcommands.png?raw=true)
-![TTL](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulansimpleTTL.png?raw=true)
-![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulantoolkit.png?raw=true)
+![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/dev_toolkit.png?raw=true)
+![Home](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/dev_home.png?raw=true)
+![Simple Network](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/dev_simplenetwork.png?raw=true)
+![Simple Scan](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/dev_simplescan.png?raw=true)
+![Simple Settings](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/dev_simplesettings.png?raw=true)
+![SMS](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/dev_sms.png?raw=true)
+![Console](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/dev_console.png?raw=true)
+![Device Info](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/dev_deviceinfo.png?raw=true)
 
 # Devleopment Branch: the below commands will download the beta/work in progress toolkit 
 
