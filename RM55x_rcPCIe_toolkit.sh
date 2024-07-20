@@ -283,15 +283,14 @@ echo "                                           :+##+.            "
             ;;
         2)
             remount_rw
-			basic_55x_setup
-			remount_ro
+	    basic_55x_setup
             ;;
 		98)	
 			# Blank
 			;;
-		3)
-			set_root_passwd
-			;;
+	3)
+	    set_root_passwd
+	    ;;
 		97)
 			# Blank
 			;;
@@ -300,8 +299,8 @@ echo "                                           :+##+.            "
             ;;
         
         4)  
-			tailscale_menu
-	        ;;
+	     tailscale_menu
+	     ;;
 		95)
 			# Blank 
             ;;
@@ -312,21 +311,21 @@ echo "                                           :+##+.            "
 			# Blank
 			;;
 
-		5) 
-			echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
-     	    # Add Logic to confirm we are overlayed over the larger /data
-			cd /usr/bin
-     	    wget https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-aarch64.tgz
-			tar -xzf ookla-speedtest-1.2.0-linux-aarch64.tgz
-     	    rm ookla-speedtest-1.2.0-linux-aarch64.tgz
-			rm speedtest.md
-     	    cd /
-			echo -e "\e[1;32mSpeedtest CLI (speedtest command) installed!!\e[0m"
-     	    echo -e "\e[1;32mTry running the command 'speedtest'\e[0m"
-			echo -e "\e[1;32mNote that it will not work unless you login to the root account first\e[0m"
-			echo -e "\e[1;32mNormaly only an issue in adb, ttyd and ssh you are forced to login\e[0m"
-			echo -e "\e[1;32mIf in adb just type login and then try to run the speedtest command\e[0m"
-            ;;
+	 5) 
+	     echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
+     	     # Add Logic to confirm we are overlayed over the larger /data
+	     cd /usr/bin
+     	     wget https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-aarch64.tgz
+	     tar -xzf ookla-speedtest-1.2.0-linux-aarch64.tgz
+     	     rm ookla-speedtest-1.2.0-linux-aarch64.tgz
+	     rm speedtest.md
+     	     cd /
+	     echo -e "\e[1;32mSpeedtest CLI (speedtest command) installed!!\e[0m"
+     	     echo -e "\e[1;32mTry running the command 'speedtest'\e[0m"
+	     echo -e "\e[1;32mNote that it will not work unless you login to the root account first\e[0m"
+      	     echo -e "\e[1;32mNormaly only an issue in adb, ttyd and ssh you are forced to login\e[0m"
+	     echo -e "\e[1;32mIf in adb just type login and then try to run the speedtest command\e[0m"
+      	     ;;
 		92) 
 			# Blank
             ;;
