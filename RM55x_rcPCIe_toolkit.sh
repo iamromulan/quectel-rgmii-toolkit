@@ -206,10 +206,11 @@ ttl_setup() {
           echo "iptables -t mangle -A POSTROUTING -o rmnet+ -j TTL --ttl-set $ttl_value" > "$ttl_file"
           echo "ip6tables -t mangle -A POSTROUTING -o rmnet+ -j HL --hl-set $ttl_value" >> "$ttl_file"
         fi
-        /bin/ash "$lan_utils_script"
       fi
     fi
   done
+  /bin/ash "$lan_utils_script"
+  /etc/init.d/firewall reload
 }
 
 
