@@ -186,7 +186,8 @@ ttl_setup() {
     fi
 
     echo -e "\e[32mType 0 to disable TTL\e[0m"
-    echo "Would you like to edit the TTL settings? (yes to continue, exit to quit):"
+    echo -e "\e[32mWould you like to edit the TTL settings? (yes to continue, exit to quit):\e[0m"
+	echo -e "\e[31mWarning: If you type Yes you will be forced to reboot if you change the value \e[0m"
     read -r response
 
     if [ "$response" = "exit" ]; then
@@ -205,12 +206,11 @@ ttl_setup() {
           echo "Setting TTL to $ttl_value..."
           echo "iptables -t mangle -A POSTROUTING -o rmnet+ -j TTL --ttl-set $ttl_value" > "$ttl_file"
           echo "ip6tables -t mangle -A POSTROUTING -o rmnet+ -j HL --hl-set $ttl_value" >> "$ttl_file"
+		  reboot
         fi
       fi
     fi
   done
-  /bin/ash "$lan_utils_script"
-  /etc/init.d/firewall reload
 }
 
 
