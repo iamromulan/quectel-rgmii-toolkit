@@ -342,11 +342,20 @@ while true; do
     case $choice in
         1) send_at_commands ;;
         2) remount_rw; basic_55x_setup ;;
-        3) overlay_check || continue; ttl_setup ;;
-        4) overlay_check || continue; set_root_passwd ;;
+        3) 
+            overlay_check
+            if [ $? -eq 1 ]; then continue; fi
+            ttl_setup 
+            ;;
+        4) 
+            overlay_check
+            if [ $? -eq 1 ]; then continue; fi
+            set_root_passwd 
+            ;;
         5) tailscale_menu ;;
         6)
-            overlay_check || continue
+            overlay_check
+            if [ $? -eq 1 ]; then continue; fi
             echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
             # Add Logic to confirm we are overlayed over the larger /data
             cd /usr/bin
