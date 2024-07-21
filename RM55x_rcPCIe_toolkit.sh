@@ -185,17 +185,16 @@ ttl_setup() {
       echo -e "\e[32mCurrent IPv6 TTL: $ipv6_ttl\e[0m"
     fi
 
-    echo -e "\e[32mType 0 to disable TTL\e[0m"
-    echo -e "\e[32mWould you like to edit the TTL settings? (yes to continue, exit to quit):\e[0m"
-	echo -e "\e[31mWarning: If you type Yes you will be forced to reboot if you change the value \e[0m"
-    read -r response
+    echo -e "\e[32mWould you like to edit the TTL settings?\e[0m"
+	echo -e "\e[32mTTL Value will be set without needing a reboot \e[0m"
+	echo -e "\e[33mType yes or exit:\e[0m" && read -r response
 
     if [ "$response" = "exit" ]; then
       echo "Exiting..."
       break
     elif [ "$response" = "yes" ]; then
-      echo "Enter the TTL value (number only):"
-      read -r ttl_value
+      echo -e "\e[32mType 0 to disable TTL\e[0m"
+	  echo -e "\e[33mEnter the TTL value (number only):\e[0m" && read -r ttl_value
       if ! [[ "$ttl_value" =~ ^[0-9]+$ ]]; then
         echo "Invalid input, please enter a number."
       else
@@ -206,17 +205,13 @@ ttl_setup() {
           echo "Setting TTL to $ttl_value..."
           echo "iptables -t mangle -A POSTROUTING -o rmnet+ -j TTL --ttl-set $ttl_value" > "$ttl_file"
           echo "ip6tables -t mangle -A POSTROUTING -o rmnet+ -j HL --hl-set $ttl_value" >> "$ttl_file"
-		  reboot
+		  iptables -t mangle -A POSTROUTING -o rmnet+ -j TTL --ttl-set $ttl_value
+		  ip6tables -t mangle -A POSTROUTING -o rmnet+ -j HL --hl-set $ttl_value
         fi
       fi
     fi
   done
 }
-
-
-
-
-
 
 # Function for Tailscale Submenu
 tailscale_menu() {
@@ -369,7 +364,6 @@ while true; do
             overlay_check
             if [ $? -eq 1 ]; then continue; fi
             echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
-            # Add Logic to confirm we are overlayed over the larger /data
             cd /usr/bin
             wget https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-aarch64.tgz
             tar -xzf ookla-speedtest-1.2.0-linux-aarch64.tgz
