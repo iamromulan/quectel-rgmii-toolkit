@@ -148,63 +148,70 @@ basic_55x_setup() {
 }
 
 ttl_setup() {
-    local ttl_file="/etc/firewall.user.ttl"
-    local lan_utils_script="/etc/data/lanUtils.sh"
-    local combine_function="util_combine_iptable_rules"
-    local temp_file="/tmp/temp_firewall_user_ttl"
+  local ttl_file="/etc/firewall.user.ttl"
+  local lan_utils_script="/etc/data/lanUtils.sh"
+  local combine_function="util_combine_iptable_rules"
+  local temp_file="/tmp/temp_firewall_user_ttl"
 
-    overlay_check || return
+  overlay_check || return
 
-    if [ -f "$ttl_file" ]; then
-        while true; do
-            echo "Would you like to edit the TTL settings? (yes to continue, exit to quit):"
-            read -r response
-            if [ "$response" = "exit" ]; then
-                echo "Exiting..."
-                break
-            elif [ "$response" = "yes" ]; then
-                if [ ! -s "$ttl_file" ]; then
-                    echo -e "\e[31mTTL is not enabled\e[0m"
-                else
-                    ipv4_ttl=$(grep 'iptables -t mangle -A POSTROUTING' "$ttl_file" | awk '{print $10}')
-                    ipv6_ttl=$(grep 'ip6tables -t mangle -A POSTROUTING' "$ttl_file" | awk '{print $10}')
-                    echo -e "\e[32mCurrent IPv4 TTL: $ipv4_ttl\e[0m"
-                    echo -e "\e[32mCurrent IPv6 TTL: $ipv6_ttl\e[0m"
-                fi
-                echo -e "\e[32mType 0 to disable TTL\e[0m"
-                echo "Enter the TTL value (number only):"
-                read -r ttl_value
-                if ! [[ "$ttl_value" =~ ^[0-9]+$ ]]; then
-                    echo "Invalid input, please enter a number."
-                else
-                    if [ "$ttl_value" -eq 0 ]; then
-                        echo "Disabling TTL..."
-                        > "$ttl_file"
-                    else
-                        echo "Setting TTL to $ttl_value..."
-                        echo "iptables -t mangle -A POSTROUTING -o rmnet+ -j TTL --ttl-set $ttl_value" > "$ttl_file"
-                        echo "ip6tables -t mangle -A POSTROUTING -o rmnet+ -j HL --hl-set $ttl_value" >> "$ttl_file"
-                    fi
-                    /bin/ash "$lan_utils_script"
-                fi
-            fi
-        done
-    else
-        echo "Creating $ttl_file..."
-        touch "$ttl_file"
-
-        echo "Modifying $combine_function in $lan_utils_script..."
-
-        # Backup the original script
-        cp "$lan_utils_script" "${lan_utils_script}.bak"
-
-        # Check if the function already includes the ttl_firewall_file line
-        if ! grep -q "local ttl_firewall_file" "$lan_utils_script"; then
-            awk -v RS= -v ORS="\n\n" "/$combine_function/ {sub(/}/, \"  local ttl_firewall_file=/etc/firewall.user.ttl\n\n  #cleanup\n  cat /dev/null > \$firewall_file\n\n  #combine separate files to /etc/firewall.user\n  if [ -f \\\"\$nat_firewall_file\\\" ]; then\n    cat \$nat_firewall_file >> \$firewall_file\n  fi\n  if [ -f \\\"\$porttrigger_firewall_file\\\" ]; then\n    cat \$porttrigger_firewall_file >> \$firewall_file\n  fi\n  if [ -f \\\"\$tcpmss_firewall_filev4\\\" ]; then\n    cat \$tcpmss_firewall_filev4 >> \$firewall_file\n  fi\n  if [ -f \\\"\$tcpmss_firewall_filev6\\\" ]; then\n    cat \$tcpmss_firewall_filev6 >> \$firewall_file\n  fi\n  if [ -f \\\"\$ttl_firewall_file\\\" ]; then\n    cat \$ttl_firewall_file >> \$firewall_file\n  fi\n}\");} 1" "$lan_utils_script" > "$temp_file" && mv "$temp_file" "$lan_utils_script"
+  if [ -f "$ttl_file" ]; then
+    while true; do
+      echo "Would you like to edit the TTL settings? (yes to continue, exit to quit):"
+      read -r response
+      if [ "$response" = "exit" ]; then
+        echo "Exiting..."
+        break
+      elif [ "$response" = "yes" ]; then
+        if [ ! -s "$ttl_file" ]; then
+          echo -e "\e[31mTTL is not enabled\e[0m"
+        else
+          ipv4_ttl=$(grep 'iptables -t mangle -A POSTROUTING' "$ttl_file" | awk '{print $10}')
+          ipv6_ttl=$(grep 'ip6tables -t mangle -A POSTROUTING' "$ttl_file" | awk '{print $10}')
+          echo -e "\e[32mCurrent IPv4 TTL: $ipv4_ttl\e[0m"
+          echo -e "\e[32mCurrent IPv6 TTL: $ipv6_ttl\e[0m"
         fi
-        ttl_setup
+        echo -e "\e[32mType 0 to disable TTL\e[0m"
+        echo "Enter the TTL value (number only):"
+        read -r ttl_value
+        if ! [[ "$ttl_value" =~ ^[0-9]+$ ]]; then
+          echo "Invalid input, please enter a number."
+        else
+          if [ "$ttl_value" -eq 0 ]; then
+            echo "Disabling TTL..."
+            > "$ttl_file"
+          else
+            echo "Setting TTL to $ttl_value..."
+            echo "iptables -t mangle -A POSTROUTING -o rmnet+ -j TTL --ttl-set $ttl_value" > "$ttl_file"
+            echo "ip6tables -t mangle -A POSTROUTING -o rmnet+ -j HL --hl-set $ttl_value" >> "$ttl_file"
+          fi
+          /bin/ash "$lan_utils_script"
+        fi
+      fi
+    done
+  else
+    echo "Creating $ttl_file..."
+    touch "$ttl_file"
+
+    echo "Modifying $combine_function in $lan_utils_script..."
+
+    # Backup the original script
+    cp "$lan_utils_script" "${lan_utils_script}.bak"
+
+    # Add the local ttl_firewall_file line if it's not already present
+    if ! grep -q "local ttl_firewall_file" "$lan_utils_script"; then
+      sed -i '/local tcpmss_firewall_filev6/a \  local ttl_firewall_file=/etc/firewall.user.ttl' "$lan_utils_script"
     fi
+
+    # Add the condition to include the ttl_firewall_file if it's not already present
+    if ! grep -q "if \[ -f \"\$ttl_firewall_file\" \]; then" "$lan_utils_script"; then
+      sed -i '/if \[ -f "\$tcpmss_firewall_filev6" \]; then/a \  if [ -f "\$ttl_firewall_file" ]; then\n    cat \$ttl_firewall_file >> \$firewall_file\n  fi' "$lan_utils_script"
+    fi
+
+    ttl_setup
+  fi
 }
+
 
 # Function for Tailscale Submenu
 tailscale_menu() {
