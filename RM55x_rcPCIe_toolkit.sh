@@ -30,7 +30,7 @@ remount_ro() {
     mount -o remount,ro /
 }
 
-# Basic AT commands without socat bridge for fast responce commands only
+# Basic AT commands without socat bridge for fast response commands only
 start_listening() {
     cat "$DEVICE_FILE" > /tmp/device_readout &
     CAT_PID=$!
@@ -216,10 +216,10 @@ tailscale_menu() {
         read -p "Enter your choice: " tailscale_choice
 
         case $tailscale_choice in
-            1) install_update_tailscale;;
-            2) configure_tailscale;;
-            3) break;;
-            *) echo "Invalid option";;
+            1) install_update_tailscale ;;
+            2) configure_tailscale ;;
+            3) break ;;
+            *) echo "Invalid option" ;;
         esac
     done
 }
