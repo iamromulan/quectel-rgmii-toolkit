@@ -205,12 +205,13 @@ ttl_setup() {
 
     # Add the condition to include the ttl_firewall_file if it's not already present
     if ! grep -q "if \[ -f \"\$ttl_firewall_file\" \]; then" "$lan_utils_script"; then
-      sed -i '/if \[ -f "\$tcpmss_firewall_filev6" \]; then/a \  if [ -f "\$ttl_firewall_file" ]; then\n    cat \$ttl_firewall_file >> \$firewall_file\n  fi' "$lan_utils_script"
+      sed -i '/if \[ -f "\$tcpmss_firewall_filev6" \]; then/i \  if [ -f "\$ttl_firewall_file" ]; then\n    cat \$ttl_firewall_file >> \$firewall_file\n  fi' "$lan_utils_script"
     fi
 
     ttl_setup
   fi
 }
+
 
 
 # Function for Tailscale Submenu
