@@ -171,7 +171,7 @@ ttl_setup() {
       fi
 
       # Add the condition to include the ttl_firewall_file if it's not already present
-      if ! grep -q "if \[ -f \"\$ttl_firewall_file\" \]; then" "$lan_utils_script"; then
+      if (! grep -q "if \[ -f \"\$ttl_firewall_file\" \]; then" "$lan_utils_script"); then
         sed -i '/if \[ -f "\$tcpmss_firewall_filev6" \]; then/i \  if [ -f "\$ttl_firewall_file" ]; then\n    cat \$ttl_firewall_file >> \$firewall_file\n  fi' "$lan_utils_script"
       fi
     fi
@@ -186,18 +186,23 @@ ttl_setup() {
     fi
 
     echo -e "\e[32mWould you like to edit the TTL settings?\e[0m"
-	echo -e "\e[32mTTL Value will be set without needing a reboot \e[0m"
-	echo -e "\e[33mType yes or exit:\e[0m" && read -r response
+    echo -e "\e[32mTTL Value will be set without needing a reboot \e[0m"
+    echo -e "\e[33mType yes or exit:\e[0m" && read -r response
 
     if [ "$response" = "exit" ]; then
       echo "Exiting..."
       break
     elif [ "$response" = "yes" ]; then
       echo -e "\e[32mType 0 to disable TTL\e[0m"
-	  echo -e "\e[33mEnter the TTL value (number only):\e[0m" && read -r ttl_value
+      echo -e "\e[33mEnter the TTL value (number only):\e[0m" && read -r ttl_value
       if ! [[ "$ttl_value" =~ ^[0-9]+$ ]]; then
         echo "Invalid input, please enter a number."
       else
+        # Clear existing TTL rules
+        echo "Clearing existing TTL rules..."
+        iptables -t mangle -D POSTROUTING -o rmnet+ -j TTL --ttl-set "$ipv4_ttl"
+        ip6tables -t mangle -D POSTROUTING -o rmnet+ -j HL --hl-set "$ipv6_ttl"
+
         if [ "$ttl_value" -eq 0 ]; then
           echo "Disabling TTL..."
           > "$ttl_file"
@@ -205,13 +210,14 @@ ttl_setup() {
           echo "Setting TTL to $ttl_value..."
           echo "iptables -t mangle -A POSTROUTING -o rmnet+ -j TTL --ttl-set $ttl_value" > "$ttl_file"
           echo "ip6tables -t mangle -A POSTROUTING -o rmnet+ -j HL --hl-set $ttl_value" >> "$ttl_file"
-		  iptables -t mangle -A POSTROUTING -o rmnet+ -j TTL --ttl-set $ttl_value
-		  ip6tables -t mangle -A POSTROUTING -o rmnet+ -j HL --hl-set $ttl_value
+          iptables -t mangle -A POSTROUTING -o rmnet+ -j TTL --ttl-set $ttl_value
+          ip6tables -t mangle -A POSTROUTING -o rmnet+ -j HL --hl-set $ttl_value
         fi
       fi
     fi
   done
 }
+
 
 # Function for Tailscale Submenu
 tailscale_menu() {
