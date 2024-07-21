@@ -179,8 +179,8 @@ ttl_setup() {
     if [ ! -s "$ttl_file" ]; then
       echo -e "\e[31mTTL is not enabled\e[0m"
     else
-      ipv4_ttl=$(grep 'iptables -t mangle -A POSTROUTING' "$ttl_file" | awk -F'--ttl-set ' '{print $2}')
-      ipv6_ttl=$(grep 'ip6tables -t mangle -A POSTROUTING' "$ttl_file" | awk -F'--hl-set ' '{print $2}')
+      ipv4_ttl=$(grep 'iptables -t mangle -A POSTROUTING' "$ttl_file" | awk '{for(i=1;i<=NF;i++){if($i=="--ttl-set"){print $(i+1)}}}')
+      ipv6_ttl=$(grep 'ip6tables -t mangle -A POSTROUTING' "$ttl_file" | awk '{for(i=1;i<=NF;i++){if($i=="--hl-set"){print $(i+1)}}}')
       echo -e "\e[32mCurrent IPv4 TTL: $ipv4_ttl\e[0m"
       echo -e "\e[32mCurrent IPv6 TTL: $ipv6_ttl\e[0m"
     fi
