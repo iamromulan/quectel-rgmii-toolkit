@@ -582,13 +582,13 @@ install_update_remove_tailscale() {
 	mkdir $TAILSCALE_SYSD_DIR
  	echo "Downloading binary files..."
  	cd /usrdata
-  	wget https://pkgs.tailscale.com/stable/tailscale_1.62.1_arm.tgz
-   	tar -xzf tailscale_1.62.1_arm.tgz
-    	cd /usrdata/tailscale_1.62.1_arm
+  	curl -L -o tailscale_1.70.0_arm.tgz https://pkgs.tailscale.com/stable/tailscale_1.70.0_arm.tgz
+   	tar -xzf tailscale_1.70.0_arm.tgz
+    	cd /usrdata/tailscale_1.70.0_arm
      	mv tailscale $TAILSCALE_DIR/tailscale
 	mv tailscaled $TAILSCALE_DIR/tailscaled
         cd $TAILSCALE_DIR
-	rm -rf /usrdata/tailscale_1.62.1_arm
+	rm -rf /usrdata/tailscale_1.70.0_arm
     	echo "Downloading systemd files..."
      	cd $TAILSCALE_SYSD_DIR
       	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
