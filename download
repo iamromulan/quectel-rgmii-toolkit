@@ -77,12 +77,13 @@ download_github_directory() {
     fi
 
     # Parse and download each file and directory recursively
-    echo "$contents" | grep '"type": "file"' | sed -n 's|.*"download_url": "\([^"]*\)".*|"\1"|p' | while read -r file_url; do
-        file_name=$(basename "$file_url" | tr -d '"')
+    echo "$contents" | grep '"type": "file"' | sed -n 's|.*"path": "\([^"]*\)".*"download_url": "\([^"]*\)".*|"\1" "\2"|p' | while read -r file_path file_url; do
+        file_name=$(basename "$file_path" | tr -d '"')
         download "$file_url" "$output_dir/$file_name"
     done
 
     echo "$contents" | grep '"type": "dir"' | sed -n 's|.*"path": "\([^"]*\)".*|"\1"|p' | while read -r sub_dir; do
+        sub_dir=$(echo "$sub_dir" | tr -d '"')
         download_github_directory "https://github.com/$owner_repo/tree/$branch/$sub_dir" "$output_dir"
     done
 }
