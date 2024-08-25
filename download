@@ -1,0 +1,96 @@
+#!/bin/sh
+
+download() {
+    # $1: Type of download (e.g., 'github' for GitHub directories or a URL)
+    # $2: URL or GitHub path
+    # $3: Output directory or path (optional)
+
+    if [ "$1" = "github" ]; then
+        # Handle GitHub directory download
+        download_github_directory "$2" "$3"
+    else
+        # Handle regular file download
+        download_file "$1" "$2"
+    fi
+}
+
+download_file() {
+    # $1: URL to download
+    # $2: Output file or directory (optional)
+
+    filename=$(basename "$1")
+
+    if [ -z "$2" ]; then
+        output="$filename"
+    elif [ -d "$2" ]; then
+        output="$2/$filename"
+    else
+        output="$2"
+    fi
+
+    if command -v curl > /dev/null 2>&1; then
+        curl -L -o "$output" "$1"
+    elif command -v wget > /dev/null 2>&1; then
+        wget -O "$output" "$1"
+    else
+        echo -e "\e[1;31mError: Neither curl nor wget is available. Please install one of them and try again.\e[0m"
+        exit 1
+    fi
+}
+
+download_github_directory() {
+    # $1: GitHub directory URL (e.g., "https://github.com/iamromulan/quectel-rgmii-toolkit/tree/development/simpleadmin")
+    # $2: Output directory (optional)
+
+    # Extract owner, repo, branch, and directory path from the GitHub URL
+    repo_url=$(echo "$1" | sed -n 's|https://github.com/\([^/]*\)/\([^/]*\)/tree/\([^/]*\)/\(.*\)|\1/\2 \3 \4|p')
+    owner_repo=$(echo "$repo_url" | cut -d' ' -f1)
+    branch=$(echo "$repo_url" | cut -d' ' -f2)
+    directory=$(echo "$repo_url" | cut -d' ' -f3)
+
+    if [ -z "$owner_repo" ] || [ -z "$branch" ] || [ -z "$directory" ]; then
+        echo -e "\e[1;31mError: Invalid GitHub URL.\e[0m"
+        exit 1
+    fi
+
+    # Determine the output directory
+    if [ -z "$2" ]; then
+        output_dir=$(basename "$directory")
+    elif [ -d "$2" ]; then
+        output_dir="$2/$(basename "$directory")"
+    else
+        output_dir="$2"
+    fi
+
+    # Create the output directory if it doesn't exist
+    mkdir -p "$output_dir"
+
+    # Fetch the contents of the directory using the GitHub API
+    api_url="https://api.github.com/repos/$owner_repo/contents/$directory?ref=$branch"
+    if command -v curl > /dev/null 2>&1; then
+        contents=$(curl -s -H "Accept: application/vnd.github.v3+json" "$api_url")
+    elif command -v wget > /dev/null 2>&1; then
+        contents=$(wget -qO- --header="Accept: application/vnd.github.v3+json" "$api_url")
+    else
+        echo -e "\e[1;31mError: Neither curl nor wget is available. Please install one of them and try again.\e[0m"
+        exit 1
+    fi
+
+    # Parse and download each file and directory recursively
+    echo "$contents" | grep '"type": "file"' | sed -n 's|.*"download_url": "\([^"]*\)".*|"\1"|p' | while read -r file_url; do
+        file_name=$(basename "$file_url" | tr -d '"')
+        download "$file_url" "$output_dir/$file_name"
+    done
+
+    echo "$contents" | grep '"type": "dir"' | sed -n 's|.*"path": "\([^"]*\)".*|"\1"|p' | while read -r sub_dir; do
+        download_github_directory "https://github.com/$owner_repo/tree/$branch/$sub_dir" "$output_dir"
+    done
+}
+
+# Allow the script to be run with arguments directly from the command line
+if [ "$#" -eq 0 ]; then
+    echo "Usage: download <type> <url> [output_directory]"
+    exit 1
+else
+    download "$@"
+fi
