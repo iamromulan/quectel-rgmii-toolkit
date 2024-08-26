@@ -89,6 +89,7 @@ download_github_directory() {
     echo "$contents"
 
     # Parse and download each file and directory recursively
+    echo "Parsing and downloading files..."
     echo "$contents" | grep '"type": "file"' | sed -n 's|.*"path": "\([^"]*\)".*"download_url": "\([^"]*\)".*|"\1" "\2"|p' | while read -r file_path file_url; do
         echo "Processing file: $file_path"
         file_name=$(basename "$file_path" | tr -d '"')
@@ -96,11 +97,14 @@ download_github_directory() {
         download "$file_url" "$output_dir/$file_name"
     done
 
+    echo "Parsing and handling directories..."
     echo "$contents" | grep '"type": "dir"' | sed -n 's|.*"path": "\([^"]*\)".*|"\1"|p' | while read -r sub_dir; do
         sub_dir=$(echo "$sub_dir" | tr -d '"')
         echo "Recursively handling directory: $sub_dir"
         download_github_directory "https://github.com/$owner_repo/tree/$branch/$sub_dir" "$output_dir"
     done
+
+    echo "Download process completed."
 }
 
 # Allow the script to be run with arguments directly from the command line
