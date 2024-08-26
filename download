@@ -90,10 +90,9 @@ download_github_directory() {
 
     # Parse and download each file and directory recursively
     echo "$contents" | grep '"type": "file"' | sed -n 's|.*"path": "\([^"]*\)".*"download_url": "\([^"]*\)".*|"\1" "\2"|p' | while read -r file_path file_url; do
-        echo "File Path: $file_path"
-        echo "Download URL: $file_url"
+        echo "Processing file: $file_path"
         file_name=$(basename "$file_path" | tr -d '"')
-        echo "Calling download: $file_url -> $output_dir/$file_name"
+        echo "Downloading file from $file_url to $output_dir/$file_name"
         download "$file_url" "$output_dir/$file_name"
     done
 
