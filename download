@@ -90,18 +90,28 @@ download_github_directory() {
 
     # Parse and download each file and directory recursively
     echo "Parsing and downloading files..."
-    echo "$contents" | grep '"type": "file"' | sed -n 's|.*"path": "\([^"]*\)".*"download_url": "\([^"]*\)".*|"\1" "\2"|p' | while read -r file_path file_url; do
-        echo "Processing file: $file_path"
-        file_name=$(basename "$file_path" | tr -d '"')
-        echo "Downloading file from $file_url to $output_dir/$file_name"
-        download "$file_url" "$output_dir/$file_name"
+    echo "$contents" | grep '"type": "file"' | while read -r line; do
+        file_path=$(echo "$line" | sed -n 's|.*"path": "\([^"]*\)".*|\1|p')
+        download_url=$(echo "$line" | sed -n 's|.*"download_url": "\([^"]*\)".*|\1|p')
+
+        if [ -n "$file_path" ] && [ -n "$download_url" ]; then
+            file_name=$(basename "$file_path")
+            echo "Downloading file from $download_url to $output_dir/$file_name"
+            download "$download_url" "$output_dir/$file_name"
+        else
+            echo "Skipping invalid file entry: $line"
+        fi
     done
 
     echo "Parsing and handling directories..."
-    echo "$contents" | grep '"type": "dir"' | sed -n 's|.*"path": "\([^"]*\)".*|"\1"|p' | while read -r sub_dir; do
-        sub_dir=$(echo "$sub_dir" | tr -d '"')
-        echo "Recursively handling directory: $sub_dir"
-        download_github_directory "https://github.com/$owner_repo/tree/$branch/$sub_dir" "$output_dir"
+    echo "$contents" | grep '"type": "dir"' | while read -r line; do
+        sub_dir=$(echo "$line" | sed -n 's|.*"path": "\([^"]*\)".*|\1|p')
+        if [ -n "$sub_dir" ]; then
+            echo "Recursively handling directory: $sub_dir"
+            download_github_directory "https://github.com/$owner_repo/tree/$branch/$sub_dir" "$output_dir"
+        else
+            echo "Skipping invalid directory entry: $line"
+        fi
     done
 
     echo "Download process completed."
