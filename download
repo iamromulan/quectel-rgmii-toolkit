@@ -28,6 +28,8 @@ download_file() {
         output="$2"
     fi
 
+    echo "Downloading file from $1 to $output"
+
     if command -v curl > /dev/null 2>&1; then
         curl -L -o "$output" "$1"
     elif command -v wget > /dev/null 2>&1; then
@@ -42,11 +44,15 @@ download_github_directory() {
     # $1: GitHub directory URL (e.g., "https://github.com/iamromulan/quectel-rgmii-toolkit/tree/development/simpleadmin")
     # $2: Output directory (optional)
 
+    echo "Starting download for GitHub directory: $1"
+
     # Extract owner, repo, branch, and directory path from the GitHub URL
     repo_url=$(echo "$1" | sed -n 's|https://github.com/\([^/]*\)/\([^/]*\)/tree/\([^/]*\)/\(.*\)|\1/\2 \3 \4|p')
     owner_repo=$(echo "$repo_url" | cut -d' ' -f1)
     branch=$(echo "$repo_url" | cut -d' ' -f2)
     directory=$(echo "$repo_url" | cut -d' ' -f3)
+
+    echo "Owner/Repo: $owner_repo, Branch: $branch, Directory: $directory"
 
     if [ -z "$owner_repo" ] || [ -z "$branch" ] || [ -z "$directory" ]; then
         echo -e "\e[1;31mError: Invalid GitHub URL.\e[0m"
@@ -62,6 +68,8 @@ download_github_directory() {
         output_dir="$2"
     fi
 
+    echo "Output directory set to: $output_dir"
+
     # Create the output directory if it doesn't exist
     mkdir -p "$output_dir"
 
@@ -75,6 +83,10 @@ download_github_directory() {
         echo -e "\e[1;31mError: Neither curl nor wget is available. Please install one of them and try again.\e[0m"
         exit 1
     fi
+
+    # Diagnostic: Print the raw contents
+    echo "API Response Contents:"
+    echo "$contents"
 
     # Parse and download each file and directory recursively
     echo "$contents" | grep '"type": "file"' | sed -n 's|.*"path": "\([^"]*\)".*"download_url": "\([^"]*\)".*|"\1" "\2"|p' | while read -r file_path file_url; do
