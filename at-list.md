@@ -19,8 +19,14 @@ This will do the following:
 - Reboots after all the above
 
 ### For x70 modems (RM550/551)
-- Coming soon
+``AT+QCFG="pcie/mode",1;+QCFG="usbnet",1;+QCFG="usbcfg",0x2C7C,0x0801,1,1,1,1,1,2,0;+CFUN=1,1``
 
+This will do the following:
+
+- Enable PCIe RC mode (Driver selection is automatic now) 
+- Set to ECM mode via USB and AP mode connection behavior
+- Force Enables ADB Access 
+- Reboots after all the above
 
 ## The List
   - ``AT+CFUN=1,1`` (reboot)
