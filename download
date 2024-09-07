@@ -90,10 +90,7 @@ download_github_directory() {
 
     # Parse and download each file
     echo "Parsing and downloading files..."
-    echo "$contents" | grep '"type": "file"' | while read -r line; do
-        file_path=$(echo "$line" | sed -n 's/.*"path": "\([^"]*\)".*/\1/p')
-        download_url=$(echo "$line" | sed -n 's/.*"download_url": "\([^"]*\)".*/\1/p')
-
+    echo "$contents" | awk -F'"' '/"type": "file"/ {getline; getline; print $4, $10}' | while read -r file_path download_url; do
         if [ -n "$file_path" ] && [ -n "$download_url" ]; then
             file_name=$(basename "$file_path")
             echo "Downloading file from $download_url to $output_dir/$file_name"
@@ -105,8 +102,7 @@ download_github_directory() {
 
     # Parse and handle subdirectories
     echo "Parsing and handling directories..."
-    echo "$contents" | grep '"type": "dir"' | while read -r line; do
-        sub_dir=$(echo "$line" | sed -n 's/.*"path": "\([^"]*\)".*/\1/p')
+    echo "$contents" | awk -F'"' '/"type": "dir"/ {getline; getline; print $4}' | while read -r sub_dir; do
         if [ -n "$sub_dir" ]; then
             echo "Recursively handling directory: $sub_dir"
             download_github_directory "https://github.com/$owner_repo/tree/$branch/$sub_dir" "$output_dir"
