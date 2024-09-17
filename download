@@ -1,120 +1,111 @@
 #!/bin/sh
 
-download() {
-    # $1: Type of download (e.g., 'github' for GitHub directories or a URL)
-    # $2: URL or GitHub path
-    # $3: Output directory or path (optional)
+# Determine the absolute path of the script
+SCRIPT_PATH=$(realpath "$0")
 
+download() {
     if [ "$1" = "github" ]; then
-        # Handle GitHub directory download
         download_github_directory "$2" "$3"
     else
-        # Handle regular file download
         download_file "$1" "$2"
     fi
 }
 
 download_file() {
-    # $1: URL to download
-    # $2: Output file or directory (optional)
+    url="$1"
+    output="${2:-$(basename "$url")}"
 
-    filename=$(basename "$1")
+    echo "Attempting to download file from URL: $url"
+    echo "Saving to output: $output"
 
-    if [ -z "$2" ]; then
-        output="$filename"
-    elif [ -d "$2" ]; then
-        output="$2/$filename"
-    else
-        output="$2"
-    fi
-
-    echo "Downloading file from $1 to $output"
+    # Ensure the output directory exists
+    mkdir -p "$(dirname "$output")"
 
     if command -v curl > /dev/null 2>&1; then
-        curl -L -o "$output" "$1"
+        curl -L -o "$output" "$url"
     elif command -v wget > /dev/null 2>&1; then
-        wget -O "$output" "$1"
+        wget -O "$output" "$url"
     else
-        echo -e "\e[1;31mError: Neither curl nor wget is available. Please install one of them and try again.\e[0m"
+        echo "Error: Neither curl nor wget is available."
         exit 1
     fi
 }
 
 download_github_directory() {
-    # $1: GitHub directory URL (e.g., "https://github.com/iamromulan/quectel-rgmii-toolkit/tree/development/simpleadmin")
-    # $2: Output directory (optional)
+    github_url="$1"
+    output_dir="${2:-.}"  # Set output directory to the provided parameter or current directory
 
-    echo "Starting download for GitHub directory: $1"
+    repo_info=$(echo "$github_url" | sed -n 's|https://github.com/\([^/]*\)/\([^/]*\)/tree/\([^/]*\)/\(.*\)|\1 \2 \3 \4|p')
+    owner=$(echo "$repo_info" | cut -d' ' -f1)
+    repo=$(echo "$repo_info" | cut -d' ' -f2)
+    branch=$(echo "$repo_info" | cut -d' ' -f3)
+    directory=$(echo "$repo_info" | cut -d' ' -f4)
 
-    # Extract owner, repo, branch, and directory path from the GitHub URL
-    repo_url=$(echo "$1" | sed -n 's|https://github.com/\([^/]*\)/\([^/]*\)/tree/\([^/]*\)/\(.*\)|\1/\2 \3 \4|p')
-    owner_repo=$(echo "$repo_url" | cut -d' ' -f1)
-    branch=$(echo "$repo_url" | cut -d' ' -f2)
-    directory=$(echo "$repo_url" | cut -d' ' -f3)
+    echo "Owner: $owner, Repo: $repo, Branch: $branch, Directory: $directory"
 
-    echo "Owner/Repo: $owner_repo, Branch: $branch, Directory: $directory"
-
-    if [ -z "$owner_repo" ] || [ -z "$branch" ] || [ -z "$directory" ]; then
-        echo -e "\e[1;31mError: Invalid GitHub URL.\e[0m"
+    if [ -z "$owner" ] || [ -z "$repo" ] || [ -z "$branch" ] || [ -z "$directory" ]; then
+        echo "Error: Invalid GitHub URL."
         exit 1
-    fi
-
-    # Determine the output directory
-    if [ -z "$2" ]; then
-        output_dir=$(basename "$directory")
-    elif [ -d "$2" ]; then
-        output_dir="$2/$(basename "$directory")"
-    else
-        output_dir="$2"
     fi
 
     echo "Output directory set to: $output_dir"
 
-    # Create the output directory if it doesn't exist
-    mkdir -p "$output_dir"
+    api_url="https://api.github.com/repos/$owner/$repo/contents/$directory?ref=$branch"
+    echo "Fetching directory contents from API URL: $api_url"
 
-    # Fetch the contents of the directory using the GitHub API
-    api_url="https://api.github.com/repos/$owner_repo/contents/$directory?ref=$branch"
     if command -v curl > /dev/null 2>&1; then
         contents=$(curl -s -H "Accept: application/vnd.github.v3+json" "$api_url")
     elif command -v wget > /dev/null 2>&1; then
         contents=$(wget -qO- --header="Accept: application/vnd.github.v3+json" "$api_url")
     else
-        echo -e "\e[1;31mError: Neither curl nor wget is available. Please install one of them and try again.\e[0m"
+        echo "Error: Neither curl nor wget is available."
         exit 1
     fi
 
-    # Diagnostic: Print the raw contents
     echo "API Response Contents:"
     echo "$contents"
 
-    # Parse and download each file
-    echo "Parsing and downloading files..."
-    echo "$contents" | awk -F'"' '/"type": "file"/ {getline; getline; print $4, $10}' | while read -r file_path download_url; do
-        if [ -n "$file_path" ] && [ -n "$download_url" ]; then
-            file_name=$(basename "$file_path")
-            echo "Downloading file from $download_url to $output_dir/$file_name"
-            download "$download_url" "$output_dir/$file_name"
-        else
-            echo "Skipping invalid file entry: $line"
-        fi
-    done
-
-    # Parse and handle subdirectories
-    echo "Parsing and handling directories..."
-    echo "$contents" | awk -F'"' '/"type": "dir"/ {getline; getline; print $4}' | while read -r sub_dir; do
-        if [ -n "$sub_dir" ]; then
-            echo "Recursively handling directory: $sub_dir"
-            download_github_directory "https://github.com/$owner_repo/tree/$branch/$sub_dir" "$output_dir"
-        else
-            echo "Skipping invalid directory entry: $line"
-        fi
-    done
-
-    echo "Download process completed."
+    # Use awk to parse JSON content and prepare commands
+    echo "$contents" | awk -v output_dir="$output_dir" -v owner="$owner" -v repo="$repo" -v branch="$branch" -v script_path="$SCRIPT_PATH" '
+    BEGIN {
+        RS="},"; FS=","; # Set Record Separator to "}," and Field Separator to ","
+    }
+    /"type": "file"/ {
+        file_path = ""; download_url = "";
+        for (i = 1; i <= NF; i++) {
+            if ($i ~ /"path": "/) {
+                gsub(/.*"path": "/, "", $i);
+                gsub(/".*/, "", $i);
+                file_path = $i;
+            }
+            if ($i ~ /"download_url": "/) {
+                gsub(/.*"download_url": "/, "", $i);
+                gsub(/".*/, "", $i);
+                download_url = $i;
+            }
+        }
+        if (file_path && download_url) {
+            output_file_path = output_dir "/" file_path;
+            print "Calling download_file for:", download_url, "to", output_file_path;
+            system("'"$SCRIPT_PATH"'" " \"" download_url "\" \"" output_file_path "\"");
+        }
+    }
+    /"type": "dir"/ {
+        sub_dir = "";
+        for (i = 1; i <= NF; i++) {
+            if ($i ~ /"path": "/) {
+                gsub(/.*"path": "/, "", $i);
+                gsub(/".*/, "", $i);
+                sub_dir = $i;
+            }
+        }
+        if (sub_dir) {
+            print "Calling download_github_directory for sub-directory:", sub_dir;
+            system("'"$SCRIPT_PATH"'" " github \"https://github.com/" owner "/" repo "/tree/" branch "/" sub_dir "\" \"" output_dir "\"");
+        }
+    }'
 }
 
-# Allow the script to be run with arguments directly from the command line
 if [ "$#" -eq 0 ]; then
     echo "Usage: download <type> <url> [output_directory]"
     exit 1
