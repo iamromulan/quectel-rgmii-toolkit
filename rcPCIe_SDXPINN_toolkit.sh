@@ -91,7 +91,7 @@ basic_55x_setup() {
 	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/iamromulan-SDXPINN-repo.key -O /tmp/iamromulan-SDXPINN-repo.key
     opkg-key add /tmp/iamromulan-SDXPINN-repo.key
 	opkg update
-	opkg opkg install inotifywait inotifywatch
+	opkg install inotifywait inotifywatch
     service init-overlay-watchdog start
     echo -e "\e[92m"
     echo "Mount fix completed!"
