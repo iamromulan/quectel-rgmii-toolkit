@@ -110,6 +110,14 @@ basic_55x_setup() {
 	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/ttyd
 	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/atinout
 	cd /
+	service uhttpd enable
+	service dropbear enable
+	service uhttpd start
+	service dropbear start
+	echo -e "\e[92m"
+    echo "Set your root password:"
+    echo -e "\e[0m
+	set_root_passwd
 	echo -e "\e[92m"
     echo "Basic packages installed!"
     echo "Visit https://github.com/iamromulan for more!"
