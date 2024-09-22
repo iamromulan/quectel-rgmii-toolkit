@@ -1,9 +1,9 @@
 # RGMII Toolkit
 Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2 to RJ45 adapter (RGMII)
 
-Current Branch: **Development-SDXPINN**
+Current Branch: **SDXPINN**
 
-This is a work in progress branch for early development
+This is a work in progress branch for early development for the RM551E-GL modem (Will probably work on the 550 as well)
 
 # Devleopment Branch: the below commands will download the beta/work in progress toolkit only for RM55x modems/SDXPINN platform
 
