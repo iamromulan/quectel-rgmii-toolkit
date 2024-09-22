@@ -1,0 +1,24 @@
+Reboot;AT+CFUN=1,1
+Disconnect;AT+CFUN=0
+Connect;AT+CFUN=1
+Signal Info;AT+QENG="servingcell"
+CA Info;AT+QCAINFO
+Get current SIM Slot;AT+QUIMSLOT?
+Switch to SIM Slot 1;AT+QUIMSLOT=1
+Switch to SIM Slot 2;AT+QUIMSLOT=2
+Get current APN List;AT+CGDCONT?
+Set APN to NRBROADBAND;AT+CGDCONT=1,"IPV4V6","NRBROADBAND"
+Show Current IMEI;AT+EGMR=0,7
+Show Current Network Mode;AT+QNWPREFCFG="mode_pref"
+Set Network Mode to AUTO;AT+QNWPREFCFG="mode_pref",AUTO
+Set Network Mode to 5G NR/4G LTE Only;AT+QNWPREFCFG="mode_pref",NR5G:LTE
+Set Network Mode to 5G NR Only;AT+QNWPREFCFG="mode_pref",NR5G
+Set Network Mode to 4G LTE Only;AT+QNWPREFCFG="mode_pref",LTE
+Check to see if SA or NSA is disabled;AT+QNWPREFCFG="nr5g_disable_mode"
+Enable Both SA and NSA;AT+QNWPREFCFG="nr5g_disable_mode",0
+Disable SA Only;AT+QNWPREFCFG="nr5g_disable_mode",1
+Disable NSA Only;AT+QNWPREFCFG="nr5g_disable_mode",2
+Get Currently Enabled 5G/NR SA Bands;AT+QNWPREFCFG="nr5g_band"
+Get Currently Enabled 5G/NR NSA Bands;AT+QNWPREFCFG="nsa_nr5g_band"
+Get Currently Enabled 4G/LTE Bands;AT+QNWPREFCFG="lte_band"
+View assigned IPv4/IPv6 addresses from the provider;AT+QMAP="WWAN"
