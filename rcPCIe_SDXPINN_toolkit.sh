@@ -116,7 +116,7 @@ basic_55x_setup() {
 	service dropbear start
 	echo -e "\e[92m"
     echo "Set your root password:"
-    echo -e "\e[0m
+    echo -e "\e[0m"
 	set_root_passwd
 	echo -e "\e[92m"
     echo "Basic packages installed!"
