@@ -83,11 +83,35 @@ basic_55x_setup() {
     service mount-fix enable
     service init-overlay-watchdog enable
     service mount-fix start
+	echo "src/gz iamromulan-SDXPINN-repo https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/opkg-feed" >> /etc/opkg/customfeeds.conf
+	rm /etc/opkg/distfeeds.conf
+	cd /etc/opkg/
+	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/opkg/distfeeds.conf
+	cd /
+	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/iamromulan-SDXPINN-repo.key -O /tmp/iamromulan-SDXPINN-repo.key
+    opkg-key add /tmp/iamromulan-SDXPINN-repo.key
 	opkg update
 	opkg opkg install inotifywait inotifywatch
     service init-overlay-watchdog start
     echo -e "\e[92m"
     echo "Mount fix completed!"
+    echo "Visit https://github.com/iamromulan for more!"
+	echo "Proceeding with basic packages installation...."	
+    echo -e "\e[0m"
+	opkg install atinout luci-app-atinout-mod
+	opkg install shadow-login
+	opkg install luci-app-ttyd
+	opkg install mc-skins
+	rm /etc/config/atcommands.user
+	rm /etc/config/atinout
+	rm /etc/config/ttyd
+	cd /etc/config/
+	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/atcommands.user
+	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/ttyd
+	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/atinout
+	cd /
+	echo -e "\e[92m"
+    echo "Basic packages installed!"
     echo "Visit https://github.com/iamromulan for more!"
     echo -e "\e[0m"
 }
