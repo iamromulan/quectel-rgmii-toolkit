@@ -18,8 +18,45 @@ This will do the following:
 - Force Enables ADB Access 
 - Reboots after all the above
 
+
+
 ### For x70 modems (RM550/551)
-``AT+QCFG="pcie/mode",1;+QCFG="usbnet",1;+QCFG="usbcfg",0x2C7C,0x0801,1,1,1,1,1,2,0;+CFUN=1,1``
+
+For BETA versions of firmware: the adb value 2 trick still works so one and done:
+
+``AT+QCFG="pcie/mode",1;+QCFG="usbnet",1;+QCFG="usbcfg",0x2C7C,0x0122,1,1,1,1,1,2,0;+CFUN=1,1``
+
+OR if you are running the latest non-beta firmware 
+
+``AT+QCFG="pcie/mode",1;+QCFG="usbnet",1``
+
+Then unlock ADB:
+
+Ask the modem for its adb code by sending: ``AT+QADBKEY?``
+
+It'll respond with something like ``+QADBKEY: 29229988``
+
+Take that number and paste it in this generator: https://onecompiler.com/python/3znepjcsq (hint: where it says STDIN)
+
+You should get something like 
+
+``AT+QADBKEY="mrX4zOPwdSIEjfM"``
+
+Send that command to the modem and adb will be able to be turned on with the next command
+
+Now you can turn it on with the usbcfg command ``AT+QCFG="usbcfg"``
+
+***Be super careful, this controls what ports are on/off over USB.***
+
+Run it and you will get the current settings. Something like this: 
+
+``+QCFG: "usbcfg",0x2C7C,0x0122,1,1,1,1,1,0,0``
+
+Send ``AT+QCFG="usbcfg",0x2C7C,0x0122,1,1,1,1,1,1,0`` to enable adb
+
+Now you can reboot: ``AT+CFUN=1,1``
+
+
 
 This will do the following:
 
@@ -28,8 +65,11 @@ This will do the following:
 - Force Enables ADB Access 
 - Reboots after all the above
 
+Tip: APN automatic selection will somtimes choose the wrong APN. You may need to set your APN after powering up with the SIM inserted.
+
 ## The List
   - ``AT+CFUN=1,1`` (reboot)
+  - ``AT+CFUN=0;CFUN=1`` (Disconnect then reconnect)(tip: run this after chnaging APN and you don't have to reboot)
   - ``AT+QMAPWAC? ``(get current status of auto connect, 0=disabled 1=enabled)
 - ``AT+QMAPWAC=1`` (enable auto connect internet for ethernet)
 - ``AT+QMAPWAC=0`` (disable auto connect for ethernet; use when you want internet over USB to work; IPPT must be disabled)
@@ -53,9 +93,10 @@ This will do the following:
 - ``AT+QNWPREFCFG="nr5g_disable_mode",0`` (Enable Both SA and NSA 5GNR)
 - ``AT+QNWPREFCFG="nr5g_disable_mode",1`` (Disable SA 5GNR only)
 - ``AT+QNWPREFCFG="nr5g_disable_mode",2`` (Disable NSA 5GNR only)
-- ``AT+QNWPREFCFG="nr5g_band"`` (Get current 5GNR bandlock
-                    settings)
+- ``AT+QNWPREFCFG="nr5g_band"`` (Get current SA 5GNR bandlock settings)
+- ``AT+QNWPREFCFG="nsa_nr5g_band"`` (Get current NSA 5GNR bandlock settings)
 - ``AT+QNWPREFCFG="nr5g_band",1:2:3:4:5:6`` (Example: Lock to SA 5G/NR bands n1,n2,n3,n4,n5, and n6)
+- ``AT+QNWPREFCFG="nsa_nr5g_band",1:2:3:4:5:6`` (Example: Lock to SA 5G/NR bands n1,n2,n3,n4,n5, and n6)
 - ``AT+QNWPREFCFG="lte_band"`` (Get current 4GLTE bandlock settings)
 - ``AT+QNWPREFCFG="lte_band",1:2:3:4:5:6`` (Example: Lock to 4G/LTE bands 1,2,3,4,5, and 6)
 - ``AT+QMAP="WWAN"`` (Show currently assigned IPv4 and IPv6 from the provider)
