@@ -77,6 +77,7 @@ Tip: APN automatic selection will somtimes choose the wrong APN. You may need to
    - ``AT+QUIMSLOT=1`` (switch to sim slot 1)
    - ``AT+QUIMSLOT=2`` (switch to sim slot 2)           
  - ``AT+CGDCONT?`` (Get active APN profle st 1 through 8)
+ - ``AT+QMBNCFG="AutoSel",0;+QMBNCFG="Deactivate"`` (Disable Automatic APN selection)(You will need to set your APN when you switch SIMs or Slots)(Can also set APN after you switch the run ``AT+CFUN=0;CFUN=1``
    - ``AT+CGDCONT=1,"IPV4V6","APNHERE"`` (Sets APN profile 1 to APNHERE using both IPV4 and IPV6)
   - ``AT+GSN`` (Show current IMEI)
   - ``AT+EGMR=0,7`` (Show current IMEI)
