@@ -239,7 +239,7 @@ install_update_tailscale() {
 
     # Download the latest Tailscale package
     echo -e "\e[1;32mDownloading latest Tailscale package...\e[0m"
-    wget -O "$TAILSCALE_TGZ" "$TAILSCALE_URL"
+    curl "$TAILSCALE_URL" -o "$TAILSCALE_TGZ"
     if [ $? -ne 0 ]; then
         echo -e "\e[1;31mFailed to download Tailscale package. Please check your internet connection.\e[0m"
         rm -f "$TAILSCALE_TGZ"
