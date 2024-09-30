@@ -1,11 +1,46 @@
-# RGMII Toolkit
-Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2 to RJ45 adapter (RGMII)
+# RC PCIe Toolkit
+Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2 to RJ45 adapter (RC PCIe)
+
+Example: https://rework.network/collections/lte-home-gateway/products/5g2phy
 
 Current Branch: **SDXPINN**
 
 This is a work in progress branch for early development for the RM551E-GL modem (Will probably work on the 550 as well)
 
-# Devleopment Branch: the below commands will download the beta/work in progress toolkit only for RM55x modems/SDXPINN platform
+# The below commands will download the beta/work in progress toolkit only for RM55x modems/SDXPINN platform
+
+# Current state:
+The toolkit will do the following:
+1. AT Commands
+	- Currently Not working. Just needs coded in.
+	
+2. First time setup/run me after a flash!
+	- You must reboot twise anytime after for this to be fully installed 
+	- Can only be ran after a flash at this time
+	- The biggest thing this option does is completely redoes the overlay system. By default the mounts are screwy. Installs mount-fix that does it at boot
+	- Installs init-watchdog to keep the real root filesystem's init.d in sync with the overlay filesystem in realtime
+	- Enables luci and installs the luci AT commands app
+	- Installs ttyd and shadow-login
+	- Installs other packages
+	- Enables dropbear ssh server
+	
+	
+3. TTL Setup
+	- Will allow you to set a TTL value
+	
+4. Set root password
+	- Runs the passwd utility so you can set your password for root
+
+5. Tailscale Management
+	- Will let you install tailscale
+		- First installs from opkg
+		- Then updates the tailscale and tailscaled to the latest from the static builds
+	- Will let you configure tailscale 
+		- No web server yet
+
+6. Install Speedtest.net CLI app (speedtest command)
+	- Will install the speedtest command (speedtest.net test) 
+	- After install type speedtest to use it
 
 ## How to Use
 **To run the Toolkit:**
@@ -32,20 +67,7 @@ You can send more than one command at once by sperating them with ``;`` and not 
 
 ## PCIe RC Ethernet mode setup
 
-### For RM500-RM521 modems
-``AT+QETH="eth_driver","r8125",1;+QCFG="pcie/mode",1;+QCFG="usbnet",1;+QMAP="MPDN_rule",0,1,0,1,1,"FF:FF:FF:FF:FF:FF";+QMAP="DHCPV4DNS","disable";+QCFG="usbcfg",0x2C7C,0x0801,1,1,1,1,1,2,0;+CFUN=1,1``
-
-This will do the following:
-
-- Set the 2.5Gig Ethernet driver as active
-- Enable PCIe RC mode
-- Set to ECM mode via USB and AP mode connection behavior
-- Enable IPPT
-- Enable DNS IPPT (disables onboard proxy)
-- Force Enables ADB Access 
-- Reboots after all the above
-
-
+For use with a board like the [Rework.Network PoE 2.5gig RJ45 sled](https://rework.network/collections/lte-home-gateway/products/5g2phy)
 
 ### For x70 modems (RM550/551)
 
@@ -131,7 +153,7 @@ Tip: APN automatic selection will somtimes choose the wrong APN. You may need to
 - ``AT+QMAP="LANIP"`` (Show current DHCP range and Gateway address for VLAN0)
 - ``AT+QMAP="LANIP",IP_start_range,IP_end_range,Gateway_IP `` (Set IPv4 Start/End range and Gateway IP of DHCP for VLAN0)
 - ``AT+QMAP="DHCPV4DNS","disable"`` (disable the onboard DNS proxy; recommended for IPPT)
-- ``AT+QMAP="MPDN_rule",0,1,0,1,1,"FF:FF:FF:FF:FF:FF"`` (Turn on IP Passthrough for Ethernet)
+- ``AT+QMAP="MPDN_rule",0,1,0,1,1,"FF:FF:FF:FF:FF:FF"``
 (:warning: On the RM551E-GL you must specify the ethernet devices MAC address instead of FF:FF:FF...)
 - ``AT+QMAP="MPDN_rule",0`` (turn off IPPT/clear MPDN rule 0; Remember to run AT+QMAPWAC=1 and reboot after)
 
