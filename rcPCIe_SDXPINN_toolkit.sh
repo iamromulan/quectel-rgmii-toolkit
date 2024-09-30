@@ -5,7 +5,7 @@
 # Define toolkit paths
 GITUSER="iamromulan"
 GITREPO="quectel-rgmii-toolkit"
-GITTREE="SDXPINN"
+GITTREE="development-SDXPINN"
 GITMAINTREE="SDXPINN"
 GITDEVTREE="development-SDXPINN"
 TMP_DIR="/tmp"
