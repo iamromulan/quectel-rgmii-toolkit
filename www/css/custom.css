@@ -1,0 +1,38 @@
+/*  */
+
+html {
+  visibility: hidden;
+}
+
+html.theme-dark,
+html.theme-light {
+  visibility: visible;
+}
+
+.body-margin {
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  height: 100vh;
+}
+
+.column-margin {
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+}
+
+.table.is-borderless td,
+.table.is-borderless th {
+  border: 0;
+}
+
+/* .font-is-semibold {
+    font-weight: 600;
+} */
+
+/* .content-end {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+} */
