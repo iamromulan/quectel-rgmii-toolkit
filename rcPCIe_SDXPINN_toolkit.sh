@@ -406,9 +406,10 @@ while true; do
             if [ $? -eq 1 ]; then continue; fi
             echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
             cd /usr/bin
-            wget https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-aarch64.tgz
+            curl -O https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-aarch64.tgz
             tar -xzf ookla-speedtest-1.2.0-linux-aarch64.tgz
             rm ookla-speedtest-1.2.0-linux-aarch64.tgz
+	    rm speedtest.7
             rm speedtest.md
             cd /
             echo -e "\e[1;32mSpeedtest CLI (speedtest command) installed!!\e[0m"
