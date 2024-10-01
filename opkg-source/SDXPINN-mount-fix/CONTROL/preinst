@@ -1,0 +1,15 @@
+#!/bin/ash
+
+# Check if /etc is mounted
+if grep -qs '/etc ' /proc/mounts; then
+    echo "Unmounting /etc..."
+    umount -lf /etc
+fi
+
+# Check if root filesystem is mounted as read-only
+if grep -qs " / " /proc/mounts | grep "(ro,"; then
+    echo "Remounting root filesystem as read-write..."
+    mount -o remount,rw /
+fi
+
+exit 0

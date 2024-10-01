@@ -1,0 +1,10 @@
+#!/bin/ash
+
+# Make the init script executable
+chmod +x /etc/init.d/mount-fix
+
+# Enable and start the service
+service mount-fix enable
+service mount-fix start
+
+exit 0

@@ -409,7 +409,7 @@ while true; do
             curl -O https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-aarch64.tgz
             tar -xzf ookla-speedtest-1.2.0-linux-aarch64.tgz
             rm ookla-speedtest-1.2.0-linux-aarch64.tgz
-	    rm speedtest.7
+			rm speedtest.7
             rm speedtest.md
             cd /
             echo -e "\e[1;32mSpeedtest CLI (speedtest command) installed!!\e[0m"
