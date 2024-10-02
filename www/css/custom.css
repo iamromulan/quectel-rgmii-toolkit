@@ -1,5 +1,13 @@
 /*  */
 
+/* import Poppins font */
+@import url('https://fonts.googleapis.com/css2?family=Euclid+Flex:wght@400;500;600;700&display=swap');
+
+/* use Poppins everywhere */
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
 html {
   visibility: hidden;
 }
@@ -27,12 +35,33 @@ html.theme-light {
   border: 0;
 }
 
-/* .font-is-semibold {
-    font-weight: 600;
-} */
+.cell {
+  display: grid;
+  height: 100%;
+}
 
-/* .content-end {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-} */
+#handleRefreshClickButton {
+  cursor: pointer;
+}
+
+#handleRefreshClickButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.fa-spin {
+  animation: fa-spin 2s infinite linear;
+}
+
+@keyframes fa-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+#dataConnState .tag {
+  transition: all 0.3s ease-in-out;
+}

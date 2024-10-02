@@ -19,7 +19,7 @@
       crossorigin="anonymous"
     ></script>
 
-    <script src="js/styles/nav-state.js"></script>
+    <script src="js/styles/nav-burger.js"></script>
     <script src="js/styles/toggle-theme.js"></script>
     <script defer src="/js/auth/auth.js"></script>
     <script src="/js/handle-at-input.js"></script>
@@ -41,79 +41,83 @@
           <img src="/assets/logo.png" alt="Logo" />
           <span class="title">QuecManager</span>
         </a>
-        <div
-          class="navbar-burger js-burger"
-          data-target="navbarExampleTransparentExample"
+        <a
+          role="button"
+          class="navbar-burger"
+          aria-label="menu"
+          aria-expanded="false"
+          data-target="navMenu"
         >
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
       </div>
 
-      <div id="navbarExampleTransparentExample" class="navbar-menu">
+      <div id="navMenu" class="navbar-menu">
         <div class="navbar-start ml-6">
           <a class="navbar-item" href="/"> Home </a>
           <div class="navbar-item has-dropdown is-hoverable">
             <a class="navbar-link"> Cellular </a>
             <div class="navbar-dropdown is-boxed">
               <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
-              <a class="navbar-item" href="/cell-locking.html">
-                Cell Locking
-              </a>
-              <a class="navbar-item" href="/cell-scanner.html">
-                Cell Scanner
-              </a>
-              <a class="navbar-item" href="/cell-settings.html">
-                Cell Settings
-              </a>
+              <a class="navbar-item" href="/cell-locking.html">Cell Locking</a>
+              <a class="navbar-item" href="/cell-scanner.html">Cell Scanner</a>
+              <a class="navbar-item" href="/cell-settings.html"
+                >Cell Settings</a
+              >
               <a class="navbar-item" href="/cell-sms.html"> Cell SMS </a>
             </div>
           </div>
-          <a class="navbar-item" href="/advance-settings.html"> Advance </a>
+          <a class="navbar-item has-text-weight-bold" href="/advance-settings.html"> Advance </a>
           <a class="navbar-item" href="/about.html"> About </a>
         </div>
 
         <div class="navbar-end">
           <div class="navbar-item">
-            <div class="field is-grouped">
-              <p class="control">
-                <a href="#" class="button is-link is-outlined">
+            <div class="buttons is-flex-direction-column-mobile">
+              <p class="control is-expanded-mobile">
+                <a
+                  href="#"
+                  class="button is-link is-outlined is-fullwidth-mobile"
+                >
                   <span class="icon">
                     <i class="fas fa-arrows-rotate"></i>
                   </span>
                   <span>Restart Connection</span>
                 </a>
               </p>
-              <p class="control">
-                <a href="#" class="button is-warning is-outlined">
-                  <span class="icon">
-                    <i class="fas fa-power-off"></i>
-                  </span>
-                </a>
-              </p>
-              <p class="control">
-                <a
-                  href="#"
-                  class="button is-warning is-outlined js-theme-toggle"
-                >
-                  <span class="icon">
-                    <i class="fas fa-sun"></i>
-                  </span>
-                </a>
-              </p>
-              <p class="control">
-                <a
-                  href="#"
-                  class="button is-warning is-outlined js-theme-toggle"
-                  id="logoutButton"
-                >
-                  <span class="icon">
-                    <i class="fas fa-right-from-bracket"></i>
-                  </span>
-                </a>
-              </p>
+              <div class="is-flex is-mobile is-align-items-center">
+                <p class="control">
+                  <a href="#" class="button is-warning is-outlined">
+                    <span class="icon">
+                      <i class="fas fa-power-off"></i>
+                    </span>
+                  </a>
+                </p>
+                <p class="control ml-2 is-mobile">
+                  <a
+                    href="#"
+                    class="button is-warning is-outlined js-theme-toggle"
+                  >
+                    <span class="icon">
+                      <i class="fas fa-sun"></i>
+                    </span>
+                  </a>
+                </p>
+                <p class="control ml-2 is-mobile">
+                  <a
+                    href="#"
+                    class="button is-warning is-outlined js-theme-toggle"
+                    id="logoutButton"
+                  >
+                    <span class="icon">
+                      <i class="fas fa-right-from-bracket"></i>
+                    </span>
+                  </a>
+                </p>
+              </div>
             </div>
           </div>
         </div>
