@@ -1,0 +1,114 @@
+#!/bin/sh
+
+# Determine the absolute path of the script
+SCRIPT_PATH=$(realpath "$0")
+
+download() {
+    if [ "$1" = "github" ]; then
+        download_github_directory "$2" "$3"
+    else
+        download_file "$1" "$2"
+    fi
+}
+
+download_file() {
+    url="$1"
+    output="${2:-$(basename "$url")}"
+
+    echo "Attempting to download file from URL: $url"
+    echo "Saving to output: $output"
+
+    # Ensure the output directory exists
+    mkdir -p "$(dirname "$output")"
+
+    if command -v curl > /dev/null 2>&1; then
+        curl -L -o "$output" "$url"
+    elif command -v wget > /dev/null 2>&1; then
+        wget -O "$output" "$url"
+    else
+        echo "Error: Neither curl nor wget is available."
+        exit 1
+    fi
+}
+
+download_github_directory() {
+    github_url="$1"
+    output_dir="${2:-.}"  # Set output directory to the provided parameter or current directory
+
+    repo_info=$(echo "$github_url" | sed -n 's|https://github.com/\([^/]*\)/\([^/]*\)/tree/\([^/]*\)/\(.*\)|\1 \2 \3 \4|p')
+    owner=$(echo "$repo_info" | cut -d' ' -f1)
+    repo=$(echo "$repo_info" | cut -d' ' -f2)
+    branch=$(echo "$repo_info" | cut -d' ' -f3)
+    directory=$(echo "$repo_info" | cut -d' ' -f4)
+
+    echo "Owner: $owner, Repo: $repo, Branch: $branch, Directory: $directory"
+
+    if [ -z "$owner" ] || [ -z "$repo" ] || [ -z "$branch" ] || [ -z "$directory" ]; then
+        echo "Error: Invalid GitHub URL."
+        exit 1
+    fi
+
+    echo "Output directory set to: $output_dir"
+
+    api_url="https://api.github.com/repos/$owner/$repo/contents/$directory?ref=$branch"
+    echo "Fetching directory contents from API URL: $api_url"
+
+    if command -v curl > /dev/null 2>&1; then
+        contents=$(curl -s -H "Accept: application/vnd.github.v3+json" "$api_url")
+    elif command -v wget > /dev/null 2>&1; then
+        contents=$(wget -qO- --header="Accept: application/vnd.github.v3+json" "$api_url")
+    else
+        echo "Error: Neither curl nor wget is available."
+        exit 1
+    fi
+
+    echo "API Response Contents:"
+    echo "$contents"
+
+    # Use awk to parse JSON content and prepare commands
+    echo "$contents" | awk -v output_dir="$output_dir" -v owner="$owner" -v repo="$repo" -v branch="$branch" -v script_path="$SCRIPT_PATH" '
+    BEGIN {
+        RS="},"; FS=","; # Set Record Separator to "}," and Field Separator to ","
+    }
+    /"type": "file"/ {
+        file_path = ""; download_url = "";
+        for (i = 1; i <= NF; i++) {
+            if ($i ~ /"path": "/) {
+                gsub(/.*"path": "/, "", $i);
+                gsub(/".*/, "", $i);
+                file_path = $i;
+            }
+            if ($i ~ /"download_url": "/) {
+                gsub(/.*"download_url": "/, "", $i);
+                gsub(/".*/, "", $i);
+                download_url = $i;
+            }
+        }
+        if (file_path && download_url) {
+            output_file_path = output_dir "/" file_path;
+            print "Calling download_file for:", download_url, "to", output_file_path;
+            system("'"$SCRIPT_PATH"'" " \"" download_url "\" \"" output_file_path "\"");
+        }
+    }
+    /"type": "dir"/ {
+        sub_dir = "";
+        for (i = 1; i <= NF; i++) {
+            if ($i ~ /"path": "/) {
+                gsub(/.*"path": "/, "", $i);
+                gsub(/".*/, "", $i);
+                sub_dir = $i;
+            }
+        }
+        if (sub_dir) {
+            print "Calling download_github_directory for sub-directory:", sub_dir;
+            system("'"$SCRIPT_PATH"'" " github \"https://github.com/" owner "/" repo "/tree/" branch "/" sub_dir "\" \"" output_dir "\"");
+        }
+    }'
+}
+
+if [ "$#" -eq 0 ]; then
+    echo "Usage: download <type> <url> [output_directory]"
+    exit 1
+else
+    download "$@"
+fi

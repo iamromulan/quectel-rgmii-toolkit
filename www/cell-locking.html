@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!-- Logo -->
+    <link rel="simpleadmin-logo" href="favicon.ico" />
+
+    <link rel="stylesheet" href="css/bulma/bulma.scss">
+    <link rel="stylesheet" href="css/bulma/css/bulma.min.css">
+    <link rel="stylesheet" href="css/bulma/css/bulma.css">
+    <link rel="stylesheet" href="css/custom.css">
+
+    <!-- Font awesome icons -->
+    <script src="https://kit.fontawesome.com/b0caedfab3.js" crossorigin="anonymous"></script>
+
+    <script src="js/styles/nav-burger.js"></script>
+    <script src="js/styles/toggle-theme.js"></script>
+    <script defer src="/js/auth/auth.js"></script>
+
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'theme-dark';
+            document.documentElement.classList.add(savedTheme);
+        })();
+    </script>
+
+    <title>QuecManager</title>
+</head>
+
+<body class="body-margin">
+    <nav class="navbar is-transparent">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="/">
+            <img src="/assets/logo.png" alt="Logo" />
+            <span class="title">QuecManager</span>
+          </a>
+          <a
+            role="button"
+            class="navbar-burger"
+            aria-label="menu"
+            aria-expanded="false"
+            data-target="navMenu"
+          >
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+  
+        <div id="navMenu" class="navbar-menu">
+          <div class="navbar-start ml-6">
+            <a class="navbar-item" href="/"> Home </a>
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link"> Cellular </a>
+              <div class="navbar-dropdown is-boxed">
+                <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
+                <a class="navbar-item" href="/cell-locking.html">Cell Locking</a>
+                <a class="navbar-item" href="/cell-scanner.html">Cell Scanner</a>
+                <a class="navbar-item" href="/cell-settings.html"
+                  >Cell Settings</a
+                >
+                <a class="navbar-item" href="/cell-sms.html"> Cell SMS </a>
+              </div>
+            </div>
+            <a class="navbar-item" href="/advance-settings.html"> Advance </a>
+            <a class="navbar-item" href="/about.html"> About </a>
+          </div>
+  
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons is-flex-direction-column-mobile">
+                <p class="control is-expanded-mobile">
+                  <a
+                    href="#"
+                    class="button is-link is-outlined is-fullwidth-mobile"
+                  >
+                    <span class="icon">
+                      <i class="fas fa-arrows-rotate"></i>
+                    </span>
+                    <span>Restart Connection</span>
+                  </a>
+                </p>
+                <div class="is-flex is-mobile is-align-items-center">
+                  <p class="control">
+                    <a href="#" class="button is-warning is-outlined">
+                      <span class="icon">
+                        <i class="fas fa-power-off"></i>
+                      </span>
+                    </a>
+                  </p>
+                  <p class="control ml-2 is-mobile">
+                    <a
+                      href="#"
+                      class="button is-warning is-outlined js-theme-toggle"
+                    >
+                      <span class="icon">
+                        <i class="fas fa-sun"></i>
+                      </span>
+                    </a>
+                  </p>
+                  <p class="control ml-2 is-mobile">
+                    <a
+                      href="#"
+                      class="button is-warning is-outlined js-theme-toggle"
+                      id="logoutButton"
+                    >
+                      <span class="icon">
+                        <i class="fas fa-right-from-bracket"></i>
+                      </span>
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+    <div class="column-margin">
+        <div class="fixed-grid has-2-cols has-1-cols-mobile">
+            <div class="grid is-gap-5">
+                <div class="cell">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-header-title">
+                                4G LTE Cell Locking
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="fixed-grid has-2-cols">
+                                <div class="grid">
+                                    <!-- Entry 1 Start -->
+                                    <div class="cell">
+                                        <div class="field">
+                                            <label class="label">EARFCN 1</label>
+                                            <div class="control has-icons-left">
+                                                <input class="input" type="email" placeholder="EARFCN">
+                                                <span class="icon is-left">
+                                                    <i class="fas fa-bolt"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="cell">
+                                        <div class="field">
+                                            <label class="label">PCI 1</label>
+                                            <div class="control has-icons-left">
+                                                <input class="input" type="email" placeholder="PCI">
+                                                <span class="icon is-left">
+                                                    <i class="fa-solid fa-signal"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Entry 1 End -->
+
+                                    <!-- Entry 2 Start -->
+                                    <div class="cell">
+                                        <div class="field">
+                                            <label class="label">EARFCN 2</label>
+                                            <div class="control has-icons-left">
+                                                <input class="input" type="email" placeholder="EARFCN">
+                                                <span class="icon is-left">
+                                                    <i class="fas fa-bolt"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="cell">
+                                        <div class="field">
+                                            <label class="label">PCI 2</label>
+                                            <div class="control has-icons-left">
+                                                <input class="input" type="email" placeholder="PCI">
+                                                <span class="icon is-left">
+                                                    <i class="fa-solid fa-signal"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Entry 2 End -->
+
+                                    <!-- Entry 3 Start -->
+                                    <div class="cell">
+                                        <div class="field">
+                                            <label class="label">EARFCN 3</label>
+                                            <div class="control has-icons-left">
+                                                <input class="input" type="email" placeholder="EARFCN">
+                                                <span class="icon is-left">
+                                                    <i class="fas fa-bolt"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="cell">
+                                        <div class="field">
+                                            <label class="label">PCI 3</label>
+                                            <div class="control has-icons-left">
+                                                <input class="input" type="email" placeholder="PCI">
+                                                <span class="icon is-left">
+                                                    <i class="fa-solid fa-signal"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Entry 3 End -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
+                                Lock LTE Cells
+                            </a>
+
+                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
+                                Reset
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cell">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-header-title">
+                                5G-NR SA Cell Locking
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="fixed-grid has-2-cols">
+                                <div class="grid">
+                                    <!-- Entry 1 Start -->
+                                    <div class="cell">
+                                        <div class="field">
+                                            <label class="label">NR ARFCN</label>
+                                            <div class="control has-icons-left">
+                                                <input class="input" type="email" placeholder="NR-ARFCN">
+                                                <span class="icon is-left">
+                                                    <i class="fas fa-bolt"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="cell">
+                                        <div class="field">
+                                            <label class="label">NR PCI</label>
+                                            <div class="control has-icons-left">
+                                                <input class="input" type="email" placeholder="NR PCI">
+                                                <span class="icon is-left">
+                                                    <i class="fa-solid fa-signal"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Entry 1 End -->
+
+                                    <!-- Entry 2 Start -->
+                                    <div class="cell">
+                                        <div class="field">
+                                            <label class="label">SCS</label>
+                                            <div class="control has-icons-left">
+                                                <span class="select">
+                                                    <select>
+                                                        <option selected>Select SCS</option>
+                                                        <option>15 kHz</option>
+                                                        <option>30 kHz</option>
+                                                        <option>60 kHz</option>
+                                                        <option>120 kHz</option>
+                                                        <option>240 kHz</option>
+                                                    </select>
+                                                </span>
+                                                <span class="icon is-left">
+                                                    <i class="fas fa-bolt"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="cell">
+                                        <div class="field">
+                                            <label class="label">NR Band</label>
+                                            <div class="control has-icons-left">
+                                                <input class="input" type="email" placeholder="NR Band">
+                                                <span class="icon is-left">
+                                                    <i class="fa-solid fa-signal"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Entry 2 End -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
+                                Lock SA Cells
+                            </a>
+
+                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
+                                Reset
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="content">
+            <div class="fixed-grid has-2-cols has-1-cols-mobile">
+                <div class="grid">
+                    <div class="cell">
+                        <div class="icon-text">
+                            <span class="icon has-text-info">
+                                <i class="fas fa-info-circle"></i>
+                            </span>
+                            <span>Information</span>
+                        </div>
+
+                        <p class="block has-text-weight-semibold">
+                            Cell locking is an advance feature and may cause network interruptions. <br />
+                            Cell locking will also only work with the main band (PCC) if you are using carrier
+                            aggregation.
+                            <br />
+                            Proceed with caution.
+                        </p>
+                    </div>
+
+                    <div class="cell">
+                        <div class="icon-text">
+                            <span class="icon has-text-info">
+                                <i class="fas fa-info-circle"></i>
+                            </span>
+                            <span>Current Active Locked Cells</span>
+                        </div>
+
+                        <p class="block has-text-weight-semibold">
+                            150/69, 1350/70, 1350/71
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

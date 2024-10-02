@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+    <!-- Logo -->
+    <link rel="simpleadmin-logo" href="favicon.ico" />
+
+    <link rel="stylesheet" href="css/bulma/bulma.scss" />
+    <link rel="stylesheet" href="css/bulma/css/bulma.min.css" />
+    <link rel="stylesheet" href="css/bulma/css/bulma.css" />
+    <link rel="stylesheet" href="css/custom.css" />
+
+    <!-- Font awesome icons -->
+    <script
+      src="https://kit.fontawesome.com/b0caedfab3.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="js/styles/toggle-theme.js"></script>
+    <script src="/js/home/main.js"></script>
+    <script src="/js/styles/nav-burger.js"></script>
+    <script defer src="/js/auth/auth.js"></script>
+
+    <script>
+      (function () {
+        const savedTheme = localStorage.getItem("theme") || "theme-dark";
+        document.documentElement.classList.add(savedTheme);
+      })();
+    </script>
+    <title>QuecManager</title>
+  </head>
+
+  <body class="body-margin">
+    <nav class="navbar is-transparent">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/">
+          <img src="/assets/logo.png" alt="Logo" />
+          <span class="title">QuecManager</span>
+        </a>
+        <a
+          role="button"
+          class="navbar-burger"
+          aria-label="menu"
+          aria-expanded="false"
+          data-target="navMenu"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+
+      <div id="navMenu" class="navbar-menu">
+        <div class="navbar-start ml-6">
+          <a class="navbar-item has-text-weight-bold" href="/"> Home </a>
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link"> Cellular </a>
+            <div class="navbar-dropdown is-boxed">
+              <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
+              <a class="navbar-item" href="/cell-locking.html">Cell Locking</a>
+              <a class="navbar-item" href="/cell-scanner.html">Cell Scanner</a>
+              <a class="navbar-item" href="/cell-settings.html"
+                >Cell Settings</a
+              >
+              <a class="navbar-item" href="/cell-sms.html"> Cell SMS </a>
+            </div>
+          </div>
+          <a class="navbar-item" href="/advance-settings.html"> Advance </a>
+          <a class="navbar-item" href="/about.html"> About </a>
+        </div>
+
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="buttons is-flex-direction-column-mobile">
+              <p class="control is-expanded-mobile">
+                <a
+                  href="#"
+                  class="button is-link is-outlined is-fullwidth-mobile"
+                >
+                  <span class="icon">
+                    <i class="fas fa-arrows-rotate"></i>
+                  </span>
+                  <span>Restart Connection</span>
+                </a>
+              </p>
+              <div class="is-flex is-mobile is-align-items-center">
+                <p class="control">
+                  <a href="#" class="button is-warning is-outlined">
+                    <span class="icon">
+                      <i class="fas fa-power-off"></i>
+                    </span>
+                  </a>
+                </p>
+                <p class="control ml-2 is-mobile">
+                  <a
+                    href="#"
+                    class="button is-warning is-outlined js-theme-toggle"
+                  >
+                    <span class="icon">
+                      <i class="fas fa-sun"></i>
+                    </span>
+                  </a>
+                </p>
+                <p class="control ml-2 is-mobile">
+                  <a
+                    href="#"
+                    class="button is-warning is-outlined js-theme-toggle"
+                    id="logoutButton"
+                  >
+                    <span class="icon">
+                      <i class="fas fa-right-from-bracket"></i>
+                    </span>
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Cards Start -->
+    <div class="column-margin">
+      <div class="level">
+        <div class="level-left">
+          <div class="level-item">
+            <h3 class="title is-3">Summary</h3>
+          </div>
+          <div class="level-item">
+            <button class="icon" id="handleRefreshClickButton">
+              <i class="fas fa-arrows-rotate has-text-link"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="fixed-grid has-1-cols-mobile has-2-cols-tablet has-4-cols-desktop"
+      >
+        <div class="grid is-size-7-touch">
+          <!-- Cell 1 Start -->
+          <div class="cell">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">SIM Card</div>
+              </div>
+              <div class="card-content">
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Sim Card Slot in Use</p>
+                  <p class="has-text-weight-bold">
+                    SIM <span id="simSlot"></span>
+                  </p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Sim Card State</p>
+                  <p class="has-text-weight-bold" id="simState"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Sim Card Provider</p>
+                  <p class="has-text-weight-bold" id="simProvider"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Phone Number</p>
+                  <p class="has-text-weight-bold" id="phoneNumber"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>IMSI</p>
+                  <p class="has-text-weight-bold" id="imsi"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>ICCID</p>
+                  <p class="has-text-weight-bold" id="iccid"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>IMEI</p>
+                  <p class="has-text-weight-bold" id="imei"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Cell 1 End -->
+
+          <!-- Cell 2 -->
+          <div class="cell">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">Connection</div>
+              </div>
+              <div class="card-content">
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>APN</p>
+                  <p class="has-text-weight-bold" id="apn"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Operator State</p>
+                  <p class="has-text-weight-bold" id="operatorState"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Functionality State</p>
+                  <p class="has-text-weight-bold" id="functionalityState"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Data Connection State</p>
+                  <p class="has-text-weight-bold" id="dataConnState"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Network Type</p>
+                  <p class="has-text-weight-bold" id="networkType"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Modem Temperature</p>
+                  <p class="has-text-weight-bold" id="temp"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Access Technology</p>
+                  <p class="has-text-weight-bold" id="accessTech"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Cell 2 End -->
+
+          <!-- Cell 3 -->
+          <div class="cell">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">Data Transmission</div>
+              </div>
+              <div class="card-content">
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Carrier Aggregation</p>
+                  <p class="has-text-weight-bold" id="caState"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Bandwidth</p>
+                  <p class="has-text-weight-bold" id="allBW"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Connected Band</p>
+                  <p class="has-text-weight-bold" id="allBands"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Signal Strength</p>
+                  <p class="has-text-weight-bold" id="signalStrength"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>MIMO Layers</p>
+                  <p class="has-text-weight-bold" id="mimoLayers"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Bytes Received</p>
+                  <p class="has-text-weight-bold" id="download"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Bytes Sent</p>
+                  <p class="has-text-weight-bold" id="upload"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Cell 3 End -->
+
+          <!-- Cell 4 -->
+          <div class="cell">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">Cellular Info</div>
+              </div>
+              <div class="card-content">
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Cell ID</p>
+                  <p class="has-text-weight-bold" id="cellID"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>TAC</p>
+                  <p class="has-text-weight-bold" id="lac"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Physical Cell ID</p>
+                  <p class="has-text-weight-bold" id="allPCID"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>E/ARFCN</p>
+                  <p class="has-text-weight-bold" id="allEARFCN"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Mobile Country Code</p>
+                  <p class="has-text-weight-bold" id="mcc"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Mobile Network Code</p>
+                  <p class="has-text-weight-bold" id="mnc"></p>
+                </div>
+
+                <div
+                  class="is-flex is-flex-direction-row is-justify-content-space-between is-align-content-center my-2"
+                >
+                  <p>Signal Assessment</p>
+                  <p class="has-text-weight-bold" id="signalAssessment"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Cell 4 End -->
+        </div>
+      </div>
+    </div>
+    <!-- Cards End -->
+
+    <!-- Bands Table Start -->
+    <div class="mt-6">
+      <div class="level">
+        <div class="level-left">
+          <div class="level-item">
+            <h3 class="title is-3">Bands</h3>
+          </div>
+        </div>
+      </div>
+      <table class="table is-fullwidth" id="bandTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>EARFCN</th>
+            <th>Bandwidth</th>
+            <th>Physical ID</th>
+            <th class="is-hidden-mobile">RSRP</th>
+            <th class="is-hidden-mobile">RSRQ</th>
+            <th class="is-hidden-mobile">SINR</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Automatically Generated Here -->
+        </tbody>
+      </table>
+    </div>
+    <!-- Bands Table End -->
+
+    <footer class="footer mt-6">
+      <div class="level">
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">WAN IPv4</p>
+            <p class="has-text-weight-semibold" id="wanIPv4"></p>
+          </div>
+        </div>
+
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">WAN IPv6</p>
+            <p class="has-text-weight-semibold" id="wanIPv6"></p>
+          </div>
+        </div>
+
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Refresh Rate</p>
+            <div class="dropdown is-hoverable is-up">
+              <div class="dropdown-trigger">
+                <button
+                  class="button"
+                  aria-haspopup="true"
+                  aria-controls="dropdown-menu3"
+                >
+                  <span>5s</span>
+                  <span class="icon is-small">
+                    <i class="fas fa-angle-up" aria-hidden="true"></i>
+                  </span>
+                </button>
+              </div>
+              <div class="dropdown-menu" id="dropdown-menu3" role="menu">
+                <div class="dropdown-content">
+                  <a href="#" class="dropdown-item"> 3s </a>
+                  <a href="#" class="dropdown-item"> 5s </a>
+                  <a href="#" class="dropdown-item"> 10s </a>
+                  <a href="#" class="dropdown-item"> 15s </a>
+                  <a href="#" class="dropdown-item"> 30s </a>
+                  <a href="#" class="dropdown-item"> 60s </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

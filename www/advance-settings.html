@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+    <!-- Logo -->
+    <link rel="simpleadmin-logo" href="favicon.ico" />
+
+    <link rel="stylesheet" href="css/bulma/bulma.scss" />
+    <link rel="stylesheet" href="css/bulma/css/bulma.min.css" />
+    <link rel="stylesheet" href="css/bulma/css/bulma.css" />
+    <link rel="stylesheet" href="css/custom.css" />
+
+    <!-- Font awesome icons -->
+    <script
+      src="https://kit.fontawesome.com/b0caedfab3.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="js/styles/nav-burger.js"></script>
+    <script src="js/styles/toggle-theme.js"></script>
+    <script defer src="/js/auth/auth.js"></script>
+    <script src="/js/handle-at-input.js"></script>
+
+    <script>
+      (function () {
+        const savedTheme = localStorage.getItem("theme") || "theme-dark";
+        document.documentElement.classList.add(savedTheme);
+      })();
+    </script>
+
+    <title>QuecManager</title>
+  </head>
+
+  <body class="body-margin">
+    <nav class="navbar is-transparent">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/">
+          <img src="/assets/logo.png" alt="Logo" />
+          <span class="title">QuecManager</span>
+        </a>
+        <a
+          role="button"
+          class="navbar-burger"
+          aria-label="menu"
+          aria-expanded="false"
+          data-target="navMenu"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+
+      <div id="navMenu" class="navbar-menu">
+        <div class="navbar-start ml-6">
+          <a class="navbar-item" href="/"> Home </a>
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link"> Cellular </a>
+            <div class="navbar-dropdown is-boxed">
+              <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
+              <a class="navbar-item" href="/cell-locking.html">Cell Locking</a>
+              <a class="navbar-item" href="/cell-scanner.html">Cell Scanner</a>
+              <a class="navbar-item" href="/cell-settings.html"
+                >Cell Settings</a
+              >
+              <a class="navbar-item" href="/cell-sms.html"> Cell SMS </a>
+            </div>
+          </div>
+          <a class="navbar-item has-text-weight-bold" href="/advance-settings.html"> Advance </a>
+          <a class="navbar-item" href="/about.html"> About </a>
+        </div>
+
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="buttons is-flex-direction-column-mobile">
+              <p class="control is-expanded-mobile">
+                <a
+                  href="#"
+                  class="button is-link is-outlined is-fullwidth-mobile"
+                >
+                  <span class="icon">
+                    <i class="fas fa-arrows-rotate"></i>
+                  </span>
+                  <span>Restart Connection</span>
+                </a>
+              </p>
+              <div class="is-flex is-mobile is-align-items-center">
+                <p class="control">
+                  <a href="#" class="button is-warning is-outlined">
+                    <span class="icon">
+                      <i class="fas fa-power-off"></i>
+                    </span>
+                  </a>
+                </p>
+                <p class="control ml-2 is-mobile">
+                  <a
+                    href="#"
+                    class="button is-warning is-outlined js-theme-toggle"
+                  >
+                    <span class="icon">
+                      <i class="fas fa-sun"></i>
+                    </span>
+                  </a>
+                </p>
+                <p class="control ml-2 is-mobile">
+                  <a
+                    href="#"
+                    class="button is-warning is-outlined js-theme-toggle"
+                    id="logoutButton"
+                  >
+                    <span class="icon">
+                      <i class="fas fa-right-from-bracket"></i>
+                    </span>
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="column-margin">
+      <div class="fixed-grid has-2-cols has-1-cols-mobile">
+        <div class="grid">
+          <div class="cell">
+            <div class="card">
+              <form id="commandForm">
+                <div class="card-header">
+                  <div class="card-header-title">AT command Terminal</div>
+                </div>
+                <div class="card-content">
+                  <div class="fixed-grid has-1-cols">
+                    <div class="grid is-gap-5">
+                      <div class="cell">
+                        <div class="field">
+                          <label class="label">AT Command</label>
+                          <div class="control">
+                            <textarea
+                              class="textarea"
+                              id="output"
+                              placeholder="AT Response"
+                              rows="10"
+                              disabled
+                            ></textarea>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="cell">
+                        <div class="field">
+                          <label class="label">Input AT Command</label>
+                          <div class="control">
+                            <input
+                              class="input"
+                              type="text"
+                              placeholder="ATI"
+                              id="command"
+                              name="command"
+                            />
+                          </div>
+                          <p class="help">
+                            Some commands may take time to execute so wait
+                            patiently.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <a
+                    href="#"
+                    class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                    id="sendCommand"
+                  >
+                    Send AT Command
+                  </a>
+                  <a
+                    href="#"
+                    class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                    id="resetForm"
+                  >
+                    Reset
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="cell">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">Advance Settings</div>
+              </div>
+              <div class="card-content">
+                <div class="fixed-grid has-1-cols">
+                  <div class="grid is-gap-5">
+                    <div class="cell">
+                      <div class="fixed-grid has-2-cols has-1-cols-mobile">
+                        <div class="grid">
+                          <div class="cell">
+                            <div class="field">
+                              <label class="label">IP Passthrough Mode</label>
+                              <p class="control has-icons-left">
+                                <span class="select">
+                                  <select>
+                                    <option selected>
+                                      Select IP Passthrough Mode
+                                    </option>
+                                    <option>Disable</option>
+                                    <option>ETH Only</option>
+                                    <option>USB Only</option>
+                                  </select>
+                                </span>
+                                <span class="icon is-small is-left">
+                                  <i class="fas fa-ethernet"></i>
+                                </span>
+                              </p>
+                              <p class="help">
+                                Selecting a mode will apply immediately.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div class="cell">
+                            <div class="field">
+                              <label class="label">USB Modem Protocol</label>
+                              <p class="control has-icons-left">
+                                <span class="select">
+                                  <select>
+                                    <option selected>
+                                      Select USB Modem Protocol
+                                    </option>
+                                    <option>RMNET</option>
+                                    <option>ECM (Recommended)</option>
+                                    <option>MBIM</option>
+                                    <option>RNDIS</option>
+                                  </select>
+                                </span>
+                                <span class="icon is-small is-left">
+                                  <i class="fas fa-network-wired"></i>
+                                </span>
+                              </p>
+                              <p class="help">
+                                Selecting a mode will apply immediately.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div class="cell">
+                            <div class="field">
+                              <label class="label"
+                                >Onboard DNS Proxy Mode</label
+                              >
+                              <p class="control has-icons-left">
+                                <span class="select">
+                                  <select>
+                                    <option selected>
+                                      Select Onboard DNS Proxy
+                                    </option>
+                                    <option>Enable</option>
+                                    <option>Disable</option>
+                                  </select>
+                                </span>
+                                <span class="icon is-small is-left">
+                                  <i class="fas fa-server"></i>
+                                </span>
+                              </p>
+                              <p class="help">
+                                Selecting a mode will apply immediately.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="cell">
+                      <div class="fixed-grid has-2-cols">
+                        <div class="grid is-gap-3">
+                          <div class="cell">
+                            <div class="field">
+                              <label class="label">TTL State</label>
+                              <div class="control has-icons-right">
+                                <input
+                                  class="input is-danger"
+                                  placeholder="Disabled"
+                                  disabled
+                                />
+                                <span class="icon is-small is-right">
+                                  <i class="fas fa-exclamation-triangle"></i>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="cell">
+                            <div class="field">
+                              <label class="label">TTL Value</label>
+                              <div class="control has-icons-right">
+                                <input
+                                  class="input is-danger"
+                                  placeholder="0"
+                                  disabled
+                                />
+                                <span class="icon is-small is-right">
+                                  <i class="fas fa-exclamation-triangle"></i>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="cell is-col-span-2">
+                            <div class="field">
+                              <label class="label">TTL Value to Set</label>
+                              <div class="control has-icons-left">
+                                <input
+                                  class="input"
+                                  type="number"
+                                  placeholder="Custom TTL Value"
+                                  value="bulma"
+                                />
+                                <span class="icon is-small is-left">
+                                  <i class="fas fa-wifi"></i>
+                                </span>
+                              </div>
+                              <p
+                                class="help is-success has-text-weight-semibold"
+                              >
+                                Set the TTL Value to 0 to disable.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Save
+                </a>
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Reset
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="content">
+        <div class="fixed-grid has-2-cols has-1-cols-mobile">
+          <div class="grid">
+            <div class="cell">
+              <div class="icon-text">
+                <span class="icon has-text-info">
+                  <i class="fas fa-info-circle"></i>
+                </span>
+                <span>Information</span>
+              </div>
+
+              <p class="block has-text-weight-semibold">
+                Use AT custom commands only if you know what you are doing.
+              </p>
+            </div>
+
+            <div class="cell">
+              <div class="icon-text">
+                <span class="icon has-text-info">
+                  <i class="fas fa-info-circle"></i>
+                </span>
+                <span>Information</span>
+              </div>
+
+              <p class="block has-text-weight-semibold">
+                Selecting a mode will apply immediately and will also disconnect
+                from the network.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <script>
+      // Handle form submission via JavaScript
+      document
+        .getElementById("sendCommand")
+        .addEventListener("click", function (e) {
+          e.preventDefault(); // Prevent default link behavior
+
+          const commandInput = document.getElementById("command").value;
+          const outputTextarea = document.getElementById("output");
+
+          // Make sure input is not empty
+          if (commandInput.trim() === "") {
+            outputTextarea.value = "Please enter a valid AT command.";
+            return;
+          }
+
+          // Send the AT command to the CGI script via fetch
+          fetch("/cgi-bin/atinout_handler.sh", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: `command=${encodeURIComponent(commandInput)}`,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              // Display the response in the textarea
+              if (data.output) {
+                outputTextarea.value = data.output;
+              } else {
+                outputTextarea.value = "Error: No output received.";
+              }
+            })
+            .catch((error) => {
+              outputTextarea.value = `Error fetching data: ${error.message}`;
+            });
+        });
+
+      // Reset form functionality
+      document
+        .getElementById("resetForm")
+        .addEventListener("click", function (e) {
+          e.preventDefault();
+          document.getElementById("commandForm").reset();
+          document.getElementById("output").value = "";
+        });
+    </script>
+  </body>
+</html>

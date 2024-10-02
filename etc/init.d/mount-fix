@@ -1,0 +1,133 @@
+#!/bin/sh /etc/rc.common
+
+START=03
+
+start() {
+    # Log to tmp
+    rm /tmp/mount-fix.log
+    /bin/touch /tmp/mount-fix.log
+    /bin/echo "Begin mount fix process to make a usable userspace" >> /tmp/mount-fix.log
+
+    # Forcefully unmount /etc
+    /bin/echo "Unmounting the tiny overlay at /etc" >> /tmp/mount-fix.log
+    /bin/umount -lf /etc >> /tmp/mount-fix.log
+
+    # Remount root filesystem as read-write
+    /bin/echo "Remounting / as read-write" >> /tmp/mount-fix.log
+    /bin/mount -o remount,rw / >> /tmp/mount-fix.log
+
+    # Check if /overlay/etc-upper/merged.done exists
+    /bin/echo "First time this is ran the stuff you have been putting in the old overlay needs merged." >> /tmp/mount-fix.log
+    /bin/echo "Looking for evidence that this has already happened..." >> /tmp/mount-fix.log
+    if [ ! -f /overlay/etc-upper/merged.done ]; then
+        /bin/echo "/overlay/etc-upper/merged.done not found, merging /overlay/etc-upper/* to /etc/" >> /tmp/mount-fix.log
+        cp -rf /overlay/etc-upper/* /etc/ >> /tmp/mount-fix.log
+        /bin/touch /overlay/etc-upper/merged.done >> /tmp/mount-fix.log
+    else
+        /bin/echo "/overlay/etc-upper/merged.done found, skipping merge" >> /tmp/mount-fix.log
+    fi
+
+    # Unmount /overlay
+    /bin/echo "Unmounting the no longer needed /overlay" >> /tmp/mount-fix.log
+    /bin/umount /overlay >> /tmp/mount-fix.log
+
+    # Check if /etc/opkg.conf has a line containing "option overlay_root /overlay" and remove it if it exists
+    /bin/echo "Lets be sure your opkg config isn't using the old overlay" >> /tmp/mount-fix.log
+    if grep -q "option overlay_root /overlay" /etc/opkg.conf; then
+        /bin/echo "Removing 'option overlay_root /overlay' from /etc/opkg.conf" >> /tmp/mount-fix.log
+        sed -i '/option overlay_root \/overlay/d' /etc/opkg.conf >> /tmp/mount-fix.log
+    else
+        /bin/echo "'option overlay_root /overlay' not found in /etc/opkg.conf, no changes made" >> /tmp/mount-fix.log
+    fi
+
+    # Ensure necessary directories exist for overlay and pivot_root
+    /bin/echo "Creating new overlay system" >> /tmp/mount-fix.log
+    if [ ! -d /data/rootfs ]; then
+        mkdir -p /data/rootfs
+    fi
+    if [ ! -d /data/rootfs-workdir ]; then
+        mkdir -p /data/rootfs-workdir
+    fi
+    if [ ! -d /rootfs ]; then
+        mkdir -p /rootfs
+    fi
+
+    # Mount the new overlay filesystem
+    /bin/mount -t overlay overlay -o lowerdir=/,upperdir=/data/rootfs,workdir=/data/rootfs-workdir /rootfs >> /tmp/mount-fix.log
+
+    # Create the real_rootfs directory in the new root
+    if [ ! -d /rootfs/real_rootfs ]; then
+        mkdir -p /rootfs/real_rootfs
+    fi
+
+    # Pivot root to the new root
+    /bin/echo "Pivoting Root / to /rootfs; Be back soon!!" >> /tmp/mount-fix.log
+    /sbin/pivot_root /rootfs /rootfs/real_rootfs >> /tmp/mount-fix.log
+
+    # Move the mounted filesystems to the new locations
+    /bin/mount --move /real_rootfs/sys /sys >> /tmp/mount-fix.log
+    /bin/mount --move /real_rootfs/proc /proc >> /tmp/mount-fix.log
+    /bin/mount --move /real_rootfs/tmp /tmp >> /tmp/mount-fix.log
+    /bin/mount --move /real_rootfs/dev /dev >> /tmp/mount-fix.log
+    /bin/mount --move /real_rootfs/firmware /firmware >> /tmp/mount-fix.log
+    /bin/mount --move /real_rootfs/persist /persist >> /tmp/mount-fix.log
+    /bin/mount --move /real_rootfs/cache /cache >> /tmp/mount-fix.log
+    /bin/mount --move /real_rootfs/data /data >> /tmp/mount-fix.log
+
+    # Synchronize /etc/rc.d/ and /real_rootfs/etc/rc.d/
+    /bin/echo "Synchronizing /etc/rc.d/ and /real_rootfs/etc/rc.d/" >> /tmp/mount-fix.log
+    for link in /etc/rc.d/*; do
+        if [ -L "$link" ]; then
+            link_name=$(basename "$link")
+            if [ ! -e "/real_rootfs/etc/rc.d/$link_name" ]; then
+                /bin/echo "Copying $link_name to /real_rootfs/etc/rc.d/" >> /tmp/mount-fix.log
+                cp -a "$link" "/real_rootfs/etc/rc.d/$link_name" >> /tmp/mount-fix.log
+            fi
+        fi
+    done
+
+    for link in /real_rootfs/etc/rc.d/*; do
+        if [ -L "$link" ]; then
+            link_name=$(basename "$link")
+            if [ ! -e "/etc/rc.d/$link_name" ]; then
+                /bin/echo "Removing $link_name from /real_rootfs/etc/rc.d/" >> /tmp/mount-fix.log
+                rm "/real_rootfs/etc/rc.d/$link_name" >> /tmp/mount-fix.log
+            fi
+        fi
+    done
+
+    # Final logs and remount the original root as read-only
+    /bin/echo "...and we're back! The original root now lives at /real_rootfs" >> /tmp/mount-fix.log
+    /bin/echo "Lets mount it as read-only for now, If you need it just remount it as read-write" >> /tmp/mount-fix.log
+    /bin/mount -o remount,ro /real_rootfs >> /tmp/mount-fix.log
+    /bin/echo "Overlay and pivot_root setup completed" >> /tmp/mount-fix.log
+}
+
+stop() {
+    /bin/echo "Stopping and reverting overlay and pivot_root" >> /tmp/mount-fix.log
+
+    # Remount the original root filesystem as read-write
+    /bin/mount -o remount,rw /real_rootfs >> /tmp/mount-fix.log
+
+    # Move the mounted filesystems back to the original locations
+    /bin/mount --move /sys /real_rootfs/sys >> /tmp/mount-fix.log
+    /bin/mount --move /proc /real_rootfs/proc >> /tmp/mount-fix.log
+    /bin/mount --move /tmp /real_rootfs/tmp >> /tmp/mount-fix.log
+    /bin/mount --move /dev /real_rootfs/dev >> /tmp/mount-fix.log
+    /bin/mount --move /firmware /real_rootfs/firmware >> /tmp/mount-fix.log
+    /bin/mount --move /persist /real_rootfs/persist >> /tmp/mount-fix.log
+    /bin/mount --move /cache /real_rootfs/cache >> /tmp/mount-fix.log
+    /bin/mount --move /data /real_rootfs/data >> /tmp/mount-fix.log
+
+    # Pivot root back to the original root
+    /sbin/pivot_root /real_rootfs /real_rootfs/rootfs >> /tmp/mount-fix.log
+
+    /bin/echo "Reverted pivot_root" >> /tmp/mount-fix.log
+    /bin/echo "Previous root overlay available at /rootfs" >> /tmp/mount-fix.log
+}
+
+restart() {
+    /bin/echo "This script should only be executed once at boot"
+    /bin/echo "Use Stop to undo the pivot"
+	/bin/echo "Use Start to put it back"
+}

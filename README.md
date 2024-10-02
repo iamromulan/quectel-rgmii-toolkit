@@ -1,40 +1,46 @@
-# RGMII Toolkit
-Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2 to RJ45 adapter (RGMII)
+# RC PCIe Toolkit
+Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2 to RJ45 adapter (RC PCIe)
 
-Current Branch: **Development**
+Example: https://rework.network/collections/lte-home-gateway/products/5g2phy
 
-Please PR to this branch instead of main :)
+Current Branch: **SDXPINN**
 
-Fork development, and PR development to development :)
+This is a work in progress branch for early development for the RM551E-GL modem (Will probably work on the 550 as well)
 
+# The below commands will download the beta/work in progress toolkit only for RM55x modems/SDXPINN platform
 
-#### [JUMP TO HOW TO USE](#how-to-use)
-**Currently:** This will allow you to install or if already installed, update, remove, or modify:
- - Simple Admin: A simple web interface for managing your Quectel m.2 modem through it's gateway address
-	 - It will install socat-at-bridge: sets up ttyOUT and ttyOUT2 for AT commands. You'll be able to use the `atcmd` command as well for an interactive at command session from adb, ssh, or ttyd
-	 - It will install simplefirewall: A simple firewall that blocks definable incoming ports and a TTL mangle option/modifier. As of now only the TTL is controllable through Simple Admin. You can edit port block options and TTL from the 3rd option in the toolkit
- - Tailscale: A magic VPN for accessing Simple Admin, SSH, and ttyd on the go. The Toolkit installs the Tailscale client directly to the modem and allows you to login and configure other settings. Head over to tailscale.com to sign up for a free account and learn more.
- - Schedule a Daily Reboot at a specified time
- - A fix for certain modems that don't start in CFUN=1 mode
- - Entware/OPKG: A package installer/manager/repo
-	- Run `opkg help` to see how to use it
-	- These packages are installable: https://bin.entware.net/armv7sf-k3.2/Packages.html
- - TTYd: A shell session right from your browser
-	 - Currently this uses port 443 but SSL/TLS is not in use (http only for now)
-	 - Entware/OPKG is required so it will install it if it isn't installed
-	 - This will replace the stock Quectel login and passwd binaries with ones from entware
+# Current state:
+The toolkit will do the following:
+1. AT Commands
+	- Currently Not working. Just needs coded in.
+	
+2. First time setup/run me after a flash!
+	- You must reboot twise anytime after for this to be fully installed 
+	- Can only be ran after a flash at this time
+	- The biggest thing this option does is completely redoes the overlay system. By default the mounts are screwy. Installs mount-fix that does it at boot
+	- Installs init-watchdog to keep the real root filesystem's init.d in sync with the overlay filesystem in realtime
+	- Enables luci and installs the luci AT commands app
+	- Installs ttyd and shadow-login
+	- Installs other packages
+	- Enables dropbear ssh server
+	
+	
+3. TTL Setup
+	- Will allow you to set a TTL value
+	
+4. Set root password
+	- Runs the passwd utility so you can set your password for root
 
-  
+5. Tailscale Management
+	- Will let you install tailscale
+		- First installs from opkg
+		- Then updates the tailscale and tailscaled to the latest from the static builds
+	- Will let you configure tailscale 
+		- No web server yet
 
-**My goal** is for this to also include any new useful scripts or software for this modem and others that support RGMII mode.
-## Screenshots
-
-![Home Page](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulansimpleindex.png?raw=true)
-![AT Commands](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulanatcommands.png?raw=true)
-![TTL](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulansimpleTTL.png?raw=true)
-![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulantoolkit.png?raw=true)
-
-# Devleopment Branch: the below commands will download the beta/work in progress toolkit 
+6. Install Speedtest.net CLI app (speedtest command)
+	- Will install the speedtest command (speedtest.net test) 
+	- After install type speedtest to use it
 
 ## How to Use
 **To run the Toolkit:**
@@ -44,95 +50,116 @@ Fork development, and PR development to development :)
  - Run `adb shell ping 8.8.8.8` to make sure the shell can access the internet. If you get an error, make sure the modem is connected to a cellular network and make sure `AT+QMAPWAC=1` as covered in the troubleshooting section: [I Can't get internet access from the Ethernet port (Common)](https://github.com/iamromulan/quectel-rgmii-configuration-notes/tree/main?tab=readme-ov-file#i-cant-get-internet-access-from-the-ethernet-port-common)
  - If you don't get an error you should be getting replies back endlessly, press `CTRL-C` to stop it.
  - Simply Copy/Paste this into your Command Prompt/Shell 
-```bash
-adb shell "cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh" && cd /
 ```
-
-**Or, if you want to stay in the modems shell when you are done**
-
-```
+adb root
 adb shell
 ```
 Then run
 ```
-cd /tmp && wget -O RMxxx_rgmii_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development/RMxxx_rgmii_toolkit.sh && chmod +x RMxxx_rgmii_toolkit.sh && ./RMxxx_rgmii_toolkit.sh && cd /
+cd /tmp && wget -O rcPCIe_SDXPINN_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/rcPCIe_SDXPINN_toolkit.sh && chmod +x rcPCIe_SDXPINN_toolkit.sh && ./rcPCIe_SDXPINN_toolkit.sh && cd /
 ```
-**You should see:**
-![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/iamromulantoolkit.png?raw=true)
-
-## Tailscale Installation and Config
-
-> :warning: Your modem must already be connected to the internet for this to install
-### Installation:
-Open up the toolkit main menu and **press 4** to enter the Tailscale menu
-
-![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/tailscalemenu.png?raw=true)
-
-**Press 1, wait for it to install. This is a very large file for the system so give it some time.**
-
-**Once done and it says Tailscale installed successfully press 2/enter to configure it.**
-
-![Toolkit](https://github.com/iamromulan/quectel-rgmii-configuration-notes/blob/main/images/tailscaleconfig.png?raw=true)
-
-If you want to, enable the Tailscale Web UI on port 8088 for configuration from the browser later by **pressing 1/enter**.
-
-To do it in the toolkit:
-First time connecting you'll be given a link to login with
- - Press 3 to just connect only.
- - Press 4 to connect and enable SSH access (remote command line) over tailscale.
- - Press 5 to reconnect with SSH off while connected with SSH on
- - Press 6 to disconnect
- - Press 7 to Logout
-
-That's it! From another device running tailscale you should be able to access your modem through the IP assigned to it by your tailnet. To access SSH from another device on the tailnet, open a terminal/command prompt and type
-
-    tailscale ssh root@(IP or Hostname)
-IP or Hostname being the IP or hostname assigned to it in your tailnet
-
- - Note that your SSH client must be able to give you a link to sign in with upon connecting. That's how the session is authorized. Works fine in Windows CMD or on Android use JuiceSSH.
-## Advanced/Beta
-
-### Entware/OPKG installation
 
 
-It isn't perfect yet so it goes here under Advanced/Beta for now. 
-Here's what you gotta know about going into it:
+# Useful AT Commands 
 
- - After installing, the `opkg` command will work
- - You can run `opkg list` to see a list of installable packages, or head over to  https://bin.entware.net/armv7sf-k3.2/Packages.html
- - Everything opkg does is installed to /opt
- - `/opt` is actually located at `/usrdata/opt` to save space but is   
-   mounted at `/opt`
- - Anything `opkg` installs will not be available in the system path by 
-   default but you can get around this either:
+You can send more than one command at once by sperating them with ``;`` and not including the AT part. ``AT+QENG="servingcell";+QCAINFO`` for example to see the info from both ``AT+QENG="servingcell"`` and ``AT+QCAINFO``
 
-#### Temporarily:
- Run this at the start of each adb shell or SSH shell session
 
-    export PATH=/opt/bin:/opt/sbin:$PATH
+## PCIe RC Ethernet mode setup
 
-#### Permanently:
-Symbolic linking each binary installed by the package to `/bin` and `/sbin` from `/opt/bin` and `/opt/sbin`
-For example, if you were to install zerotier:
+For use with a board like the [Rework.Network PoE 2.5gig RJ45 sled](https://rework.network/collections/lte-home-gateway/products/5g2phy)
 
-    opkg install zerotier
-    ln -sf /opt/bin/zerotier-one /bin
-    ln -sf /opt/bin/zerotier-cli /bin
-    ln -sf /opt/bin/zerotier-idtool /bin
+### For x70 modems (RM550/551)
 
-Now you can run those 3 binaries from the shell anytime since they are linked in a place already part of the system path.
+For BETA versions of firmware: the adb value 2 trick still works so one and done:
 
-I plan to create a watchdog service for /opt/bin and /opt/sbin that will automaticly link new packages to /bin or /sbin later on in order to combat this.
+``AT+QCFG="pcie/mode",1;+QCFG="usbnet",1;+QCFG="usbcfg",0x2C7C,0x0122,1,1,1,1,1,2,0;+CFUN=1,1``
 
-### TTYd installation
+OR if you are running the latest non-beta firmware 
 
-It isn't perfect yet so it goes here under Advanced/Beta for now. 
-Here's what you gotta know about going into it:
+``AT+QCFG="pcie/mode",1;+QCFG="usbnet",1``
 
- - This listens on port 443 for http requests (no SSL/TLS yet)
- - This will automaticly install entware and patch the login and passwd binaries with ones from entware
- - It will ask you to set a password for the `root` user account
- - TTYd doesn't seem to be too mobile friendly for now but I optimized it the best i could for now so it is at least usable through a smartphone browser. Hopefully the startup script can be improved even more later. 
+Then unlock ADB:
+
+Ask the modem for its adb code by sending: ``AT+QADBKEY?``
+
+It'll respond with something like ``+QADBKEY: 29229988``
+
+Take that number and paste it in this generator: https://onecompiler.com/python/3znepjcsq (hint: where it says STDIN)
+
+You should get something like 
+
+``AT+QADBKEY="mrX4zOPwdSIEjfM"``
+
+Send that command to the modem and adb will be able to be turned on with the next command
+
+Now you can turn it on with the usbcfg command ``AT+QCFG="usbcfg"``
+
+***Be super careful, this controls what ports are on/off over USB.***
+
+Run it and you will get the current settings. Something like this: 
+
+``+QCFG: "usbcfg",0x2C7C,0x0122,1,1,1,1,1,0,0``
+
+Send ``AT+QCFG="usbcfg",0x2C7C,0x0122,1,1,1,1,1,1,0`` to enable adb
+
+Now you can reboot: ``AT+CFUN=1,1``
+
+
+
+This will do the following:
+
+- Enable PCIe RC mode (Driver selection is automatic now) 
+- Set to ECM mode via USB and AP mode connection behavior
+- Force Enables ADB Access 
+- Reboots after all the above
+
+Tip: APN automatic selection will somtimes choose the wrong APN. You may need to set your APN after powering up with the SIM inserted.
+
+## The List
+  - ``AT+CFUN=1,1`` (reboot)
+  - ``AT+CFUN=0;CFUN=1`` (Disconnect then reconnect)(tip: run this after chnaging APN and you don't have to reboot)
+  - ``AT+QMAPWAC? ``(get current status of auto connect, 0=disabled 1=enabled)
+- ``AT+QMAPWAC=1`` (enable auto connect internet for ethernet)
+- ``AT+QMAPWAC=0`` (disable auto connect for ethernet; use when you want internet over USB to work; IPPT must be disabled)
+- ``AT+QUIMSLOT?`` (get active sim slot; 1=Slot 1; 2=Slot 2)
+   - ``AT+QUIMSLOT=1`` (switch to sim slot 1)
+   - ``AT+QUIMSLOT=2`` (switch to sim slot 2)           
+ - ``AT+CGDCONT?`` (Get active APN profle st 1 through 8)
+ - ``AT+QMBNCFG="AutoSel",0;+QMBNCFG="Deactivate"`` (Disable Automatic APN selection)(You will need to set your APN when you switch SIMs or Slots)(Can also set APN after you switch the run ``AT+CFUN=0;CFUN=1``
+   - ``AT+CGDCONT=1,"IPV4V6","APNHERE"`` (Sets APN profile 1 to APNHERE using both IPV4 and IPV6)
+  - ``AT+GSN`` (Show current IMEI)
+  - ``AT+EGMR=0,7`` (Show current IMEI)
+   - ``AT+EGMR=1,7,"IMEIGOESHERE"`` (sets/repairs IMEI)
+   - ``AT+QCFG="usbcfg",0x2C7C,0x0801,1,1,1,1,1,2,0`` (enables adb bypasses adb key)
+   - ``AT+QENG="servingcell"`` (shows anchor band and network connection status)
+- ``AT+QCAINFO`` (Show all connected bands/CA info)
+- ``AT+QNWPREFCFG="mode_pref"`` (Check what the current network search mode is set to)
+- ``AT+QNWPREFCFG="mode_pref",AUTO`` (Set network search mode to automatic)
+- ``AT+QNWPREFCFG="mode_pref",NR5G:LTE`` (Set network search mode to 5GNR and 4GLTE only)
+- ``AT+QNWPREFCFG="mode_pref",NR5G`` (Set network search mode to 5GNR only)
+- ``AT+QNWPREFCFG="mode_pref",LTE`` (Set network search mode to 4GLTE only)
+- ``AT+QNWPREFCFG="nr5g_disable_mode"`` (Check to see if SA or NSA NR5G is disabled)
+- ``AT+QNWPREFCFG="nr5g_disable_mode",0`` (Enable Both SA and NSA 5GNR)
+- ``AT+QNWPREFCFG="nr5g_disable_mode",1`` (Disable SA 5GNR only)
+- ``AT+QNWPREFCFG="nr5g_disable_mode",2`` (Disable NSA 5GNR only)
+- ``AT+QNWPREFCFG="nr5g_band"`` (Get current SA 5GNR bandlock settings)
+- ``AT+QNWPREFCFG="nsa_nr5g_band"`` (Get current NSA 5GNR bandlock settings)
+- ``AT+QNWPREFCFG="nr5g_band",1:2:3:4:5:6`` (Example: Lock to SA 5G/NR bands n1,n2,n3,n4,n5, and n6)
+- ``AT+QNWPREFCFG="nsa_nr5g_band",1:2:3:4:5:6`` (Example: Lock to SA 5G/NR bands n1,n2,n3,n4,n5, and n6)
+- ``AT+QNWPREFCFG="lte_band"`` (Get current 4GLTE bandlock settings)
+- ``AT+QNWPREFCFG="lte_band",1:2:3:4:5:6`` (Example: Lock to 4G/LTE bands 1,2,3,4,5, and 6)
+- ``AT+QMAP="WWAN"`` (Show currently assigned IPv4 and IPv6 from the provider)
+- ``AT+QMAP="LANIP"`` (Show current DHCP range and Gateway address for VLAN0)
+- ``AT+QMAP="LANIP",IP_start_range,IP_end_range,Gateway_IP `` (Set IPv4 Start/End range and Gateway IP of DHCP for VLAN0)
+- ``AT+QMAP="DHCPV4DNS","disable"`` (disable the onboard DNS proxy; recommended for IPPT)
+- ``AT+QMAP="MPDN_rule",0,1,0,1,1,"FF:FF:FF:FF:FF:FF"``
+(:warning: On the RM551E-GL you must specify the ethernet devices MAC address instead of FF:FF:FF...)
+- ``AT+QMAP="MPDN_rule",0`` (turn off IPPT/clear MPDN rule 0; Remember to run AT+QMAPWAC=1 and reboot after)
+
+
+
+
 
 ## Acknowledgements
 ### GitHub Users/Individuals:
