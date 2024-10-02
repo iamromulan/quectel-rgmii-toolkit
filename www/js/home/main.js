@@ -545,16 +545,30 @@ function createBandTableRow(bandData, networkType, servingCellJSON) {
     // Different parsing logic based on network type and band type
     if (networkType === "NR5G-SA") {
       if (bandType === "PCC") {
-        [earfcn, bandwidth, bandNumber, pci, rsrp, rsrq, sinr] = values;
+        [earfcn, bandwidth, bandNumber, pci] = values;
         // Parse the bandwidth using NR_BANDWIDTH_MAP
         bandwidth = bandwidth?.trim();
         bandwidth = NR_BANDWIDTH_MAP[bandwidth] || "Unknown";
+        // Get the rsrp, rsrq, and sinr values using the serving cell values
+        // servingcell",<state>,"NR5G-SA",<duplex_mode>,<MCC>,<MNC>,<cellID>,<PCID>,<TAC>,<ARFCN>,<band>,<NR_DL_bandwidth>,<RSRP>,<RSRQ>,<SINR>,<scs>,<srxlev>
+        const getNR5GSALine = servingCellJSON.find((line) =>
+          line.includes("NR5G-SA")
+        );
+        if (getNR5GSALine) {
+          const servingCellValues = getNR5GSALine.split(":")[1].split(",");
+          rsrp = servingCellValues[12].trim();
+          rsrq = servingCellValues[13].trim();
+          sinr = servingCellValues[14].trim();
+        }
       } else {
         // SCC
-        [earfcn, bandwidth, bandNumber, scell, pci, rsrp, rsrq, sinr] = values;
+        [earfcn, bandwidth, bandNumber, scell, pci] = values;
         // Parse the bandwidth using NR_BANDWIDTH_MAP
         bandwidth = bandwidth?.trim();
         bandwidth = NR_BANDWIDTH_MAP[bandwidth] || "Unknown";
+        rsrp = "N/A";
+        rsrq = "N/A";
+        sinr = "N/A";
       }
     } else {
       // NSA
