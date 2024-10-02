@@ -1,108 +1,45 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // Function to generate a random token
-  function generateAuthToken(length = 32) {
-    const charset =
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let token = "";
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * charset.length);
-      token += charset[randomIndex];
-    }
-    return token;
-  }
+#!/bin/sh
 
-  // Initially hide the body to prevent content from flashing
-  document.body.style.display = "none";
+# Set Content-Type for CGI script
+echo "Content-type: application/json"
+echo ""
 
-  // Check if the user is already logged in
-  const authToken = localStorage.getItem("authToken");
+# Read POST data
+read POST_DATA
 
-  // Define which pages should be protected
-  const protectedPages = [
-    "/home.html",
-    "advance-settings.html",
-    "/bandlock.html",
-    "/cell-locking.html",
-    "/cell-scanner.html",
-    "/cell-settings.html",
-    "/cell-sms.html",
-    "/about.html", // Add all the protected HTML pages here
-  ];
+# Extract the password from POST data (URL encoded)
+USER="root"
+INPUT_PASSWORD=$(echo "$POST_DATA" | sed -n 's/^.*password=\([^&]*\).*$/\1/p')
 
-  const currentPage = window.location.pathname;
+# URL-decode the password (replace + with space and decode %XX)
+INPUT_PASSWORD=$(echo "$INPUT_PASSWORD" | sed 's/+/ /g;s/%\(..\)/\\x\1/g' | xargs -0 printf "%b")
 
-  // If the user is not logged in and tries to access a protected page, redirect to login
-  if (!authToken && protectedPages.includes(currentPage)) {
-    window.location.href = "index.html";
-  } else {
-    // Show the page if authentication is successful or not required
-    document.body.style.display = "";
-  }
+# Log received password for debugging (remove in production)
+echo "Received password: $INPUT_PASSWORD" >&2
 
-  // If the user is logged in and tries to access the login page, redirect to home
-  if (authToken && currentPage.includes("index.html")) {
-    window.location.href = "home.html";
-  }
+# Extract the hashed password from /etc/shadow for the specified user
+USER_SHADOW_ENTRY=$(grep "^$USER:" /etc/shadow)
 
-  // Login form logic (only for login page)
-  const loginForm = document.getElementById("loginForm");
-  if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
+if [ -z "$USER_SHADOW_ENTRY" ]; then
+    echo '{"state":"failed", "message":"User not found"}'
+    exit 1
+fi
 
-      const username = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
-      const errorElement = document.getElementById("error");
+# Extract the password hash (it's the second field, colon-separated)
+USER_HASH=$(echo "$USER_SHADOW_ENTRY" | cut -d: -f2)
 
-      try {
-        const formData = new URLSearchParams();
-        formData.append("username", username);
-        formData.append("password", encodeURIComponent(password)); // URL-encode the password
+# Extract the salt (MD5 uses the $1$ prefix followed by the salt)
+SALT=$(echo "$USER_HASH" | cut -d'$' -f3)
 
-        const response = await fetch("/cgi-bin/auth.sh", {
-          method: "POST",
-          body: formData,
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        });
+# Generate a hash from the input password using the same salt
+GENERATED_HASH=$(echo "$INPUT_PASSWORD" | openssl passwd -1 -salt "$SALT" -stdin)
 
-        const result = await response.json(); // Parse JSON response
+# Log generated hash for debugging
+echo "Generated hash: $GENERATED_HASH" >&2
 
-        if (result.state === "success") {
-          const newToken = generateAuthToken();
-          localStorage.setItem("authToken", newToken); // Store the token
-          window.location.href = "home.html"; // Redirect on success
-        } else {
-          document.getElementById("error").textContent =
-            "Invalid username or password";
-          console.log("Invalid username or password");
-        }
-      } catch (error) {
-        // Handle any errors (e.g., network issues)
-        errorElement.textContent = "An error occurred. Please try again later.";
-      }
-    });
-  }
-
-  // Logout button logic (only for pages that have the logout button)
-  const logoutButton = document.getElementById("logoutButton");
-  if (logoutButton) {
-    logoutButton.addEventListener("click", () => {
-      localStorage.removeItem("authToken"); // Remove token
-      window.location.href = "index.html"; // Redirect to login
-    });
-  }
-
-  // Fix for the issue of being redirected to login every time the Home button is clicked
-  document.querySelectorAll(".navbar-item").forEach((el) => {
-    if (el.textContent.includes("Home")) {
-      el.addEventListener("click", (e) => {
-        if (localStorage.getItem("authToken")) {
-          e.preventDefault();
-          window.location.href = "home.html";
-        }
-      });
-    }
-  });
-});
+# Compare the generated hash with the one in the shadow file
+if [ "$GENERATED_HASH" = "$USER_HASH" ]; then
+    echo '{"state":"success", "hashed_password":"'"$GENERATED_HASH"'"}'
+else
+    echo '{"state":"failed", "hashed_password":"'"$GENERATED_HASH"'"}'
+fi
