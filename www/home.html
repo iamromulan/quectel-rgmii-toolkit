@@ -19,9 +19,12 @@
       crossorigin="anonymous"
     ></script>
 
-    <script src="js/styles/toggle-theme.js"></script>
+
     <script src="/js/home/main.js"></script>
+    <script src="js/styles/toggle-theme.js"></script>
     <script src="/js/styles/nav-burger.js"></script>
+    <script src="/js/styles/modal-trigger.js"></script>
+    <script src="/js/utils/reboot.js"></script>
     <script defer src="/js/auth/auth.js"></script>
 
     <script>
@@ -69,7 +72,14 @@
               <a class="navbar-item" href="/cell-sms.html"> Cell SMS </a>
             </div>
           </div>
-          <a class="navbar-item" href="/advance-settings.html"> Advance </a>
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link"> Advance </a>
+            <div class="navbar-dropdown is-boxed">
+              <a class="navbar-item" href="/advance-settings.html"> Advance Settings </a>
+              <a class="navbar-item" href="#">Experimental Features</a>
+              <a class="navbar-item" href="/cgi-bin/luci">OpenWRT Luci</a>
+            </div>
+          </div>
           <a class="navbar-item" href="/about.html"> About </a>
         </div>
 
@@ -89,11 +99,11 @@
               </p>
               <div class="is-flex is-mobile is-align-items-center">
                 <p class="control">
-                  <a href="#" class="button is-warning is-outlined">
+                  <div href="#" class="button is-warning is-outlined reboot-modal" data-target="reboot-modal" >
                     <span class="icon">
                       <i class="fas fa-power-off"></i>
                     </span>
-                  </a>
+                  </div>
                 </p>
                 <p class="control ml-2 is-mobile">
                   <a
@@ -463,5 +473,23 @@
         </div>
       </div>
     </footer>
+    <div id="reboot-modal" class="modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <section class="modal-card-body rounded-edge">
+          <p class="subtitle" id="modal-message">
+            Do you want to reboot the device?
+          </p>
+          <div id="loading-content" style="display: none;">
+            <div class="custom-loader"></div>
+            <div class="countdown-text">Rebooting... <span id="countdown">80</span>s</div>
+          </div>
+          <div class="buttons" id="modal-buttons">
+            <button class="button is-warning" id="rebootModem">Reboot</button>
+            <button class="button cancel" aria-label="close">Cancel</button>
+          </div>
+        </section>
+      </div>
+    </div>
   </body>
 </html>
