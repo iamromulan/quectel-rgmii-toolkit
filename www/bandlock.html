@@ -25,6 +25,7 @@
     <script src="/js/utils/reboot.js"></script>
     <script src="/js/utils/restart-connection.js"></script>
     <script defer src="/js/auth/auth.js"></script>
+    <script src="/js/band-locking/fetch-bands.js"></script>
 
     <script>
       (function () {
@@ -140,7 +141,7 @@
     <div class="column-margin">
       <div class="fixed-grid has-2-cols has-1-cols-mobile">
         <div class="grid is-gap-5">
-          <div class="cell">
+          <div class="cell is-col-span-2 is-col-span-1-mobile">
             <div class="card">
               <div class="card-header">
                 <div class="card-header-title">4G LTE Band Locking</div>
@@ -175,7 +176,7 @@
             </div>
           </div>
 
-          <div class="cell">
+          <!-- <div class="cell">
             <div class="card">
               <div class="card-header">
                 <div class="card-header-title">5G-NR SA Band Locking</div>
@@ -183,7 +184,6 @@
               <div class="card-content">
                 <div class="fixed-grid has-5-cols has-3-cols-mobile">
                   <div class="grid" id="sa_bands">
-                    <!-- SA bands will be populated here -->
                   </div>
                 </div>
               </div>
@@ -208,7 +208,7 @@
                 </a>
               </div>
             </div>
-          </div>
+          </div> -->
 
           <div class="cell">
             <div class="card">
@@ -335,7 +335,7 @@
         </section>
       </div>
     </div>
-    <script>
+    <!-- <script>
       // Function to fetch current active bands and display them in the footer
       async function fetchCurrentBands() {
         try {
@@ -385,13 +385,13 @@
 
           const lteBandsMatch = data.output.match(/"lte_band",([0-9:]+)/);
           const nsaBandsMatch = data.output.match(/"nsa_nr5g_band",([0-9:]+)/);
-          const saBandsMatch = data.output.match(/"nr5g_band",([0-9:]+)/);
+          // const saBandsMatch = data.output.match(/"nr5g_band",([0-9:]+)/);
           const saDcBandsMatch = data.output.match(
             /"nrdc_nr5g_band",([0-9:]+)/
           );
 
           if (lteBandsMatch) populateBands(lteBandsMatch[1], "#lte_bands");
-          if (saBandsMatch) populateBands(saBandsMatch[1], "#sa_bands");
+          // if (saBandsMatch) populateBands(saBandsMatch[1], "#sa_bands");
           if (nsaBandsMatch) populateBands(nsaBandsMatch[1], "#nsa_bands");
           if (saDcBandsMatch) populateBands(saDcBandsMatch[1], "#sanrdc_bands");
 
@@ -429,9 +429,9 @@
           const activeNsaBands = data.output
             .match(/"nsa_nr5g_band",([0-9:]+)/)[1]
             .split(":");
-          const activeSaBands = data.output
-            .match(/"nr5g_band",([0-9:]+)/)[1]
-            .split(":");
+          // const activeSaBands = data.output
+          //   .match(/"nr5g_band",([0-9:]+)/)[1]
+          //   .split(":");
           // get the the second to the last line of the output and use it for active sa-dc bands
           const activeSaDcBandsLine = data.output
             .split("\n")[6]
@@ -441,7 +441,7 @@
           // // Mark checkboxes as checked for active bands
           markActiveBands(activeLteBands, "#lte_bands");
           markActiveBands(activeNsaBands, "#nsa_bands");
-          markActiveBands(activeSaBands, "#sa_bands");
+          // markActiveBands(activeSaBands, "#sa_bands");
           markActiveBands(activeSaDcBandsLine, "#sanrdc_bands");
 
           // Fetch current active bands and display them in the footer
@@ -505,12 +505,12 @@
           uncheckAll("#nsa_bands");
         });
 
-      document
-        .getElementById("uncheckSa")
-        .addEventListener("click", function (event) {
-          event.preventDefault();
-          uncheckAll("#sa_bands");
-        });
+      // document
+      //   .getElementById("uncheckSa")
+      //   .addEventListener("click", function (event) {
+      //     event.preventDefault();
+      //     uncheckAll("#sa_bands");
+      //   });
 
       document
         .getElementById("uncheckSaDc")
@@ -675,6 +675,6 @@
 
       // Initial call to fetch supported bands on page load
       window.onload = fetchSupportedBands;
-    </script>
+    </script> -->
   </body>
 </html>
