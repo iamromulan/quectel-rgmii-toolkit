@@ -1,0 +1,33 @@
+#!/bin/ash
+
+# Replace distfeeds.conf with non-working sources commented out
+# Check if the temporary distfeeds.conf file exists
+if [ -f /tmp/distfeeds.conf ]; then
+    # Backup the existing /etc/opkg/distfeeds.conf if it exists
+    if [ -f /etc/opkg/distfeeds.conf ]; then
+        cp /etc/opkg/distfeeds.conf /etc/opkg/distfeeds.conf.bak
+        echo "Backed up original /etc/opkg/distfeeds.conf to /etc/opkg/distfeeds.conf.bak"
+    fi
+
+    # Move the new distfeeds.conf from /tmp to /etc/opkg
+    mv /tmp/distfeeds.conf /etc/opkg/distfeeds.conf
+    echo "Replaced /etc/opkg/distfeeds.conf with the custom version."
+else
+    echo "Error: /tmp/distfeeds.conf not found. Cannot replace /etc/opkg/distfeeds.conf."
+    exit 1
+fi
+
+
+# Make the init script executable
+chmod +x /etc/init.d/mount-fix
+chmod +x /etc/init.d/init-overlay-watchdog
+chmod +x /usr/sbin/init-overlay-watchdog.sh
+
+# Enable and start the service
+service mount-fix enable
+service init-overlay-watchdog enable
+service mount-fix start
+opkg update
+opkg install inotifywait inotifywatch
+service init-overlay-watchdog start
+exit 0

@@ -1,0 +1,13 @@
+#!/bin/ash
+
+# Check if /etc is mounted
+if grep -qs '/etc ' /proc/mounts; then
+    echo "Unmounting /etc..."
+    umount -lf /etc
+fi
+
+# Remount original rootfs as read-write 
+echo "Mounting / as read-write"
+mount -o remount,rw /
+
+exit 0

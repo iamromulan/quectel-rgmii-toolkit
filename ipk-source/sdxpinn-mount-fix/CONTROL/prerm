@@ -1,0 +1,8 @@
+#!/bin/ash
+
+service stop mount-fix
+service stop init-overlay-watchdog
+service disable mount-fix
+service disable init-overlay-watchdog
+
+exit 0
