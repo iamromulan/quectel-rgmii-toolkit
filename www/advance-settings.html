@@ -26,6 +26,8 @@
     <script src="/js/utils/restart-connection.js"></script>
     <script defer src="/js/auth/auth.js"></script>
     <script src="/js/advance/at-terminal.js"></script>
+    <script src="/js/advance/ttl-control.js"></script>
+    <script src="/js/advance/fetch-current.settings.js"></script>
 
     <script>
       (function () {
@@ -222,46 +224,72 @@
             <div class="card-content">
               <div class="fixed-grid has-1-cols">
                 <div class="grid is-gap-5">
-                  <div class="cell">
+                  <div class="cell advanced-settings">
                     <div class="fixed-grid has-2-cols has-1-cols-mobile">
                       <div class="grid">
-                        <div class="cell">
-                          <div class="field">
-                            <label class="label">IP Passthrough Mode</label>
-                            <p class="control has-icons-left">
-                              <span class="select">
-                                <select>
-                                  <option selected>
-                                    Select IP Passthrough Mode
-                                  </option>
-                                  <option>Disable</option>
-                                  <option>ETH Only</option>
-                                  <option>USB Only</option>
-                                </select>
-                              </span>
-                              <span class="icon is-small is-left">
-                                <i class="fas fa-ethernet"></i>
-                              </span>
-                            </p>
-                            <p class="help">
-                              Selecting a mode will apply immediately.
-                            </p>
+                        <div class="cell is-col-span-2 is-col-span-1-mobile">
+                          <div class="columns">
+                            <div class="column">
+                              <div class="field">
+                                <label class="label">IP Passthrough Mode</label>
+                                <p class="control has-icons-left">
+                                  <span class="select">
+                                    <select id="ip-passthrough-mode">
+                                      <option value="placeholder" selected>
+                                        Select IP Passthrough Mode
+                                      </option>
+                                      <option value="Disabled">Disabled</option>
+                                      <option value="ETH Only">ETH Only</option>
+                                      <option value="USB Only">USB Only</option>
+                                    </select>
+                                  </span>
+                                  <span class="icon is-small is-left">
+                                    <i class="fas fa-ethernet"></i>
+                                  </span>
+                                </p>
+                                <p class="help">
+                                  This will reboot the device to apply changes.
+                                </p>
+                              </div>
+                            </div>
+
+                            <div class="column">
+                              <div class="field">
+                                <label class="label">Connected Devices MAC</label>
+                                <p class="control has-icons-left">
+                                  <span class="select">
+                                    <select id="connected-devices">
+                                      <option selected>
+                                        Select Device MAC
+                                      </option>
+                                      <!-- Populate the options here -->
+                                    </select>
+                                  </span>
+                                  <span class="icon is-small is-left">
+                                    <i class="fas fa-laptop"></i>
+                                  </span>
+                                </p>
+                                <p class="help">
+                                  Selecting a device first before enabling.
+                                </p>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
-                        <div class="cell">
+                        <div class="cell advanced-settings">
                           <div class="field">
                             <label class="label">USB Modem Protocol</label>
                             <p class="control has-icons-left">
                               <span class="select">
-                                <select>
+                                <select id="usb-modem-protocol">
                                   <option selected>
                                     Select USB Modem Protocol
                                   </option>
-                                  <option>RMNET</option>
-                                  <option>ECM (Recommended)</option>
-                                  <option>MBIM</option>
-                                  <option>RNDIS</option>
+                                  <option value="RMNET">RMNET</option>
+                                  <option value="ECM (Recommended)">ECM (Recommended)</option>
+                                  <option value="MBIM">MBIM</option>
+                                  <option value="RNDIS">RNDIS</option>
                                 </select>
                               </span>
                               <span class="icon is-small is-left">
@@ -269,22 +297,22 @@
                               </span>
                             </p>
                             <p class="help">
-                              Selecting a mode will apply immediately.
+                              Selecting a mode will apply immediately. Requires reboot.
                             </p>
                           </div>
                         </div>
 
-                        <div class="cell">
+                        <div class="cell advanced-settings">
                           <div class="field">
                             <label class="label">Onboard DNS Proxy Mode</label>
                             <p class="control has-icons-left">
                               <span class="select">
-                                <select>
+                                <select id="dns-proxy-mode">
                                   <option selected>
                                     Select Onboard DNS Proxy
                                   </option>
-                                  <option>Enable</option>
-                                  <option>Disable</option>
+                                  <option value="Enabled">Enabled</option>
+                                  <option value="Disabled">Disabled</option>
                                 </select>
                               </span>
                               <span class="icon is-small is-left">
@@ -300,7 +328,7 @@
                     </div>
                   </div>
 
-                  <div class="cell">
+                  <!-- <div class="cell">
                     <div class="fixed-grid has-2-cols">
                       <div class="grid is-gap-3">
                         <div class="cell">
@@ -356,19 +384,81 @@
                         </div>
                       </div>
                     </div>
+                  </div> -->
+                  <div class="cell">
+                    <div class="fixed-grid has-2-cols">
+                      <div class="grid is-gap-3">
+                        <div class="cell">
+                          <div class="field">
+                            <label class="label">TTL State</label>
+                            <div class="control has-icons-right">
+                              <input
+                                id="ttl-state"
+                                class="input is-warning has-text-weight-bold"
+                                placeholder="Disabled"
+                                disabled
+                              />
+                              <span class="icon is-small is-right">
+                                <i
+                                  class="fas fa-exclamation-triangle has-text-warning"
+                                ></i>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="cell">
+                          <div class="field">
+                            <label class="label">Current TTL Value</label>
+                            <div class="control has-icons-right">
+                              <input
+                                id="ttl-current-value"
+                                class="input is-warning has-text-weight-bold has-text-white"
+                                placeholder="0"
+                                disabled
+                              />
+                              <span class="icon is-small is-right">
+                                <i
+                                  class="fas fa-exclamation-triangle has-text-warning"
+                                ></i>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="cell is-col-span-2">
+                          <div class="field">
+                            <label class="label">TTL Value to Set</label>
+                            <div class="control has-icons-left">
+                              <input
+                                id="ttl-set-value"
+                                class="input"
+                                type="number"
+                                placeholder="Custom TTL Value"
+                              />
+                              <span class="icon is-small is-left">
+                                <i class="fas fa-wifi"></i>
+                              </span>
+                            </div>
+                            <p class="help is-success has-text-weight-semibold">
+                              Set the TTL Value to 0 to disable.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             <div class="card-footer">
               <a
-                href="#"
+                id="ttl-submit"
                 class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
               >
-                Save
+                Apply TTL Settings
               </a>
               <a
-                href="#"
                 class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
               >
                 Reset
@@ -418,7 +508,7 @@
       <div class="modal-card">
         <section class="modal-card-body rounded-edge">
           <p class="subtitle" id="modal-message">
-            Do you want to reboot the device?
+            Do not do any action while the modem is rebooting.
           </p>
           <div id="loading-content" style="display: none">
             <div class="custom-loader"></div>
