@@ -23,6 +23,7 @@
     <script src="/js/styles/nav-burger.js"></script>
     <script src="/js/styles/modal-trigger.js"></script>
     <script src="/js/utils/reboot.js"></script>
+    <script src="/js/utils/restart-connection.js"></script>
     <script defer src="/js/auth/auth.js"></script>
     <script src="/js/advance/at-terminal.js"></script>
 
@@ -89,7 +90,10 @@
           <div class="navbar-item">
             <div class="buttons is-flex-direction-column-mobile">
               <div class="control is-expanded-mobile">
-                <div class="button is-link is-outlined is-fullwidth-mobile">
+                <div
+                  id="restartConnectionBtn"
+                  class="button is-link is-outlined is-fullwidth-mobile"
+                >
                   <span class="icon">
                     <i class="fas fa-arrows-rotate"></i>
                   </span>

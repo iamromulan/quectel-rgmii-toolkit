@@ -23,6 +23,7 @@
     <script src="/js/styles/nav-burger.js"></script>
     <script src="/js/styles/modal-trigger.js"></script>
     <script src="/js/utils/reboot.js"></script>
+    <script src="/js/utils/restart-connection.js"></script>
     <script defer src="/js/auth/auth.js"></script>
 
     <script>
@@ -87,7 +88,10 @@
           <div class="navbar-item">
             <div class="buttons is-flex-direction-column-mobile">
               <div class="control is-expanded-mobile">
-                <div class="button is-link is-outlined is-fullwidth-mobile">
+                <div
+                  id="restartConnectionBtn"
+                  class="button is-link is-outlined is-fullwidth-mobile"
+                >
                   <span class="icon">
                     <i class="fas fa-arrows-rotate"></i>
                   </span>
@@ -149,24 +153,24 @@
                 </div>
               </div>
               <div class="card-footer">
-                <div
+                <a
                   id="lockLte"
-                  class="button card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Lock LTE Bands
-                </div>
-                <div
+                </a>
+                <a
                   id="uncheckLte"
-                  class="button card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Uncheck All
-                </div>
-                <div
+                </a>
+                <a
                   id="resetLte"
-                  class="button card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Reset
-                </div>
+                </a>
               </div>
             </div>
           </div>
@@ -184,24 +188,24 @@
                 </div>
               </div>
               <div class="card-footer">
-                <div
+                <a
                   id="lockSa"
-                  class="button card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Lock SA Bands
-                </div>
-                <div
+                </a>
+                <a
                   id="uncheckSa"
-                  class="button card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Uncheck All
-                </div>
-                <div
+                </a>
+                <a
                   id="resetSa"
-                  class="button card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Reset
-                </div>
+                </a>
               </div>
             </div>
           </div>
@@ -219,24 +223,24 @@
                 </div>
               </div>
               <div class="card-footer">
-                <div
+                <a
                   id="lockNsa"
-                  class="button card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Lock NSA Bands
-                </div>
-                <div
+                </a>
+                <a
                   id="uncheckNsa"
-                  class="button card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Uncheck All
-                </div>
-                <div
+                </a>
+                <a
                   id="resetNsa"
-                  class="button card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Reset
-                </div>
+                </a>
               </div>
             </div>
           </div>
@@ -254,24 +258,24 @@
                 </div>
               </div>
               <div class="card-footer">
-                <div
+                <a
                   id="lockSaDc"
-                  class="button card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Lock SA-DC Bands
-                </div>
-                <div
+                </a>
+                <a
                   id="uncheckSaDc"
-                  class="button card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Uncheck All
-                </div>
-                <div
+                </a>
+                <a
                   id="resetSaDc"
-                  class="button card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Reset
-                </div>
+                </a>
               </div>
             </div>
           </div>
@@ -305,9 +309,7 @@
                 <span>Current Active Bands</span>
               </div>
 
-              <p class="block has-text-weight-semibold">
-                Band 1 / Band 3 / NR Band 41
-              </p>
+              <p class="block has-text-weight-semibold" id="currentBands"></p>
             </div>
           </div>
         </div>
@@ -323,7 +325,7 @@
           <div id="loading-content" style="display: none">
             <div class="custom-loader"></div>
             <div class="countdown-text">
-              Rebooting... <span id="countdown">40</span>s
+              Rebooting... <span id="countdown">80</span>s
             </div>
           </div>
           <div class="buttons" id="modal-buttons">
@@ -334,6 +336,43 @@
       </div>
     </div>
     <script>
+      // Function to fetch current active bands and display them in the footer
+      async function fetchCurrentBands() {
+        try {
+          const response = await fetch("/cgi-bin/atinout_handler.sh", {
+            method: "POST",
+            body: "command=" + encodeURIComponent("AT+QCAINFO"),
+          });
+
+          const data = await response.json();
+          // Extract active bands
+          // Find the lines that contains "LTE BAND <band number>" or "NR5G BAND <band number>" and append them to the currentBands variable
+          const lteBands = data.output.match(/LTE BAND ([0-9]+)/g) || [];
+          const nrBands = data.output.match(/NR5G BAND ([0-9]+)/g) || [];
+          // Combine the two arrays and join them with a comma
+          if (lteBands.length === 0 && nrBands.length === 0) {
+            document.getElementById("currentBands").textContent =
+              "No active bands found";
+            return;
+          } else if (lteBands.length === 0) {
+            document.getElementById("currentBands").textContent =
+              nrBands.join(", ");
+            return;
+          } else if (nrBands.length === 0) {
+            document.getElementById("currentBands").textContent =
+              lteBands.join(", ");
+            return;
+          } else {
+            document.getElementById("currentBands").textContent = [
+              ...lteBands,
+              ...nrBands,
+            ].join(", ");
+          }
+        } catch (error) {
+          console.error("Error fetching current bands:", error);
+        }
+      }
+
       // Function to fetch supported bands via AT command and populate the checkboxes
       async function fetchSupportedBands() {
         try {
@@ -404,6 +443,9 @@
           markActiveBands(activeNsaBands, "#nsa_bands");
           markActiveBands(activeSaBands, "#sa_bands");
           markActiveBands(activeSaDcBandsLine, "#sanrdc_bands");
+
+          // Fetch current active bands and display them in the footer
+          fetchCurrentBands();
         } catch (error) {
           console.error("Error fetching active bands:", error);
         }

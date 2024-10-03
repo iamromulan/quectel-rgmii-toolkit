@@ -261,31 +261,8 @@ html.theme-light {
     background: #3273dc;
   }
 }
+/* End of custom table styles */
 
-/* Change checkbox checked color to this: #3273dc */
-/* Hide the default checkbox */
-/* input[type="checkbox"] {
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border: 2px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
+.isCursorPointer {
   cursor: pointer;
-} */
-
-/* Style when checkbox is checked */
-/* input[type="checkbox"]:checked {
-  background-color: blue;
-  border-color: blue;
-} */
-
-/* Style the checkmark */
-/* input[type="checkbox"]:checked::before {
-  content: "✔";
-  display: block;
-  color: white;
-  font-size: 12px;
-  text-align: center;
-  line-height: 14px;
-} */
+}

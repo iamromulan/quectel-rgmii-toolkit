@@ -23,6 +23,7 @@
     <script src="/js/styles/nav-burger.js"></script>
     <script src="/js/styles/modal-trigger.js"></script>
     <script src="/js/utils/reboot.js"></script>
+    <script src="/js/utils/restart-connection.js"></script>
     <script defer src="/js/auth/auth.js"></script>
 
     <script>
@@ -81,14 +82,19 @@
               <a class="navbar-item" href="/cgi-bin/luci">OpenWRT Luci</a>
             </div>
           </div>
-          <a class="navbar-item has-text-weight-bold" href="/about.html"> About </a>
+          <a class="navbar-item has-text-weight-bold" href="/about.html">
+            About
+          </a>
         </div>
 
         <div class="navbar-end">
           <div class="navbar-item">
             <div class="buttons is-flex-direction-column-mobile">
               <div class="control is-expanded-mobile">
-                <div class="button is-link is-outlined is-fullwidth-mobile">
+                <div
+                  id="restartConnectionBtn"
+                  class="button is-link is-outlined is-fullwidth-mobile"
+                >
                   <span class="icon">
                     <i class="fas fa-arrows-rotate"></i>
                   </span>
@@ -296,7 +302,7 @@
           <div id="loading-content" style="display: none">
             <div class="custom-loader"></div>
             <div class="countdown-text">
-              Rebooting... <span id="countdown">40</span>s
+              Rebooting... <span id="countdown">80</span>s
             </div>
           </div>
           <div class="buttons" id="modal-buttons">
