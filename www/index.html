@@ -26,58 +26,64 @@
   </head>
 
   <body>
-    <div class="box container mt-6">
-      <div class="fixed-grid has-1-cols">
-        <div class="grid is-gap-5">
-          <div class="cell">
-            <div class="field is-grouped">
-              <div class="control">
-                <img
-                  src="/assets/logo.png"
-                  alt="Logo"
-                  class="image is-square image is-32x32"
-                />
+    <div class="container mt-6">
+      <div class="card">
+        <div class="card-content">
+          <div class="fixed-grid has-1-cols">
+            <div class="grid is-gap-5">
+              <div class="cell">
+                <div class="field is-grouped">
+                  <div class="control">
+                    <img
+                      src="/assets/logo.png"
+                      alt="Logo"
+                      class="image is-square image is-32x32"
+                    />
+                  </div>
+                  <div class="control">
+                    <h1 class="title">QuecManager Login</h1>
+                  </div>
+                </div>
               </div>
-              <div class="control">
-                <h1 class="title">QuecManager Login</h1>
+
+              <div class="cell">
+                <form id="loginForm">
+                  <div class="field">
+                    <label class="label">Username</label>
+                    <div class="control">
+                      <input
+                        class="input"
+                        id="username"
+                        type="text"
+                        required
+                        placeholder="Username"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label class="label">Password</label>
+                    <div class="control">
+                      <input
+                        class="input"
+                        id="password"
+                        type="password"
+                        required
+                        placeholder="********"
+                      />
+                    </div>
+                  </div>
+
+                  <button class="button is-primary" type="submit">
+                    Sign in
+                  </button>
+                  <p
+                    id="error"
+                    class="has-text-danger has-text-weight-semibold mt-2"
+                  ></p>
+                </form>
               </div>
             </div>
-          </div>
-
-          <div class="cell">
-            <form id="loginForm">
-              <div class="field">
-                <label class="label">Username</label>
-                <div class="control">
-                  <input
-                    class="input"
-                    id="username"
-                    type="text"
-                    required
-                    placeholder="Username"
-                  />
-                </div>
-              </div>
-
-              <div class="field">
-                <label class="label">Password</label>
-                <div class="control">
-                  <input
-                    class="input"
-                    id="password"
-                    type="password"
-                    required
-                    placeholder="********"
-                  />
-                </div>
-              </div>
-
-              <button class="button is-primary" type="submit">Sign in</button>
-              <p
-                id="error"
-                class="has-text-danger has-text-weight-semibold mt-2"
-              ></p>
-            </form>
           </div>
         </div>
       </div>
