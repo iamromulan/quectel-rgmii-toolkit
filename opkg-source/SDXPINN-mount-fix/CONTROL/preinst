@@ -6,10 +6,8 @@ if grep -qs '/etc ' /proc/mounts; then
     umount -lf /etc
 fi
 
-# Check if root filesystem is mounted as read-only
-if grep -qs " / " /proc/mounts | grep "(ro,"; then
-    echo "Remounting root filesystem as read-write..."
-    mount -o remount,rw /
-fi
+# Remount original rootfs as read-write 
+echo "Mounting / as read-write"
+mount -o remount,rw /
 
 exit 0

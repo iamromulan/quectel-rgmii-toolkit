@@ -1,6 +1,6 @@
-Package: SDXPINN-mount-fix
+Package: sdxpinn-mount-fix
 Version: 1.0
-Architecture: arm64
+Architecture: aarch64_cortex-a53
 Maintainer: Cameron Thompson iamromulan@github.com
 Description: Creates a usable mount space and overlay for SDXPINN modems
 Depends: libc
