@@ -388,8 +388,6 @@ function processBandwidth(response, networkType) {
     processNR5GBandwidth(sccLines, pccBWParsed);
   } else if (networkType === "LTE") {
     processLTEBandwidth(sccLines, pccBWParsed);
-  } else {
-    setText("allBW", "Unknown");
   }
 }
 
@@ -401,38 +399,19 @@ function extractSCCData(response) {
 }
 
 function processNR5GBandwidth(sccLines, pccBWParsed) {
-  const networkType = determineNetworkType(jsonData[10].response);
+  const nrBW = sccLines[sccLines.length - 1].split(":")[1].split(",")[2].trim();
+  const nrBWParsed = NR_BANDWIDTH_MAP[nrBW] || "Unknown";
 
-  if (networkType === "NR5G-SA") {
-    const nrBW = sccLines.slice(0, sccLines.length - 1).map((line) => {
-      const bw = line.split(":")[1].split(",")[2].trim();
-      return NR_BANDWIDTH_MAP[bw] || "Unknown";
-    });
+  const lteBW = sccLines.slice(0, sccLines.length - 1).map((line) => {
+    const bw = line.split(":")[1].split(",")[2].trim();
+    return BANDWIDTH_MAP[bw] || "Unknown";
+  });
 
-    if (nrBW.length === 0) {
-      setText("allBW", `${pccBWParsed}`);
-      return;
-    }
-
-    setText("allBW", `${pccBWParsed} + ${nrBW.join(" / ")}`);
-  } else {
-    const nrBW = sccLines[sccLines.length - 1]
-      .split(":")[1]
-      .split(",")[2]
-      .trim();
-    const nrBWParsed = NR_BANDWIDTH_MAP[nrBW] || "Unknown";
-
-    const lteBW = sccLines.slice(0, sccLines.length - 1).map((line) => {
-      const bw = line.split(":")[1].split(",")[2].trim();
-      return BANDWIDTH_MAP[bw] || "Unknown";
-    });
-
-    if (lteBW.length === 0) {
-      setText("allBW", `${pccBWParsed} + NR${nrBWParsed}`);
-      return;
-    }
-    setText("allBW", `${pccBWParsed} + ${lteBW.join(" / ")} + NR${nrBWParsed}`);
+  if (lteBW.length === 0) {
+    setText("allBW", `${pccBWParsed} + NR${nrBWParsed}`);
+    return;
   }
+  setText("allBW", `${pccBWParsed} + ${lteBW.join(" + ")} + NR${nrBWParsed}`);
 }
 
 function processLTEBandwidth(sccLines, pccBWParsed) {
