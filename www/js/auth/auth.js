@@ -1,108 +1,205 @@
-document.addEventListener("DOMContentLoaded", () => {
-    // Function to generate a random token
-    function generateAuthToken(length = 32) {
-      const charset =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      let token = "";
-      for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * charset.length);
-        token += charset[randomIndex];
+class AuthManager {
+  constructor() {
+    this.protectedPages = new Set([
+      '/home.html',
+      '/advance-settings.html',
+      '/bandlock.html',
+      '/cell-locking.html',
+      '/cell-scanner.html',
+      '/cell-settings.html',
+      '/cell-sms.html',
+      '/about.html'
+    ]);
+    
+    // Session timeout in milliseconds (e.g., 30 minutes)
+    this.sessionTimeout = 30 * 60 * 1000;
+    
+    this.init();
+  }
+
+  init() {
+    // Initially hide the body to prevent content flashing
+    document.body.style.display = 'none';
+    
+    // Check authentication state
+    this.checkAuthState();
+    
+    // Set up event listeners
+    this.setupEventListeners();
+    
+    // Show body after auth check
+    document.body.style.display = '';
+  }
+
+  generateAuthToken(length = 32) {
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return Array.from(crypto.getRandomValues(new Uint8Array(length)))
+      .map(x => charset[x % charset.length])
+      .join('');
+  }
+
+  isProtectedPage(path) {
+    return this.protectedPages.has(path) || 
+           Array.from(this.protectedPages).some(page => path.includes(page));
+  }
+
+  getSessionData() {
+    const sessionStr = localStorage.getItem('session');
+    if (!sessionStr) return null;
+    
+    try {
+      return JSON.parse(sessionStr);
+    } catch {
+      return null;
+    }
+  }
+
+  setSessionData(token) {
+    const session = {
+      token,
+      lastActivity: Date.now(),
+      expiresAt: Date.now() + this.sessionTimeout
+    };
+    localStorage.setItem('session', JSON.stringify(session));
+  }
+
+  isSessionValid() {
+    const session = this.getSessionData();
+    if (!session) return false;
+
+    const now = Date.now();
+    
+    // Check if session has expired
+    if (now > session.expiresAt) {
+      this.logout();
+      return false;
+    }
+
+    // Update last activity and extend session if needed
+    if (now - session.lastActivity > 5 * 60 * 1000) { // Update every 5 minutes
+      this.setSessionData(session.token);
+    }
+
+    return true;
+  }
+
+  checkAuthState() {
+    const currentPath = window.location.pathname;
+    const isAuthenticated = this.isSessionValid();
+
+    // Redirect logic
+    if (!isAuthenticated && this.isProtectedPage(currentPath)) {
+      window.location.href = '/index.html';
+      return false;
+    }
+
+    if (isAuthenticated && currentPath.includes('index.html')) {
+      window.location.href = '/home.html';
+      return false;
+    }
+
+    return true;
+  }
+
+  async login(username, password) {
+    try {
+      const formData = new URLSearchParams();
+      formData.append('username', username);
+      formData.append('password', encodeURIComponent(password));
+
+      const response = await fetch('/cgi-bin/auth.sh', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+
+      const result = await response.json();
+
+      if (result.state === 'success') {
+        const token = this.generateAuthToken();
+        this.setSessionData(token);
+        window.location.href = '/home.html';
+        return true;
       }
-      return token;
+      
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw new Error('An error occurred during login');
     }
-  
-    // Initially hide the body to prevent content from flashing
-    document.body.style.display = "none";
-  
-    // Check if the user is already logged in
-    const authToken = localStorage.getItem("authToken");
-  
-    // Define which pages should be protected
-    const protectedPages = [
-      "/home.html",
-      "advance-settings.html",
-      "/bandlock.html",
-      "/cell-locking.html",
-      "/cell-scanner.html",
-      "/cell-settings.html",
-      "/cell-sms.html",
-      "/about.html", // Add all the protected HTML pages here
-    ];
-  
-    const currentPage = window.location.pathname;
-  
-    // If the user is not logged in and tries to access a protected page, redirect to login
-    if (!authToken && protectedPages.includes(currentPage)) {
-      window.location.href = "index.html";
-    } else {
-      // Show the page if authentication is successful or not required
-      document.body.style.display = "";
-    }
-  
-    // If the user is logged in and tries to access the login page, redirect to home
-    if (authToken && currentPage.includes("index.html")) {
-      window.location.href = "home.html";
-    }
-  
-    // Login form logic (only for login page)
-    const loginForm = document.getElementById("loginForm");
+  }
+
+  logout() {
+    localStorage.removeItem('session');
+    window.location.href = '/index.html';
+  }
+
+  setupEventListeners() {
+    // Handle login form
+    const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-      loginForm.addEventListener("submit", async (e) => {
+      loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-  
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-        const errorElement = document.getElementById("error");
-  
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const errorElement = document.getElementById('error');
+
         try {
-          const formData = new URLSearchParams();
-          formData.append("username", username);
-          formData.append("password", encodeURIComponent(password)); // URL-encode the password
-  
-          const response = await fetch("/cgi-bin/auth.sh", {
-            method: "POST",
-            body: formData,
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-          });
-  
-          const result = await response.json(); // Parse JSON response
-  
-          if (result.state === "success") {
-            const newToken = generateAuthToken();
-            localStorage.setItem("authToken", newToken); // Store the token
-            window.location.href = "home.html"; // Redirect on success
-          } else {
-            document.getElementById("error").textContent =
-              "Invalid username or password";
-            console.log("Invalid username or password");
+          const success = await this.login(username, password);
+          if (!success) {
+            errorElement.textContent = 'Invalid username or password';
           }
         } catch (error) {
-          // Handle any errors (e.g., network issues)
-          errorElement.textContent = "An error occurred. Please try again later.";
+          errorElement.textContent = error.message;
         }
       });
     }
-  
-    // Logout button logic (only for pages that have the logout button)
-    const logoutButton = document.getElementById("logoutButton");
+
+    // Handle component loading
+    window.addEventListener('componentLoaded', (event) => {
+      if (event.detail.componentId === 'nav-placeholder') {
+        this.setupNavbarHandlers();
+      }
+    });
+
+    // Set up periodic session check
+    setInterval(() => {
+      if (this.isProtectedPage(window.location.pathname)) {
+        this.isSessionValid();
+      }
+    }, 60000); // Check every minute
+  }
+
+  setupNavbarHandlers() {
+    // Handle logout button
+    const logoutButton = document.getElementById('logoutButton');
     if (logoutButton) {
-      logoutButton.addEventListener("click", () => {
-        localStorage.removeItem("authToken"); // Remove token
-        window.location.href = "index.html"; // Redirect to login
+      logoutButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.logout();
       });
     }
-  
-    // Fix for the issue of being redirected to login every time the Home button is clicked
-    document.querySelectorAll(".navbar-item").forEach((el) => {
-      if (el.textContent.includes("Home")) {
-        el.addEventListener("click", (e) => {
-          if (localStorage.getItem("authToken")) {
-            e.preventDefault();
-            window.location.href = "home.html";
+
+    // Handle home navigation
+    const homeLinks = document.querySelectorAll('.navbar-item');
+    homeLinks.forEach(link => {
+      if (link.textContent.trim() === 'Home') {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (this.isSessionValid()) {
+            window.location.href = '/home.html';
+          } else {
+            window.location.href = '/index.html';
           }
         });
       }
     });
-  });
+  }
+}
+
+// Initialize auth manager when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  window.authManager = new AuthManager();
+});

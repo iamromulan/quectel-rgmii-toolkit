@@ -1,278 +1,333 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
     <!-- Logo -->
     <link rel="simpleadmin-logo" href="favicon.ico" />
 
-    <link rel="stylesheet" href="css/bulma/bulma.scss">
-    <link rel="stylesheet" href="css/bulma/css/bulma.min.css">
-    <link rel="stylesheet" href="css/bulma/css/bulma.css">
-    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="css/bulma/bulma.scss" />
+    <link rel="stylesheet" href="css/bulma/css/bulma.min.css" />
+    <link rel="stylesheet" href="css/bulma/css/bulma.css" />
+    <link rel="stylesheet" href="css/custom.css" />
 
     <!-- Font awesome icons -->
-    <script src="https://kit.fontawesome.com/b0caedfab3.js" crossorigin="anonymous"></script>
+    <script
+      src="https://kit.fontawesome.com/b0caedfab3.js"
+      crossorigin="anonymous"
+    ></script>
 
-    <script src="js/styles/nav-burger.js"></script>
     <script src="js/styles/toggle-theme.js"></script>
+    <script src="/js/styles/nav-burger.js"></script>
+    <script src="/js/styles/modal-trigger.js"></script>
+    <script src="/js/utils/reboot.js"></script>
     <script defer src="/js/auth/auth.js"></script>
 
     <script>
-        (function () {
-            const savedTheme = localStorage.getItem('theme') || 'theme-dark';
-            document.documentElement.classList.add(savedTheme);
-        })();
+      (function () {
+        const savedTheme = localStorage.getItem("theme") || "theme-dark";
+        document.documentElement.classList.add(savedTheme);
+      })();
     </script>
     <title>QuecManager</title>
-</head>
+  </head>
 
-<body class="body-margin">
+  <body class="body-margin">
     <nav class="navbar is-transparent">
-        <div class="navbar-brand">
-          <a class="navbar-item" href="/">
-            <img src="/assets/logo.png" alt="Logo" />
-            <span class="title">QuecManager</span>
-          </a>
-          <a
-            role="button"
-            class="navbar-burger"
-            aria-label="menu"
-            aria-expanded="false"
-            data-target="navMenu"
-          >
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-          </a>
-        </div>
-  
-        <div id="navMenu" class="navbar-menu">
-          <div class="navbar-start ml-6">
-            <a class="navbar-item" href="/"> Home </a>
-            <div class="navbar-item has-dropdown is-hoverable">
-              <a class="navbar-link"> Cellular </a>
-              <div class="navbar-dropdown is-boxed">
-                <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
-                <a class="navbar-item" href="/cell-locking.html">Cell Locking</a>
-                <a class="navbar-item" href="/cell-scanner.html">Cell Scanner</a>
-                <a class="navbar-item" href="/cell-settings.html"
-                  >Cell Settings</a
-                >
-                <a class="navbar-item" href="/cell-sms.html"> Cell SMS </a>
-              </div>
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/">
+          <img src="/assets/logo.png" alt="Logo" />
+          <span class="title">QuecManager</span>
+        </a>
+        <a
+          role="button"
+          class="navbar-burger"
+          aria-label="menu"
+          aria-expanded="false"
+          data-target="navMenu"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+
+      <div id="navMenu" class="navbar-menu">
+        <div class="navbar-start ml-6">
+          <a class="navbar-item has-text-weight-bold" href="/"> Home </a>
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link"> Cellular </a>
+            <div class="navbar-dropdown is-boxed">
+              <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
+              <a class="navbar-item" href="/cell-locking.html">Cell Locking</a>
+              <a class="navbar-item" href="/cell-scanner.html">Cell Scanner</a>
+              <a class="navbar-item" href="/cell-settings.html"
+                >Cell Settings</a
+              >
+              <a class="navbar-item" href="/cell-sms.html"> Cell SMS </a>
             </div>
-            <a class="navbar-item" href="/advance-settings.html"> Advance </a>
-            <a class="navbar-item" href="/about.html"> About </a>
           </div>
-  
-          <div class="navbar-end">
-            <div class="navbar-item">
-              <div class="buttons is-flex-direction-column-mobile">
-                <p class="control is-expanded-mobile">
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link"> Advance </a>
+            <div class="navbar-dropdown is-boxed">
+              <a class="navbar-item" href="/advance-settings.html"> Advance Settings </a>
+              <a class="navbar-item" href="#">Experimental Features</a>
+              <a class="navbar-item" href="/cgi-bin/luci">OpenWRT Luci</a>
+            </div>
+          </div>
+          <a class="navbar-item" href="/about.html"> About </a>
+        </div>
+
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="buttons is-flex-direction-column-mobile">
+              <p class="control is-expanded-mobile">
+                <a
+                  href="#"
+                  class="button is-link is-outlined is-fullwidth-mobile"
+                >
+                  <span class="icon">
+                    <i class="fas fa-arrows-rotate"></i>
+                  </span>
+                  <span>Restart Connection</span>
+                </a>
+              </p>
+              <div class="is-flex is-mobile is-align-items-center">
+                <p class="control">
+                  <div href="#" class="button is-warning is-outlined reboot-modal" data-target="reboot-modal" >
+                    <span class="icon">
+                      <i class="fas fa-power-off"></i>
+                    </span>
+                  </div>
+                </p>
+                <p class="control ml-2 is-mobile">
                   <a
                     href="#"
-                    class="button is-link is-outlined is-fullwidth-mobile"
+                    class="button is-warning is-outlined js-theme-toggle"
                   >
                     <span class="icon">
-                      <i class="fas fa-arrows-rotate"></i>
+                      <i class="fas fa-sun"></i>
                     </span>
-                    <span>Restart Connection</span>
                   </a>
                 </p>
-                <div class="is-flex is-mobile is-align-items-center">
-                  <p class="control">
-                    <a href="#" class="button is-warning is-outlined">
-                      <span class="icon">
-                        <i class="fas fa-power-off"></i>
-                      </span>
-                    </a>
-                  </p>
-                  <p class="control ml-2 is-mobile">
-                    <a
-                      href="#"
-                      class="button is-warning is-outlined js-theme-toggle"
-                    >
-                      <span class="icon">
-                        <i class="fas fa-sun"></i>
-                      </span>
-                    </a>
-                  </p>
-                  <p class="control ml-2 is-mobile">
-                    <a
-                      href="#"
-                      class="button is-warning is-outlined js-theme-toggle"
-                      id="logoutButton"
-                    >
-                      <span class="icon">
-                        <i class="fas fa-right-from-bracket"></i>
-                      </span>
-                    </a>
-                  </p>
-                </div>
+                <p class="control ml-2 is-mobile">
+                  <a
+                    href="#"
+                    class="button is-warning is-outlined js-theme-toggle"
+                    id="logoutButton"
+                  >
+                    <span class="icon">
+                      <i class="fas fa-right-from-bracket"></i>
+                    </span>
+                  </a>
+                </p>
               </div>
             </div>
           </div>
         </div>
-      </nav>
+      </div>
+    </nav>
 
     <div class="column-margin">
-        <div class="fixed-grid has-2-cols has-1-cols-mobile">
-            <div class="grid is-gap-5">
-                <div class="cell is-col-span-2 is-col-span-1-mobile">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-header-title">
-                                4G LTE Band Locking
-                            </div>
-                        </div>
-                        <div class="card-content">
-                            <div class="fixed-grid has-5-cols has-3-cols-mobile">
-                                <div class="grid" id="lte_bands">
-                                    <!-- write each lte band cell here -->
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Lock LTE Bands
-                            </a>
-
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Uncheck All
-                            </a>
-
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Reset
-                            </a>
-                        </div>
-                    </div>
+      <div class="fixed-grid has-2-cols has-1-cols-mobile">
+        <div class="grid is-gap-5">
+          <div class="cell is-col-span-2 is-col-span-1-mobile">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">4G LTE Band Locking</div>
+              </div>
+              <div class="card-content">
+                <div class="fixed-grid has-5-cols has-3-cols-mobile">
+                  <div class="grid" id="lte_bands">
+                    <!-- write each lte band cell here -->
+                  </div>
                 </div>
+              </div>
+              <div class="card-footer">
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Lock LTE Bands
+                </a>
 
-                <div class="cell">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-header-title">
-                                5G-NR NSA Band Locking
-                            </div>
-                        </div>
-                        <div class="card-content">
-                            <div class="fixed-grid has-5-cols has-3-cols-mobile">
-                                <div class="grid" id="nsa_bands">
-                                    <!-- write each nsa band cell here -->
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Lock NSA Bands
-                            </a>
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Uncheck All
+                </a>
 
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Uncheck All
-                            </a>
-
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Reset
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="cell">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-header-title">
-                                5G-NR SA Band Locking
-                            </div>
-                        </div>
-                        <div class="card-content">
-                            <div class="fixed-grid has-5-cols has-3-cols-mobile">
-                                <div class="grid" id="sa_bands">
-                                    <!-- write each SA band cell here -->
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Lock SA Bands
-                            </a>
-
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Uncheck All
-                            </a>
-
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Reset
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Reset
+                </a>
+              </div>
             </div>
+          </div>
+
+          <div class="cell">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">5G-NR NSA Band Locking</div>
+              </div>
+              <div class="card-content">
+                <div class="fixed-grid has-5-cols has-3-cols-mobile">
+                  <div class="grid" id="nsa_bands">
+                    <!-- write each nsa band cell here -->
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Lock NSA Bands
+                </a>
+
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Uncheck All
+                </a>
+
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Reset
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="cell">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">5G-NR SA Band Locking</div>
+              </div>
+              <div class="card-content">
+                <div class="fixed-grid has-5-cols has-3-cols-mobile">
+                  <div class="grid" id="sa_bands">
+                    <!-- write each SA band cell here -->
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Lock SA Bands
+                </a>
+
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Uncheck All
+                </a>
+
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Reset
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <footer class="footer">
-        <div class="content">
-            <div class="fixed-grid has-2-cols has-1-cols-mobile">
-                <div class="grid">
-                    <div class="cell">
-                        <div class="icon-text">
-                            <span class="icon has-text-info">
-                                <i class="fas fa-info-circle"></i>
-                            </span>
-                            <span>Information</span>
-                        </div>
+      <div class="content">
+        <div class="fixed-grid has-2-cols has-1-cols-mobile">
+          <div class="grid">
+            <div class="cell">
+              <div class="icon-text">
+                <span class="icon has-text-info">
+                  <i class="fas fa-info-circle"></i>
+                </span>
+                <span>Information</span>
+              </div>
 
-                        <p class="block has-text-weight-semibold">
-                            If problem persists after locking bands, please reboot the modem.
-                        </p>
-                    </div>
-
-                    <div class="cell">
-                        <div class="icon-text">
-                            <span class="icon has-text-info">
-                                <i class="fas fa-info-circle"></i>
-                            </span>
-                            <span>Current Active Bands</span>
-                        </div>
-
-                        <p class="block has-text-weight-semibold">
-                            Band 1 / Band 3 / NR Band 41
-                        </p>
-                    </div>
-                </div>
+              <p class="block has-text-weight-semibold">
+                If problem persists after locking bands, please reboot the
+                modem.
+              </p>
             </div>
-        </div>
-    </footer>
-</body>
 
-<script>
-    var lte_bands = "1:2:3:4:5:7:8:12:13:14:18:19:20:25:26:28:29:30:32:34:38:39:40:41:42:43:46:48:66:71";
+            <div class="cell">
+              <div class="icon-text">
+                <span class="icon has-text-info">
+                  <i class="fas fa-info-circle"></i>
+                </span>
+                <span>Current Active Bands</span>
+              </div>
+
+              <p class="block has-text-weight-semibold">
+                Band 1 / Band 3 / NR Band 41
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <div id="reboot-modal" class="modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <section class="modal-card-body rounded-edge">
+          <p class="subtitle" id="modal-message">
+            Do you want to reboot the device?
+          </p>
+          <div id="loading-content" style="display: none">
+            <div class="custom-loader"></div>
+            <div class="countdown-text">
+              Rebooting... <span id="countdown">40</span>s
+            </div>
+          </div>
+          <div class="buttons" id="modal-buttons">
+            <button class="button is-warning" id="rebootModem">Reboot</button>
+            <button class="button cancel" aria-label="close">Cancel</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    var lte_bands =
+      "1:2:3:4:5:7:8:12:13:14:18:19:20:25:26:28:29:30:32:34:38:39:40:41:42:43:46:48:66:71";
     var nsa_bands = "1:2:3:5:7:8:12:20:25:28:38:40:41:48:66:71:77:78:79";
     var sa_bands = "1:2:3:5:7:8:12:20:25:28:38:40:41:48:66:71:77:78:79";
 
     function populateBands(bandsString, targetId) {
-        var bandsArray = bandsString.split(":");
-        var html = "";
+      var bandsArray = bandsString.split(":");
+      var html = "";
 
-        for (var i = 0; i < bandsArray.length; i++) {
-            html += '<div class="cell"><label class="checkbox"><input type="checkbox" /> B' + bandsArray[i] + '</label></div>';
-        }
+      for (var i = 0; i < bandsArray.length; i++) {
+        html +=
+          '<div class="cell"><label class="checkbox"><input type="checkbox" /> B' +
+          bandsArray[i] +
+          "</label></div>";
+      }
 
-        // Inject the generated HTML into the target element
-        document.querySelector(targetId).innerHTML = html;
+      // Inject the generated HTML into the target element
+      document.querySelector(targetId).innerHTML = html;
     }
 
     // Populate the bands in their respective grids
-    populateBands(lte_bands, '#lte_bands');
-    populateBands(nsa_bands, '#nsa_bands');
-    populateBands(sa_bands, '#sa_bands');
-
-</script>
-
+    populateBands(lte_bands, "#lte_bands");
+    populateBands(nsa_bands, "#nsa_bands");
+    populateBands(sa_bands, "#sa_bands");
+  </script>
 </html>

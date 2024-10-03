@@ -1,364 +1,414 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
     <!-- Logo -->
     <link rel="simpleadmin-logo" href="favicon.ico" />
 
-    <link rel="stylesheet" href="css/bulma/bulma.scss">
-    <link rel="stylesheet" href="css/bulma/css/bulma.min.css">
-    <link rel="stylesheet" href="css/bulma/css/bulma.css">
-    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="css/bulma/bulma.scss" />
+    <link rel="stylesheet" href="css/bulma/css/bulma.min.css" />
+    <link rel="stylesheet" href="css/bulma/css/bulma.css" />
+    <link rel="stylesheet" href="css/custom.css" />
 
     <!-- Font awesome icons -->
-    <script src="https://kit.fontawesome.com/b0caedfab3.js" crossorigin="anonymous"></script>
+    <script
+      src="https://kit.fontawesome.com/b0caedfab3.js"
+      crossorigin="anonymous"
+    ></script>
 
-    <script src="js/styles/nav-burger.js"></script>
     <script src="js/styles/toggle-theme.js"></script>
+    <script src="/js/styles/nav-burger.js"></script>
+    <script src="/js/styles/modal-trigger.js"></script>
+    <script src="/js/utils/reboot.js"></script>
     <script defer src="/js/auth/auth.js"></script>
 
     <script>
-        (function () {
-            const savedTheme = localStorage.getItem('theme') || 'theme-dark';
-            document.documentElement.classList.add(savedTheme);
-        })();
+      (function () {
+        const savedTheme = localStorage.getItem("theme") || "theme-dark";
+        document.documentElement.classList.add(savedTheme);
+      })();
     </script>
 
     <title>QuecManager</title>
-</head>
+  </head>
 
-<body class="body-margin">
+  <body class="body-margin">
     <nav class="navbar is-transparent">
-        <div class="navbar-brand">
-          <a class="navbar-item" href="/">
-            <img src="/assets/logo.png" alt="Logo" />
-            <span class="title">QuecManager</span>
-          </a>
-          <a
-            role="button"
-            class="navbar-burger"
-            aria-label="menu"
-            aria-expanded="false"
-            data-target="navMenu"
-          >
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-          </a>
-        </div>
-  
-        <div id="navMenu" class="navbar-menu">
-          <div class="navbar-start ml-6">
-            <a class="navbar-item" href="/"> Home </a>
-            <div class="navbar-item has-dropdown is-hoverable">
-              <a class="navbar-link has-text-weight-bold"> Cellular </a>
-              <div class="navbar-dropdown is-boxed">
-                <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
-                <a class="navbar-item" href="/cell-locking.html">Cell Locking</a>
-                <a class="navbar-item" href="/cell-scanner.html">Cell Scanner</a>
-                <a class="navbar-item" href="/cell-settings.html"
-                  >Cell Settings</a
-                >
-                <a class="navbar-item" href="/cell-sms.html"> Cell SMS </a>
-              </div>
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/">
+          <img src="/assets/logo.png" alt="Logo" />
+          <span class="title">QuecManager</span>
+        </a>
+        <a
+          role="button"
+          class="navbar-burger"
+          aria-label="menu"
+          aria-expanded="false"
+          data-target="navMenu"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+
+      <div id="navMenu" class="navbar-menu">
+        <div class="navbar-start ml-6">
+          <a class="navbar-item has-text-weight-bold" href="/"> Home </a>
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link"> Cellular </a>
+            <div class="navbar-dropdown is-boxed">
+              <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
+              <a class="navbar-item" href="/cell-locking.html">Cell Locking</a>
+              <a class="navbar-item" href="/cell-scanner.html">Cell Scanner</a>
+              <a class="navbar-item" href="/cell-settings.html"
+                >Cell Settings</a
+              >
+              <a class="navbar-item" href="/cell-sms.html"> Cell SMS </a>
             </div>
-            <a class="navbar-item" href="/advance-settings.html"> Advance </a>
-            <a class="navbar-item" href="/about.html"> About </a>
           </div>
-  
-          <div class="navbar-end">
-            <div class="navbar-item">
-              <div class="buttons is-flex-direction-column-mobile">
-                <p class="control is-expanded-mobile">
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link"> Advance </a>
+            <div class="navbar-dropdown is-boxed">
+              <a class="navbar-item" href="/advance-settings.html"> Advance Settings </a>
+              <a class="navbar-item" href="#">Experimental Features</a>
+              <a class="navbar-item" href="/cgi-bin/luci">OpenWRT Luci</a>
+            </div>
+          </div>
+          <a class="navbar-item" href="/about.html"> About </a>
+        </div>
+
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="buttons is-flex-direction-column-mobile">
+              <p class="control is-expanded-mobile">
+                <a
+                  href="#"
+                  class="button is-link is-outlined is-fullwidth-mobile"
+                >
+                  <span class="icon">
+                    <i class="fas fa-arrows-rotate"></i>
+                  </span>
+                  <span>Restart Connection</span>
+                </a>
+              </p>
+              <div class="is-flex is-mobile is-align-items-center">
+                <p class="control">
+                  <div href="#" class="button is-warning is-outlined reboot-modal" data-target="reboot-modal" >
+                    <span class="icon">
+                      <i class="fas fa-power-off"></i>
+                    </span>
+                  </div>
+                </p>
+                <p class="control ml-2 is-mobile">
                   <a
                     href="#"
-                    class="button is-link is-outlined is-fullwidth-mobile"
+                    class="button is-warning is-outlined js-theme-toggle"
                   >
                     <span class="icon">
-                      <i class="fas fa-arrows-rotate"></i>
+                      <i class="fas fa-sun"></i>
                     </span>
-                    <span>Restart Connection</span>
                   </a>
                 </p>
-                <div class="is-flex is-mobile is-align-items-center">
-                  <p class="control">
-                    <a href="#" class="button is-warning is-outlined">
-                      <span class="icon">
-                        <i class="fas fa-power-off"></i>
-                      </span>
-                    </a>
-                  </p>
-                  <p class="control ml-2 is-mobile">
-                    <a
-                      href="#"
-                      class="button is-warning is-outlined js-theme-toggle"
-                    >
-                      <span class="icon">
-                        <i class="fas fa-sun"></i>
-                      </span>
-                    </a>
-                  </p>
-                  <p class="control ml-2 is-mobile">
-                    <a
-                      href="#"
-                      class="button is-warning is-outlined js-theme-toggle"
-                      id="logoutButton"
-                    >
-                      <span class="icon">
-                        <i class="fas fa-right-from-bracket"></i>
-                      </span>
-                    </a>
-                  </p>
-                </div>
+                <p class="control ml-2 is-mobile">
+                  <a
+                    href="#"
+                    class="button is-warning is-outlined js-theme-toggle"
+                    id="logoutButton"
+                  >
+                    <span class="icon">
+                      <i class="fas fa-right-from-bracket"></i>
+                    </span>
+                  </a>
+                </p>
               </div>
             </div>
           </div>
         </div>
-      </nav>
+      </div>
+    </nav>
 
     <div class="column-margin">
-        <div class="fixed-grid has-1-cols">
-            <div class="grid is-gap-5">
-                <div class="cell">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-header-title">
-                                SMS Inbox
-                            </div>
+      <div class="fixed-grid has-1-cols">
+        <div class="grid is-gap-5">
+          <div class="cell">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">SMS Inbox</div>
+              </div>
+
+              <div class="card-content">
+                <div
+                  class="fixed-grid has-1-cols"
+                  style="height: 450px; overflow-y: scroll"
+                >
+                  <div class="grid is-gap-4 is-fullwidth">
+                    <div class="cell">
+                      <div class="is-flex is-align-items-center">
+                        <div class="checkbox mr-6">
+                          <input type="checkbox" />
                         </div>
-
-                        <div class="card-content">
-                            <div class="fixed-grid has-1-cols" style="height: 450px; overflow-y: scroll;">
-                                <div class="grid is-gap-4 is-fullwidth">
-                                    <div class="cell">
-                                        <div class="is-flex is-align-items-center">
-                                            <div class="checkbox mr-6">
-                                                <input type="checkbox">
-                                            </div>
-                                            <div class="is-flex is-flex-direction-column is-align-items-start">
-                                                <p class="has-text-weight-semibold">
-                                                    Senders Name Here
-                                                </p>
-                                                <p>
-                                                    2022-11-20 13:30:00
-                                                </p>
-                                                <p>
-                                                    Message content here. Lorem ipsum dolor sit amet consectetur
-                                                    adipisicing elit. Corrupti doloremque voluptatum velit repellendus
-                                                    ipsum delectus blanditiis quis dolores. Maxime labore esse
-                                                    laboriosam inventore error molestiae consequuntur quo, deleniti ea
-                                                    nihil.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="cell">
-                                        <div class="is-flex is-align-items-center">
-                                            <div class="checkbox mr-6">
-                                                <input type="checkbox">
-                                            </div>
-                                            <div class="is-flex is-flex-direction-column is-align-items-start">
-                                                <p class="has-text-weight-semibold">
-                                                    Senders Name Here
-                                                </p>
-                                                <p>
-                                                    2022-11-20 13:30:00
-                                                </p>
-                                                <p>
-                                                    Message content here. Lorem ipsum dolor sit amet consectetur
-                                                    adipisicing elit. Corrupti doloremque voluptatum velit repellendus
-                                                    ipsum delectus blanditiis quis dolores. Maxime labore esse
-                                                    laboriosam inventore error molestiae consequuntur quo, deleniti ea
-                                                    nihil.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="cell">
-                                        <div class="is-flex is-align-items-center">
-                                            <div class="checkbox mr-6">
-                                                <input type="checkbox">
-                                            </div>
-                                            <div class="is-flex is-flex-direction-column is-align-items-start">
-                                                <p class="has-text-weight-semibold">
-                                                    Senders Name Here
-                                                </p>
-                                                <p>
-                                                    2022-11-20 13:30:00
-                                                </p>
-                                                <p>
-                                                    Message content here. Lorem ipsum dolor sit amet consectetur
-                                                    adipisicing elit. Corrupti doloremque voluptatum velit repellendus
-                                                    ipsum delectus blanditiis quis dolores. Maxime labore esse
-                                                    laboriosam inventore error molestiae consequuntur quo, deleniti ea
-                                                    nihil.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="cell">
-                                        <div class="is-flex is-align-items-center">
-                                            <div class="checkbox mr-6">
-                                                <input type="checkbox">
-                                            </div>
-                                            <div class="is-flex is-flex-direction-column is-align-items-start">
-                                                <p class="has-text-weight-semibold">
-                                                    Senders Name Here
-                                                </p>
-                                                <p>
-                                                    2022-11-20 13:30:00
-                                                </p>
-                                                <p>
-                                                    Message content here. Lorem ipsum dolor sit amet consectetur
-                                                    adipisicing elit. Corrupti doloremque voluptatum velit repellendus
-                                                    ipsum delectus blanditiis quis dolores. Maxime labore esse
-                                                    laboriosam inventore error molestiae consequuntur quo, deleniti ea
-                                                    nihil.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="cell">
-                                        <div class="is-flex is-align-items-center">
-                                            <div class="checkbox mr-6">
-                                                <input type="checkbox">
-                                            </div>
-                                            <div class="is-flex is-flex-direction-column is-align-items-start">
-                                                <p class="has-text-weight-semibold">
-                                                    Senders Name Here
-                                                </p>
-                                                <p>
-                                                    2022-11-20 13:30:00
-                                                </p>
-                                                <p>
-                                                    Message content here. Lorem ipsum dolor sit amet consectetur
-                                                    adipisicing elit. Corrupti doloremque voluptatum velit repellendus
-                                                    ipsum delectus blanditiis quis dolores. Maxime labore esse
-                                                    laboriosam inventore error molestiae consequuntur quo, deleniti ea
-                                                    nihil.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="cell">
-                                        <div class="is-flex is-align-items-center">
-                                            <div class="checkbox mr-6">
-                                                <input type="checkbox">
-                                            </div>
-                                            <div class="is-flex is-flex-direction-column is-align-items-start">
-                                                <p class="has-text-weight-semibold">
-                                                    Senders Name Here
-                                                </p>
-                                                <p>
-                                                    2022-11-20 13:30:00
-                                                </p>
-                                                <p>
-                                                    Message content here. Lorem ipsum dolor sit amet consectetur
-                                                    adipisicing elit. Corrupti doloremque voluptatum velit repellendus
-                                                    ipsum delectus blanditiis quis dolores. Maxime labore esse
-                                                    laboriosam inventore error molestiae consequuntur quo, deleniti ea
-                                                    nihil.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
+                        <div
+                          class="is-flex is-flex-direction-column is-align-items-start"
+                        >
+                          <p class="has-text-weight-semibold">
+                            Senders Name Here
+                          </p>
+                          <p>2022-11-20 13:30:00</p>
+                          <p>
+                            Message content here. Lorem ipsum dolor sit amet
+                            consectetur adipisicing elit. Corrupti doloremque
+                            voluptatum velit repellendus ipsum delectus
+                            blanditiis quis dolores. Maxime labore esse
+                            laboriosam inventore error molestiae consequuntur
+                            quo, deleniti ea nihil.
+                          </p>
                         </div>
-
-                        <div class="card-footer">
-
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Refresh
-                            </a>
-
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Delete Selected
-                            </a>
-                        </div>
+                      </div>
                     </div>
-                </div>
 
-                <div class="cell">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-header-title">
-                                Send SMS
-                            </div>
+                    <div class="cell">
+                      <div class="is-flex is-align-items-center">
+                        <div class="checkbox mr-6">
+                          <input type="checkbox" />
                         </div>
-                        <div class="card-content">
-                            <div class="fixed-grid has-5-cols has-1-cols-mobile">
-                                <div class="grid">
-                                    <div class="cell is-col-span-1">
-                                        <div class="field">
-                                            <label class="label">Receipient's Phone Number</label>
-                                            <div class="control has-icons-left">
-                                                <input class="input" type="text" placeholder="Input Phone Number">
-                                                <span class="icon is-small is-left">
-                                                    <i class="fas fa-user"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="cell is-col-span-5 is-col-span-1-mobile">
-                                        <div class="field">
-                                            <label class="label">Message</label>
-                                            <div class="control">
-                                                <textarea class="textarea" placeholder="Textarea"></textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div
+                          class="is-flex is-flex-direction-column is-align-items-start"
+                        >
+                          <p class="has-text-weight-semibold">
+                            Senders Name Here
+                          </p>
+                          <p>2022-11-20 13:30:00</p>
+                          <p>
+                            Message content here. Lorem ipsum dolor sit amet
+                            consectetur adipisicing elit. Corrupti doloremque
+                            voluptatum velit repellendus ipsum delectus
+                            blanditiis quis dolores. Maxime labore esse
+                            laboriosam inventore error molestiae consequuntur
+                            quo, deleniti ea nihil.
+                          </p>
                         </div>
-                        <div class="card-footer">
-
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Send SMS
-                            </a>
-
-                            <a href="#" class="card-footer-item has-text-link has-text-weight-semibold has-text-white">
-                                Reset
-                            </a>
-                        </div>
+                      </div>
                     </div>
+
+                    <div class="cell">
+                      <div class="is-flex is-align-items-center">
+                        <div class="checkbox mr-6">
+                          <input type="checkbox" />
+                        </div>
+                        <div
+                          class="is-flex is-flex-direction-column is-align-items-start"
+                        >
+                          <p class="has-text-weight-semibold">
+                            Senders Name Here
+                          </p>
+                          <p>2022-11-20 13:30:00</p>
+                          <p>
+                            Message content here. Lorem ipsum dolor sit amet
+                            consectetur adipisicing elit. Corrupti doloremque
+                            voluptatum velit repellendus ipsum delectus
+                            blanditiis quis dolores. Maxime labore esse
+                            laboriosam inventore error molestiae consequuntur
+                            quo, deleniti ea nihil.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="cell">
+                      <div class="is-flex is-align-items-center">
+                        <div class="checkbox mr-6">
+                          <input type="checkbox" />
+                        </div>
+                        <div
+                          class="is-flex is-flex-direction-column is-align-items-start"
+                        >
+                          <p class="has-text-weight-semibold">
+                            Senders Name Here
+                          </p>
+                          <p>2022-11-20 13:30:00</p>
+                          <p>
+                            Message content here. Lorem ipsum dolor sit amet
+                            consectetur adipisicing elit. Corrupti doloremque
+                            voluptatum velit repellendus ipsum delectus
+                            blanditiis quis dolores. Maxime labore esse
+                            laboriosam inventore error molestiae consequuntur
+                            quo, deleniti ea nihil.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="cell">
+                      <div class="is-flex is-align-items-center">
+                        <div class="checkbox mr-6">
+                          <input type="checkbox" />
+                        </div>
+                        <div
+                          class="is-flex is-flex-direction-column is-align-items-start"
+                        >
+                          <p class="has-text-weight-semibold">
+                            Senders Name Here
+                          </p>
+                          <p>2022-11-20 13:30:00</p>
+                          <p>
+                            Message content here. Lorem ipsum dolor sit amet
+                            consectetur adipisicing elit. Corrupti doloremque
+                            voluptatum velit repellendus ipsum delectus
+                            blanditiis quis dolores. Maxime labore esse
+                            laboriosam inventore error molestiae consequuntur
+                            quo, deleniti ea nihil.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="cell">
+                      <div class="is-flex is-align-items-center">
+                        <div class="checkbox mr-6">
+                          <input type="checkbox" />
+                        </div>
+                        <div
+                          class="is-flex is-flex-direction-column is-align-items-start"
+                        >
+                          <p class="has-text-weight-semibold">
+                            Senders Name Here
+                          </p>
+                          <p>2022-11-20 13:30:00</p>
+                          <p>
+                            Message content here. Lorem ipsum dolor sit amet
+                            consectetur adipisicing elit. Corrupti doloremque
+                            voluptatum velit repellendus ipsum delectus
+                            blanditiis quis dolores. Maxime labore esse
+                            laboriosam inventore error molestiae consequuntur
+                            quo, deleniti ea nihil.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              <div class="card-footer">
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Refresh
+                </a>
+
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Delete Selected
+                </a>
+              </div>
             </div>
+          </div>
 
+          <div class="cell">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">Send SMS</div>
+              </div>
+              <div class="card-content">
+                <div class="fixed-grid has-5-cols has-1-cols-mobile">
+                  <div class="grid">
+                    <div class="cell is-col-span-1">
+                      <div class="field">
+                        <label class="label">Receipient's Phone Number</label>
+                        <div class="control has-icons-left">
+                          <input
+                            class="input"
+                            type="text"
+                            placeholder="Input Phone Number"
+                          />
+                          <span class="icon is-small is-left">
+                            <i class="fas fa-user"></i>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="cell is-col-span-5 is-col-span-1-mobile">
+                      <div class="field">
+                        <label class="label">Message</label>
+                        <div class="control">
+                          <textarea
+                            class="textarea"
+                            placeholder="Textarea"
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Send SMS
+                </a>
+
+                <a
+                  href="#"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Reset
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <footer class="footer">
-        <div class="content">
-            <div class="is-flex is-flex-direction-column is-align-items-center ">
-                <div class="has-text-centered">
-                    <div class="icon-text">
-                        <span class="icon has-text-info">
-                            <i class="fas fa-info-circle"></i>
-                        </span>
-                        <span>Information</span>
-                    </div>
-
-                    <p class="block has-text-weight-semibold">
-                        This is an experimental feature and may cause an error in some cases.
-                    </p>
-                </div>
+      <div class="content">
+        <div class="is-flex is-flex-direction-column is-align-items-center">
+          <div class="has-text-centered">
+            <div class="icon-text">
+              <span class="icon has-text-info">
+                <i class="fas fa-info-circle"></i>
+              </span>
+              <span>Information</span>
             </div>
 
+            <p class="block has-text-weight-semibold">
+              This is an experimental feature and may cause an error in some
+              cases.
+            </p>
+          </div>
         </div>
+      </div>
     </footer>
-</body>
-
+    <div id="reboot-modal" class="modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <section class="modal-card-body rounded-edge">
+          <p class="subtitle" id="modal-message">
+            Do you want to reboot the device?
+          </p>
+          <div id="loading-content" style="display: none">
+            <div class="custom-loader"></div>
+            <div class="countdown-text">
+              Rebooting... <span id="countdown">40</span>s
+            </div>
+          </div>
+          <div class="buttons" id="modal-buttons">
+            <button class="button is-warning" id="rebootModem">Reboot</button>
+            <button class="button cancel" aria-label="close">Cancel</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </body>
 </html>

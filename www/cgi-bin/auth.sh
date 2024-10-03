@@ -15,7 +15,7 @@ INPUT_PASSWORD=$(echo "$POST_DATA" | sed -n 's/^.*password=\([^&]*\).*$/\1/p')
 INPUT_PASSWORD=$(echo "$INPUT_PASSWORD" | sed 's/+/ /g;s/%\(..\)/\\x\1/g' | xargs -0 printf "%b")
 
 # Log received password for debugging (remove in production)
-echo "Received password: $INPUT_PASSWORD" >&2
+# echo "Received password: $INPUT_PASSWORD" >&2
 
 # Extract the hashed password from /etc/shadow for the specified user
 USER_SHADOW_ENTRY=$(grep "^$USER:" /etc/shadow)

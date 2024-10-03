@@ -1,11 +1,11 @@
 /*  */
 
 /* import Poppins font */
-@import url('https://fonts.googleapis.com/css2?family=Euclid+Flex:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Euclid+Flex:wght@400;500;600;700&display=swap");
 
 /* use Poppins everywhere */
 * {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 html {
@@ -65,3 +65,98 @@ html.theme-light {
 #dataConnState .tag {
   transition: all 0.3s ease-in-out;
 }
+
+/* Add a bit of roundness on the corner */
+.rounded-edge {
+  border-radius: 1rem;
+}
+
+.command-history {
+  max-height: 300px;
+  overflow-y: auto;
+}
+.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+.history-item {
+  position: relative;
+  padding-right: 2rem;
+}
+.delete-history {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.delete-history:hover {
+  opacity: 1;
+}
+.command-text {
+  cursor: pointer;
+  color: #485fc7;
+}
+.command-text:hover {
+  text-decoration: underline;
+}
+.no-history {
+  padding: 1rem;
+  text-align: center;
+  color: #7a7a7a;
+}
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+}
+.fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+#cooldownTimer {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: #666;
+  pointer-events: none;
+}
+
+.countdown-text {
+  text-align: center;
+  margin-top: 1rem;
+  margin-left: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Center content in modal */
+.modal-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.custom-loader {
+  width:50px;
+  height:50px;
+  --c:radial-gradient(farthest-side,#766DF4 92%,#0000);
+  background: 
+    var(--c) 50% 0,
+    var(--c) 50% 100%,
+    var(--c) 100% 50%,
+    var(--c) 0    50%;
+  background-size:12px 12px;
+  background-repeat:no-repeat;
+  animation:s7 1s infinite;
+}
+@keyframes s7 {to{transform: rotate(.5turn)}}

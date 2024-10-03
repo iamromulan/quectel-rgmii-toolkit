@@ -19,25 +19,16 @@ RAW_COMMAND=$(echo "$INPUT_DATA" | sed 's/command=//g')
 # URL-decode the command
 COMMAND=$(urldecode "$RAW_COMMAND")
 
-# Save the command input to a unique at_input file
-AT_INPUT_FILE="/tmp/at_input_$$.txt"
-echo "$COMMAND" > "$AT_INPUT_FILE"
-
 # Define unique input/output files and AT port
-INPUT_FILE="/tmp/input_$$.txt"
-OUTPUT_FILE="/tmp/output_$$.txt"
-AT_PORT="/dev/smd11"
+INPUT_FILE="/tmp/custom_input_$$.txt"
+OUTPUT_FILE="/tmp/custom_output_$$.txt"
+AT_PORT="/dev/smd7"
 
-# Ensure exclusive access to the AT port to avoid overloading smd11
-(
-    flock -x 200
+# Write the command directly to the input file
+echo "$COMMAND" > "$INPUT_FILE"
 
-    # Copy the user input to the input file
-    cp "$AT_INPUT_FILE" "$INPUT_FILE"
-
-    # Run the command using atinout
-    atinout "$INPUT_FILE" "$AT_PORT" "$OUTPUT_FILE"
-) 200>/tmp/atinout.lock
+# Run the command using atinout
+atinout "$INPUT_FILE" "$AT_PORT" "$OUTPUT_FILE"
 
 # Read the output from output.txt
 OUTPUT=$(cat "$OUTPUT_FILE")
@@ -58,4 +49,4 @@ echo "$JSON_RESPONSE" >> /tmp/cgi_debug.log
 echo "$JSON_RESPONSE"
 
 # Clean up temporary files
-rm "$AT_INPUT_FILE" "$INPUT_FILE" "$OUTPUT_FILE"
+rm "$INPUT_FILE" "$OUTPUT_FILE"
