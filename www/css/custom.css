@@ -160,3 +160,104 @@ html.theme-light {
   animation:s7 1s infinite;
 }
 @keyframes s7 {to{transform: rotate(.5turn)}}
+
+/* table responsiveness */
+ /* Custom table styles */
+ .cell-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cell-table th,
+.cell-table td {
+  padding: 0.75rem;
+}
+
+/* Mobile styles */
+@media screen and (max-width: 768px) {
+  .cell-table thead {
+    display: none;
+  }
+  
+  .cell-table tbody {
+    display: block;
+  }
+  
+  .cell-carousel {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem 0;
+  }
+  
+  .cell-carousel__container {
+    display: flex;
+    transition: transform 0.3s ease;
+    min-height: 300px; /* Adjust based on your content */
+  }
+  
+  .cell-carousel__slide {
+    flex: 0 0 100%;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+  
+  .cell-card {
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    padding: 1rem;
+    height: 100%;
+  }
+  
+  .cell-card__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #dbdbdb;
+  }
+  
+  .cell-card__item:last-child {
+    border-bottom: none;
+  }
+  
+  .cell-card__label {
+    font-weight: bold;
+    margin-right: 1rem;
+  }
+  
+  /* Navigation buttons */
+  .cell-carousel__nav {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+  
+  /* .cell-carousel__btn {
+    background: #3273dc;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+  } */
+  
+  .cell-carousel__indicators {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+  
+  .cell-carousel__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #dbdbdb;
+    margin: 0 4px;
+    cursor: pointer;
+  }
+  
+  .cell-carousel__dot--active {
+    background: #3273dc;
+  }
+}

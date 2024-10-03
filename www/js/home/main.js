@@ -97,7 +97,11 @@ function handleRefreshClick() {
     }
   }
 
-  Promise.all([fetchATCommandData(), fetchConnectionStatus(), fetchTrafficStats]).finally(() => {
+  Promise.all([
+    fetchATCommandData(),
+    fetchConnectionStatus(),
+    fetchTrafficStats,
+  ]).finally(() => {
     if (refreshButton) {
       refreshButton.disabled = false;
       const icon = refreshButton.querySelector("i");
@@ -184,7 +188,10 @@ function startPeriodicRefresh(refreshRate = DEFAULT_REFRESH_RATE) {
 
   // Start new intervals
   atCommandInterval = setInterval(fetchATCommandData, refreshRate);
-  trafficStatsInterval = setInterval(fetchTrafficStats, TRAFFIC_STATS_REFRESH_RATE);
+  trafficStatsInterval = setInterval(
+    fetchTrafficStats,
+    TRAFFIC_STATS_REFRESH_RATE
+  );
   connectionStatusInterval = setInterval(
     fetchConnectionStatus,
     refreshRate * CONNECTION_CHECK_MULTIPLIER
@@ -620,22 +627,56 @@ function createBandTableRow(bandData, networkType, servingCellJSON) {
       ?.replace("LTE BAND ", "B")
       .replace("NR5G BAND ", "N");
 
-    // Create row HTML
-    row.innerHTML = `
+    // Create both desktop and mobile versions of the content
+    const desktopContent = `
       <td>${formattedBandNumber || "N/A"}</td>
       <td>${earfcn || "N/A"}</td>
       <td>${bandwidth || "N/A"}</td>
       <td>${pci || "N/A"}</td>
-      <td class="is-hidden-mobile">
-        ${rsrp ? createSignalTag(rsrp, "RSRP") : "N/A"}
-      </td>
-      <td class="is-hidden-mobile">
-        ${rsrq ? createSignalTag(rsrq, "RSRQ") : "N/A"}
-      </td>
-      <td class="is-hidden-mobile">
-        ${sinr ? createSignalTag(sinr, "SINR") : "N/A"}
-      </td>
+      <td>${rsrp ? createSignalTag(rsrp, "RSRP") : "N/A"}</td>
+      <td>${rsrq ? createSignalTag(rsrq, "RSRQ") : "N/A"}</td>
+      <td>${sinr ? createSignalTag(sinr, "SINR") : "N/A"}</td>
     `;
+
+    const mobileContent = `
+      <div class="cell-carousel__slide">
+        <div class="cell-card">
+          <div class="cell-card__item">
+            <span class="cell-card__label">Name</span>
+            <span>${formattedBandNumber || "N/A"}</span>
+          </div>
+          <div class="cell-card__item">
+            <span class="cell-card__label">EARFCN</span>
+            <span>${earfcn || "N/A"}</span>
+          </div>
+          <div class="cell-card__item">
+            <span class="cell-card__label">Bandwidth</span>
+            <span>${bandwidth || "N/A"}</span>
+          </div>
+          <div class="cell-card__item">
+            <span class="cell-card__label">Physical ID</span>
+            <span>${pci || "N/A"}</span>
+          </div>
+          <div class="cell-card__item">
+            <span class="cell-card__label">RSRP</span>
+            <span>${rsrp ? createSignalTag(rsrp, "RSRP") : "N/A"}</span>
+          </div>
+          <div class="cell-card__item">
+            <span class="cell-card__label">RSRQ</span>
+            <span>${rsrq ? createSignalTag(rsrq, "RSRQ") : "N/A"}</span>
+          </div>
+          <div class="cell-card__item">
+            <span class="cell-card__label">SINR</span>
+            <span>${sinr ? createSignalTag(sinr, "SINR") : "N/A"}</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Store both versions in data attributes
+    row.setAttribute("data-desktop", desktopContent);
+    row.setAttribute("data-mobile", mobileContent);
+    row.innerHTML = desktopContent;
   } catch (error) {
     console.error("Error parsing band data:", error);
     row.innerHTML = '<td colspan="7">Error parsing band data</td>';
@@ -930,7 +971,6 @@ async function fetchTrafficStats() {
     // Update the DOM
     setText("download", downloadFormatted);
     setText("upload", uploadFormatted);
-
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);
   }
@@ -1045,3 +1085,118 @@ document.addEventListener("DOMContentLoaded", () => {
   setupRefreshControls();
   setupEventListeners();
 });
+
+// Mobile carousel functions
+let touchStartX = 0;
+let touchEndX = 0;
+
+function initMobileCarousel() {
+  const table = document.getElementById("bandTable");
+  const tbody = table.querySelector("tbody");
+  const rows = tbody.querySelectorAll("tr");
+
+  if (window.innerWidth <= 768) {
+    // Create carousel structure
+    const carouselWrapper = document.createElement("div");
+    carouselWrapper.className = "cell-carousel";
+
+    const carouselContainer = document.createElement("div");
+    carouselContainer.className = "cell-carousel__container";
+
+    // Move content to carousel
+    rows.forEach((row) => {
+      carouselContainer.insertAdjacentHTML(
+        "beforeend",
+        row.getAttribute("data-mobile")
+      );
+    });
+
+    carouselWrapper.appendChild(carouselContainer);
+
+    // Add only indicators
+    const indicatorsHTML = `
+      <div class="cell-carousel__indicators">
+        ${Array.from(
+          { length: rows.length },
+          (_, i) =>
+            `<span class="cell-carousel__dot ${
+              i === 0 ? "cell-carousel__dot--active" : ""
+            }" 
+                 onclick="goToSlide(${i})"></span>`
+        ).join("")}
+      </div>
+    `;
+
+    // Replace table with carousel
+    table.style.display = "none";
+    table.parentNode.insertBefore(carouselWrapper, table);
+    carouselWrapper.insertAdjacentHTML("beforeend", indicatorsHTML);
+
+    // Add touch event listeners
+    carouselContainer.addEventListener("touchstart", handleTouchStart, false);
+    carouselContainer.addEventListener("touchmove", handleTouchMove, false);
+    carouselContainer.addEventListener("touchend", handleTouchEnd, false);
+  } else {
+    // Restore desktop view if necessary
+    const carousel = document.querySelector(".cell-carousel");
+    if (carousel) {
+      carousel.remove();
+      table.style.display = "";
+    }
+    rows.forEach((row) => {
+      row.innerHTML = row.getAttribute("data-desktop");
+    });
+  }
+}
+
+function handleTouchStart(event) {
+  touchStartX = event.touches[0].clientX;
+}
+
+function handleTouchMove(event) {
+  event.preventDefault(); // Prevent scrolling while swiping
+}
+
+function handleTouchEnd(event) {
+  touchEndX = event.changedTouches[0].clientX;
+  handleSwipe();
+}
+
+function handleSwipe() {
+  const swipeThreshold = 50; // Minimum distance for a swipe
+  const container = document.querySelector(".cell-carousel__container");
+  const slides = container.querySelectorAll(".cell-carousel__slide");
+
+  const diffX = touchStartX - touchEndX;
+
+  if (Math.abs(diffX) > swipeThreshold) {
+    if (diffX > 0 && currentSlide < slides.length - 1) {
+      // Swipe left, go to next slide
+      currentSlide++;
+    } else if (diffX < 0 && currentSlide > 0) {
+      // Swipe right, go to previous slide
+      currentSlide--;
+    }
+    updateCarousel();
+  }
+}
+
+function goToSlide(index) {
+  currentSlide = index;
+  updateCarousel();
+}
+
+function updateCarousel() {
+  const container = document.querySelector(".cell-carousel__container");
+  container.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+  // Update indicators
+  const dots = document.querySelectorAll(".cell-carousel__dot");
+  dots.forEach((dot, index) => {
+    dot.classList.toggle("cell-carousel__dot--active", index === currentSlide);
+  });
+}
+
+// Initialize carousel on load and resize
+window.addEventListener("load", initMobileCarousel);
+window.addEventListener("resize", initMobileCarousel);
