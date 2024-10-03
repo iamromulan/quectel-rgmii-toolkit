@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('reboot-modal');
     const rebootButton = document.getElementById('rebootModem');
     const cancelButtons = modal.querySelectorAll('.cancel, .modal-background');
-    const restartConnectionBtn = document.querySelector('a.button.is-link.is-outlined');
+    const powerButton = document.querySelector('div.button.is-warning.is-outlined.reboot-modal');
     const modalMessage = document.getElementById('modal-message');
     const loadingContent = document.getElementById('loading-content');
     const modalButtons = document.getElementById('modal-buttons');
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Show modal when restart connection button is clicked
-    restartConnectionBtn.addEventListener('click', function(e) {
+    powerButton.addEventListener('click', function(e) {
         e.preventDefault();
         toggleModal(true);
     });

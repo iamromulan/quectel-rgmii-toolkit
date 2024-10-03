@@ -261,3 +261,8 @@ html.theme-light {
     background: #3273dc;
   }
 }
+/* End of custom table styles */
+
+.isCursorPointer {
+  cursor: pointer;
+}

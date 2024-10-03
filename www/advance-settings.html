@@ -23,6 +23,7 @@
     <script src="/js/styles/nav-burger.js"></script>
     <script src="/js/styles/modal-trigger.js"></script>
     <script src="/js/utils/reboot.js"></script>
+    <script src="/js/utils/restart-connection.js"></script>
     <script defer src="/js/auth/auth.js"></script>
     <script src="/js/advance/at-terminal.js"></script>
 
@@ -59,7 +60,7 @@
 
       <div id="navMenu" class="navbar-menu">
         <div class="navbar-start ml-6">
-          <a class="navbar-item has-text-weight-bold" href="/"> Home </a>
+          <a class="navbar-item" href="/"> Home </a>
           <div class="navbar-item has-dropdown is-hoverable">
             <a class="navbar-link"> Cellular </a>
             <div class="navbar-dropdown is-boxed">
@@ -73,9 +74,11 @@
             </div>
           </div>
           <div class="navbar-item has-dropdown is-hoverable">
-            <a class="navbar-link"> Advance </a>
+            <a class="navbar-link has-text-weight-bold"> Advance </a>
             <div class="navbar-dropdown is-boxed">
-              <a class="navbar-item" href="/advance-settings.html"> Advance Settings </a>
+              <a class="navbar-item" href="/advance-settings.html">
+                Advance Settings
+              </a>
               <a class="navbar-item" href="#">Experimental Features</a>
               <a class="navbar-item" href="/cgi-bin/luci">OpenWRT Luci</a>
             </div>
@@ -86,25 +89,28 @@
         <div class="navbar-end">
           <div class="navbar-item">
             <div class="buttons is-flex-direction-column-mobile">
-              <p class="control is-expanded-mobile">
-                <a
-                  href="#"
+              <div class="control is-expanded-mobile">
+                <div
+                  id="restartConnectionBtn"
                   class="button is-link is-outlined is-fullwidth-mobile"
                 >
                   <span class="icon">
                     <i class="fas fa-arrows-rotate"></i>
                   </span>
                   <span>Restart Connection</span>
-                </a>
-              </p>
+                </div>
+              </div>
               <div class="is-flex is-mobile is-align-items-center">
-                <p class="control">
-                  <div href="#" class="button is-warning is-outlined reboot-modal" data-target="reboot-modal" >
+                <div class="control">
+                  <div
+                    class="button is-warning is-outlined reboot-modal"
+                    data-target="reboot-modal"
+                  >
                     <span class="icon">
                       <i class="fas fa-power-off"></i>
                     </span>
                   </div>
-                </p>
+                </div>
                 <p class="control ml-2 is-mobile">
                   <a
                     href="#"

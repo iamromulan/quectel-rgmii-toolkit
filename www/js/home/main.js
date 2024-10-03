@@ -1,12 +1,12 @@
 // Constants
 const ACCESS_TECH_MAP = {
   2: "UTRAN",
-  4: "UTRAN W/ HSDPA",
-  5: "UTRAN W/ HSUPA",
-  6: "UTRAN W/ HSDPA & HSUPA",
+  4: "UTRAN / HSDPA",
+  5: "UTRAN / HSUPA",
+  6: "UTRAN / HSDPA & HSUPA",
   7: "E-UTRAN",
-  10: "E-UTRAN connected to a 5GCN",
-  11: "NR connected to a 5GCN",
+  10: "E-UTRAN - 5GCN",
+  11: "NR - 5GCN",
   12: "NG-RAN",
   13: "E-UTRAN-NR dual",
 };
@@ -384,7 +384,9 @@ function processBandwidth(response, networkType) {
 
   if (networkType === "NR5G-NSA") {
     processNR5GBandwidth(sccLines, pccBWParsed);
-  } else {
+  } else if (networkType === "NR5G-SA") {
+    processNR5GBandwidth(sccLines, pccBWParsed);
+  } else if (networkType === "LTE") {
     processLTEBandwidth(sccLines, pccBWParsed);
   }
 }
@@ -773,6 +775,8 @@ function processBandsTable(jsonData) {
     const sccRow = createBandTableRow(sccBand, networkType, servingCellJSON);
     tableBody.appendChild(sccRow);
   });
+
+  initMobileCarousel();
 }
 
 function processCellInfo(jsonData) {
@@ -1086,9 +1090,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
 });
 
-// Mobile carousel functions
-let touchStartX = 0;
-let touchEndX = 0;
+let carouselInitialized = false;
+let currentSlide = 0;
 
 function initMobileCarousel() {
   const table = document.getElementById("bandTable");
@@ -1096,65 +1099,95 @@ function initMobileCarousel() {
   const rows = tbody.querySelectorAll("tr");
 
   if (window.innerWidth <= 768) {
-    // Create carousel structure
-    const carouselWrapper = document.createElement("div");
-    carouselWrapper.className = "cell-carousel";
+    let carouselWrapper = document.querySelector(".cell-carousel");
 
-    const carouselContainer = document.createElement("div");
-    carouselContainer.className = "cell-carousel__container";
+    if (!carouselInitialized) {
+      // Create carousel structure only if it doesn't exist
+      carouselWrapper = document.createElement("div");
+      carouselWrapper.className = "cell-carousel";
 
-    // Move content to carousel
-    rows.forEach((row) => {
-      carouselContainer.insertAdjacentHTML(
-        "beforeend",
-        row.getAttribute("data-mobile")
-      );
-    });
+      const carouselContainer = document.createElement("div");
+      carouselContainer.className = "cell-carousel__container";
 
-    carouselWrapper.appendChild(carouselContainer);
+      carouselWrapper.appendChild(carouselContainer);
 
-    // Add only indicators
-    const indicatorsHTML = `
-      <div class="cell-carousel__indicators">
-        ${Array.from(
-          { length: rows.length },
-          (_, i) =>
-            `<span class="cell-carousel__dot ${
-              i === 0 ? "cell-carousel__dot--active" : ""
-            }" 
-                 onclick="goToSlide(${i})"></span>`
-        ).join("")}
-      </div>
-    `;
+      // Add touch event listeners only once
+      carouselContainer.addEventListener("touchstart", handleTouchStart, false);
+      carouselContainer.addEventListener("touchmove", handleTouchMove, false);
+      carouselContainer.addEventListener("touchend", handleTouchEnd, false);
 
-    // Replace table with carousel
-    table.style.display = "none";
-    table.parentNode.insertBefore(carouselWrapper, table);
-    carouselWrapper.insertAdjacentHTML("beforeend", indicatorsHTML);
+      // Insert carousel into DOM
+      table.style.display = "none";
+      table.parentNode.insertBefore(carouselWrapper, table);
 
-    // Add touch event listeners
-    carouselContainer.addEventListener("touchstart", handleTouchStart, false);
-    carouselContainer.addEventListener("touchmove", handleTouchMove, false);
-    carouselContainer.addEventListener("touchend", handleTouchEnd, false);
+      carouselInitialized = true;
+    }
+
+    // Update carousel content
+    updateCarouselContent(rows);
   } else {
-    // Restore desktop view if necessary
+    // Restore desktop view
     const carousel = document.querySelector(".cell-carousel");
     if (carousel) {
-      carousel.remove();
+      carousel.style.display = "none";
       table.style.display = "";
     }
+
     rows.forEach((row) => {
       row.innerHTML = row.getAttribute("data-desktop");
     });
   }
 }
 
+function updateCarouselContent(rows) {
+  const carouselContainer = document.querySelector(".cell-carousel__container");
+  const indicators = document.querySelector(".cell-carousel__indicators");
+
+  if (!carouselContainer) return;
+
+  // Clear existing content
+  carouselContainer.innerHTML = "";
+  if (indicators) indicators.remove();
+
+  // Add new slides
+  rows.forEach((row) => {
+    carouselContainer.insertAdjacentHTML(
+      "beforeend",
+      row.getAttribute("data-mobile")
+    );
+  });
+
+  // Update indicators
+  const indicatorsHTML = `
+    <div class="cell-carousel__indicators">
+      ${Array.from(
+        { length: rows.length },
+        (_, i) =>
+          `<span class="cell-carousel__dot ${
+            i === currentSlide ? "cell-carousel__dot--active" : ""
+          }"
+               onclick="goToSlide(${i})"></span>`
+      ).join("")}
+    </div>
+  `;
+
+  carouselContainer.parentNode.insertAdjacentHTML("beforeend", indicatorsHTML);
+
+  // Reset to first slide and update display
+  currentSlide = 0;
+  updateCarousel();
+}
+
+// Your existing touch handling functions remain the same
+let touchStartX = 0;
+let touchEndX = 0;
+
 function handleTouchStart(event) {
   touchStartX = event.touches[0].clientX;
 }
 
 function handleTouchMove(event) {
-  event.preventDefault(); // Prevent scrolling while swiping
+  event.preventDefault();
 }
 
 function handleTouchEnd(event) {
@@ -1163,18 +1196,15 @@ function handleTouchEnd(event) {
 }
 
 function handleSwipe() {
-  const swipeThreshold = 50; // Minimum distance for a swipe
+  const swipeThreshold = 50;
   const container = document.querySelector(".cell-carousel__container");
   const slides = container.querySelectorAll(".cell-carousel__slide");
-
   const diffX = touchStartX - touchEndX;
 
   if (Math.abs(diffX) > swipeThreshold) {
     if (diffX > 0 && currentSlide < slides.length - 1) {
-      // Swipe left, go to next slide
       currentSlide++;
     } else if (diffX < 0 && currentSlide > 0) {
-      // Swipe right, go to previous slide
       currentSlide--;
     }
     updateCarousel();
@@ -1188,15 +1218,16 @@ function goToSlide(index) {
 
 function updateCarousel() {
   const container = document.querySelector(".cell-carousel__container");
+  if (!container) return;
+
   container.style.transform = `translateX(-${currentSlide * 100}%)`;
 
-  // Update indicators
   const dots = document.querySelectorAll(".cell-carousel__dot");
   dots.forEach((dot, index) => {
     dot.classList.toggle("cell-carousel__dot--active", index === currentSlide);
   });
 }
 
-// Initialize carousel on load and resize
+// Update your event listeners
 window.addEventListener("load", initMobileCarousel);
 window.addEventListener("resize", initMobileCarousel);
