@@ -25,9 +25,15 @@ chmod +x /usr/sbin/init-overlay-watchdog.sh
 
 # Enable and start the service
 service mount-fix enable
-service init-overlay-watchdog enable
 service mount-fix start
-opkg update
-opkg install inotifywait inotifywatch
+sleep 1
+opkg install /tmp/libinotifytools_3.20.11.0-1_aarch64_cortex-a53.ipk
+opkg install /tmp/inotifywait_3.20.11.0-1_aarch64_cortex-a53.ipk
+service init-overlay-watchdog enable
 service init-overlay-watchdog start
+echo -e "\e[32m sdxpinn-mount-fix installed! Here is the new file structure! \e[0m"
+echo -e "\e[32m ============================================================ \e[0m"
+mount && df -h
+echo -e "\e[32m ============================================================ \e[0m"
+echo -e "\e[32m sdxpinn-mount-fix installed! New file structure above! \e[0m"
 exit 0
