@@ -645,31 +645,31 @@ function createBandTableRow(bandData, networkType, servingCellJSON) {
         <div class="cell-card">
           <div class="cell-card__item">
             <span class="cell-card__label">Name</span>
-            <span>${formattedBandNumber || "N/A"}</span>
+            <span class="cell-card__value">${formattedBandNumber || "N/A"}</span>
           </div>
           <div class="cell-card__item">
             <span class="cell-card__label">EARFCN</span>
-            <span>${earfcn || "N/A"}</span>
+            <span class="cell-card__value">${earfcn || "N/A"}</span>
           </div>
           <div class="cell-card__item">
             <span class="cell-card__label">Bandwidth</span>
-            <span>${bandwidth || "N/A"}</span>
+            <span class="cell-card__value">${bandwidth || "N/A"}</span>
           </div>
           <div class="cell-card__item">
             <span class="cell-card__label">Physical ID</span>
-            <span>${pci || "N/A"}</span>
+            <span class="cell-card__value">${pci || "N/A"}</span>
           </div>
           <div class="cell-card__item">
             <span class="cell-card__label">RSRP</span>
-            <span>${rsrp ? createSignalTag(rsrp, "RSRP") : "N/A"}</span>
+            <span class="cell-card__value">${rsrp ? createSignalTag(rsrp, "RSRP") : "N/A"}</span>
           </div>
           <div class="cell-card__item">
             <span class="cell-card__label">RSRQ</span>
-            <span>${rsrq ? createSignalTag(rsrq, "RSRQ") : "N/A"}</span>
+            <span class="cell-card__value">${rsrq ? createSignalTag(rsrq, "RSRQ") : "N/A"}</span>
           </div>
           <div class="cell-card__item">
             <span class="cell-card__label">SINR</span>
-            <span>${sinr ? createSignalTag(sinr, "SINR") : "N/A"}</span>
+            <span class="cell-card__value">${sinr ? createSignalTag(sinr, "SINR") : "N/A"}</span>
           </div>
         </div>
       </div>
@@ -1090,9 +1090,12 @@ document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
 });
 
+// Mobile Band Cards
 let carouselInitialized = false;
 let currentSlide = 0;
+let previousRowCount = 0;
 
+// Modify the mobile carousel initialization to ensure proper setup
 function initMobileCarousel() {
   const table = document.getElementById("bandTable");
   const tbody = table.querySelector("tbody");
@@ -1102,7 +1105,7 @@ function initMobileCarousel() {
     let carouselWrapper = document.querySelector(".cell-carousel");
 
     if (!carouselInitialized) {
-      // Create carousel structure only if it doesn't exist
+      // Create carousel structure
       carouselWrapper = document.createElement("div");
       carouselWrapper.className = "cell-carousel";
 
@@ -1111,27 +1114,31 @@ function initMobileCarousel() {
 
       carouselWrapper.appendChild(carouselContainer);
 
-      // Add touch event listeners only once
+      // Add touch event listeners
       carouselContainer.addEventListener("touchstart", handleTouchStart, false);
       carouselContainer.addEventListener("touchmove", handleTouchMove, false);
       carouselContainer.addEventListener("touchend", handleTouchEnd, false);
 
-      // Insert carousel into DOM
+      // Insert carousel before table
       table.style.display = "none";
       table.parentNode.insertBefore(carouselWrapper, table);
 
       carouselInitialized = true;
     }
 
-    // Update carousel content
+    // Always ensure carousel is visible and table is hidden
+    carouselWrapper.style.display = "";
+    table.style.display = "none";
+
+    // Update content
     updateCarouselContent(rows);
   } else {
-    // Restore desktop view
+    // Desktop view
     const carousel = document.querySelector(".cell-carousel");
     if (carousel) {
       carousel.style.display = "none";
-      table.style.display = "";
     }
+    table.style.display = "";
 
     rows.forEach((row) => {
       row.innerHTML = row.getAttribute("data-desktop");
@@ -1139,29 +1146,93 @@ function initMobileCarousel() {
   }
 }
 
+// Add CSS class for smooth transitions
+const style = document.createElement('style');
+style.textContent = `
+  .cell-carousel__container {
+    display: flex;
+    transition: transform 0.3s ease-out;
+    min-height: 300px;
+    will-change: transform;
+  }
+
+  .cell-carousel__slide {
+    flex: 0 0 100%;
+    padding: 1rem;
+    box-sizing: border-box;
+    opacity: 1;
+    transition: opacity 0.3s ease-out;
+  }
+`;
+
 function updateCarouselContent(rows) {
   const carouselContainer = document.querySelector(".cell-carousel__container");
-  const indicators = document.querySelector(".cell-carousel__indicators");
-
   if (!carouselContainer) return;
 
+  // Preserve existing transform to maintain current slide position
+  const currentTransform = carouselContainer.style.transform;
+  
   // Clear existing content
-  carouselContainer.innerHTML = "";
-  if (indicators) indicators.remove();
-
-  // Add new slides
+  carouselContainer.innerHTML = '';
+  
+  // Create and append all slides at once
   rows.forEach((row) => {
-    carouselContainer.insertAdjacentHTML(
-      "beforeend",
-      row.getAttribute("data-mobile")
-    );
+    const slide = document.createElement("div");
+    slide.className = "cell-carousel__slide";
+    slide.innerHTML = row.getAttribute("data-mobile");
+    carouselContainer.appendChild(slide);
   });
-
+  
+  // Restore transform to maintain position
+  carouselContainer.style.transform = currentTransform;
+  
   // Update indicators
+  updateIndicators(rows.length);
+  
+  // Ensure current slide is within bounds
+  if (currentSlide >= rows.length) {
+    currentSlide = Math.max(0, rows.length - 1);
+    updateCarouselPosition();
+  }
+}
+
+function updateSlideValues(slide, newDataHtml) {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = newDataHtml;
+  const newCard = tempDiv.querySelector('.cell-card');
+  const currentCard = slide.querySelector('.cell-card');
+  
+  if (!currentCard || !newCard) {
+    slide.innerHTML = newDataHtml;
+    return;
+  }
+
+  const currentItems = currentCard.querySelectorAll('.cell-card__item');
+  const newItems = newCard.querySelectorAll('.cell-card__item');
+  
+  currentItems.forEach((item, index) => {
+    const currentValueSpan = item.querySelector('span:not(.cell-card__label)');
+    const newItem = newItems[index];
+    const newValueSpan = newItem ? newItem.querySelector('span:not(.cell-card__label)') : null;
+    
+    if (currentValueSpan && newValueSpan && currentValueSpan.innerHTML !== newValueSpan.innerHTML) {
+      currentValueSpan.innerHTML = newValueSpan.innerHTML;
+    }
+  });
+}
+
+function updateIndicators(slideCount) {
+  const carouselWrapper = document.querySelector(".cell-carousel");
+  let indicators = carouselWrapper.querySelector(".cell-carousel__indicators");
+  
+  if (indicators) {
+    indicators.remove();
+  }
+
   const indicatorsHTML = `
     <div class="cell-carousel__indicators">
       ${Array.from(
-        { length: rows.length },
+        { length: slideCount },
         (_, i) =>
           `<span class="cell-carousel__dot ${
             i === currentSlide ? "cell-carousel__dot--active" : ""
@@ -1171,14 +1242,27 @@ function updateCarouselContent(rows) {
     </div>
   `;
 
-  carouselContainer.parentNode.insertAdjacentHTML("beforeend", indicatorsHTML);
-
-  // Reset to first slide and update display
-  currentSlide = 0;
-  updateCarousel();
+  carouselWrapper.insertAdjacentHTML("beforeend", indicatorsHTML);
 }
 
-// Your existing touch handling functions remain the same
+// Add a helper function to ensure smooth transitions
+function updateCarouselPosition() {
+  const container = document.querySelector(".cell-carousel__container");
+  if (!container) return;
+
+  // Apply transform with a slight delay to ensure smooth transition
+  requestAnimationFrame(() => {
+    container.style.transform = `translateX(-${currentSlide * 100}%)`;
+  });
+  
+  const dots = document.querySelectorAll(".cell-carousel__dot");
+  dots.forEach((dot, index) => {
+    dot.classList.toggle("cell-carousel__dot--active", index === currentSlide);
+  });
+}
+
+
+// Touch handling functions remain the same
 let touchStartX = 0;
 let touchEndX = 0;
 
@@ -1207,27 +1291,15 @@ function handleSwipe() {
     } else if (diffX < 0 && currentSlide > 0) {
       currentSlide--;
     }
-    updateCarousel();
+    updateCarouselPosition();
   }
 }
 
 function goToSlide(index) {
   currentSlide = index;
-  updateCarousel();
+  updateCarouselPosition();
 }
 
-function updateCarousel() {
-  const container = document.querySelector(".cell-carousel__container");
-  if (!container) return;
-
-  container.style.transform = `translateX(-${currentSlide * 100}%)`;
-
-  const dots = document.querySelectorAll(".cell-carousel__dot");
-  dots.forEach((dot, index) => {
-    dot.classList.toggle("cell-carousel__dot--active", index === currentSlide);
-  });
-}
-
-// Update your event listeners
+// Event listeners
 window.addEventListener("load", initMobileCarousel);
 window.addEventListener("resize", initMobileCarousel);

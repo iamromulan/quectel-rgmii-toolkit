@@ -179,10 +179,6 @@ html.theme-light {
     display: none;
   }
   
-  .cell-table tbody {
-    display: block;
-  }
-  
   .cell-carousel {
     position: relative;
     overflow: hidden;
@@ -191,14 +187,29 @@ html.theme-light {
   
   .cell-carousel__container {
     display: flex;
-    transition: transform 0.3s ease;
-    min-height: 300px; /* Adjust based on your content */
+    transition: transform 0.3s ease-out;
+    min-height: 300px;
   }
   
   .cell-carousel__slide {
     flex: 0 0 100%;
     padding: 1rem;
     box-sizing: border-box;
+  }
+  
+  .cell-carousel__slide--new {
+    animation: slideIn 0.3s ease-out;
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
   
   .cell-card {
@@ -216,31 +227,22 @@ html.theme-light {
     border-bottom: 1px solid #dbdbdb;
   }
   
-  .cell-card__item:last-child {
-    border-bottom: none;
+  .cell-card__value {
+    transition: opacity 0.3s ease-out;
   }
   
-  .cell-card__label {
-    font-weight: bold;
-    margin-right: 1rem;
+  .cell-card__value--updating {
+    opacity: 0;
   }
   
-  /* Navigation buttons */
-  .cell-carousel__nav {
-    display: flex;
-    justify-content: center;
-    margin-top: 1rem;
+  .cell-card__value--updated {
+    animation: fadeIn 0.3s ease-out;
   }
   
-  /* .cell-carousel__btn {
-    background: #3273dc;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    margin: 0 0.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-  } */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
   
   .cell-carousel__indicators {
     display: flex;
@@ -255,6 +257,7 @@ html.theme-light {
     background: #dbdbdb;
     margin: 0 4px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
   }
   
   .cell-carousel__dot--active {

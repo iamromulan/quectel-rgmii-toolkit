@@ -22,12 +22,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (countdownInterval) {
                 clearInterval(countdownInterval);
             }
-            countdownElement.textContent = '80';
+            countdownElement.textContent = '90';
         }
     }
 
     function startCountdown() {
-        let timeLeft = 80;
+        let timeLeft = 90;
         
         // Update display for countdown
         modalMessage.style.display = 'none';
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: 'command=' + encodeURIComponent('AT+CFUN=1,1')
+                body: 'command=' + encodeURIComponent('AT+QPOWD=1')
             });
 
             if (!response.ok) {
