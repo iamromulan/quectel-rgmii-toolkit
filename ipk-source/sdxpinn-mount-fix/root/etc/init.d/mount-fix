@@ -4,13 +4,13 @@ START=03
 
 start() {
     # Log to tmp
-    rm /tmp/mount-fix.log
+    rm /tmp/mount-fix.log >/dev/null 2>&1
     /bin/touch /tmp/mount-fix.log
     /bin/echo "Begin mount fix process to make a usable userspace" >> /tmp/mount-fix.log
 
     # Forcefully unmount /etc
     /bin/echo "Unmounting the tiny overlay at /etc" >> /tmp/mount-fix.log
-    /bin/umount -lf /etc >> /tmp/mount-fix.log
+    /bin/umount -lf /etc >/dev/null 2>&1
 
     # Remount root filesystem as read-write
     /bin/echo "Remounting / as read-write" >> /tmp/mount-fix.log
@@ -62,7 +62,7 @@ start() {
 
     # Pivot root to the new root
     /bin/echo "Pivoting Root / to /rootfs; Be back soon!!" >> /tmp/mount-fix.log
-    /sbin/pivot_root /rootfs /rootfs/real_rootfs >> /tmp/mount-fix.log
+    /sbin/pivot_root /rootfs /rootfs/real_rootfs >/dev/null 2>&1
 
     # Move the mounted filesystems to the new locations
     /bin/mount --move /real_rootfs/sys /sys >> /tmp/mount-fix.log
@@ -99,7 +99,7 @@ start() {
     # Final logs and remount the original root as read-only
     /bin/echo "...and we're back! The original root now lives at /real_rootfs" >> /tmp/mount-fix.log
     /bin/echo "Lets mount it as read-only for now, If you need it just remount it as read-write" >> /tmp/mount-fix.log
-    /bin/mount -o remount,ro /real_rootfs >> /tmp/mount-fix.log
+    /bin/mount -o remount,ro /real_rootfs >/dev/null 2>&1
     /bin/echo "Overlay and pivot_root setup completed" >> /tmp/mount-fix.log
 }
 
