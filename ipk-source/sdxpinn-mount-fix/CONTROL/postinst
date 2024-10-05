@@ -3,6 +3,7 @@
 # Define the package name for the main package
 PKG_NAME="sdxpinn-mount-fix"
 LIST_FILE="/usr/lib/opkg/info/${PKG_NAME}.list"
+STATUS_FILE="/usr/lib/opkg/status"
 
 # Function to handle bundled packages post-install
 handle_bundled_postinst() {
@@ -24,6 +25,25 @@ handle_bundled_postinst() {
     echo "Executing default_postinst for bundled package: $bundled_package"
     default_postinst "$bundled_package" $@
     return $?
+}
+
+# Function to update the status file for a given package
+update_status_file() {
+    local control_file="/usr/lib/opkg/info/$1.control"
+    
+    if [ ! -f "$control_file" ]; then
+        echo "Control file for package $1 not found: $control_file"
+        return 1
+    fi
+
+    # Read the control file and append to /usr/lib/opkg/status
+    echo "" >> "$STATUS_FILE"       # Ensure there's a newline before the new package entry
+    cat "$control_file" >> "$STATUS_FILE"
+
+    # Add a new line indicating the package is 'Installed' and 'ok'
+    echo "Status: install ok installed" >> "$STATUS_FILE"
+
+    echo "Added $1 to $STATUS_FILE"
 }
 
 # Replace distfeeds.conf with non-working sources commented out
@@ -64,12 +84,16 @@ mount && df -h
 echo -e "\e[32m ============================================================ \e[0m"
 echo -e "\e[32m sdxpinn-mount-fix installed! New file structure above! \e[0m"
 
-# Handle bundled packages
-BUNDLED_PACKAGES=("libinotifytools" "inotifywait")
+# Use a space-separated string for the bundled packages
+BUNDLED_PACKAGES="libinotifytools inotifywait"
 
-for package in "${BUNDLED_PACKAGES[@]}"; do
+# Iterate through each bundled package
+for package in $BUNDLED_PACKAGES; do
+    # Run postinst for each bundled package
     handle_bundled_postinst "$package"
+
+    # Update the status file
+    update_status_file "$package"
 done
 
 exit 0
-
