@@ -1,5 +1,11 @@
 #!/bin/ash
 
+# Define the package name
+PKG_NAME="sdxpinn-mount-fix"
+
+# Define the list file location
+LIST_FILE="/usr/lib/opkg/info/${PKG_NAME}.list"
+
 # Replace distfeeds.conf with non-working sources commented out
 # Check if the temporary distfeeds.conf file exists
 if [ -f /tmp/distfeeds.conf ]; then
@@ -17,6 +23,17 @@ else
     exit 1
 fi
 
+echo "Combo package cleanup in progress..."
+
+# Check if the .list file exists and modify it
+if [ -f "$LIST_FILE" ]; then
+    # Remove any lines that start with /usr/lib/opkg/info/
+    sed -i '/^\/usr\/lib\/opkg\/info\//d' "$LIST_FILE"
+    echo "Removed control file entries from $LIST_FILE."
+else
+    echo "Warning: ${LIST_FILE} not found."
+fi
+
 
 # Make the init script executable
 chmod +x /etc/init.d/mount-fix
@@ -27,8 +44,6 @@ chmod +x /usr/sbin/init-overlay-watchdog.sh
 service mount-fix enable
 service mount-fix start
 sleep 1
-opkg install /tmp/libinotifytools_3.20.11.0-1_aarch64_cortex-a53.ipk
-opkg install /tmp/inotifywait_3.20.11.0-1_aarch64_cortex-a53.ipk
 service init-overlay-watchdog enable
 service init-overlay-watchdog start
 echo -e "\e[32m sdxpinn-mount-fix installed! Here is the new file structure! \e[0m"
@@ -36,4 +51,31 @@ echo -e "\e[32m ============================================================ \e[
 mount && df -h
 echo -e "\e[32m ============================================================ \e[0m"
 echo -e "\e[32m sdxpinn-mount-fix installed! New file structure above! \e[0m"
+
+# Define the target bundled package name for this script
+BUNDLED_PACKAGE_NAME_1="libinotifytools"
+
+# Check if the IPKG_NO_SCRIPT flag is set or if the required functions script is missing
+[ "${IPKG_NO_SCRIPT}" = "1" ] && exit 0
+[ -s ${IPKG_INSTROOT}/lib/functions.sh ] || exit 0
+
+# Source the necessary functions
+. ${IPKG_INSTROOT}/lib/functions.sh
+
+# Use the target package name for default_postinst instead of $0
+default_postinst "${BUNDLED_PACKAGE_NAME_1}" $@
+
+# Define the target bundled package name for this script
+BUNDLED_PACKAGE_NAME_2="inotifywait"
+
+# Check if the IPKG_NO_SCRIPT flag is set or if the required functions script is missing
+[ "${IPKG_NO_SCRIPT}" = "1" ] && exit 0
+[ -s ${IPKG_INSTROOT}/lib/functions.sh ] || exit 0
+
+# Source the necessary functions
+. ${IPKG_INSTROOT}/lib/functions.sh
+
+# Use the target package name for default_postinst instead of $0
+default_postinst "${BUNDLED_PACKAGE_NAME_2}" $@
+
 exit 0
