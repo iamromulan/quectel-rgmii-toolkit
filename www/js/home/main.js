@@ -202,9 +202,9 @@ function startPeriodicRefresh(refreshRate = DEFAULT_REFRESH_RATE) {
 async function fetchATCommandData() {
   try {
     const jsonData = await fetchAndParseData();
-    processATCommandData(jsonData);
     console.log("Data fetched and processed successfully");
     console.log(jsonData);
+    processATCommandData(jsonData);
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);
   }
@@ -284,7 +284,13 @@ function processNetworkData(jsonData) {
 
   // APN
   const apnData = extractValue(jsonData[7].response).split(",");
-  setText("apn", apnData[2].replace(/"/g, "").trim());
+  const apn = apnData[2].replace(/"/g, "").trim();
+  if (apn === "") {
+    const automaticAPN = jsonData[12].response.split("\n")[1].split(":")[1].split(",")[2].replace(/"/g, "").trim();
+    setText("apn", automaticAPN);
+  } else {
+    setText("apn", apnData[2].replace(/"/g, "").trim());
+  }
 
   // Operator State
   const operatorState = extractValue(jsonData[8].response).split(",")[1].trim();
@@ -645,7 +651,9 @@ function createBandTableRow(bandData, networkType, servingCellJSON) {
         <div class="cell-card">
           <div class="cell-card__item">
             <span class="cell-card__label">Name</span>
-            <span class="cell-card__value">${formattedBandNumber || "N/A"}</span>
+            <span class="cell-card__value">${
+              formattedBandNumber || "N/A"
+            }</span>
           </div>
           <div class="cell-card__item">
             <span class="cell-card__label">EARFCN</span>
@@ -661,15 +669,21 @@ function createBandTableRow(bandData, networkType, servingCellJSON) {
           </div>
           <div class="cell-card__item">
             <span class="cell-card__label">RSRP</span>
-            <span class="cell-card__value">${rsrp ? createSignalTag(rsrp, "RSRP") : "N/A"}</span>
+            <span class="cell-card__value">${
+              rsrp ? createSignalTag(rsrp, "RSRP") : "N/A"
+            }</span>
           </div>
           <div class="cell-card__item">
             <span class="cell-card__label">RSRQ</span>
-            <span class="cell-card__value">${rsrq ? createSignalTag(rsrq, "RSRQ") : "N/A"}</span>
+            <span class="cell-card__value">${
+              rsrq ? createSignalTag(rsrq, "RSRQ") : "N/A"
+            }</span>
           </div>
           <div class="cell-card__item">
             <span class="cell-card__label">SINR</span>
-            <span class="cell-card__value">${sinr ? createSignalTag(sinr, "SINR") : "N/A"}</span>
+            <span class="cell-card__value">${
+              sinr ? createSignalTag(sinr, "SINR") : "N/A"
+            }</span>
           </div>
         </div>
       </div>
@@ -1147,7 +1161,7 @@ function initMobileCarousel() {
 }
 
 // Add CSS class for smooth transitions
-const style = document.createElement('style');
+const style = document.createElement("style");
 style.textContent = `
   .cell-carousel__container {
     display: flex;
@@ -1171,10 +1185,10 @@ function updateCarouselContent(rows) {
 
   // Preserve existing transform to maintain current slide position
   const currentTransform = carouselContainer.style.transform;
-  
+
   // Clear existing content
-  carouselContainer.innerHTML = '';
-  
+  carouselContainer.innerHTML = "";
+
   // Create and append all slides at once
   rows.forEach((row) => {
     const slide = document.createElement("div");
@@ -1182,13 +1196,13 @@ function updateCarouselContent(rows) {
     slide.innerHTML = row.getAttribute("data-mobile");
     carouselContainer.appendChild(slide);
   });
-  
+
   // Restore transform to maintain position
   carouselContainer.style.transform = currentTransform;
-  
+
   // Update indicators
   updateIndicators(rows.length);
-  
+
   // Ensure current slide is within bounds
   if (currentSlide >= rows.length) {
     currentSlide = Math.max(0, rows.length - 1);
@@ -1197,25 +1211,31 @@ function updateCarouselContent(rows) {
 }
 
 function updateSlideValues(slide, newDataHtml) {
-  const tempDiv = document.createElement('div');
+  const tempDiv = document.createElement("div");
   tempDiv.innerHTML = newDataHtml;
-  const newCard = tempDiv.querySelector('.cell-card');
-  const currentCard = slide.querySelector('.cell-card');
-  
+  const newCard = tempDiv.querySelector(".cell-card");
+  const currentCard = slide.querySelector(".cell-card");
+
   if (!currentCard || !newCard) {
     slide.innerHTML = newDataHtml;
     return;
   }
 
-  const currentItems = currentCard.querySelectorAll('.cell-card__item');
-  const newItems = newCard.querySelectorAll('.cell-card__item');
-  
+  const currentItems = currentCard.querySelectorAll(".cell-card__item");
+  const newItems = newCard.querySelectorAll(".cell-card__item");
+
   currentItems.forEach((item, index) => {
-    const currentValueSpan = item.querySelector('span:not(.cell-card__label)');
+    const currentValueSpan = item.querySelector("span:not(.cell-card__label)");
     const newItem = newItems[index];
-    const newValueSpan = newItem ? newItem.querySelector('span:not(.cell-card__label)') : null;
-    
-    if (currentValueSpan && newValueSpan && currentValueSpan.innerHTML !== newValueSpan.innerHTML) {
+    const newValueSpan = newItem
+      ? newItem.querySelector("span:not(.cell-card__label)")
+      : null;
+
+    if (
+      currentValueSpan &&
+      newValueSpan &&
+      currentValueSpan.innerHTML !== newValueSpan.innerHTML
+    ) {
       currentValueSpan.innerHTML = newValueSpan.innerHTML;
     }
   });
@@ -1224,7 +1244,7 @@ function updateSlideValues(slide, newDataHtml) {
 function updateIndicators(slideCount) {
   const carouselWrapper = document.querySelector(".cell-carousel");
   let indicators = carouselWrapper.querySelector(".cell-carousel__indicators");
-  
+
   if (indicators) {
     indicators.remove();
   }
@@ -1254,13 +1274,12 @@ function updateCarouselPosition() {
   requestAnimationFrame(() => {
     container.style.transform = `translateX(-${currentSlide * 100}%)`;
   });
-  
+
   const dots = document.querySelectorAll(".cell-carousel__dot");
   dots.forEach((dot, index) => {
     dot.classList.toggle("cell-carousel__dot--active", index === currentSlide);
   });
 }
-
 
 // Touch handling functions remain the same
 let touchStartX = 0;

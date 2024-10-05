@@ -24,6 +24,8 @@
     <script src="/js/styles/modal-trigger.js"></script>
     <script src="/js/utils/reboot.js"></script>
     <script src="/js/utils/restart-connection.js"></script>
+    <script src="/js/cell-settings/fetch-settings.js"></script>
+    <script src="/js/cell-settings/apn-profile.js"></script>
     <script defer src="/js/auth/auth.js"></script>
 
     <script>
@@ -63,12 +65,12 @@
           <div class="navbar-item has-dropdown is-hoverable">
             <a class="navbar-link has-text-weight-bold"> Cellular </a>
             <div class="navbar-dropdown is-boxed">
-              <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
-              <a class="navbar-item" href="/cell-locking.html">Cell Locking</a>
-              <a class="navbar-item" href="/cell-scanner.html">Cell Scanner</a>
               <a class="navbar-item" href="/cell-settings.html"
                 >Cell Settings</a
               >
+              <a class="navbar-item" href="/bandlock.html"> Band Locking </a>
+              <a class="navbar-item" href="/cell-locking.html">Cell Locking</a>
+              <a class="navbar-item" href="/cell-scanner.html">Cell Scanner</a>
               <a class="navbar-item" href="/cell-sms.html"> Cell SMS </a>
             </div>
           </div>
@@ -89,7 +91,10 @@
           <div class="navbar-item">
             <div class="buttons is-flex-direction-column-mobile">
               <div class="control is-expanded-mobile">
-                <div id="restartConnectionBtn" class="button is-link is-outlined is-fullwidth-mobile">
+                <div
+                  id="restartConnectionBtn"
+                  class="button is-link is-outlined is-fullwidth-mobile"
+                >
                   <span class="icon">
                     <i class="fas fa-arrows-rotate"></i>
                   </span>
@@ -136,228 +141,233 @@
     </nav>
 
     <div class="column-margin">
-      <div class="fixed-grid has-2-cols has-1-cols-mobile">
-        <div class="grid">
-          <div class="cell">
-            <div class="card">
-              <div class="card-header">
-                <div class="card-header-title">Basic Cellular Settings</div>
-              </div>
-              <div class="card-content">
-                <div class="fixed-grid has-2-cols">
-                  <div class="grid is-gap-5">
-                    <div class="cell">
-                      <div class="field">
-                        <label class="label">Current APN</label>
-                        <div class="control">
-                          <input
-                            class="input"
-                            type="text"
-                            placeholder="Current APN Here"
-                          />
-                        </div>
-                        <p class="help">
-                          Changing this will disable automatic APN.
-                        </p>
+      <div class="columns">
+        <div class="column">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-header-title">Basic Cellular Settings</div>
+            </div>
+            <div class="card-content">
+              <div class="fixed-grid has-2-cols has-1-cols-mobile">
+                <div class="grid is-gap-5">
+                  <div class="cell">
+                    <div class="field">
+                      <label class="label">Current APN</label>
+                      <div class="control">
+                        <input
+                          class="input"
+                          type="text"
+                          placeholder="Current APN Here"
+                          id="currentAPN"
+                        />
                       </div>
+                      <p class="help">
+                        Changing this will disable automatic APN.
+                      </p>
                     </div>
+                  </div>
 
-                    <div class="cell">
-                      <div class="field">
-                        <label class="label">APN PDP Type</label>
-                        <p class="control has-icons-left">
-                          <span class="select">
-                            <select>
-                              <option selected>Select APN PDP Type</option>
-                              <option>IPv4 Only</option>
-                              <option>IPv6 Only</option>
-                              <option>IPv4 and IPv6</option>
-                              <option>P2P Protocol</option>
-                            </select>
-                          </span>
-                          <span class="icon is-small is-left">
-                            <i class="fas fa-globe"></i>
-                          </span>
-                        </p>
-                      </div>
+                  <div class="cell">
+                    <div class="field">
+                      <label class="label">APN PDP Type</label>
+                      <p class="control has-icons-left">
+                        <span class="select">
+                          <select id="apnPDP">
+                            <option selected>Select APN PDP Type</option>
+                            <option value="IP">IPv4 Only</option>
+                            <option value="IPV6">IPv6 Only</option>
+                            <option value="IPV4V6">IPv4 and IPv6</option>
+                            <option value="PPP">P2P Protocol</option>
+                          </select>
+                        </span>
+                        <span class="icon is-small is-left">
+                          <i class="fas fa-globe"></i>
+                        </span>
+                      </p>
                     </div>
+                  </div>
 
-                    <div class="cell">
-                      <div class="field">
-                        <label class="label">Preferred Network Mode</label>
-                        <p class="control has-icons-left">
-                          <span class="select">
-                            <select>
-                              <option selected>
-                                Select Preferred Network Mode
-                              </option>
-                              <option>Automatic</option>
-                              <option>LTE Only</option>
-                              <option>5G SA Only</option>
-                              <option>5G NSA Only</option>
-                            </select>
-                          </span>
-                          <span class="icon is-small is-left">
-                            <i class="fas fa-signal"></i>
-                          </span>
-                        </p>
-                      </div>
+                  <div class="cell">
+                    <div class="field">
+                      <label class="label">Preferred Network Mode</label>
+                      <p class="control has-icons-left">
+                        <span class="select">
+                          <select id="networkPreference">
+                            <option value="placeholder" selected>
+                              Select Preferred Network Mode
+                            </option>
+                            <option value="AUTO">Automatic</option>
+                            <option value="LTE">LTE Only</option>
+                            <option value="NR5G">5G SA Only</option>
+                            <option value="NR5G:LTE">5G NSA Only</option>
+                          </select>
+                        </span>
+                        <span class="icon is-small is-left">
+                          <i class="fas fa-signal"></i>
+                        </span>
+                      </p>
+                      <p class="help">
+                        Selecting a mode will apply immediately.
+                      </p>
                     </div>
+                  </div>
 
-                    <div class="cell">
-                      <div class="field">
-                        <label class="label">NR5G Mode Control</label>
-                        <p class="control has-icons-left">
-                          <span class="select">
-                            <select>
-                              <option selected>Select NR5G Mode Control</option>
-                              <option>Enable NR5G SA and NSA</option>
-                              <option>Enable SA Only</option>
-                              <option>Enable NSA Only</option>
-                            </select>
-                          </span>
-                          <span class="icon is-small is-left">
-                            <i class="fas fa-podcast"></i>
-                          </span>
-                        </p>
-                      </div>
+                  <div class="cell">
+                    <div class="field">
+                      <label class="label">NR5G Mode Control</label>
+                      <p class="control has-icons-left">
+                        <span class="select">
+                          <select id="nr5gModeControl">
+                            <option selected>Select NR5G Mode Control</option>
+                            <option value="0">Enable NR5G SA and NSA</option>
+                            <option value="2">Enable SA Only</option>
+                            <option value="1">Enable NSA Only</option>
+                          </select>
+                        </span>
+                        <span class="icon is-small is-left">
+                          <i class="fas fa-podcast"></i>
+                        </span>
+                      </p>
+                      <p class="help">
+                        Selecting a mode will apply immediately.
+                      </p>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="card-footer">
-                <a
-                  href="#"
-                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
-                >
-                  Save
-                </a>
-                <a
-                  href="#"
-                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
-                >
-                  Reset
-                </a>
               </div>
             </div>
+            <div class="card-footer">
+              <a
+                href="#"
+                class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+              >
+                Save APN
+              </a>
+              <a
+                href="#"
+                class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+              >
+                Reset APN
+              </a>
+            </div>
           </div>
+        </div>
 
-          <div class="cell">
-            <div class="card">
-              <div class="card-header">
-                <div class="card-header-title">APN and ICCID Based Locking</div>
-              </div>
-              <div class="card-content">
-                <div class="fixed-grid has-1-cols">
-                  <div class="grid is-gap-5">
-                    <div class="cell">
-                      <div class="fixed-grid has-2-cols">
-                        <div class="grid is-gap-3">
-                          <div class="cell">
-                            <div class="field">
-                              <label class="label">APN Profile 1</label>
-                              <div class="control">
-                                <input
-                                  class="input"
-                                  type="text"
-                                  placeholder="APN Here"
-                                />
-                              </div>
-                              <p class="help">
-                                This will override the current APN.
-                              </p>
+        <div class="column">
+          <div class="card" id="apnProfileForm">
+            <div class="card-header">
+              <div class="card-header-title">APN and ICCID Based Locking</div>
+            </div>
+            <div class="card-content">
+              <div class="fixed-grid has-1-cols">
+                <div class="grid is-gap-5">
+                  <div class="cell">
+                    <div class="fixed-grid has-2-cols has-1-cols-mobile">
+                      <div class="grid is-gap-3">
+                        <div class="cell is-col-span-2-mobile">
+                          <div class="field">
+                            <label class="label">APN Profile 1</label>
+                            <div class="control">
+                              <input
+                                class="input"
+                                type="text"
+                                placeholder="APN Here"
+                                id="apnProfile1"
+                              />
                             </div>
+                            <p class="help">
+                              This will override the current APN.
+                            </p>
                           </div>
+                        </div>
 
-                          <div class="cell">
-                            <div class="field">
-                              <label class="label">APN PDP Type</label>
-                              <p class="control has-icons-left">
-                                <span class="select">
-                                  <select>
-                                    <option selected>
-                                      Select APN PDP Type
-                                    </option>
-                                    <option>IPv4 Only</option>
-                                    <option>IPv6 Only</option>
-                                    <option>IPv4 and IPv6</option>
-                                    <option>P2P Protocol</option>
-                                  </select>
-                                </span>
-                                <span class="icon is-small is-left">
-                                  <i class="fas fa-globe"></i>
-                                </span>
-                              </p>
-                            </div>
+                        <div class="cell is-col-span-2-mobile">
+                          <div class="field">
+                            <label class="label">APN PDP Type</label>
+                            <p class="control has-icons-left">
+                              <span class="select">
+                                <select id="apnPDPType1">
+                                  <option selected>Select APN PDP Type</option>
+                                  <option value="IP">IPv4 Only</option>
+                                  <option value="IPV6">IPv6 Only</option>
+                                  <option value="IPV4V6">IPv4 and IPv6</option>
+                                  <option value="PPP">P2P Protocol</option>
+                                </select>
+                              </span>
+                              <span class="icon is-small is-left">
+                                <i class="fas fa-globe"></i>
+                              </span>
+                            </p>
                           </div>
+                        </div>
 
-                          <div class="cell is-col-span-2">
-                            <div class="field">
-                              <label class="label">ICCID Profile 1</label>
-                              <div class="control">
-                                <input
-                                  class="input"
-                                  type="text"
-                                  placeholder="ICCID Here"
-                                />
-                              </div>
+                        <div class="cell is-col-span-2">
+                          <div class="field">
+                            <label class="label">ICCID Profile 1</label>
+                            <div class="control">
+                              <input
+                                class="input"
+                                type="text"
+                                placeholder="ICCID Here"
+                                id="iccidProfile1"
+                              />
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div class="cell">
-                      <div class="fixed-grid has-2-cols">
-                        <div class="grid is-gap-3">
-                          <div class="cell">
-                            <div class="field">
-                              <label class="label">APN Profile 2</label>
-                              <div class="control">
-                                <input
-                                  class="input"
-                                  type="text"
-                                  placeholder="APN Here"
-                                />
-                              </div>
-                              <p class="help">
-                                This will override the current APN.
-                              </p>
+                  <div class="cell">
+                    <div class="fixed-grid has-2-cols">
+                      <div class="grid is-gap-3">
+                        <div class="cell is-col-span-2-mobile">
+                          <div class="field">
+                            <label class="label">APN Profile 2</label>
+                            <div class="control">
+                              <input
+                                class="input"
+                                type="text"
+                                placeholder="APN Here"
+                                id="apnProfile2"
+                              />
                             </div>
+                            <p class="help">
+                              This will override the current APN.
+                            </p>
                           </div>
+                        </div>
 
-                          <div class="cell">
-                            <div class="field">
-                              <label class="label">APN PDP Type</label>
-                              <p class="control has-icons-left">
-                                <span class="select">
-                                  <select>
-                                    <option selected>
-                                      Select APN PDP Type
-                                    </option>
-                                    <option>IPv4 Only</option>
-                                    <option>IPv6 Only</option>
-                                    <option>IPv4 and IPv6</option>
-                                    <option>P2P Protocol</option>
-                                  </select>
-                                </span>
-                                <span class="icon is-small is-left">
-                                  <i class="fas fa-globe"></i>
-                                </span>
-                              </p>
-                            </div>
+                        <div class="cell is-col-span-2-mobile">
+                          <div class="field">
+                            <label class="label">APN PDP Type</label>
+                            <p class="control has-icons-left">
+                              <span class="select">
+                                <select id="apnPDPType2">
+                                  <option selected>Select APN PDP Type</option>
+                                  <option value="IP">IPv4 Only</option>
+                                  <option value="IPV6">IPv6 Only</option>
+                                  <option value="IPV4V6">IPv4 and IPv6</option>
+                                  <option value="PPP">P2P Protocol</option>
+                                </select>
+                              </span>
+                              <span class="icon is-small is-left">
+                                <i class="fas fa-globe"></i>
+                              </span>
+                            </p>
                           </div>
+                        </div>
 
-                          <div class="cell is-col-span-2">
-                            <div class="field">
-                              <label class="label">ICCID Profile 2</label>
-                              <div class="control">
-                                <input
-                                  class="input"
-                                  type="text"
-                                  placeholder="ICCID Here"
-                                />
-                              </div>
+                        <div class="cell is-col-span-2">
+                          <div class="field">
+                            <label class="label">ICCID Profile 2</label>
+                            <div class="control">
+                              <input
+                                class="input"
+                                type="text"
+                                placeholder="ICCID Here"
+                                id="iccidProfile2"
+                              />
                             </div>
                           </div>
                         </div>
@@ -366,20 +376,22 @@
                   </div>
                 </div>
               </div>
-              <div class="card-footer">
-                <a
-                  href="#"
-                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
-                >
-                  Save
-                </a>
-                <a
-                  href="#"
-                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
-                >
-                  Reset
-                </a>
-              </div>
+            </div>
+            <div class="card-footer">
+              <a
+                href="#"
+                class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                id="saveAPNProfile"
+              >
+                Save APN Profile
+              </a>
+              <a
+                href="#"
+                class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                id="resetAPNProfile"
+              >
+                Reset APN Profile
+              </a>
             </div>
           </div>
         </div>

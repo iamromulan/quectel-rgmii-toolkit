@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`HTTP error! status: ${response1.status}`);
             }
 
-            // Wait for 2 seconds
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Wait for 3 seconds
+            await new Promise(resolve => setTimeout(resolve, 3000));
 
             // Send AT+CFUN=1
             const response2 = await fetch('/cgi-bin/atinout_handler.sh', {
