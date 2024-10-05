@@ -1,49 +1,37 @@
 #!/bin/ash
 
-# Define the path to the status file
-STATUS_FILE="/usr/lib/opkg/status"
+# Function to update the status file with a properly formatted entry
+add_to_status_file() {
+    local package_name="$1"
+    local version="$2"
+    local depends="$3"
+    local arch="$4"
+    local installed_time="$5"
 
-# Define the control files for bundled packages
-CONTROL_FILES="/usr/lib/opkg/info/libinotifytools.control /usr/lib/opkg/info/inotifywait.control"
+    # Status file location
+    local status_file="/usr/lib/opkg/status"
 
-# Function to update the status file for a given control file
-update_status_file() {
-    local control_file="$1"
-    local bundled_package_name=$(basename "$control_file" .control)
-    
-    if [ ! -f "$control_file" ]; then
-        echo "Error: Control file not found for $bundled_package_name at $control_file"
-        return 1
+    # Check if the package already exists and remove the old entry
+    if grep -q "Package: $package_name" "$status_file"; then
+        echo "Removing old entry for $package_name"
+        sed -i "/Package: $package_name/,/^$/d" "$status_file"
     fi
 
-    # Append a newline and then add the control file contents to the status file
-    echo "" >> "$STATUS_FILE"
-    echo "Adding entry for $bundled_package_name to $STATUS_FILE"
-    
-    {
-        # Read the control file contents
-        cat "$control_file"
-        
-        # Add a 'Status' line indicating the package is 'user installed'
-        echo "Status: install user installed"
+    # Append the new formatted entry
+    echo "Adding new entry for $package_name to $status_file"
+    cat << EOF >> "$status_file"
+Package: $package_name
+Version: $version
+Depends: $depends
+Status: install user installed
+Architecture: $arch
+Installed-Time: $installed_time
 
-        # Add the architecture (modify this as per your system's architecture if needed)
-        echo "Architecture: aarch64_cortex-a53"
-
-        # Timestamp for when the package was installed
-        echo "Installed-Time: $(date +%s)"
-    } >> "$STATUS_FILE"
-
-    echo "Successfully added $bundled_package_name to $STATUS_FILE"
+EOF
 }
 
-# Iterate through each control file and update the status file
-for control_file in $CONTROL_FILES; do
-    update_status_file "$control_file"
-done
+# Example usage: adding `libinotifytools` and `inotifywait` with dummy values
+add_to_status_file "libinotifytools" "3.20.11.0-1" "libc" "aarch64_cortex-a53" "315965672"
+add_to_status_file "inotifywait" "3.20.11.0-1" "libc, libinotifytools" "aarch64_cortex-a53" "315965672"
 
-# Output the status file content for verification
-echo "Contents of $STATUS_FILE:"
-grep -A 5 -E "Package: (libinotifytools|inotifywait)" "$STATUS_FILE"
-
-exit 0
+echo "Status file updated!"
