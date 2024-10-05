@@ -5,6 +5,39 @@ PKG_NAME="sdxpinn-mount-fix"
 LIST_FILE="/usr/lib/opkg/info/${PKG_NAME}.list"
 STATUS_FILE="/usr/lib/opkg/status"
 
+# Define variables for lock handling
+force_write=false
+
+# Function to display a menu and get user input
+handle_file_lock() {
+    echo "File $STATUS_FILE is currently locked."
+    echo "Please choose an option:"
+    echo "1. Force Write"
+    echo "2. Wait for the file to unlock"
+    echo "3. Abort"
+    echo -n "Enter your choice: "
+    read choice
+
+    case $choice in
+        1)
+            echo "Forcing write..."
+            force_write=true
+            ;;
+        2)
+            echo "Waiting for the file to unlock..."
+            force_write=false
+            ;;
+        3)
+            echo "Aborting..."
+            exit 1
+            ;;
+        *)
+            echo "Invalid option. Aborting."
+            exit 1
+            ;;
+    esac
+}
+
 # Function to handle bundled packages post-install
 handle_bundled_postinst() {
     local bundled_package_name="$1"
@@ -27,7 +60,7 @@ handle_bundled_postinst() {
     return $?
 }
 
-# Function to update the status file for a given bundled package
+## Function to update the status file for a given bundled package
 update_status_file() {
     local bundled_package_name="$1"
     local bundled_control_file="/usr/lib/opkg/info/${bundled_package_name}.control"
@@ -37,12 +70,14 @@ update_status_file() {
         return 1
     fi
 
-    # Construct the new status entry for the bundled package
-    echo "" >> "$STATUS_FILE"  # Ensure there's a newline before the new package entry
+    # Construct a temporary file for the new status entry
+    local tmp_status_entry="/tmp/status_entry_$bundled_package_name"
+    
+    # Start with the content from the control file
+    cp "$bundled_control_file" "$tmp_status_entry"
+
+    # Append necessary fields to the temporary status file
     {
-        # Read the control file content
-        cat "$bundled_control_file"
-        
         # Add the status line indicating the package is 'user installed'
         echo "Status: install user installed"
 
@@ -51,9 +86,34 @@ update_status_file() {
 
         # Timestamp for when the package was installed
         echo "Installed-Time: $(date +%s)"
-    } >> "$STATUS_FILE"
+    } >> "$tmp_status_entry"
 
-    echo "Successfully added bundled package $bundled_package_name to $STATUS_FILE"
+    # Check if the status file is locked and handle accordingly
+    if ! flock -n "$STATUS_FILE" true; then
+        handle_file_lock
+    fi
+
+    if [ "$force_write" = true ]; then
+        # Force write: use flock to lock and update the file
+        flock -x "$STATUS_FILE" sh -c "cat $tmp_status_entry >> $STATUS_FILE"
+    else
+        # Wait for the lock to be released
+        echo "Waiting for the lock to release..."
+        flock "$STATUS_FILE" sh -c "cat $tmp_status_entry >> $STATUS_FILE"
+    fi
+
+    # Cleanup temporary file
+    rm -f "$tmp_status_entry"
+
+    # Sync the filesystem to ensure the changes are flushed
+    sync
+
+    # Verify the entry was added
+    if grep -q "^Package: $bundled_package_name$" "$STATUS_FILE"; then
+        echo "Successfully added bundled package $bundled_package_name to $STATUS_FILE"
+    else
+        echo "Error: Failed to add bundled package $bundled_package_name to $STATUS_FILE"
+    fi
 }
 
 # Replace distfeeds.conf with non-working sources commented out
