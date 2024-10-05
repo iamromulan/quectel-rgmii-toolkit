@@ -4,6 +4,7 @@
 PKG_NAME="sdxpinn-mount-fix"
 LIST_FILE="/usr/lib/opkg/info/${PKG_NAME}.list"
 DETECTED_PACKAGES_FILE="/tmp/detected_packages.tmp"
+INIT_SCRIPT="/etc/init.d/add_opkg_status_bundled"
 
 # Function to handle bundled packages post-install
 handle_bundled_postinst() {
@@ -89,18 +90,19 @@ for bundled_package_name in $BUNDLED_PACKAGES; do
     if echo "$SKIP_PACKAGES" | grep -q "$bundled_package_name"; then
         echo "Skipping bundled package: $bundled_package_name"
         # Delete the corresponding lines from add_opkg_status_bundled if the package is already installed
-        sed -i "/Package: $bundled_package_name/,+5d" /etc/init.d/add_opkg_status_bundled
+        sed -i "/Package: $bundled_package_name/,+5d" "$INIT_SCRIPT"
     else
         handle_bundled_postinst "$bundled_package_name"
     fi
 done
 
-# If the resulting add_opkg_status_bundled script is empty, remove it entirely
-if ! grep -q "Package:" /etc/init.d/add_opkg_status_bundled; then
-    echo "All bundled packages are pre-installed. Removing /etc/init.d/add_opkg_status_bundled."
-    rm -f /etc/init.d/add_opkg_status_bundled
+# If the resulting BUNDLED_PACKAGES_INFO in add_opkg_status_bundled is empty, remove it
+if ! grep -q "Package:" "$INIT_SCRIPT"; then
+    echo "All bundled packages are pre-installed or removed. Removing $INIT_SCRIPT."
+    rm -f "$INIT_SCRIPT"
 else
     # Enable and start the updated add_opkg_status_bundled script
+    echo "Updated $INIT_SCRIPT with remaining bundled package info."
     service add_opkg_status_bundled enable
     service add_opkg_status_bundled start
 fi
