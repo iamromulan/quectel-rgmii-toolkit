@@ -85,53 +85,25 @@ else
 fi
 
 # Update the bundled packages in the add_opkg_status_bundled script dynamically
-BUNDLED_PACKAGES_INFO=""
 for bundled_package_name in $BUNDLED_PACKAGES; do
     if echo "$SKIP_PACKAGES" | grep -q "$bundled_package_name"; then
         echo "Skipping bundled package: $bundled_package_name"
+        # Delete the corresponding lines from add_opkg_status_bundled if the package is already installed
+        sed -i "/Package: $bundled_package_name/,+5d" /etc/init.d/add_opkg_status_bundled
     else
         handle_bundled_postinst "$bundled_package_name"
-        BUNDLED_PACKAGES_INFO="$BUNDLED_PACKAGES_INFO
-Package: $bundled_package_name
-Version: 3.20.11.0-1
-Depends: $( [ "$bundled_package_name" = "inotifywait" ] && echo "libc, libinotifytools" || echo "libc")
-Status: install user installed
-Architecture: aarch64_cortex-a53
-Installed-Time: $(date +%s)"
     fi
 done
 
-# If BUNDLED_PACKAGES_INFO is empty, remove the add_opkg_status_bundled script and do not start it
-if [ -z "$BUNDLED_PACKAGES_INFO" ]; then
+# If the resulting add_opkg_status_bundled script is empty, remove it entirely
+if ! grep -q "Package:" /etc/init.d/add_opkg_status_bundled; then
     echo "All bundled packages are pre-installed. Removing /etc/init.d/add_opkg_status_bundled."
     rm -f /etc/init.d/add_opkg_status_bundled
 else
-    echo "Updating /etc/init.d/add_opkg_status_bundled with missing bundled package info."
-    echo "#!/bin/ash /etc/rc.common
-USE_PROCD=1
-START=99
-STOP=15
-
-STATUS_FILE=\"/usr/lib/opkg/status\"
-
-BUNDLED_PACKAGES_INFO=\"$BUNDLED_PACKAGES_INFO\"
-
-start_service() {
-    procd_open_instance
-    procd_set_param command /bin/sh -c \"(
-        echo 'Waiting for 4 seconds...'
-        sleep 4
-        echo 'Adding missing bundled package entries to \$STATUS_FILE...'
-        echo \"\$BUNDLED_PACKAGES_INFO\" >> \"\$STATUS_FILE\"
-        sync
-        rm -f /etc/init.d/add_opkg_status_bundled
-        ) &\"
-    procd_close_instance
-}" > /etc/init.d/add_opkg_status_bundled
-
-    chmod +x /etc/init.d/add_opkg_status_bundled
+    # Enable and start the updated add_opkg_status_bundled script
     service add_opkg_status_bundled enable
     service add_opkg_status_bundled start
 fi
 
 exit 0
+
