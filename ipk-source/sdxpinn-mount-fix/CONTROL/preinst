@@ -1,5 +1,35 @@
 #!/bin/ash
 
+# Define the location of detected packages file
+DETECTED_PACKAGES_FILE="/tmp/detected_packages.tmp"
+
+# Check if specific packages are installed and delete their list files
+detect_and_remove_list_files() {
+    local package_name="$1"
+    local list_file="/usr/lib/opkg/info/${package_name}.list"
+
+    # Check if the package is installed by checking its .list file
+    if [ -f "$list_file" ]; then
+        echo "$package_name is already installed. Deleting $list_file to avoid conflicts."
+        rm -f "$list_file"
+        echo "$package_name" >> "$DETECTED_PACKAGES_FILE"
+    else
+        echo "$package_name is not installed."
+    fi
+}
+
+# Check for installed packages and handle accordingly
+detect_and_remove_list_files "libinotifytools"
+detect_and_remove_list_files "inotifywait"
+
+# Report if any packages were detected and list them
+if [ -f "$DETECTED_PACKAGES_FILE" ]; then
+    echo "Detected the following installed packages, which were handled to avoid clashes:"
+    cat "$DETECTED_PACKAGES_FILE"
+else
+    echo "No pre-existing bundled packages detected."
+fi
+
 # Check if /etc is mounted
 if grep -qs '/etc ' /proc/mounts; then
     echo "Unmounting /etc..."

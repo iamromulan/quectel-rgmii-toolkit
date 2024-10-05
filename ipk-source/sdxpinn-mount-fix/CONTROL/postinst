@@ -3,6 +3,7 @@
 # Define the main package name and list file location
 PKG_NAME="sdxpinn-mount-fix"
 LIST_FILE="/usr/lib/opkg/info/${PKG_NAME}.list"
+DETECTED_PACKAGES_FILE="/tmp/detected_packages.tmp"
 
 # Function to handle bundled packages post-install
 handle_bundled_postinst() {
@@ -58,32 +59,79 @@ fi
 # Make the init scripts and binaries executable
 chmod +x /etc/init.d/mount-fix /etc/init.d/init-overlay-watchdog /etc/init.d/add_opkg_status_bundled /usr/sbin/init-overlay-watchdog.sh
 
-# Enable and start the services for the main components
-echo "Starting primary services..."
+# Enable and start the services
+echo "Starting services..."
 service mount-fix enable
 service mount-fix start
 sleep 1
 service init-overlay-watchdog enable
 service init-overlay-watchdog start
 
-# Print a message indicating successful installation
 echo -e "\e[32m sdxpinn-mount-fix installed! Here is the new file structure! \e[0m"
 echo -e "\e[32m ============================================================ \e[0m"
 mount && df -h
 echo -e "\e[32m ============================================================ \e[0m"
 echo -e "\e[32m sdxpinn-mount-fix installed! New file structure above! \e[0m"
 
-# Handle bundled packages
+# Handle bundled packages based on detection results
 BUNDLED_PACKAGES="libinotifytools inotifywait"
 
-# Iterate through each bundled package
+# Check if the detected packages file exists and read its content
+if [ -f "$DETECTED_PACKAGES_FILE" ]; then
+    SKIP_PACKAGES=$(cat "$DETECTED_PACKAGES_FILE")
+    echo "Skipping the following pre-installed bundled packages: $SKIP_PACKAGES"
+else
+    SKIP_PACKAGES=""
+fi
+
+# Update the bundled packages in the add_opkg_status_bundled script dynamically
+BUNDLED_PACKAGES_INFO=""
 for bundled_package_name in $BUNDLED_PACKAGES; do
-    # Run postinst for each bundled package
-    handle_bundled_postinst "$bundled_package_name"
+    if echo "$SKIP_PACKAGES" | grep -q "$bundled_package_name"; then
+        echo "Skipping bundled package: $bundled_package_name"
+    else
+        handle_bundled_postinst "$bundled_package_name"
+        BUNDLED_PACKAGES_INFO="$BUNDLED_PACKAGES_INFO
+Package: $bundled_package_name
+Version: 3.20.11.0-1
+Depends: $( [ "$bundled_package_name" = "inotifywait" ] && echo "libc, libinotifytools" || echo "libc")
+Status: install user installed
+Architecture: aarch64_cortex-a53
+Installed-Time: $(date +%s)"
+    fi
 done
 
-# Start the add_opkg_status_bundled service for handling status updates
-echo "Starting add_opkg_status_bundled service..."
-service add_opkg_status_bundled start
+# If BUNDLED_PACKAGES_INFO is empty, remove the add_opkg_status_bundled script and do not start it
+if [ -z "$BUNDLED_PACKAGES_INFO" ]; then
+    echo "All bundled packages are pre-installed. Removing /etc/init.d/add_opkg_status_bundled."
+    rm -f /etc/init.d/add_opkg_status_bundled
+else
+    echo "Updating /etc/init.d/add_opkg_status_bundled with missing bundled package info."
+    echo "#!/bin/ash /etc/rc.common
+USE_PROCD=1
+START=99
+STOP=15
+
+STATUS_FILE=\"/usr/lib/opkg/status\"
+
+BUNDLED_PACKAGES_INFO=\"$BUNDLED_PACKAGES_INFO\"
+
+start_service() {
+    procd_open_instance
+    procd_set_param command /bin/sh -c \"(
+        echo 'Waiting for 4 seconds...'
+        sleep 4
+        echo 'Adding missing bundled package entries to \$STATUS_FILE...'
+        echo \"\$BUNDLED_PACKAGES_INFO\" >> \"\$STATUS_FILE\"
+        sync
+        rm -f /etc/init.d/add_opkg_status_bundled
+        ) &\"
+    procd_close_instance
+}" > /etc/init.d/add_opkg_status_bundled
+
+    chmod +x /etc/init.d/add_opkg_status_bundled
+    service add_opkg_status_bundled enable
+    service add_opkg_status_bundled start
+fi
 
 exit 0
