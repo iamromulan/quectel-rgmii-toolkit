@@ -39,10 +39,18 @@ fi
 
 echo "Combo package cleanup in progress..."
 
-# Remove entries in the .list file that refer to opkg control files
+# Remove entries in the .list file that refer to opkg control files and specific files
 if [ -f "$LIST_FILE" ]; then
+    # Remove opkg control file entries and specific bundled paths
     sed -i '/^\/usr\/lib\/opkg\/info\//d' "$LIST_FILE"
-    echo "Removed control file entries from $LIST_FILE."
+    sed -i '/^\/usr\/lib\/libinotifytools.so.0.4.1$/d' "$LIST_FILE"
+    sed -i '/^\/usr\/bin\/inotifywait$/d' "$LIST_FILE"
+    sed -i '/^\/usr\/lib\/libinotifytools.so$/d' "$LIST_FILE"
+    sed -i '/^\/etc\/init.d\/add_opkg_status_bundled$/d' "$LIST_FILE"
+    sed -i '/^\/tmp\/distfeeds.conf$/d' "$LIST_FILE"
+    sed -i '/^\/usr\/lib\/libinotifytools.so.0$/d' "$LIST_FILE"
+
+    echo "Removed unnecessary file entries from $LIST_FILE."
 else
     echo "Warning: ${LIST_FILE} not found."
 fi
