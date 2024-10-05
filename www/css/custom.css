@@ -269,3 +269,66 @@ html.theme-light {
 .isCursorPointer {
   cursor: pointer;
 }
+
+/* For APN Profiles */
+.notification {
+  position: relative;
+  padding: 1.25rem 2.5rem 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.notification.is-success {
+  background-color: #48c78e;
+  color: #fff;
+}
+
+.notification.is-danger {
+  background-color: #f14668;
+  color: #fff;
+}
+
+.notification .delete {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  background-color: rgba(10, 10, 10, 0.2);
+  border: none;
+  border-radius: 290486px;
+  cursor: pointer;
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+  padding: 0;
+}
+
+.is-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.is-loading:after {
+  animation: spinAround 500ms infinite linear;
+  border: 2px solid #dbdbdb;
+  border-radius: 290486px;
+  border-right-color: transparent;
+  border-top-color: transparent;
+  content: "";
+  display: block;
+  height: 1em;
+  position: absolute;
+  width: 1em;
+  position: absolute;
+  left: calc(50% - (1em / 2));
+  top: calc(50% - (1em / 2));
+}
+
+.input.is-danger,
+.select.is-danger select {
+  border-color: #f14668;
+}
+
+@keyframes spinAround {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(359deg); }
+}
