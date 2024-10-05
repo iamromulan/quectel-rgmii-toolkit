@@ -31,25 +31,29 @@ handle_bundled_postinst() {
 update_status_file() {
     local bundled_package_name="$1"
     local bundled_control_file="/usr/lib/opkg/info/${bundled_package_name}.control"
-    local list_file="/usr/lib/opkg/info/${bundled_package_name}.list"
 
     if [ ! -f "$bundled_control_file" ]; then
         echo "Control file for bundled package $bundled_package_name not found: $bundled_control_file"
         return 1
     fi
 
-    # Read the control file and append to /usr/lib/opkg/status in correct format
+    # Construct the new status entry for the bundled package
     echo "" >> "$STATUS_FILE"  # Ensure there's a newline before the new package entry
-    cat "$bundled_control_file" >> "$STATUS_FILE"
+    {
+        # Read the control file content
+        cat "$bundled_control_file"
+        
+        # Add the status line indicating the package is 'user installed'
+        echo "Status: install user installed"
 
-    # Add the status line indicating the package is 'user installed'
-    echo "Status: install user installed" >> "$STATUS_FILE"
+        # Add the architecture
+        echo "Architecture: aarch64_cortex-a53"
 
-    # Append the required fields for architecture and timestamp if needed
-    echo "Architecture: aarch64_cortex-a53" >> "$STATUS_FILE"
-    echo "Installed-Time: $(date +%s)" >> "$STATUS_FILE"
+        # Timestamp for when the package was installed
+        echo "Installed-Time: $(date +%s)"
+    } >> "$STATUS_FILE"
 
-    echo "Added bundled package $bundled_package_name to $STATUS_FILE"
+    echo "Successfully added bundled package $bundled_package_name to $STATUS_FILE"
 }
 
 # Replace distfeeds.conf with non-working sources commented out
