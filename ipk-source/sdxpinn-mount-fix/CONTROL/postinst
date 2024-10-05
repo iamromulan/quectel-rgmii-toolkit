@@ -3,40 +3,6 @@
 # Define the main package name and list file location
 PKG_NAME="sdxpinn-mount-fix"
 LIST_FILE="/usr/lib/opkg/info/${PKG_NAME}.list"
-STATUS_FILE="/usr/lib/opkg/status"
-
-# Define variables for lock handling
-force_write=false
-
-# Function to display a menu and get user input
-handle_file_lock() {
-    echo "File $STATUS_FILE is currently locked."
-    echo "Please choose an option:"
-    echo "1. Force Write"
-    echo "2. Wait for the file to unlock"
-    echo "3. Abort"
-    echo -n "Enter your choice: "
-    read choice
-
-    case $choice in
-        1)
-            echo "Forcing write..."
-            force_write=true
-            ;;
-        2)
-            echo "Waiting for the file to unlock..."
-            force_write=false
-            ;;
-        3)
-            echo "Aborting..."
-            exit 1
-            ;;
-        *)
-            echo "Invalid option. Aborting."
-            exit 1
-            ;;
-    esac
-}
 
 # Function to handle bundled packages post-install
 handle_bundled_postinst() {
@@ -58,62 +24,6 @@ handle_bundled_postinst() {
     echo "Executing default_postinst for bundled package: $bundled_package_name"
     default_postinst "$bundled_package_name" $@
     return $?
-}
-
-## Function to update the status file for a given bundled package
-update_status_file() {
-    local bundled_package_name="$1"
-    local bundled_control_file="/usr/lib/opkg/info/${bundled_package_name}.control"
-
-    if [ ! -f "$bundled_control_file" ]; then
-        echo "Control file for bundled package $bundled_package_name not found: $bundled_control_file"
-        return 1
-    fi
-
-    # Construct a temporary file for the new status entry
-    local tmp_status_entry="/tmp/status_entry_$bundled_package_name"
-    
-    # Start with the content from the control file
-    cp "$bundled_control_file" "$tmp_status_entry"
-
-    # Append necessary fields to the temporary status file
-    {
-        # Add the status line indicating the package is 'user installed'
-        echo "Status: install user installed"
-
-        # Add the architecture
-        echo "Architecture: aarch64_cortex-a53"
-
-        # Timestamp for when the package was installed
-        echo "Installed-Time: $(date +%s)"
-    } >> "$tmp_status_entry"
-
-    # Check if the status file is locked and handle accordingly
-    if ! flock -n "$STATUS_FILE" true; then
-        handle_file_lock
-    fi
-
-    if [ "$force_write" = true ]; then
-        # Force write: use flock to lock and update the file
-        flock -x "$STATUS_FILE" sh -c "cat $tmp_status_entry >> $STATUS_FILE"
-    else
-        # Wait for the lock to be released
-        echo "Waiting for the lock to release..."
-        flock "$STATUS_FILE" sh -c "cat $tmp_status_entry >> $STATUS_FILE"
-    fi
-
-    # Cleanup temporary file
-    rm -f "$tmp_status_entry"
-
-    # Sync the filesystem to ensure the changes are flushed
-    sync
-
-    # Verify the entry was added
-    if grep -q "^Package: $bundled_package_name$" "$STATUS_FILE"; then
-        echo "Successfully added bundled package $bundled_package_name to $STATUS_FILE"
-    else
-        echo "Error: Failed to add bundled package $bundled_package_name to $STATUS_FILE"
-    fi
 }
 
 # Replace distfeeds.conf with non-working sources commented out
@@ -138,32 +48,34 @@ else
 fi
 
 # Make the init scripts and binaries executable
-chmod +x /etc/init.d/mount-fix /etc/init.d/init-overlay-watchdog /usr/sbin/init-overlay-watchdog.sh
+chmod +x /etc/init.d/mount-fix /etc/init.d/init-overlay-watchdog /etc/init.d/add_opkg_status_bundled /usr/sbin/init-overlay-watchdog.sh
 
-# Enable and start the services
-echo "Starting services..."
+# Enable and start the services for the main components
+echo "Starting primary services..."
 service mount-fix enable
 service mount-fix start
 sleep 1
 service init-overlay-watchdog enable
 service init-overlay-watchdog start
 
+# Print a message indicating successful installation
 echo -e "\e[32m sdxpinn-mount-fix installed! Here is the new file structure! \e[0m"
 echo -e "\e[32m ============================================================ \e[0m"
 mount && df -h
 echo -e "\e[32m ============================================================ \e[0m"
 echo -e "\e[32m sdxpinn-mount-fix installed! New file structure above! \e[0m"
 
-# Use a space-separated string for the bundled packages
+# Handle bundled packages
 BUNDLED_PACKAGES="libinotifytools inotifywait"
 
-# Iterate through each bundled package and update status
+# Iterate through each bundled package
 for bundled_package_name in $BUNDLED_PACKAGES; do
     # Run postinst for each bundled package
     handle_bundled_postinst "$bundled_package_name"
-
-    # Update the status file for each bundled package
-    update_status_file "$bundled_package_name"
 done
+
+# Start the add_opkg_status_bundled service for handling status updates
+echo "Starting add_opkg_status_bundled service..."
+service add_opkg_status_bundled start
 
 exit 0

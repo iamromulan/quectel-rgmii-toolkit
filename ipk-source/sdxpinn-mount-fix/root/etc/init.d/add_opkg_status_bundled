@@ -1,0 +1,56 @@
+#!/bin/ash /etc/rc.common
+
+# Include the procd init functionality
+START=99
+STOP=10
+
+USE_PROCD=1
+
+STATUS_FILE="/usr/lib/opkg/status"
+LOCK_FILE="/tmp/opkg.lock"
+
+# Define the details for the bundled packages to be added to the status file
+PACKAGE_DETAILS="
+Package: libinotifytools
+Version: 3.20.11.0-1
+Depends: libc
+Status: install user installed
+Architecture: aarch64_cortex-a53
+Installed-Time: $(date +%s)
+
+Package: inotifywait
+Version: 3.20.11.0-1
+Depends: libc, libinotifytools
+Status: install user installed
+Architecture: aarch64_cortex-a53
+Installed-Time: $(date +%s)
+"
+
+start_service() {
+    procd_open_instance
+    procd_set_param command /bin/ash -c "add_status_entries"
+    procd_set_param respawn
+    procd_close_instance
+}
+
+add_status_entries() {
+    echo "add_opkg_status_bundled: Waiting for the lock file $LOCK_FILE to be released..."
+    while [ -f "$LOCK_FILE" ]; do
+        sleep 1
+    done
+
+    echo "add_opkg_status_bundled: Lock released. Updating $STATUS_FILE."
+    
+    # Append the package details to the status file
+    echo "$PACKAGE_DETAILS" >> "$STATUS_FILE"
+    
+    echo "add_opkg_status_bundled: Successfully updated the status file with bundled package details."
+
+    # Remove the init script to prevent it from running again
+    echo "add_opkg_status_bundled: Removing self from /etc/init.d..."
+    rm -f /etc/init.d/add_opkg_status_bundled
+    echo "add_opkg_status_bundled: Service removed successfully."
+
+    echo "add_opkg_status_bundled: Exiting service."
+}
+
