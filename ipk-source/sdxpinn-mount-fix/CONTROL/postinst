@@ -1,13 +1,13 @@
 #!/bin/ash
 
-# Define the package name for the main package
+# Define the main package name and list file location
 PKG_NAME="sdxpinn-mount-fix"
 LIST_FILE="/usr/lib/opkg/info/${PKG_NAME}.list"
 STATUS_FILE="/usr/lib/opkg/status"
 
 # Function to handle bundled packages post-install
 handle_bundled_postinst() {
-    local bundled_package="$1"
+    local bundled_package_name="$1"
 
     # Use the target package name for default_postinst instead of $0
     if [ "${IPKG_NO_SCRIPT}" = "1" ]; then
@@ -22,28 +22,34 @@ handle_bundled_postinst() {
         return 1
     fi
 
-    echo "Executing default_postinst for bundled package: $bundled_package"
-    default_postinst "$bundled_package" $@
+    echo "Executing default_postinst for bundled package: $bundled_package_name"
+    default_postinst "$bundled_package_name" $@
     return $?
 }
 
-# Function to update the status file for a given package
+# Function to update the status file for a given bundled package
 update_status_file() {
-    local control_file="/usr/lib/opkg/info/$1.control"
-    
-    if [ ! -f "$control_file" ]; then
-        echo "Control file for package $1 not found: $control_file"
+    local bundled_package_name="$1"
+    local bundled_control_file="/usr/lib/opkg/info/${bundled_package_name}.control"
+    local list_file="/usr/lib/opkg/info/${bundled_package_name}.list"
+
+    if [ ! -f "$bundled_control_file" ]; then
+        echo "Control file for bundled package $bundled_package_name not found: $bundled_control_file"
         return 1
     fi
 
-    # Read the control file and append to /usr/lib/opkg/status
-    echo "" >> "$STATUS_FILE"       # Ensure there's a newline before the new package entry
-    cat "$control_file" >> "$STATUS_FILE"
+    # Read the control file and append to /usr/lib/opkg/status in correct format
+    echo "" >> "$STATUS_FILE"  # Ensure there's a newline before the new package entry
+    cat "$bundled_control_file" >> "$STATUS_FILE"
 
-    # Add a new line indicating the package is 'Installed' and 'ok'
-    echo "Status: install ok installed" >> "$STATUS_FILE"
+    # Add the status line indicating the package is 'user installed'
+    echo "Status: install user installed" >> "$STATUS_FILE"
 
-    echo "Added $1 to $STATUS_FILE"
+    # Append the required fields for architecture and timestamp if needed
+    echo "Architecture: aarch64_cortex-a53" >> "$STATUS_FILE"
+    echo "Installed-Time: $(date +%s)" >> "$STATUS_FILE"
+
+    echo "Added bundled package $bundled_package_name to $STATUS_FILE"
 }
 
 # Replace distfeeds.conf with non-working sources commented out
@@ -87,13 +93,13 @@ echo -e "\e[32m sdxpinn-mount-fix installed! New file structure above! \e[0m"
 # Use a space-separated string for the bundled packages
 BUNDLED_PACKAGES="libinotifytools inotifywait"
 
-# Iterate through each bundled package
-for package in $BUNDLED_PACKAGES; do
+# Iterate through each bundled package and update status
+for bundled_package_name in $BUNDLED_PACKAGES; do
     # Run postinst for each bundled package
-    handle_bundled_postinst "$package"
+    handle_bundled_postinst "$bundled_package_name"
 
-    # Update the status file
-    update_status_file "$package"
+    # Update the status file for each bundled package
+    update_status_file "$bundled_package_name"
 done
 
 exit 0
