@@ -33,7 +33,7 @@ Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Ookla <https://www.speedtest.net/apps/cli>
 MD5Sum: 2183f2df42a00380e761cace096e17c3
-Size: 10757762
+Size: 1075762
 Filename: ookla-speedtest_1.2.0_aarch64_cortex-a53.ipk
 Source: speedtest.net/apps/cli
 Description: speedtest.net CLI
