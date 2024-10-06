@@ -22,3 +22,5 @@ Get Currently Enabled 5G/NR SA Bands;AT+QNWPREFCFG="nr5g_band"
 Get Currently Enabled 5G/NR NSA Bands;AT+QNWPREFCFG="nsa_nr5g_band"
 Get Currently Enabled 4G/LTE Bands;AT+QNWPREFCFG="lte_band"
 View assigned IPv4/IPv6 addresses from the provider;AT+QMAP="WWAN"
+Enable IPPT paste in MAC for FF:FF:FF...;AT+QMAP="MPDN_rule",0,1,0,1,1,"FF:FF:FF:FF:FF:FF"
+Disable IPPT;AT+QMAP="MPDN_rule",0

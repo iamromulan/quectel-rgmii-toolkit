@@ -35,7 +35,7 @@ send_at_commands_using_atcmd() {
         echo -e "\e[1;32mSending AT command: $at_command\e[0m"
         echo -e "\e[1;32mResponse:\e[0m"
         # Use atcmd to send the command and display the output
-        atcmd_output=$(atcmd "$at_command")
+        atcmd_output=$(atcmd "'$at_command'")
         echo "$atcmd_output"
         echo -e "\e[1;32m----------------------------------------\e[0m"
     done
@@ -44,12 +44,12 @@ send_at_commands_using_atcmd() {
 
 overlay_check() {
     if ! grep -qs '/real_rootfs ' /proc/mounts; then
-        echo -e "\e[31mYou have not ran Option 2 yet!!! Please run option 2!!\e[0m"
+        echo -e "\e[31mYou have not installed the sdxpinn-mount-fix!!! Please run option 2!!\e[0m"
         return 1
     fi
 }
 
-basic_55x_setup() {
+install_mount_fix() {
     # Check if neither /etc nor /real_rootfs is mounted
     if ! grep -qs '/etc ' /proc/mounts && ! grep -qs '/real_rootfs ' /proc/mounts; then
         # Echo message in red
@@ -68,60 +68,50 @@ basic_55x_setup() {
     if grep -qs '/real_rootfs ' /proc/mounts; then
         # Echo message in red
         echo -e "\033[31mThe environment has already been setup. If you want to undo the changes temporarily run service mount-fix stop.\033[0m"
+        echo -e "\033[31mWant to uninstal? Then run opkg remove sdxpinn-mount-fix\033[0m"
         exit 1
     fi
+    # Install mount-fix
+    cd /tmp
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/ipk/sdxpinn-mount-fix_1.1.0_aarch64_cortex-a53.ipk
+    opkg install sdxpinn-mount-fix_1.1.0_aarch64_cortex-a53.ipk
+}
 
-    cd /etc/init.d/
-    wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/init.d/mount-fix
-    wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/init.d/init-overlay-watchdog
-    # Set executable permissions
-    chmod +x mount-fix
-    chmod +x init-overlay-watchdog
-    cd /usr/sbin
-	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/usr/sbin/init-overlay-watchdog.sh
-	cd /
-    service mount-fix enable
-    service init-overlay-watchdog enable
-    service mount-fix start
+basic_55x_setup() {    
 	echo "src/gz iamromulan-SDXPINN-repo https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/opkg-feed" >> /etc/opkg/customfeeds.conf
-	rm /etc/opkg/distfeeds.conf
-	cd /etc/opkg/
-	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/opkg/distfeeds.conf
 	cd /
-	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/iamromulan-SDXPINN-repo.key -O /tmp/iamromulan-SDXPINN-repo.key
-    opkg-key add /tmp/iamromulan-SDXPINN-repo.key
+	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/iamromulan-SDXPINN-repo.key -O /tmp/iamromulan-SDXPINN-repo.key
+    	opkg-key add /tmp/iamromulan-SDXPINN-repo.key
 	opkg update
-	opkg install inotifywait inotifywatch
-    service init-overlay-watchdog start
-    echo -e "\e[92m"
-    echo "Mount fix completed!"
-    echo "Visit https://github.com/iamromulan for more!"
-	echo "Proceeding with basic packages installation...."	
-    echo -e "\e[0m"
+    	echo -e "\e[92m"
+	echo "iamromulan's ipk/opkg repo added!...."	
+    	echo -e "\e[0m"
 	opkg install atinout luci-app-atinout-mod
 	opkg install shadow-login
 	opkg install luci-app-ttyd
 	opkg install mc-skins
+	mv /bin/login /bin/login.old
+	cp /usr/bin/login /bin/login
 	rm /etc/config/atcommands.user
 	rm /etc/config/atinout
 	rm /etc/config/ttyd
 	cd /etc/config/
-	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/atcommands.user
-	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/ttyd
-	wget https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/atinout
+	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/atcommands.user
+	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/ttyd
+	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/atinout
 	cd /
 	service uhttpd enable
 	service dropbear enable
 	service uhttpd start
 	service dropbear start
 	echo -e "\e[92m"
-    echo "Set your root password:"
-    echo -e "\e[0m"
+    	echo "Set your root password:"
+    	echo -e "\e[0m"
 	set_root_passwd
 	echo -e "\e[92m"
-    echo "Basic packages installed!"
-    echo "Visit https://github.com/iamromulan for more!"
-    echo -e "\e[0m"
+    	echo "Basic packages installed!"
+    	echo "Visit https://github.com/iamromulan for more!"
+    	echo -e "\e[0m"
 }
 
 ttl_setup() {
@@ -219,64 +209,13 @@ tailscale_menu() {
 
 # Function to install, update, or remove Tailscale
 install_update_tailscale() {
-    echo -e "\e[1;31mInstalling Tailscale from opkg...\e[0m"
-    opkg install tailscale
-    if [ $? -ne 0 ]; then
-        echo -e "\e[1;31mFailed to install Tailscale via opkg.\e[0m"
-        return 1
-    fi
-
-    echo -e "\e[1;32mTailscale has been installed via opkg.\e[0m"
-    echo -e "\e[1;32mUpdating to the latest Tailscale version...\e[0m"
-	
-	# Stop Running Service
-	service tailscale stop
-
-    # Define variables for the download
-    TAILSCALE_URL="https://pkgs.tailscale.com/stable/tailscale_1.74.1_arm64.tgz"
-    TAILSCALE_TGZ="/tmp/tailscale_1.74.1_arm64.tgz"
-    TAILSCALE_TMP_DIR="/tmp/tailscale_update"
-
-    # Download the latest Tailscale package
-    echo -e "\e[1;32mDownloading latest Tailscale package...\e[0m"
-    curl "$TAILSCALE_URL" -o "$TAILSCALE_TGZ"
-    if [ $? -ne 0 ]; then
-        echo -e "\e[1;31mFailed to download Tailscale package. Please check your internet connection.\e[0m"
-        rm -f "$TAILSCALE_TGZ"
-        return 1
-    fi
-
-    # Extract the package
-    echo -e "\e[1;32mExtracting Tailscale package...\e[0m"
-    mkdir -p "$TAILSCALE_TMP_DIR"
-    tar -xzf "$TAILSCALE_TGZ" -C "$TAILSCALE_TMP_DIR"
-    if [ $? -ne 0 ]; then
-        echo -e "\e[1;31mFailed to extract Tailscale package.\e[0m"
-        rm -f "$TAILSCALE_TGZ"
-        rm -rf "$TAILSCALE_TMP_DIR"
-        return 1
-    fi
-
-    # Replace the binaries with force option
-    echo -e "\e[1;32mUpdating Tailscale binaries...\e[0m"
-    cp -f "$TAILSCALE_TMP_DIR/tailscale_1.74.1_arm64/tailscale" /usr/sbin/
-    cp -f "$TAILSCALE_TMP_DIR/tailscale_1.74.1_arm64/tailscaled" /usr/sbin/
-    if [ $? -ne 0 ]; then
-        echo -e "\e[1;31mFailed to copy new Tailscale binaries.\e[0m"
-        rm -f "$TAILSCALE_TGZ"
-        rm -rf "$TAILSCALE_TMP_DIR"
-        return 1
-    fi
-
-    # Set the correct permissions
-    chmod +x /usr/sbin/tailscale /usr/sbin/tailscaled
-
-    # Clean up temporary files
-    rm -f "$TAILSCALE_TGZ"
-    rm -rf "$TAILSCALE_TMP_DIR"
-
-    # Start Tailscale service if available
-    service tailscale start
+    echo -e "\e[1;31mInstalling Tailscale 1.74.1...\e[0m"
+    cd /tmp
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/ipk/tailscaled_1.74.1-1_aarch64_cortex-a53.ipk
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/ipk/tailscale_1.74.1-1_aarch64_cortex-a53.ipk
+    opkg install tailscaled_1.74.1-1_aarch64_cortex-a53.ipk
+    opkg install tailscale_1.74.1-1_aarch64_cortex-a53.ipk
+    
     echo -e "\e[1;32mTailscale version 1.74.1 installed\e[0m"
 }
 
@@ -379,46 +318,49 @@ while true; do
     echo "Select an option:"
     echo -e "\e[0m"
     echo -e "\e[96m1) Send AT Commands\e[0m" # Cyan
-    echo -e "\e[92m2) First time setup/run me after a flash!\e[0m" # Green
+    echo -e "\e[92m2) Install sdxpinn-mount-fix/run me after a flash!\e[0m" # Green
     echo -e "\e[94m3) TTL Setup\e[0m" # Light Blue
-    echo -e "\e[94m4) Set root password\e[0m" # Light Blue
-    echo -e "\e[94m5) Tailscale Management\e[0m" # Light Blue
-    echo -e "\e[92m6) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
-    echo -e "\e[93m7) Exit\e[0m" # Yellow (repeated color for exit option)
+    echo -e "\e[94m4) Install Basic Packages/enable luci/add iamromulan's feed to opkg(\e[0m" # Light Blue    
+    echo -e "\e[94m5) Set root password\e[0m" # Light Blue
+    echo -e "\e[94m6) Tailscale Management\e[0m" # Light Blue
+    echo -e "\e[92m7) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
+    echo -e "\e[93m8) Exit\e[0m" # Yellow (repeated color for exit option)
     read -p "Enter your choice: " choice
 
     case $choice in
         1) send_at_commands_using_atcmd ;;
-        2) remount_rw; basic_55x_setup ;;
+        2) remount_rw; install_mount_fix ;;
         3) 
             overlay_check
             if [ $? -eq 1 ]; then continue; fi
             ttl_setup 
             ;;
-        4) 
+        4)  
+            overlay_check
+            if [ $? -eq 1 ]; then continue; fi
+            basic_55x_setup
+            ;;       
+            
+        5) 
             overlay_check
             if [ $? -eq 1 ]; then continue; fi
             set_root_passwd 
             ;;
-        5) tailscale_menu ;;
-        6)
+        6) tailscale_menu ;;
+        7)
             overlay_check
             if [ $? -eq 1 ]; then continue; fi
             echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
-            cd /usr/bin
-            curl -O https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-aarch64.tgz
-            tar -xzf ookla-speedtest-1.2.0-linux-aarch64.tgz
-            rm ookla-speedtest-1.2.0-linux-aarch64.tgz
-			rm speedtest.7
-            rm speedtest.md
-            cd /
+            cd /tmp
+            curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/ipk/ookla-speedtest_1.2.0_aarch64_cortex-a53.ipk
+            opkg install ookla-speedtest_1.2.0_aarch64_cortex-a53.ipk            
             echo -e "\e[1;32mSpeedtest CLI (speedtest command) installed!!\e[0m"
             echo -e "\e[1;32mTry running the command 'speedtest'\e[0m"
             echo -e "\e[1;32mNote that it will not work unless you login to the root account first\e[0m"
             echo -e "\e[1;32mNormally only an issue in adb, ttyd, and ssh you are forced to login\e[0m"
             echo -e "\e[1;32mIf in adb just type login and then try to run the speedtest command\e[0m"
             ;;
-        7) echo -e "\e[1;32mGoodbye!\e[0m"; break ;;
+        8) echo -e "\e[1;32mGoodbye!\e[0m"; break ;;
         *) echo -e "\e[1;31mInvalid option\e[0m" ;;
     esac
 done
