@@ -156,7 +156,7 @@ async function sendATCommand(command) {
 // Function to fetch cell settings data
 async function fetchCellSettings() {
   try {
-    const response = await fetch("/cgi-bin/cell-settings.sh");
+    const response = await fetch("/cgi-bin/cell-settings/cell-settings.sh");
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -220,8 +220,7 @@ async function fetchCellSettings() {
             });
           }
         }
-      } else if (item.response.includes("QNWPREFCFG")) {
-        console.log("QNWPREFCFG:", item.response);
+      } else if (item.response.includes("mode_pref")) {
         const networkMode = item.response
           .split("\n")[1]
           .replace("+QNWPREFCFG: ", "")
@@ -231,12 +230,14 @@ async function fetchCellSettings() {
         currentNetworkMode = networkMode;
         updatedNetworkMode = networkMode;
 
+        console.log("Network mode:", networkMode);
+
         const networkSelect = document.getElementById("networkPreference");
         if (networkSelect) {
           // Set initial value based on actual value from modem
           networkSelect.value =
             networkMode === "LTE:NR5G"
-              ? "NR5G:LTE"
+              ? "LTE:NR5G"
               : networkMode === "NR5G"
               ? "NR5G"
               : networkMode === "LTE"
@@ -252,7 +253,7 @@ async function fetchCellSettings() {
             });
           }
         }
-
+      } else if (item.response.includes("nr5g_disable_mode")) {
         const nr5GModeControl = item.response
           .split("\n")[1]
           .split(":")[1]

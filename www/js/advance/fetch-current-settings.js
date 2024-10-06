@@ -2,7 +2,7 @@
 const api = {
   async fetchCurrentSettings() {
     try {
-      const response = await fetch("/cgi-bin/advanced_settings.sh");
+      const response = await fetch("/cgi-bin/advance/advanced_settings.sh");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -17,7 +17,7 @@ const api = {
 
   async fetchConnectedDevices() {
     try {
-      const response = await fetch("/cgi-bin/fetch_macs.sh");
+      const response = await fetch("/cgi-bin/advance/fetch_macs.sh");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -151,35 +151,7 @@ const uiManager = {
       }
     }, 1000);
   },
-
-  // showSuccessMessage(message) {
-  //   // Implement based on your UI framework
-  //   console.log("Success:", message);
-  //   // Example: Show a toast notification
-  //   if (window.bulmaToast) {
-  //     bulmaToast.toast({
-  //       message: message,
-  //       type: 'is-success',
-  //       duration: 3000,
-  //       position: 'top-center',
-  //     });
-  //   }
-  // },
-
-  // showErrorMessage(message) {
-  //   // Implement based on your UI framework
-  //   console.error("Error:", message);
-  //   // Example: Show a toast notification
-  //   if (window.bulmaToast) {
-  //     bulmaToast.toast({
-  //       message: message,
-  //       type: 'is-danger',
-  //       duration: 5000,
-  //       position: 'top-center',
-  //     });
-  //   }
-  // },
-
+  
   setElementLoading(element, isLoading) {
     if (isLoading) {
       element.disabled = true;

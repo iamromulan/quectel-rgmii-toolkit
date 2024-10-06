@@ -2,7 +2,7 @@
 const TTLControl = {
     async getCurrentState() {
         try {
-            const response = await fetch('/cgi-bin/ttl.sh');
+            const response = await fetch('/cgi-bin/advance/ttl.sh');
             const data = await response.json();
             return {
                 isEnabled: data.isEnabled,
@@ -16,7 +16,7 @@ const TTLControl = {
 
     async setTTLValue(value) {
         try {
-            const response = await fetch('/cgi-bin/ttl.sh', {
+            const response = await fetch('/cgi-bin/advance/ttl.sh', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
