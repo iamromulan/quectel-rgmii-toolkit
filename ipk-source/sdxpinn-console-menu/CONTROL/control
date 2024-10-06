@@ -1,0 +1,6 @@
+Package: sdxpinn-console-menu
+Version: 0.0.1
+Architecture: aarch64_cortex-a53
+Maintainer: Cameron Thompson iamromulan@github.com
+Description: A custom CLI menu system for mamnagment of Quectel RM5xx modems
+Depends: libc sdxpinn-mount-fix
