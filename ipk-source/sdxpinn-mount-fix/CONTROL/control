@@ -1,5 +1,5 @@
 Package: sdxpinn-mount-fix
-Version: 1.0.10
+Version: 1.0.11
 Architecture: aarch64_cortex-a53
 Maintainer: Cameron Thompson iamromulan@github.com
 Description: Creates a usable mount space and overlay for SDXPINN modems. Dependencies bundled: libinotifytools and inotifywait

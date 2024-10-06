@@ -124,6 +124,18 @@ stop() {
 
     /bin/echo "Reverted pivot_root" >> /tmp/mount-fix.log
     /bin/echo "Previous root overlay available at /rootfs" >> /tmp/mount-fix.log
+	
+	# Unmount /rootfs overlay
+	/bin/umount -lf /rootfs >/dev/null 2>&1
+	
+	# Mount the location of etc-upper back
+	mount -t ubifs /dev/ubi0_3 /overlay
+	
+	# Mount the old overlay filesystem back for etc
+    /bin/mount -t overlay overlay -o lowerdir=/etc,upperdir=/overlay/etc-upper,workdir=/overlay/.etc-work /etc >> /tmp/mount-fix.log
+	
+	echo -e "\e[31m / is read-write right now. Be careful\e[0m"
+	echo -e "\e[31m Reboot or run mount -o remount,ro / \e[0m"
 }
 
 restart() {

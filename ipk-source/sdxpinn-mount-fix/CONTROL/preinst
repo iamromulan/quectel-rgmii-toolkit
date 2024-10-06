@@ -4,19 +4,20 @@
 DETECTED_PACKAGES_FILE="/tmp/detected_packages.tmp"
 LIST_FILE_DELETED=false
 
-# Function to check if a specific package is installed and delete its list file
+# Function to check if a specific bundled package is already installed and delete its list file
 detect_and_remove_list_files() {
     local package_name="$1"
     local list_file="/usr/lib/opkg/info/${package_name}.list"
 
-    # Check if the package is installed by checking its .list file
+    # Check if the bundled package is installed by checking its .list file
     if [ -f "$list_file" ]; then
-        echo "$package_name is already installed. Deleting $list_file to avoid conflicts."
+        echo "$package_name is already installed. Deleting its $list_file to avoid future conflicts."
         rm -f "$list_file"
         echo "$package_name" >> "$DETECTED_PACKAGES_FILE"
         LIST_FILE_DELETED=true
     else
-        echo "$package_name is not installed."
+        echo "$package_name is not currently installed."
+		echo "$package_name is included in this package and will be installed."
     fi
 }
 
