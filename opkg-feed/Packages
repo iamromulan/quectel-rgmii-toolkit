@@ -42,7 +42,7 @@ License: GPLv3
 
 Package: sdxpinn-console-menu
 Version: 0.0.1
-Depends: libc sdxpinn-mount-fix
+Depends: libc, sdxpinn-mount-fix
 Section: utils
 Architecture: aarch64_cortex-a53
 Maintainer: iamromulan <https://github.com/iamromulan>
@@ -70,7 +70,7 @@ License: GPLv3
 
 Package: sdxpinn-quecmanager
 Version: 0.0.1
-Depends: libc sdxpinn-mount-fix atinout
+Depends: libc, sdxpinn-mount-fix, atinout
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
@@ -84,7 +84,7 @@ License: GPLv3
 
 Package: tailscale
 Version: 1.74.1-1
-Depends: libc tailscaled
+Depends: libc, tailscaled
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
@@ -98,7 +98,7 @@ License: GPLv3
 
 Package: tailscaled
 Version: 1.74.1-1
-Depends: libc ca-bundle kmod-tun
+Depends: libc, ca-bundle, kmod-tun
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
