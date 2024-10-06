@@ -4,6 +4,8 @@
 DETECTED_PACKAGES_FILE="/tmp/detected_packages.tmp"
 LIST_FILE_DELETED=false
 
+# Clear temp file before begining
+rm -f "$DETECTED_PACKAGES_FILE" 
 # Function to check if a specific bundled package is already installed and delete its list file
 detect_and_remove_list_files() {
     local package_name="$1"
