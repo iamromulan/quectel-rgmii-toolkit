@@ -79,8 +79,9 @@ install_mount_fix() {
 
 basic_55x_setup() {    
 	echo "src/gz iamromulan-SDXPINN-repo https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/opkg-feed" >> /etc/opkg/customfeeds.conf
-	cd /
+	cd /tmp
 	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/iamromulan-SDXPINN-repo.key
+ 	opkg-key add /tmp/iamromulan-SDXPINN-repo.key
 	opkg update
     	echo -e "\e[92m"
 	echo "iamromulan's ipk/opkg repo added!...."	
