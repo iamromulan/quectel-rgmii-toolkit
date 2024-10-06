@@ -1,6 +1,0 @@
-
-config ttyd
-	option interface '@lan'
-	option debug '7'
-	option command '/usr/bin/login'
-

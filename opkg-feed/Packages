@@ -1,10 +1,3 @@
-Lost field SourceName, atinout
-Lost field LicenseFiles, LICENSE
-Lost field SourceDateEpoch, 1691250335
-Lost field Installed-Size, 3571
-Lost field SourceName, luci-app-atinout-mod
-Lost field SourceDateEpoch, 1636930326
-Lost field Installed-Size, 3790
 Package: atinout
 Version: 0.9.1
 Depends: libc
@@ -20,16 +13,100 @@ License: GPLv2
 
 
 Package: luci-app-atinout-mod
-Version: 1.3.2-20220315
+Version: 1.3.4-20241006
 Depends: libc, atinout, luci-compat
 Section: luci
 Architecture: all
 Maintainer: OpenWrt LuCI community
-MD5Sum: 92a24b32ebcbd41501895fc0748a22d1
-Size: 4617
-Filename: luci-app-atinout-mod_1.3.2-20220315_all.ipk
+MD5Sum: 2dac55de763333c37dd1728957fc8294
+Size: 4827
+Filename: luci-app-atinout-mod_1.3.4-20241006_all.ipk
 Source: package/luci-app-atinout-mod
 Description: Web UI for atinout
+License: GPLv3
+
+
+Package: ookla-speedtest
+Version: 1.2.0
+Depends: libc
+Section: net
+Architecture: aarch64_cortex-a53
+Maintainer: Ookla <https://www.speedtest.net/apps/cli>
+MD5Sum: 2183f2df42a00380e761cace096e17c3
+Size: 10757762
+Filename: ookla-speedtest_1.2.0_aarch64_cortex-a53.ipk
+Source: speedtest.net/apps/cli
+Description: speedtest.net CLI
+License: GPLv3
+
+
+Package: sdxpinn-console-menu
+Version: 0.0.1
+Depends: libc sdxpinn-mount-fix
+Section: utils
+Architecture: aarch64_cortex-a53
+Maintainer: iamromulan <https://github.com/iamromulan>
+MD5Sum: e4dd60a7725fb3df16e5ebc0f8d12330
+Size: 4902
+Filename: sdxpinn-console-menu_0.0.1_aarch64_cortex-a53.ipk
+Source: github/iamromulan
+Description: A custom CLI menu system for mamnagment of Quectel RM5xx modems
+License: GPLv3
+
+
+Package: sdxpinn-mount-fix
+Version: 1.1.0
+Depends: libc
+Section: base
+Architecture: aarch64_cortex-a53
+Maintainer: iamromulan <https://github.com/iamromulan>
+MD5Sum: f8e8f830a7ba794d3d090c206df2b729
+Size: 29357
+Filename: sdxpinn-mount-fix_1.1.0_aarch64_cortex-a53.ipk
+Source: github/iamromulan
+Description: Creates a usable mount space and overlay for SDXPINN modems. Dependencies bundled: libinotifytools and inotifywait
+License: GPLv3
+
+
+Package: sdxpinn-quecmanager
+Version: 0.0.1
+Depends: libc sdxpinn-mount-fix atinout
+Section: admin
+Architecture: aarch64_cortex-a53
+Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
+MD5Sum: 60381135963551200ca0479aceaab617
+Size: 643499
+Filename: sdxpinn-quecmanager_0.0.1_aarch64_cortex-a53.ipk
+Source: github/iamromulan
+Description: A custom web UI desgined to run alongside luci for Quectel RM55x modems
+License: GPLv3
+
+
+Package: tailscale
+Version: 1.74.1-1
+Depends: libc tailscaled
+Section: net
+Architecture: aarch64_cortex-a53
+Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
+MD5Sum: 17b17e02759f162b73697f5a2d00e1d5
+Size: 9392904
+Filename: tailscale_1.74.1-1_aarch64_cortex-a53.ipk
+Source: feeds/packages/net/tailscale
+Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.74.1
+License: GPLv3
+
+
+Package: tailscaled
+Version: 1.74.1-1
+Depends: libc ca-bundle kmod-tun
+Section: net
+Architecture: aarch64_cortex-a53
+Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
+MD5Sum: 3f1290daeb00519877d4cc0628bfe190
+Size: 17468475
+Filename: tailscaled_1.74.1-1_aarch64_cortex-a53.ipk
+Source: feeds/packages/net/tailscale
+Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.74.1
 License: GPLv3
 
 

@@ -1,15 +1,16 @@
 #!/bin/sh
 
+# Disabled for now
 # Determine the absolute path of the script
 SCRIPT_PATH=$(realpath "$0")
 
-download() {
-    if [ "$1" = "github" ]; then
-        download_github_directory "$2" "$3"
-    else
-        download_file "$1" "$2"
-    fi
-}
+#download() {
+#    if [ "$1" = "github" ]; then
+#        download_github_directory "$2" "$3"
+#    else
+#        download_file "$1" "$2"
+#   fi
+#}
 
 download_file() {
     url="$1"
@@ -106,9 +107,10 @@ download_github_directory() {
     }'
 }
 
-if [ "$#" -eq 0 ]; then
-    echo "Usage: download <type> <url> [output_directory]"
+#if [ "$#" -eq 0 ]; then
+#    echo "Usage: download <type> <url> [output_directory]"
     exit 1
-else
+#else
     download "$@"
-fi
+#fi
+exit 0

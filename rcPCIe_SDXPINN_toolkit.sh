@@ -73,7 +73,7 @@ install_mount_fix() {
     fi
     # Install mount-fix
     cd /tmp
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/ipk/sdxpinn-mount-fix_1.1.0_aarch64_cortex-a53.ipk
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-mount-fix_1.1.0_aarch64_cortex-a53.ipk
     opkg install sdxpinn-mount-fix_1.1.0_aarch64_cortex-a53.ipk
 }
 
@@ -86,29 +86,21 @@ basic_55x_setup() {
     	echo -e "\e[92m"
 	echo "iamromulan's ipk/opkg repo added!...."	
     	echo -e "\e[0m"
-	opkg install atinout luci-app-atinout-mod
+	opkg install atinout luci-app-atinout-mod sdxpinn-console-menu
+	
+	# Get rid of the Quectel Login Binary
 	opkg install shadow-login
-	opkg install luci-app-ttyd
-	opkg install mc-skins
 	mv /bin/login /bin/login.old
 	cp /usr/bin/login /bin/login
-	rm /etc/config/atcommands.user
-	rm /etc/config/atinout
-	rm /etc/config/ttyd
-	cd /etc/config/
-	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/atcommands.user
-	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/ttyd
-	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/etc/config/atinout
-	cd /
+
+	opkg install luci-app-ttyd
+	opkg install mc-skins
+	
 	service uhttpd enable
 	service dropbear enable
 	service uhttpd start
 	service dropbear start
-	echo -e "\e[92m"
-    	echo "Set your root password:"
-    	echo -e "\e[0m"
-	set_root_passwd
-	echo -e "\e[92m"
+
     	echo "Basic packages installed!"
     	echo "Visit https://github.com/iamromulan for more!"
     	echo -e "\e[0m"
@@ -211,8 +203,8 @@ tailscale_menu() {
 install_update_tailscale() {
     echo -e "\e[1;31mInstalling Tailscale 1.74.1...\e[0m"
     cd /tmp
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/ipk/tailscaled_1.74.1-1_aarch64_cortex-a53.ipk
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/ipk/tailscale_1.74.1-1_aarch64_cortex-a53.ipk
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/tailscaled_1.74.1-1_aarch64_cortex-a53.ipk
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/tailscale_1.74.1-1_aarch64_cortex-a53.ipk
     opkg install tailscaled_1.74.1-1_aarch64_cortex-a53.ipk
     opkg install tailscale_1.74.1-1_aarch64_cortex-a53.ipk
     
@@ -352,7 +344,7 @@ while true; do
             if [ $? -eq 1 ]; then continue; fi
             echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
             cd /tmp
-            curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/ipk/ookla-speedtest_1.2.0_aarch64_cortex-a53.ipk
+            curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/ookla-speedtest_1.2.0_aarch64_cortex-a53.ipk
             opkg install ookla-speedtest_1.2.0_aarch64_cortex-a53.ipk            
             echo -e "\e[1;32mSpeedtest CLI (speedtest command) installed!!\e[0m"
             echo -e "\e[1;32mTry running the command 'speedtest'\e[0m"

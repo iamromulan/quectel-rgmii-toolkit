@@ -24,3 +24,7 @@ Get Currently Enabled 4G/LTE Bands;AT+QNWPREFCFG="lte_band"
 View assigned IPv4/IPv6 addresses from the provider;AT+QMAP="WWAN"
 Enable IPPT paste in MAC for FF:FF:FF...;AT+QMAP="MPDN_rule",0,1,0,1,1,"FF:FF:FF:FF:FF:FF"
 Disable IPPT;AT+QMAP="MPDN_rule",0
+Set IPv4 DMZ....replace iphere;AT+QMAP="DMZ",1,4,iphere
+Set IPv6 DMZ....replace iphere;AT+QMAP="DMZ",1,6,iphere
+Disable IPv4 DMZ;AT+QMAP="DMZ",0,4
+Disable IPv6 DMZ;AT+QMAP="DMZ",0,6
