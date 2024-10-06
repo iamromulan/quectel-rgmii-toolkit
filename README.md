@@ -170,15 +170,12 @@ Thank You to:
 
 [rbflurry](https://github.com/rbflurry/) for inital Simple Admin fixes
 
-[dr-dolomite](https://github.com/dr-dolomite) for some major stat page improvements and this repos first approved external PR!
+[dr-dolomite](https://github.com/dr-dolomite) for simpleadmin 2.0 and QuecManager!
 
 [tarunVreddy](https://github.com/tarunVreddy) for helping with the SA band aggregation parse
 
 ### Existing projects:
-Simpleadmin heavily uses the AT Command Parsing Scripts (Basically a copy with new changes and tweaks) of Dairyman's Rooter Source https://github.com/ofmodemsandmen/ROOterSource2203
 
 Tailscale was obtained through Tailscale's static build page. Since these modems have a 32-bit ARM processor on-board I used the arm package. https://pkgs.tailscale.com/stable/#static
-
-Entware/opkg was obtained through [Entware's wiki](https://github.com/Entware/Entware/wiki/Alternative-install-vs-standard) and the installer heavily modified by [iamromulan](https://github.com/iamromulan) for use with Quectel modems
 
 TTYd was obtained from the [TTYd Project](https://github.com/tsl0922/ttyd)
