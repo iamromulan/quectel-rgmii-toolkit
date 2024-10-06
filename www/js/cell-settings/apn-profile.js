@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to fetch and display existing profiles
     function fetchProfiles() {
-        fetch('/cgi-bin/fetch-apn-profiles.sh')
+        fetch('/cgi-bin/cell-settings/fetch-apn-profiles.sh')
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         // Send data to the server
-        fetch('/cgi-bin/apn-profile.sh', {
+        fetch('/cgi-bin/cell-settings/apn-profile.sh', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',

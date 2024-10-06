@@ -211,7 +211,7 @@ async function fetchATCommandData() {
 }
 
 async function fetchAndParseData() {
-  const response = await fetch("/cgi-bin/home_data.sh", {
+  const response = await fetch("/cgi-bin/home/home_data.sh", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -247,10 +247,7 @@ function processSimData(jsonData) {
   setText("simSlot", simSlot);
 
   // Phone Number
-  const phoneNumber = extractValue(phoneResponse.response).replace(
-    /["\,]/g,
-    ""
-  );
+  const phoneNumber = extractValue(phoneResponse.response).split(",")[1].replace(/"/g, "").trim();
   setText("phoneNumber", phoneNumber);
 
   // SIM Provider and Access Technology
@@ -961,7 +958,7 @@ function processWANIPData(jsonData) {
 
 async function fetchTrafficStats() {
   try {
-    const response = await fetch("/cgi-bin/traffic_stats.sh", {
+    const response = await fetch("/cgi-bin/home/traffic_stats.sh", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -1013,7 +1010,7 @@ async function fetchConnectionStatus() {
     container.appendChild(checkingElement);
 
     // Fetch the data
-    const response = await fetch("/cgi-bin/check_net.sh", {
+    const response = await fetch("/cgi-bin/home/check_net.sh", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

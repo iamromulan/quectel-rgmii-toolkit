@@ -25,6 +25,7 @@
     <script src="/js/utils/reboot.js"></script>
     <script src="/js/utils/restart-connection.js"></script>
     <script defer src="/js/auth/auth.js"></script>
+    <script src="/js/about/fetch-data.js"></script>
 
     <script>
       (function () {
@@ -153,27 +154,27 @@
                   <tbody>
                     <tr>
                       <td>Modem Manufacturer</td>
-                      <th>Quectel</th>
+                      <th id="manufacturer">Fetching...</th>
                     </tr>
                     <tr>
                       <td>Modem Model Name</td>
-                      <th>RM520N-GL</th>
+                      <th id="model"></th>
                     </tr>
                     <tr>
                       <td>Firmware Version</td>
-                      <th>RM520NGLAA123</th>
+                      <th id="firmwareVersion"></th>
                     </tr>
                     <tr>
                       <td>Phone Number</td>
-                      <th>+639938931024</th>
+                      <th id="phoneNumber"></th>
                     </tr>
                     <tr>
                       <td>IMSI</td>
-                      <th>123456789</th>
+                      <th id="imsi"></th>
                     </tr>
                     <tr>
                       <td>ICCID</td>
-                      <th>123456789</th>
+                      <th id="iccid"></th>
                     </tr>
                     <tr>
                       <td>IMEI</td>
@@ -184,29 +185,33 @@
                               class="input has-text-weight-semibold"
                               type="text"
                               placeholder="IMEI Here"
+                              id="imeiInput"
                             />
                           </div>
                           <div class="control">
-                            <button class="button is-link">Change</button>
+                            <button class="button is-link" id="changeButton">Change</button>
                           </div>
                         </div>
-                        <span class="is-block-mobile is-hidden">
-                          123456789123
+                        <span class="is-block-mobile is-hidden" id="imei">
+                          
                         </span>
                       </th>
                     </tr>
                     <tr>
                       <td>LAN GATEWAY</td>
-                      <th>192.168.225.1</th>
+                      <th id="lanIP">
+
+                      </th>
                     </tr>
                     <tr>
                       <td>WWAN IPv4</td>
-                      <th>38.0.101.76</th>
+                      <th id="IPv4">
+
+                      </th>
                     </tr>
                     <tr>
                       <td>WWAN IPv6</td>
-                      <th style="word-break: break-all">
-                        5be8:dde9:7f0b:d5a7:bd01:b3be:9c69:573b
+                      <th style="word-break: break-all" id="IPv6">
                       </th>
                     </tr>
                   </tbody>
@@ -271,6 +276,9 @@
                         >rbflurry</a
                       >
                     </li>
+                    <li>
+                      Wutang Clan
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -297,12 +305,12 @@
       <div class="modal-card">
         <section class="modal-card-body rounded-edge">
           <p class="subtitle" id="modal-message">
-            Do you want to reboot the device?
+            Do not do any action while the modem is rebooting.
           </p>
           <div id="loading-content" style="display: none">
             <div class="custom-loader"></div>
             <div class="countdown-text">
-              Rebooting... <span id="countdown">90</span>s
+              Rebooting... <span id="countdown">80</span>s
             </div>
           </div>
           <div class="buttons" id="modal-buttons">
