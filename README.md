@@ -3,42 +3,41 @@ Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2
 
 Example: https://rework.network/collections/lte-home-gateway/products/5g2phy
 
-Current Branch: **SDXPINN**
+Current Branch: **development-SDXPINN**
 
-This is a work in progress branch for early development for the RM551E-GL modem (Will probably work on the 550 as well)
+This branch is for development and testing for the sdxpinn Quectel modems before relase to the main SDXPINN branch
 
 # The below commands will download the beta/work in progress toolkit only for RM55x modems/SDXPINN platform
 
 # Current state:
 The toolkit will do the following:
 1. AT Commands
-	- Currently Not working. Just needs coded in.
+	- Needs tested.
 	
-2. First time setup/run me after a flash!
-	- You must reboot twise anytime after for this to be fully installed 
-	- Can only be ran after a flash at this time
-	- The biggest thing this option does is completely redoes the overlay system. By default the mounts are screwy. Installs mount-fix that does it at boot
-	- Installs init-watchdog to keep the real root filesystem's init.d in sync with the overlay filesystem in realtime
-	- Enables luci and installs the luci AT commands app
-	- Installs ttyd and shadow-login
-	- Installs other packages
-	- Enables dropbear ssh server
+2. Install sdxpinn-mount-fix/run me after a flash!
+	- Installs sdxpinn-mount-fix so you can have a usable filesystem.
+ 	- You won't get far without this installed
 	
 	
 3. TTL Setup
 	- Will allow you to set a TTL value
-	
-4. Set root password
+
+4. Install Basic Packages/enable luci/add iamromulan's feed to opkg
+   	- Adds this repo as a source for opkg/software to get packages
+   	- Installs the public key for this repo
+   	- Installs a few basic packages: atinout luci-app-atinout-mod sdxpinn-console-menu shadow-login luci-app-ttyd mc mc-skins
+   	- Starts and enables the SSH server and uhttpd web server (Luci)
+
+5. Set root password
 	- Runs the passwd utility so you can set your password for root
 
-5. Tailscale Management
+6. Tailscale Management
 	- Will let you install tailscale
-		- First installs from opkg
-		- Then updates the tailscale and tailscaled to the latest from the static builds
+		- Installs my updated ipks
 	- Will let you configure tailscale 
 		- No web server yet
 
-6. Install Speedtest.net CLI app (speedtest command)
+7. Install Speedtest.net CLI app (speedtest command)
 	- Will install the speedtest command (speedtest.net test) 
 	- After install type speedtest to use it
 
@@ -56,7 +55,7 @@ adb shell
 ```
 Then run
 ```
-cd /tmp && wget -O rcPCIe_SDXPINN_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/rcPCIe_SDXPINN_toolkit.sh && chmod +x rcPCIe_SDXPINN_toolkit.sh && ./rcPCIe_SDXPINN_toolkit.sh && cd /
+cd /tmp && wget -O rcPCIe_SDXPINN_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development-SDXPINN/rcPCIe_SDXPINN_toolkit.sh && chmod +x rcPCIe_SDXPINN_toolkit.sh && ./rcPCIe_SDXPINN_toolkit.sh && cd /
 ```
 
 

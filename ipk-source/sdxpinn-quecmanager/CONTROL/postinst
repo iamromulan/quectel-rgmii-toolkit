@@ -1,0 +1,6 @@
+#!/bin/ash
+
+mv /www/index.html /www/index.html.old
+mv /www/login.html /www/index.html
+exit 0
+

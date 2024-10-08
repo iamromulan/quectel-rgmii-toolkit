@@ -1,4 +1,0 @@
-
-config atinout 'general'
-	option atcport '/dev/smd11'
-

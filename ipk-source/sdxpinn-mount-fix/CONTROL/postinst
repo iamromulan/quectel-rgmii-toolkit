@@ -1,0 +1,111 @@
+#!/bin/ash
+
+# Define the main package name and list file location
+PKG_NAME="sdxpinn-mount-fix"
+LIST_FILE="/usr/lib/opkg/info/${PKG_NAME}.list"
+DETECTED_PACKAGES_FILE="/tmp/detected_packages.tmp"
+INIT_SCRIPT="/etc/init.d/add_opkg_status_bundled"
+
+# Function to handle bundled packages post-install
+handle_bundled_postinst() {
+    local bundled_package_name="$1"
+
+    # Use the target package name for default_postinst instead of $0
+    if [ "${IPKG_NO_SCRIPT}" = "1" ]; then
+        return 0
+    fi
+
+    # Source the necessary functions only once
+    if [ -s "${IPKG_INSTROOT}/lib/functions.sh" ]; then
+        . "${IPKG_INSTROOT}/lib/functions.sh"
+    else
+        echo "Error: ${IPKG_INSTROOT}/lib/functions.sh not found."
+        return 1
+    fi
+
+    echo "Executing default_postinst for bundled package: $bundled_package_name"
+    default_postinst "$bundled_package_name" $@
+    return $?
+}
+
+# Replace distfeeds.conf with non-working sources commented out
+if [ -f /tmp/distfeeds.conf ]; then
+    # Backup and replace distfeeds.conf
+    [ -f /etc/opkg/distfeeds.conf ] && cp /etc/opkg/distfeeds.conf /etc/opkg/distfeeds.conf.bak
+    mv /tmp/distfeeds.conf /etc/opkg/distfeeds.conf
+    echo "Replaced /etc/opkg/distfeeds.conf with the custom version."
+else
+    echo "Error: /tmp/distfeeds.conf not found. Cannot replace /etc/opkg/distfeeds.conf."
+    exit 1
+fi
+
+echo "Combo package cleanup in progress..."
+
+# Remove entries in the .list file that refer to opkg control files and specific files
+if [ -f "$LIST_FILE" ]; then
+    # Remove opkg control file entries and specific bundled paths
+    sed -i '/^\/usr\/lib\/opkg\/info\//d' "$LIST_FILE"
+    sed -i '/^\/usr\/lib\/libinotifytools.so.0.4.1$/d' "$LIST_FILE"
+    sed -i '/^\/usr\/bin\/inotifywait$/d' "$LIST_FILE"
+    sed -i '/^\/usr\/lib\/libinotifytools.so$/d' "$LIST_FILE"
+    sed -i '/^\/etc\/init.d\/add_opkg_status_bundled$/d' "$LIST_FILE"
+    sed -i '/^\/tmp\/distfeeds.conf$/d' "$LIST_FILE"
+    sed -i '/^\/usr\/lib\/libinotifytools.so.0$/d' "$LIST_FILE"
+
+    echo "Removed unnecessary file entries from $LIST_FILE."
+else
+    echo "Warning: ${LIST_FILE} not found."
+fi
+
+# Make the init scripts and binaries executable
+chmod +x /etc/init.d/mount-fix /etc/init.d/init-overlay-watchdog /etc/init.d/add_opkg_status_bundled /usr/sbin/init-overlay-watchdog.sh
+
+# Enable and start the services
+echo "Starting services..."
+service mount-fix enable
+service mount-fix start
+sleep 1
+service init-overlay-watchdog enable
+service init-overlay-watchdog start
+
+echo -e "\e[32m sdxpinn-mount-fix installed! Here is the new file structure! \e[0m"
+echo -e "\e[32m ============================================================ \e[0m"
+mount && df -h
+echo -e "\e[32m ============================================================ \e[0m"
+echo -e "\e[32m sdxpinn-mount-fix installed! New file structure above! \e[0m"
+
+# Handle bundled packages based on detection results
+BUNDLED_PACKAGES="libinotifytools inotifywait"
+
+# Check if the detected packages file exists and read its content
+if [ -f "$DETECTED_PACKAGES_FILE" ]; then
+    SKIP_PACKAGES=$(cat "$DETECTED_PACKAGES_FILE")
+    echo "Skipping the following pre-installed bundled packages: $SKIP_PACKAGES"
+else
+    SKIP_PACKAGES=""
+fi
+
+# Update the bundled packages in the add_opkg_status_bundled script dynamically
+for bundled_package_name in $BUNDLED_PACKAGES; do
+    if echo "$SKIP_PACKAGES" | grep -q "$bundled_package_name"; then
+        echo "Skipping bundled package: $bundled_package_name"
+        # Delete the corresponding lines from add_opkg_status_bundled if the package is already installed
+        sed -i "/Package: $bundled_package_name/,+5d" "$INIT_SCRIPT"
+    else
+        handle_bundled_postinst "$bundled_package_name"
+    fi
+done
+
+# If the resulting BUNDLED_PACKAGES_INFO in add_opkg_status_bundled is empty, remove it
+if ! grep -q "Package:" "$INIT_SCRIPT"; then
+    echo "All bundled packages are pre-installed or removed. Removing $INIT_SCRIPT."
+    rm -f "$INIT_SCRIPT"
+else
+    # Enable and start the updated add_opkg_status_bundled script
+    echo "Updated $INIT_SCRIPT with remaining bundled package info."
+    service add_opkg_status_bundled enable
+    service add_opkg_status_bundled start
+fi
+
+exit 0
+

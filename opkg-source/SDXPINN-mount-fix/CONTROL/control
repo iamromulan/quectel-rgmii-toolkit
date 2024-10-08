@@ -1,6 +1,0 @@
-Package: SDXPINN-mount-fix
-Version: 1.0
-Architecture: arm64
-Maintainer: Cameron Thompson iamromulan@github.com
-Description: Creates a usable mount space and overlay for SDXPINN modems
-Depends: libc
