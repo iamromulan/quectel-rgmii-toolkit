@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
         form.insertAdjacentElement('beforebegin', notification);
         
         // Remove notification after 5 seconds
-        setTimeout(() => notification.remove(), 5000);
+        setTimeout(() => notification.remove(), 4000);
         
         // Allow manual close
         notification.querySelector('.delete').addEventListener('click', () => notification.remove());

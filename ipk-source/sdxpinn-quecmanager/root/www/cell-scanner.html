@@ -24,6 +24,7 @@
     <script src="/js/styles/modal-trigger.js"></script>
     <script src="/js/utils/reboot.js"></script>
     <script src="/js/utils/restart-connection.js"></script>
+    <script src="/js/cell-scanner/cell-scanner.js"></script>
     <script defer src="/js/auth/auth.js"></script>
 
     <script>
@@ -149,7 +150,7 @@
                 </p>
               </div>
               <div class="card-content">
-                <table class="table is-fullwidth">
+                <!-- <table class="table is-fullwidth">
                   <thead>
                     <tr>
                       <th>Network Provider</th>
@@ -162,7 +163,7 @@
                       <th class="is-hidden-mobile">SINR</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="fullCellScanTableBody">
                     <tr>
                       <td>Smart</td>
                       <td>B1</td>
@@ -171,106 +172,46 @@
                       <td>623</td>
                       <td class="is-hidden-mobile">
                         <div class="tags has-addons">
-                          <span class="tag is-size-6"> -103 </span>
-                          <span class="tag is-danger is-size-6 has-text-white">
-                            Poor
-                          </span>
+                          <span class="tag is-size-6">-103</span>
+                          <span class="tag is-danger is-size-6 has-text-white"
+                            >Poor</span
+                          >
                         </div>
                       </td>
                       <td class="is-hidden-mobile">
                         <div class="tags has-addons">
-                          <span class="tag is-size-6"> -103 </span>
-                          <span class="tag is-danger is-size-6 has-text-white">
-                            Poor
-                          </span>
+                          <span class="tag is-size-6">-103</span>
+                          <span class="tag is-danger is-size-6 has-text-white"
+                            >Poor</span
+                          >
                         </div>
                       </td>
                       <td class="is-hidden-mobile">
                         <div class="tags has-addons">
-                          <span class="tag is-size-6"> -5 </span>
-                          <span class="tag is-danger is-size-6 has-text-white">
-                            Poor
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>DITO</td>
-                      <td>B2</td>
-                      <td>150</td>
-                      <td>10</td>
-                      <td>623</td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> -90 </span>
-                          <span class="tag is-warning is-size-6 has-text-white">
-                            Medium
-                          </span>
-                        </div>
-                      </td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> -90 </span>
-                          <span class="tag is-warning is-size-6 has-text-white">
-                            Medium
-                          </span>
-                        </div>
-                      </td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> 10 </span>
-                          <span class="tag is-warning is-size-6 has-text-white">
-                            Medium
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>Globe</td>
-                      <td>B3</td>
-                      <td>150</td>
-                      <td>10</td>
-                      <td>623</td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> -65 </span>
-                          <span class="tag is-success is-size-6 has-text-white">
-                            Strong
-                          </span>
-                        </div>
-                      </td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> -65 </span>
-                          <span class="tag is-success is-size-6 has-text-white">
-                            Strong
-                          </span>
-                        </div>
-                      </td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> 30 </span>
-                          <span class="tag is-success is-size-6 has-text-white">
-                            Strong
-                          </span>
+                          <span class="tag is-size-6">-5</span>
+                          <span class="tag is-danger is-size-6 has-text-white"
+                            >Poor</span
+                          >
                         </div>
                       </td>
                     </tr>
                   </tbody>
-                </table>
+                </table> -->
+                <p>
+                  Still under development. Please check back later for updates.
+                </p>
               </div>
               <div class="card-footer">
                 <a
                   href="#"
+                  id="startFullScanBtn"
                   class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Start Full Scan
                 </a>
-
                 <a
                   href="#"
+                  id="resetFullScanBtn"
                   class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Reset
@@ -285,124 +226,38 @@
                 <div class="card-header-title">Full Neighbour Cell Scanner</div>
               </div>
               <div class="card-content">
-                <table class="table is-fullwidth">
+                <table class="table is-fullwidth" id="neighbourCellTable">
                   <thead>
                     <tr>
-                      <th>Name</th>
+                      <th>Type</th>
                       <th>EARFCN</th>
-                      <th>Bandwidth</th>
                       <th>Physical ID</th>
                       <th class="is-hidden-mobile">RSRP</th>
                       <th class="is-hidden-mobile">RSRQ</th>
-                      <th class="is-hidden-mobile">SINR</th>
+                      <th class="is-hidden-mobile">RSSI</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr>
-                      <td>B1</td>
-                      <td>150</td>
-                      <td>10</td>
-                      <td>623</td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> -103 </span>
-                          <span class="tag is-danger is-size-6 has-text-white">
-                            Poor
-                          </span>
-                        </div>
-                      </td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> -103 </span>
-                          <span class="tag is-danger is-size-6 has-text-white">
-                            Poor
-                          </span>
-                        </div>
-                      </td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> -5 </span>
-                          <span class="tag is-danger is-size-6 has-text-white">
-                            Poor
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>B2</td>
-                      <td>150</td>
-                      <td>10</td>
-                      <td>623</td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> -90 </span>
-                          <span class="tag is-warning is-size-6 has-text-white">
-                            Medium
-                          </span>
-                        </div>
-                      </td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> -90 </span>
-                          <span class="tag is-warning is-size-6 has-text-white">
-                            Medium
-                          </span>
-                        </div>
-                      </td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> 10 </span>
-                          <span class="tag is-warning is-size-6 has-text-white">
-                            Medium
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>B3</td>
-                      <td>150</td>
-                      <td>10</td>
-                      <td>623</td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> -65 </span>
-                          <span class="tag is-success is-size-6 has-text-white">
-                            Strong
-                          </span>
-                        </div>
-                      </td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> -65 </span>
-                          <span class="tag is-success is-size-6 has-text-white">
-                            Strong
-                          </span>
-                        </div>
-                      </td>
-                      <td class="is-hidden-mobile">
-                        <div class="tags has-addons">
-                          <span class="tag is-size-6"> 30 </span>
-                          <span class="tag is-success is-size-6 has-text-white">
-                            Strong
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
+                  <tbody id="neighbourCellTableBody"></tbody>
                 </table>
               </div>
               <div class="card-footer">
                 <a
                   href="#"
+                  id="startLTEScanBtn"
                   class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
-                  Start Neighbourcell Scan
+                  Start LTE Neighbourcell Scan
                 </a>
-
                 <a
                   href="#"
+                  id="startNR5GScanBtn"
+                  class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                >
+                  Start NR5G Neighbourcell Scan
+                </a>
+                <a
+                  href="#"
+                  id="resetScanBtn"
                   class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Reset
@@ -417,47 +272,19 @@
     <footer class="footer">
       <div class="content">
         <div class="fixed-grid has-2-cols has-1-cols-mobile">
-          <div class="grid">
-            <div class="cell">
-              <div class="icon-text">
-                <span class="icon has-text-info">
-                  <i class="fas fa-info-circle"></i>
-                </span>
-                <span>Information</span>
-              </div>
-
-              <p class="block has-text-weight-semibold">
-                Full Network Provider Cell Scanner will scan all of the cells in
-                your area even from other network providers.
-                <br />
-                The NR-5G scan will only display SA bands available in your
-                area.
-                <br />
-                Scanning will take a few minutes so please wait patiently.
-                <br />
-                If problem persists after scanning, please reboot the modem.
-              </p>
-            </div>
-
-            <div class="cell">
-              <div class="icon-text">
-                <span class="icon has-text-info">
-                  <i class="fas fa-info-circle"></i>
-                </span>
-                <span>Information</span>
-              </div>
-
-              <p class="block has-text-weight-semibold">
-                Full Neighbour Cell Scanner will only scan the bands of your
-                active network provider.
-                <br />
-                The NR-5G scan result is based on your current active 5G network
-                mode.
-                <br />
-                If problem persists after scanning, please reboot the modem.
-              </p>
-            </div>
+          <div class="icon-text">
+            <span class="icon has-text-info">
+              <i class="fas fa-info-circle"></i>
+            </span>
+            <span>Full Network Provider Cell Scanner</span>
           </div>
+          <p class="block has-text-weight-semibold">
+            This command is recommended to be used when there is no (U)SIM card.
+            <br />
+            This command does not apply to 5G cells in NSA mode.
+            <br />
+            Scanning will take a few minutes so please wait patiently.
+          </p>
         </div>
       </div>
     </footer>

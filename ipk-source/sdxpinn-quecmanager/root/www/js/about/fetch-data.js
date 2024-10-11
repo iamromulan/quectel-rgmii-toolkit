@@ -66,6 +66,19 @@ const DATA_MAP = {
     }),
     elementIds: ["IPv4", "IPv6"],
   },
+  QGETCAPABILITY: {
+    // Changed from LTECATERGORY to match the actual command
+    parse: (response) => {
+      const lines = response.split("\n");
+      for (const line of lines) {
+        if (line.includes("LTE-CATEGORY")) {
+          return `CAT-${line.split(":").pop().trim()}`;
+        }
+      }
+      return "";
+    },
+    elementId: "lteCategory",
+  },
 };
 
 // DOM Element Selectors
@@ -240,39 +253,6 @@ async function saveIMEISetting() {
   }
 }
 
-// Data Parsing Functions
-function parseDeviceData(response, key) {
-  const dataMap = {
-    CGMI: (response) => response.split("\n")[1].trim(),
-    CGMM: (response) => response.split("\n")[1].trim(),
-    CGMR: (response) => response.split("\n")[1].trim(),
-    CNUM: (response) =>
-      response
-        .split("\n")[1]
-        .split(":")[1]
-        .split(",")[1]
-        .replace(/"/g, "")
-        .trim(),
-    CIMI: (response) => response.split("\n")[1].trim(),
-    ICCID: (response) => response.split("\n")[1].split(":")[1].trim(),
-    CGSN: (response) => response.split("\n")[1].trim(),
-    LANIP: (response) =>
-      response.split("\n")[1].split(":")[1].split(",")[3].trim(),
-    WWAN: (response) => ({
-      IPv4: response
-        .split("\n")[1]
-        .split(":")[1]
-        .split(",")[4]
-        .replace(/"/g, "")
-        .trim(),
-      IPv6: response.split("\n")[2].split(",")[4].replace(/"/g, "").trim(),
-    }),
-  };
-
-  return dataMap[key]?.(response);
-}
-
-// Data Fetching and Display
 // Data Parsing and Update Functions
 function updateDeviceInfo(key, value) {
   const mapping = DATA_MAP[key];
@@ -317,6 +297,7 @@ async function fetchAboutData() {
       Object.keys(DATA_MAP).forEach((key) => {
         if (item.response.includes(key)) {
           const value = DATA_MAP[key].parse(item.response);
+          console.log("Parsed value:", value);
           updateDeviceInfo(key, value);
         }
       });

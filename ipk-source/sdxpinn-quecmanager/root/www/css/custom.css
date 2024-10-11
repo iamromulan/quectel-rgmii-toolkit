@@ -1,7 +1,7 @@
 /*  */
 
 /* import Poppins font */
-@import url("https://fonts.googleapis.com/css2?family=Euclid+Flex:wght@400;500;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 /* use Poppins everywhere */
 * {
@@ -331,4 +331,24 @@ html.theme-light {
 @keyframes spinAround {
   from { transform: rotate(0deg); }
   to { transform: rotate(359deg); }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  height: 200px;
+  width: 100%;
+}
+
+.loading-container .icon {
+  color: #3273dc;
+}
+
+.loading-container p {
+  color: #4a4a4a;
+  font-size: 1.2rem;
+  margin-top: 1rem;
 }

@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: 'command=' + encodeURIComponent('AT+QPOWD=1')
+                body: 'command=' + encodeURIComponent('AT+CFUN=1,1')
             });
 
             if (!response.ok) {

@@ -15,6 +15,9 @@ let currentNetworkMode = "";
 let currentNr5GModeControl = "";
 let updatedNr5GModeControl = "";
 
+let updatedSlot = "";
+let currentSlot = "";
+
 // Function to check if settings have changed
 function haveSettingsChanged() {
   return (
@@ -35,6 +38,13 @@ function haveNr5GModeControlChanged() {
   console.log("Current NR5G mode control:", currentNr5GModeControl);
   console.log("Updated NR5G mode control:", updatedNr5GModeControl);
   return currentNr5GModeControl !== updatedNr5GModeControl;
+}
+
+// Function to check if SIM slot has changed
+function haveSimSlotChanged() {
+  console.log("Current SIM slot:", currentSlot);
+  console.log("Updated SIM slot:", updatedSlot);
+  return currentSlot !== updatedSlot;
 }
 
 // Function to apply network mode changes immediately
@@ -72,6 +82,40 @@ async function applyNr5GModeControlChange() {
   } catch (error) {
     console.error("Error applying NR5G mode control:", error);
     alert("Error applying NR5G mode control. Please try again.");
+  }
+}
+
+// Function to apply SIM slot changes immediately
+async function applySimSlotChange() {
+  if (!haveSimSlotChanged()) {
+    alert("No changes detected in the SIM slot.");
+    return;
+  }
+
+  try {
+    const atCommand = `AT+QUIMSLOT=${updatedSlot}`;
+    console.log("Sending AT command for SIM slot change:", atCommand);
+    const response = await sendATCommand(atCommand);
+    console.log("AT command response:", response);
+
+    // Disable the select input while the SIM slot is being applied
+    const simSlotSelect = document.getElementById("simSlot");
+    simSlotSelect.disabled = true;
+
+    // Send network deregistration command to apply SIM slot changes after 1 second
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await sendATCommand("AT+COPS=2");
+    // Wait for 2 seconds before turning on the modem
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await sendATCommand("AT+COPS=0");
+
+    // re-enable the select input after the SIM slot is applied
+    simSlotSelect.disabled = false;
+
+    alert("SIM slot applied successfully!");
+  } catch (error) {
+    console.error("Error applying SIM slot:", error);
+    alert("Error applying SIM slot. Please try again.");
   }
 }
 
@@ -278,6 +322,35 @@ async function fetchCellSettings() {
             nr5GControlSelect.addEventListener("change", (e) => {
               updatedNr5GModeControl = e.target.value;
               applyNr5GModeControlChange();
+            });
+          }
+        }
+      } else if (item.response.includes("QUIMSLOT")) {
+        const slot = item.response
+          .split("\n")[1]
+          .split(":")[1]
+          .split(",")[0]
+          .trim();
+
+        console.log("Slot:", slot);
+
+        currentSlot = slot;
+        updatedSlot = slot;
+
+        const slotInput = document.getElementById("simSlot");
+        if (slotInput) {
+          // Explicitly set the value and update the selected option
+          slotInput.value = slot;
+
+          // Add event listener for slot changes if not already added
+          if (!slotInput.hasListener) {
+            slotInput.hasListener = true;
+            slotInput.addEventListener("change", (e) => {
+              updatedSlot = e.target.value;
+              if (updatedSlot) {
+                // Only apply if a valid slot is selected
+                applySimSlotChange();
+              }
             });
           }
         }
