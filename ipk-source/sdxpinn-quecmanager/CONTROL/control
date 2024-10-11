@@ -1,5 +1,5 @@
 Package: sdxpinn-quecmanager
-Version: 0.0.1
+Version: 0.0.2
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol dr-dolomite@github.com Cameron Thompson iamromulan@github.com
 Description: A custom web UI desgined to run alongside luci for Quectel RM55x modems
