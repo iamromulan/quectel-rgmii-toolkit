@@ -24,6 +24,7 @@
     <script src="/js/styles/modal-trigger.js"></script>
     <script src="/js/utils/reboot.js"></script>
     <script src="/js/utils/restart-connection.js"></script>
+    <script src="/js/cell-sms/sms-manager.js"></script>
     <script defer src="/js/auth/auth.js"></script>
 
     <script>
@@ -152,150 +153,9 @@
                   class="fixed-grid has-1-cols"
                   style="height: 450px; overflow-y: scroll"
                 >
-                  <div class="grid is-gap-4 is-fullwidth">
-                    <div class="cell">
-                      <div class="is-flex is-align-items-center">
-                        <div class="checkbox mr-6">
-                          <input type="checkbox" />
-                        </div>
-                        <div
-                          class="is-flex is-flex-direction-column is-align-items-start"
-                        >
-                          <p class="has-text-weight-semibold">
-                            Senders Name Here
-                          </p>
-                          <p>2022-11-20 13:30:00</p>
-                          <p>
-                            Message content here. Lorem ipsum dolor sit amet
-                            consectetur adipisicing elit. Corrupti doloremque
-                            voluptatum velit repellendus ipsum delectus
-                            blanditiis quis dolores. Maxime labore esse
-                            laboriosam inventore error molestiae consequuntur
-                            quo, deleniti ea nihil.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="cell">
-                      <div class="is-flex is-align-items-center">
-                        <div class="checkbox mr-6">
-                          <input type="checkbox" />
-                        </div>
-                        <div
-                          class="is-flex is-flex-direction-column is-align-items-start"
-                        >
-                          <p class="has-text-weight-semibold">
-                            Senders Name Here
-                          </p>
-                          <p>2022-11-20 13:30:00</p>
-                          <p>
-                            Message content here. Lorem ipsum dolor sit amet
-                            consectetur adipisicing elit. Corrupti doloremque
-                            voluptatum velit repellendus ipsum delectus
-                            blanditiis quis dolores. Maxime labore esse
-                            laboriosam inventore error molestiae consequuntur
-                            quo, deleniti ea nihil.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="cell">
-                      <div class="is-flex is-align-items-center">
-                        <div class="checkbox mr-6">
-                          <input type="checkbox" />
-                        </div>
-                        <div
-                          class="is-flex is-flex-direction-column is-align-items-start"
-                        >
-                          <p class="has-text-weight-semibold">
-                            Senders Name Here
-                          </p>
-                          <p>2022-11-20 13:30:00</p>
-                          <p>
-                            Message content here. Lorem ipsum dolor sit amet
-                            consectetur adipisicing elit. Corrupti doloremque
-                            voluptatum velit repellendus ipsum delectus
-                            blanditiis quis dolores. Maxime labore esse
-                            laboriosam inventore error molestiae consequuntur
-                            quo, deleniti ea nihil.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="cell">
-                      <div class="is-flex is-align-items-center">
-                        <div class="checkbox mr-6">
-                          <input type="checkbox" />
-                        </div>
-                        <div
-                          class="is-flex is-flex-direction-column is-align-items-start"
-                        >
-                          <p class="has-text-weight-semibold">
-                            Senders Name Here
-                          </p>
-                          <p>2022-11-20 13:30:00</p>
-                          <p>
-                            Message content here. Lorem ipsum dolor sit amet
-                            consectetur adipisicing elit. Corrupti doloremque
-                            voluptatum velit repellendus ipsum delectus
-                            blanditiis quis dolores. Maxime labore esse
-                            laboriosam inventore error molestiae consequuntur
-                            quo, deleniti ea nihil.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="cell">
-                      <div class="is-flex is-align-items-center">
-                        <div class="checkbox mr-6">
-                          <input type="checkbox" />
-                        </div>
-                        <div
-                          class="is-flex is-flex-direction-column is-align-items-start"
-                        >
-                          <p class="has-text-weight-semibold">
-                            Senders Name Here
-                          </p>
-                          <p>2022-11-20 13:30:00</p>
-                          <p>
-                            Message content here. Lorem ipsum dolor sit amet
-                            consectetur adipisicing elit. Corrupti doloremque
-                            voluptatum velit repellendus ipsum delectus
-                            blanditiis quis dolores. Maxime labore esse
-                            laboriosam inventore error molestiae consequuntur
-                            quo, deleniti ea nihil.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="cell">
-                      <div class="is-flex is-align-items-center">
-                        <div class="checkbox mr-6">
-                          <input type="checkbox" />
-                        </div>
-                        <div
-                          class="is-flex is-flex-direction-column is-align-items-start"
-                        >
-                          <p class="has-text-weight-semibold">
-                            Senders Name Here
-                          </p>
-                          <p>2022-11-20 13:30:00</p>
-                          <p>
-                            Message content here. Lorem ipsum dolor sit amet
-                            consectetur adipisicing elit. Corrupti doloremque
-                            voluptatum velit repellendus ipsum delectus
-                            blanditiis quis dolores. Maxime labore esse
-                            laboriosam inventore error molestiae consequuntur
-                            quo, deleniti ea nihil.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                  <!-- This is where messages will be inserted -->
+                  <div id="sms-container" class="grid is-gap-4 is-fullwidth">
+                    <!-- Messages will be populated here -->
                   </div>
                 </div>
               </div>
@@ -303,6 +163,7 @@
               <div class="card-footer">
                 <a
                   href="#"
+                  id="refresh-sms"
                   class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Refresh
@@ -310,6 +171,7 @@
 
                 <a
                   href="#"
+                  id="delete-selected-sms"
                   class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Delete Selected
@@ -328,9 +190,10 @@
                   <div class="grid">
                     <div class="cell is-col-span-1">
                       <div class="field">
-                        <label class="label">Receipient's Phone Number</label>
+                        <label class="label">Recipient's Phone Number</label>
                         <div class="control has-icons-left">
                           <input
+                            id="phone-number-input"
                             class="input"
                             type="text"
                             placeholder="Input Phone Number"
@@ -347,8 +210,9 @@
                         <label class="label">Message</label>
                         <div class="control">
                           <textarea
+                            id="message-input"
                             class="textarea"
-                            placeholder="Textarea"
+                            placeholder="Enter your message here"
                           ></textarea>
                         </div>
                       </div>
@@ -359,6 +223,7 @@
               <div class="card-footer">
                 <a
                   href="#"
+                  id="send-sms"
                   class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Send SMS
@@ -366,6 +231,7 @@
 
                 <a
                   href="#"
+                  id="reset-form"
                   class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
                 >
                   Reset

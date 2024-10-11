@@ -24,6 +24,7 @@
     <script src="/js/styles/modal-trigger.js"></script>
     <script src="/js/utils/reboot.js"></script>
     <script src="/js/utils/restart-connection.js"></script>
+    <script src="/js/cell-locking/cell-lock.js"></script>
     <script defer src="/js/auth/auth.js"></script>
 
     <script>
@@ -156,6 +157,7 @@
                         <input
                           class="input"
                           type="email"
+                          id="earfcn1"
                           placeholder="EARFCN"
                         />
                         <span class="icon is-left">
@@ -169,7 +171,12 @@
                     <div class="field">
                       <label class="label">PCI 1</label>
                       <div class="control has-icons-left">
-                        <input class="input" type="email" placeholder="PCI" />
+                        <input
+                          class="input"
+                          type="email"
+                          placeholder="PCI"
+                          id="pci1"
+                        />
                         <span class="icon is-left">
                           <i class="fa-solid fa-signal"></i>
                         </span>
@@ -187,6 +194,7 @@
                           class="input"
                           type="email"
                           placeholder="EARFCN"
+                          id="earfcn2"
                         />
                         <span class="icon is-left">
                           <i class="fas fa-bolt"></i>
@@ -199,7 +207,12 @@
                     <div class="field">
                       <label class="label">PCI 2</label>
                       <div class="control has-icons-left">
-                        <input class="input" type="email" placeholder="PCI" />
+                        <input
+                          class="input"
+                          type="email"
+                          placeholder="PCI"
+                          id="pci2"
+                        />
                         <span class="icon is-left">
                           <i class="fa-solid fa-signal"></i>
                         </span>
@@ -217,6 +230,7 @@
                           class="input"
                           type="email"
                           placeholder="EARFCN"
+                          id="earfcn3"
                         />
                         <span class="icon is-left">
                           <i class="fas fa-bolt"></i>
@@ -229,7 +243,12 @@
                     <div class="field">
                       <label class="label">PCI 3</label>
                       <div class="control has-icons-left">
-                        <input class="input" type="email" placeholder="PCI" />
+                        <input
+                          class="input"
+                          type="email"
+                          placeholder="PCI"
+                          id="pci3"
+                        />
                         <span class="icon is-left">
                           <i class="fa-solid fa-signal"></i>
                         </span>
@@ -244,6 +263,7 @@
               <a
                 href="#"
                 class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                id="saveLTE"
               >
                 Lock LTE Cells
               </a>
@@ -251,6 +271,7 @@
               <a
                 href="#"
                 class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                id="resetLTE"
               >
                 Reset
               </a>
@@ -275,6 +296,7 @@
                           class="input"
                           type="email"
                           placeholder="NR-ARFCN"
+                          id="nr-arfcn"
                         />
                         <span class="icon is-left">
                           <i class="fas fa-bolt"></i>
@@ -291,6 +313,7 @@
                           class="input"
                           type="email"
                           placeholder="NR PCI"
+                          id="nr-pci"
                         />
                         <span class="icon is-left">
                           <i class="fa-solid fa-signal"></i>
@@ -306,13 +329,13 @@
                       <label class="label">SCS</label>
                       <div class="control has-icons-left">
                         <span class="select">
-                          <select>
+                          <select id="scs">
                             <option selected>Select SCS</option>
-                            <option>15 kHz</option>
-                            <option>30 kHz</option>
-                            <option>60 kHz</option>
-                            <option>120 kHz</option>
-                            <option>240 kHz</option>
+                            <option value="15">15 kHz</option>
+                            <option value="30">30 kHz</option>
+                            <option value="60">60 kHz</option>
+                            <option value="120">120 kHz</option>
+                            <option value="240">240 kHz</option>
                           </select>
                         </span>
                         <span class="icon is-left">
@@ -330,6 +353,7 @@
                           class="input"
                           type="email"
                           placeholder="NR Band"
+                          id="nr-band"
                         />
                         <span class="icon is-left">
                           <i class="fa-solid fa-signal"></i>
@@ -345,6 +369,7 @@
               <a
                 href="#"
                 class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                id="saveSA"
               >
                 Lock SA Cells
               </a>
@@ -352,6 +377,7 @@
               <a
                 href="#"
                 class="card-footer-item has-text-link has-text-weight-semibold has-text-white"
+                id="resetSA"
               >
                 Reset
               </a>
@@ -388,11 +414,12 @@
                 <span class="icon has-text-info">
                   <i class="fas fa-info-circle"></i>
                 </span>
-                <span>Current Active Locked Cells</span>
+                <span>NR-5G Cell Locking</span>
               </div>
 
               <p class="block has-text-weight-semibold">
-                150/69, 1350/70, 1350/71
+                The NR-5G cell locking feature is only available on 5G-NR SA mode. <br />
+                This will also change the preferred network mode to NR5G.
               </p>
             </div>
           </div>

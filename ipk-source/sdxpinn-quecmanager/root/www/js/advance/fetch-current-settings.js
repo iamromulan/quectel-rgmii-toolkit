@@ -274,7 +274,7 @@ const eventHandlers = {
 
     if (selectedMode !== currentMode) {
       const commands = {
-        "Disabled": 'AT+QMAP="MPDN_rule",0;+QPOWD=1',
+        "Disabled": 'AT+QMAP="MPDN_rule",0;+QMAPWAC=1;+QPOWD=1',
         "ETH Only": `AT+QMAP="MPDN_rule",0,1,0,1,1,"${selectedDeviceMAC}";+QPOWD=1`,
         "USB Only": `AT+QMAP="MPDN_rule",0,1,0,3,1,"${selectedDeviceMAC}";+QPOWD=1`
       };
@@ -299,10 +299,10 @@ const eventHandlers = {
 
     if (selectedProtocol !== currentProtocol) {
       const commands = {
-        "RMNET": 'AT+QCFG="usbnet",0;+CFUN=1,1',
-        "ECM (Recommended)": 'AT+QCFG="usbnet",1;+CFUN=1,1',
-        "MBIM": 'AT+QCFG="usbnet",2;+CFUN=1,1',
-        "RNDIS": 'AT+QCFG="usbnet",3;+CFUN=1,1'
+        "RMNET": 'AT+QCFG="usbnet",0;+QPOWD=1',
+        "ECM (Recommended)": 'AT+QCFG="usbnet",1;+QPOWD=1',
+        "MBIM": 'AT+QCFG="usbnet",2;+QPOWD=1',
+        "RNDIS": 'AT+QCFG="usbnet",3;+QPOWD=1'
       };
 
       const command = commands[selectedProtocol];

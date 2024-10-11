@@ -29,7 +29,7 @@ escape_json() {
 JSON_RESPONSE="["
 
 # List of AT commands to run, one by one
-for COMMAND in 'AT+CGMI' 'AT+CGMM' 'AT+CGMR' 'AT+CNUM' 'AT+CIMI' 'AT+ICCID' 'AT+CGSN' 'AT+QMAP="LANIP"' 'AT+QMAP="WWAN"'; do
+for COMMAND in 'AT+CGMI' 'AT+CGMM' 'AT+CGMR' 'AT+CNUM' 'AT+CIMI' 'AT+ICCID' 'AT+CGSN' 'AT+QMAP="LANIP"' 'AT+QMAP="WWAN"' 'AT+QGETCAPABILITY'; do
     # Write the command to the input file
     echo "$COMMAND" > "$INPUT_FILE"
 

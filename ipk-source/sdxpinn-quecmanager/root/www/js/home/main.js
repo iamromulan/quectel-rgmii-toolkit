@@ -54,7 +54,7 @@ let atCommandInterval;
 let connectionStatusInterval;
 let trafficStatsInterval;
 const DEFAULT_REFRESH_RATE = 5000; // 5 seconds
-const TRAFFIC_STATS_REFRESH_RATE = 1000; // 1 second
+const TRAFFIC_STATS_REFRESH_RATE = 5000; // 5 seconds
 const CONNECTION_CHECK_MULTIPLIER = 6; // Will make connection check 6 times slower
 const STORAGE_KEY = "modemRefreshRate";
 
@@ -958,26 +958,31 @@ function processWANIPData(jsonData) {
 
 async function fetchTrafficStats() {
   try {
-    const response = await fetch("/cgi-bin/home/traffic_stats.sh", {
-      method: "GET",
+    // Send the AT command to the CGI handler
+    const response = await fetch("/cgi-bin/atinout_handler.sh", {
+      method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
+      body: `command=${encodeURIComponent("AT+QGDNRCNT?")}`,
     });
 
+    // Get the raw text response
     const rawData = await response.text();
-
+    
     if (!rawData || rawData.trim() === "") {
       throw new Error("Empty or malformed response");
     }
 
-    const jsonData = JSON.parse(rawData);
+    // Extract the upload and download values using regex
+    const match = rawData.match(/\+QGDNRCNT: (\d+),(\d+)/);
+    if (!match || match.length < 3) {
+      throw new Error("Unexpected response format");
+    }
 
-    console.log("Traffic stats fetched successfully");
-
-    // Parse rx (download) and tx (upload) values
-    const download = jsonData.download;
-    const upload = jsonData.upload;
+    // Parse the upload and download values
+    const upload = parseInt(match[1], 10);
+    const download = parseInt(match[2], 10);
 
     // Convert to human-readable format
     const downloadFormatted = formatBytes(download);
