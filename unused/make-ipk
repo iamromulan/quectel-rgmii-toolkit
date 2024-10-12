@@ -1,0 +1,79 @@
+#!/bin/ash
+
+# Build an ipk from an already installed package from opkg
+# By iamromulan
+
+# Check if package name is provided
+if [ -z "$1" ]; then
+    echo "Usage: $0 <package_name>"
+    exit 1
+fi
+
+PACKAGE_NAME="$1"
+WORK_DIR="./$PACKAGE_NAME"
+ROOT_DIR="$WORK_DIR/root"
+CONTROL_DIR="$WORK_DIR/CONTROL"
+
+# Create directory structure
+mkdir -p "$ROOT_DIR" "$CONTROL_DIR"
+
+# Fetch package files and copy them into the correct spots inside root directory
+opkg files "$PACKAGE_NAME" | grep -E '^/' | while read -r file; do
+    if [ -e "$file" ]; then
+        mkdir -p "$ROOT_DIR$(dirname "$file")"
+        cp "$file" "$ROOT_DIR$file"
+    fi
+done
+
+# Copy metadata files from /usr/lib/opkg/info/
+for file in /usr/lib/opkg/info/"$PACKAGE_NAME".*; do
+    basefile=$(basename "$file")
+    # Strip the package name from the file (e.g., dropbear.control becomes control)
+    newfile=$(echo "$basefile" | sed "s/$PACKAGE_NAME\.//")
+    cp "$file" "$CONTROL_DIR/$newfile"
+done
+
+# Now proceed with building the IPK package
+
+# Check if the required directories are present in the specified path
+if [ ! -d "$CONTROL_DIR" ] || [ ! -d "$ROOT_DIR" ]; then
+    echo "Error: CONTROL and root directories must be present."
+    exit 1
+fi
+
+# Extract values from the CONTROL/control file
+pkgname=$(grep -i '^Package:' "$CONTROL_DIR/control" | awk '{print $2}')
+version=$(grep -i '^Version:' "$CONTROL_DIR/control" | awk '{print $2}')
+architecture=$(grep -i '^Architecture:' "$CONTROL_DIR/control" | awk '{print $2}')
+
+# Check if values are extracted correctly
+if [ -z "$pkgname" ] || [ -z "$version" ] || [ -z "$architecture" ]; then
+    echo "Error: Failed to extract Package, Version, or Architecture from control file."
+    exit 1
+fi
+
+# Set the final IPK name based on the extracted values
+ipkname="${pkgname}_${version}_${architecture}.ipk"
+
+# Create control.tar.gz from the CONTROL directory
+echo "Creating control.tar.gz..."
+tar -czvf control.tar.gz -C "$CONTROL_DIR" .
+
+# Create data.tar.gz from the root directory
+echo "Creating data.tar.gz..."
+tar -czvf data.tar.gz -C "$ROOT_DIR" .
+
+# Create debian-binary file (must contain exactly "2.0" without a newline)
+echo -n "2.0" > debian-binary
+chown -R root:root debian-binary
+
+# Combine the components into the final .ipk file using tar
+echo "Packaging ${ipkname}..."
+tar -czvf "$ipkname" debian-binary control.tar.gz data.tar.gz
+
+# Clean up intermediate files
+echo "Cleaning up temporary files..."
+rm -f control.tar.gz data.tar.gz debian-binary
+rm -rf $WORK_DIR
+
+echo "IPK package ${ipkname} created successfully."
