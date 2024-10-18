@@ -1,0 +1,252 @@
+#!/bin/ash
+
+# Function to display menu options with color coding
+menu() {
+    echo -e "\e[96mLAN Configuration Menu:\e[0m" # Cyan
+    echo -e "\e[92m1) Enable/Disable Single IP DMZ Passthrough Mode\e[0m"   # Green
+    echo -e "\e[94m2) Set Gateway Address\e[0m"       # Blue
+    echo -e "\e[93m3) Set DHCP Start/Limit Range\e[0m" # Yellow
+    echo -e "\e[96m4) Set Custom DNS\e[0m"             # Cyan
+    echo -e "\e[95m5) Use Provider's DNS (IPv4 only)\e[0m" # Magenta
+    echo -e "\e[92m6) Enable/Disable IP Passthrough with NAT (Access to modem's LAN locally)\e[0m" # Green
+    echo -e "\e[91m7) Exit\e[0m"                       # Red
+    echo ""
+    read -p "Select an option [1-7]: " choice
+}
+
+# Apply changes and restart services
+apply_changes() {
+    uci commit network
+    uci commit dhcp
+    /etc/init.d/network restart
+    /etc/init.d/dnsmasq restart
+    echo -e "\e[92mChanges applied successfully.\e[0m" # Green
+}
+
+# Function to check if IPPT is enabled by inspecting the MPDN rules
+is_ippt_enabled() {
+    local mpdn_output=$(atcmd 'AT+QMAP="mpdn_rule"')
+    echo "$mpdn_output"
+    
+    # Check if any MPDN rule has IPPT enabled (non-zero second-to-last value)
+    if echo "$mpdn_output" | grep -q "+QMAP: \"MPDN_rule\",.*,.*,.*,[1-9],.*"; then
+        return 0  # IPPT is enabled
+    else
+        return 1  # IPPT is not enabled
+    fi
+}
+
+# Function to check if MPDN rules are clear
+are_mpdn_rules_clear() {
+    local mpdn_output=$(atcmd 'AT+QMAP="mpdn_rule"')
+    echo "$mpdn_output"
+    
+    # Check if all MPDN rules are clear (all values are 0)
+    if echo "$mpdn_output" | grep -q "+QMAP: \"MPDN_rule\",0,0,0,0,0"; then
+        return 0  # MPDN rules are clear
+    else
+        return 1  # MPDN rules are not clear
+    fi
+}
+
+# Function to check DMZ status using the AT+QMAP command
+is_dmz_enabled() {
+    local lan_ip=$(uci get network.lan.ipaddr)
+    local expected_dmz_ip=$(echo "$lan_ip" | awk -F. '{print $1"."$2"."$3"."$4+1}')
+    local dhcp_start=$(uci get dhcp.lan.start)
+    local dhcp_limit=$(uci get dhcp.lan.limit)
+
+    # Check if DHCP start and limit are the same
+    if [ "$dhcp_start" = "$dhcp_limit" ]; then
+        # Get the DMZ status from the AT command
+        local dmz_status=$(atcmd 'AT+QMAP="DMZ"')
+        echo "$dmz_status"
+
+        # Check if DMZ is enabled for IPv4 (1,4 means IPv4 DMZ is enabled)
+        if echo "$dmz_status" | grep -q "\+QMAP: \"DMZ\",1,4,$expected_dmz_ip"; then
+            return 0  # DMZ is enabled
+        else
+            return 1  # DMZ is disabled
+        fi
+    else
+        return 1  # DMZ is disabled if start and limit are not the same
+    fi
+}
+
+# Function to enable or disable IP Passthrough with NAT
+toggle_ippt_mode() {
+    is_ippt_enabled
+    ippt_status=$?
+
+    if [ "$ippt_status" -eq 0 ]; then
+        echo -e "\e[93mIP Passthrough is currently ENABLED. Would you like to DISABLE it? (y/n)\e[0m" # Yellow
+        read -r disable_ippt
+        if [ "$disable_ippt" = "y" ]; then
+            are_mpdn_rules_clear
+            mpdn_clear_status=$?
+            if [ "$mpdn_clear_status" -ne 0 ]; then
+                atcmd 'AT+QMAP="mpdn_rule",0'  # Clear MPDN rule
+            fi
+            atcmd 'AT+QMAP="mpdn_rule",0,1,0,0,1'  # Disable IPPT
+            echo -e "\e[92mIP Passthrough disabled.\e[0m" # Green
+        else
+            echo -e "\e[93mIP Passthrough remains enabled.\e[0m" # Yellow
+        fi
+    else
+        echo -e "\e[93mIP Passthrough is currently DISABLED. Would you like to ENABLE it? (y/n)\e[0m" # Yellow
+        read -r enable_ippt
+        if [ "$enable_ippt" = "y" ]; then
+            local arp_output=$(arp -n)
+            local device_count=0
+            local device_list=""
+            while IFS= read -r line; do
+                if echo "$line" | grep -q "br-lan"; then
+                    device_count=$((device_count + 1))
+                    mac=$(echo "$line" | awk '{print $4}')
+                    ip=$(echo "$line" | awk '{print $2}' | tr -d '()')
+                    echo "$device_count) $mac current IP $ip"
+                    device_list="$device_list
+$device_count $mac"
+                fi
+            done <<EOF
+$arp_output
+EOF
+
+            if [ "$device_count" -eq 0 ]; then
+                echo "No devices found. IP Passthrough cannot be enabled."
+                return
+            fi
+
+            device_count=$((device_count + 1))
+            echo "$device_count) Cancel"
+            read -p "Select what device to pass the IP to: " device_choice
+
+            if [ "$device_choice" -ne "$device_count" ] && [ "$device_choice" -gt 0 ] && [ "$device_choice" -le $((device_count - 1)) ]; then
+                selected_mac=$(echo "$device_list" | awk -v choice="$device_choice" '$1 == choice {print $2}')
+                are_mpdn_rules_clear
+                mpdn_clear_status=$?
+                if [ "$mpdn_clear_status" -ne 0 ]; then
+                    atcmd "AT+QMAP=\"mpdn_rule\",0"  # Clear MPDN rule
+                fi
+                atcmd "AT+QMAP=\"mpdn_rule\",0,1,0,1,1,\"$selected_mac\""
+                echo -e "\e[92mIP Passthrough enabled for device with MAC: $selected_mac\e[0m" # Green
+            else
+                echo -e "\e[93mIP Passthrough remains disabled.\e[0m" # Yellow
+            fi
+        else
+            echo -e "\e[93mIP Passthrough remains disabled.\e[0m" # Yellow
+        fi
+    fi
+}
+
+# Function to toggle DMZ mode based on the current state
+toggle_dmz_mode() {
+    is_dmz_enabled
+    dmz_status=$?
+
+    if [ "$dmz_status" -eq 0 ]; then
+        echo -e "\e[93mDMZ is currently ENABLED. Would you like to DISABLE it? (y/n)\e[0m" # Yellow
+        read -r disable_dmz
+        if [ "$disable_dmz" = "y" ]; then
+            # Reset DHCP to default range and disable DMZ via AT command
+            uci set dhcp.lan.start='100'
+            uci set dhcp.lan.limit='150'
+            atcmd 'AT+QMAP="DMZ",0,4'  # Disable IPv4 DMZ
+            echo -e "\e[92mDMZ mode disabled.\e[0m" # Green
+        else
+            echo -e "\e[93mDMZ remains enabled.\e[0m" # Yellow
+        fi
+    else
+        echo -e "\e[93mDMZ is currently DISABLED. Would you like to ENABLE it? (y/n)\e[0m" # Yellow
+        read -r enable_dmz
+        if [ "$enable_dmz" = "y" ]; then
+            local ip=$(uci get network.lan.ipaddr)
+            local device_ip=$(echo "$ip" | awk -F. '{print $1"."$2"."$3"."$4+1}')
+            uci set network.lan.ipaddr="$ip"
+            uci set dhcp.lan.start='2'
+            uci set dhcp.lan.limit='2'
+            atcmd "AT+QMAP=\"DMZ\",1,4,$device_ip"  # Enable IPv4 DMZ
+            echo -e "\e[92mDMZ mode enabled. Device IP: $device_ip\e[0m" # Green
+        else
+            echo -e "\e[93mDMZ remains disabled.\e[0m" # Yellow
+        fi
+    fi
+    apply_changes
+}
+
+# Function to set the gateway address
+set_gateway() {
+    get_current_settings "lan"
+    local gateway=$(prompt "Enter new LAN Gateway IP" "$CURRENT_IP")
+    uci set network.lan.ipaddr="$gateway"
+    apply_changes
+}
+
+# Function to set the DHCP range
+set_dhcp_range() {
+    get_current_settings "lan"
+    local start=$(prompt "Enter DHCP Start" "$CURRENT_START")
+    local limit=$(prompt "Enter DHCP Limit" "$CURRENT_LIMIT")
+    uci set dhcp.lan.start="$start"
+    uci set dhcp.lan.limit="$limit"
+    apply_changes
+}
+
+# Function to set custom DNS
+toggle_custom_dns() {
+    is_ippt_enabled
+    ippt_status=$?
+
+    if [ "$ippt_status" -eq 0 ]; then
+        echo -e "\e[93mIP Passthrough (IPPT) is enabled. Modifying DNS for 'lan_bind4' interface.\e[0m" # Yellow
+        interface="lan_bind4"
+    else
+        echo -e "\e[93mIP Passthrough (IPPT) is disabled. Modifying DNS for 'lan' interface.\e[0m" # Yellow
+        interface="lan"
+    fi
+
+    get_current_settings "$interface"
+    local dns=$(prompt "Enter DNS servers (comma-separated)" "$CURRENT_DNS")
+    uci set dhcp.$interface.dhcp_option="6,$dns"
+    apply_changes
+}
+
+# Function to use the provider's DNS (IPv4 only)
+set_provider_dns() {
+    local dns=$(awk '/^nameserver [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/ {print $2}' /tmp/resolv.conf.d/resolv.conf.auto | tr '\n' ',' | sed 's/,$//')
+    echo -e "\e[93mSetting DNS to: $dns\e[0m" # Yellow
+    uci set dhcp.lan.dhcp_option="6,$dns"
+    apply_changes
+}
+
+# Helper function to prompt with a default value
+prompt() {
+    local message="$1"
+    local default="$2"
+    read -p "$message [$default]: " input
+    echo "${input:-$default}"
+}
+
+# Function to get current settings for a specific interface (lan or lan_bind4)
+get_current_settings() {
+    local interface="$1"
+    CURRENT_IP=$(uci get network.$interface.ipaddr 2>/dev/null || echo "Not set")
+    CURRENT_START=$(uci get dhcp.$interface.start 2>/dev/null || echo "Not set")
+    CURRENT_LIMIT=$(uci get dhcp.$interface.limit 2>/dev/null || echo "Not set")
+    CURRENT_DNS=$(uci get dhcp.$interface.dhcp_option | grep -oE '6,.*' | cut -d, -f2-)
+}
+
+# Main menu loop
+while true; do
+    menu
+    case $choice in
+        1) toggle_dmz_mode ;;
+        2) set_gateway ;;
+        3) set_dhcp_range ;;
+        4) toggle_custom_dns ;;
+        5) set_provider_dns ;;
+        6) toggle_ippt_mode ;;
+        7) echo -e "\e[92mGoodbye!\e[0m"; exit 0 ;; # Green
+        *) echo -e "\e[91mInvalid option. Please try again.\e[0m" ;; # Red
+    esac
+done
