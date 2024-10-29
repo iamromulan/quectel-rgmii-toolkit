@@ -76,7 +76,7 @@ Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
 MD5Sum: 88d632cf1dbae69c1bd6962ca31f600c
 Size: 658836
-Filename: sdxpinn-quecmanager_0.0.1_aarch64_cortex-a53.ipk
+Filename: sdxpinn-quecmanager_0.0.2_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 License: GPLv3
