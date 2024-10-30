@@ -41,14 +41,14 @@ License: GPLv3
 
 
 Package: sdxpinn-console-menu
-Version: 0.0.1
+Version: 0.0.2
 Depends: libc, sdxpinn-mount-fix
 Section: utils
 Architecture: aarch64_cortex-a53
 Maintainer: iamromulan <https://github.com/iamromulan>
-MD5Sum: e4dd60a7725fb3df16e5ebc0f8d12330
-Size: 4902
-Filename: sdxpinn-console-menu_0.0.1_aarch64_cortex-a53.ipk
+MD5Sum: 42d2fd4c85b36a9c29e66092899080a4
+Size: 7365
+Filename: sdxpinn-console-menu_0.0.2_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: A custom CLI menu system for mamnagment of Quectel RM5xx modems
 License: GPLv3
@@ -69,44 +69,44 @@ License: GPLv3
 
 
 Package: sdxpinn-quecmanager
-Version: 0.0.2
+Version: 0.0.3
 Depends: libc, sdxpinn-mount-fix, atinout
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: 88d632cf1dbae69c1bd6962ca31f600c
-Size: 658836
-Filename: sdxpinn-quecmanager_0.0.2_aarch64_cortex-a53.ipk
+MD5Sum: c8fc47f8c59a6fc27955fccf0ff7c383
+Size: 661511
+Filename: sdxpinn-quecmanager_0.0.3_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 License: GPLv3
 
 
 Package: tailscale
-Version: 1.74.1-1
+Version: 1.76.1-1
 Depends: libc, tailscaled
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 17b17e02759f162b73697f5a2d00e1d5
-Size: 9392904
-Filename: tailscale_1.74.1-1_aarch64_cortex-a53.ipk
+MD5Sum: e4fe865cf7dfc84c9f6c3f0974e049eb
+Size: 9439846
+Filename: tailscale_1.76.1-1_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
-Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.74.1
+Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
 License: GPLv3
 
 
 Package: tailscaled
-Version: 1.74.1-1
+Version: 1.76.1-1
 Depends: libc, ca-bundle, kmod-tun
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 3f1290daeb00519877d4cc0628bfe190
-Size: 17468475
-Filename: tailscaled_1.74.1-1_aarch64_cortex-a53.ipk
+MD5Sum: 5785492476bb7c205e02bd8f7b3eeb50
+Size: 17506056
+Filename: tailscaled_1.76.1-1_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
-Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.74.1
+Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
 License: GPLv3
 
 

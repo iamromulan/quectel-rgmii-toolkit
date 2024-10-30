@@ -247,8 +247,13 @@ function processSimData(jsonData) {
   setText("simSlot", simSlot);
 
   // Phone Number
-  const phoneNumber = extractValue(phoneResponse.response).split(",")[1].replace(/"/g, "").trim();
-  setText("phoneNumber", phoneNumber);
+  // If trim is an error, return no phone number
+  try {
+    const phoneNumber = extractValue(phoneResponse.response).split(",")[1].replace(/"/g, "").trim();
+    setText("phoneNumber", phoneNumber);
+  } catch (error) {
+  setText("phoneNumber", "-");
+  }
 
   // SIM Provider and Access Technology
   const providerData = extractValue(providerResponse.response).split(",");
