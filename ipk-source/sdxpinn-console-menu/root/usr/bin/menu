@@ -8,6 +8,7 @@ GITREPO="quectel-rgmii-toolkit"
 GITTREE="development-SDXPINN"
 GITMAINTREE="SDXPINN"
 GITDEVTREE="development-SDXPINN"
+SUB_MENUS="/usr/bin/sub_menus"
 
 # Function to remount file system as read-write
 remount_rw() {
@@ -216,22 +217,24 @@ while true; do
     echo -e "\e[96m1) Send AT Commands\e[0m" # Cyan
     echo -e "\e[92m2) Run the SDXPINN toolkit\e[0m" # Green
     echo -e "\e[94m3) Run the development-SDXPINN toollkit (beta/test branch)\e[0m" # Light Blue
-    echo -e "\e[94m4) TTL Settings\e[0m" # Light Blue    
-    echo -e "\e[94m5) Set root password\e[0m" # Light Blue
-    echo -e "\e[94m6) Tailscale Management\e[0m" # Light Blue
-    echo -e "\e[92m7) Run a speedtest.net speed test\e[0m" # Light Green
-    echo -e "\e[93m8) Exit\e[0m" # Yellow (repeated color for exit option)
+    echo -e "\e[94m4) TTL Settings\e[0m" # Light Blue
+    echo -e "\e[93m5) LAN Settings (Experimental) \e[0m" # Yellow    
+    echo -e "\e[94m6) Set root password\e[0m" # Light Blue
+    echo -e "\e[94m7) Tailscale Management\e[0m" # Light Blue
+    echo -e "\e[92m8) Run a speedtest.net speed test\e[0m" # Light Green
+    echo -e "\e[93m9) Exit\e[0m" # Yellow (repeated color for exit option)
     read -p "Enter your choice: " choice
 
     case $choice in
         1) send_at_commands_using_atcmd ;;
         2)  cd /tmp && wget -O rcPCIe_SDXPINN_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/rcPCIe_SDXPINN_toolkit.sh && chmod +x rcPCIe_SDXPINN_toolkit.sh && ./rcPCIe_SDXPINN_toolkit.sh && cd / ;;
         3)  cd /tmp && wget -O rcPCIe_SDXPINN_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development-SDXPINN/rcPCIe_SDXPINN_toolkit.sh && chmod +x rcPCIe_SDXPINN_toolkit.sh && ./rcPCIe_SDXPINN_toolkit.sh && cd / ;;
-        4) ttl_setup ;;       
-        5) set_root_passwd ;;
-        6) configure_tailscale ;;
-        7) speedtest ;;
-        8) echo -e "\e[1;32mGoodbye!\e[0m"; break ;;
+        4) ttl_setup ;;
+        5) $SUB_MENUS/lan_menu ;;
+        6) set_root_passwd ;;
+        7) configure_tailscale ;;
+        8) speedtest ;;
+        9) echo -e "\e[1;32mGoodbye!\e[0m"; break ;;
         *) echo -e "\e[1;31mInvalid option\e[0m" ;;
     esac
 done

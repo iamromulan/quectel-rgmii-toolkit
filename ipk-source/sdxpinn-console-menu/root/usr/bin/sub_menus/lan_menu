@@ -2,6 +2,7 @@
 
 # Function to display menu options with color coding
 menu() {
+    echo -e "\e[91m7) Proceed with caution...\e[0m" # Red
     echo -e "\e[96mLAN Configuration Menu:\e[0m" # Cyan
     echo -e "\e[92m1) Enable/Disable Single IP DMZ Passthrough Mode\e[0m"   # Green
     echo -e "\e[94m2) Set Gateway Address\e[0m"       # Blue
