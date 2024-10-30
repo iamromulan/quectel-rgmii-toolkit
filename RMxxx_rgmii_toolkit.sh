@@ -3,9 +3,13 @@
 # Define toolkit paths
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/opt/bin:/opt/sbin:/usrdata/root/bin
 GITUSER="iamromulan"
-GITTREE="development"
-GITMAINTREE="main"
-GITDEVTREE="development"
+REPONAME="quectel-rgmii-toolkit"
+GITTREE="SDXLEMUR"
+GITMAINTREE="SDXLEMUR"
+GITDEVTREE="development-SDXLEMUR"
+GITROOT="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITTREE"
+GITROOTMAIN="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITMAINTREE"
+GITROOTDEV="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITDEVTREE"
 TMP_DIR="/tmp"
 USRDATA_DIR="/usrdata"
 SOCAT_AT_DIR="/usrdata/socat-at-bridge"
@@ -319,54 +323,31 @@ set_root_passwd() {
 
 # Function to install/update Simple Admin
 install_simple_admin() {
-    while true; do
-	echo -e "\e[1;32mWhat version of Simple Admin do you want to install? This will start a webserver on port 80/443 on test build\e[0m"
-    echo -e "\e[1;32m1) Stable current version, (Main Branch)\e[0m"
-	echo -e "\e[1;31m2) Install Test Build (Development Branch)\e[0m"
-	echo -e "\e[0;33m3) Return to Main Menu\e[0m"
- 	echo -e "\e[1;32mSelect your choice: \e[0m"
-        read choice
-
-        case $choice in
-        1)
-            echo -e "\e[1;32mYou are using the development toolkit; Use the one from main if you want the stable version right now\e[0m"
-            break
-			;;
-        2)
-			ensure_entware_installed
-			echo -e "\e[1;31m2) Installing simpleadmin from the development test branch\e[0m"
-			mkdir /usrdata/simpleupdates > /dev/null 2>&1
-		    mkdir /usrdata/simpleupdates/scripts > /dev/null 2>&1
-		    wget -O /usrdata/simpleupdates/scripts/update_socat-at-bridge.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_socat-at-bridge.sh && chmod +x /usrdata/simpleupdates/scripts/update_socat-at-bridge.sh
-		    echo -e "\e[1;32mInstalling/updating dependency: socat-at-bridge\e[0m"
-			echo -e "\e[1;32mPlease Wait....\e[0m"
-			/usrdata/simpleupdates/scripts/update_socat-at-bridge.sh
-			echo -e "\e[1;32m Dependency: socat-at-bridge has been updated/installed.\e[0m"
-			sleep 1
-		    wget -O /usrdata/simpleupdates/scripts/update_simplefirewall.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_simplefirewall.sh && chmod +x /usrdata/simpleupdates/scripts/update_simplefirewall.sh
-		    echo -e "\e[1;32mInstalling/updating dependency: simplefirewall\e[0m"
-			echo -e "\e[1;32mPlease Wait....\e[0m"
-			/usrdata/simpleupdates/scripts/update_simplefirewall.sh
-			echo -e "\e[1;32m Dependency: simplefirewall has been updated/installed.\e[0m"
-			sleep 1
-			set_simpleadmin_passwd
-		    wget -O /usrdata/simpleupdates/scripts/update_simpleadmin.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_simpleadmin.sh && chmod +x /usrdata/simpleupdates/scripts/update_simpleadmin.sh
-			echo -e "\e[1;32mInstalling/updating: Simpleadmin content\e[0m"
-			echo -e "\e[1;32mPlease Wait....\e[0m"
-			/usrdata/simpleupdates/scripts/update_simpleadmin.sh
-            echo -e "\e[1;32mSimpleadmin content has been updated/installed.\e[0m"
-			sleep 1
-            break
-            ;;
-	    3)
-                echo "Returning to main menu..."
-                break
-                ;;
-            *)
-                echo "Invalid choice. Please try again."
-                ;;
-        esac
-    done
+	echo -e "\e[1;32mInstalling Simpleadmin 2.0\e[0m"
+	ensure_entware_installed
+	echo -e "\e[1;31m2) Installing simpleadmin from the development test branch\e[0m"
+	mkdir /usrdata/simpleupdates > /dev/null 2>&1
+	mkdir /usrdata/simpleupdates/scripts > /dev/null 2>&1
+	wget -O /usrdata/simpleupdates/scripts/update_socat-at-bridge.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_socat-at-bridge.sh && chmod +x /usrdata/simpleupdates/scripts/update_socat-at-bridge.sh
+	echo -e "\e[1;32mInstalling/updating dependency: socat-at-bridge\e[0m"
+	echo -e "\e[1;32mPlease Wait....\e[0m"
+	/usrdata/simpleupdates/scripts/update_socat-at-bridge.sh
+	echo -e "\e[1;32m Dependency: socat-at-bridge has been updated/installed.\e[0m"
+	sleep 1
+	wget -O /usrdata/simpleupdates/scripts/update_simplefirewall.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_simplefirewall.sh && chmod +x /usrdata/simpleupdates/scripts/update_simplefirewall.sh
+	echo -e "\e[1;32mInstalling/updating dependency: simplefirewall\e[0m"
+	echo -e "\e[1;32mPlease Wait....\e[0m"
+	/usrdata/simpleupdates/scripts/update_simplefirewall.sh
+	echo -e "\e[1;32m Dependency: simplefirewall has been updated/installed.\e[0m"
+	sleep 1
+	set_simpleadmin_passwd
+	wget -O /usrdata/simpleupdates/scripts/update_simpleadmin.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_simpleadmin.sh && chmod +x /usrdata/simpleupdates/scripts/update_simpleadmin.sh
+	echo -e "\e[1;32mInstalling/updating: Simpleadmin content\e[0m"
+	echo -e "\e[1;32mPlease Wait....\e[0m"
+	/usrdata/simpleupdates/scripts/update_simpleadmin.sh
+    echo -e "\e[1;32mSimpleadmin content has been updated/installed.\e[0m"
+	sleep 1
+    break
 }
 
 # Function to Uninstall Simpleadmin and dependencies
@@ -757,7 +738,7 @@ install_sshd() {
 	ensure_entware_installed
     mkdir /usrdata/simpleupdates > /dev/null 2>&1
 	mkdir /usrdata/simpleupdates/scripts > /dev/null 2>&1
-	wget -O /usrdata/simpleupdates/scripts/update_sshd.sh https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simpleupdates/scripts/update_sshd.sh && chmod +x /usrdata/simpleupdates/scripts/update_sshd.sh
+	wget -O /usrdata/simpleupdates/scripts/update_sshd.sh $GITROOT/simpleupdates/scripts/update_sshd.sh && chmod +x /usrdata/simpleupdates/scripts/update_sshd.sh
 	echo -e "\e[1;32mInstalling/updating: SSHd\e[0m"
 	echo -e "\e[1;32mPlease Wait....\e[0m"
 	/usrdata/simpleupdates/scripts/update_sshd.sh
@@ -769,13 +750,14 @@ install_sshd() {
 
 ARCH=$(uname -a)
 if echo "$ARCH" | grep -q "aarch64"; then
-    cd /tmp && wget -O RM55x_rcPCIe_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development-SDXPINN/RM55x_rcPCIe_toolkit.sh && chmod +x RM55x_rcPCIe_toolkit.sh && ./RM55x_rcPCIe_toolkit.sh && cd /
+    cd /tmp && wget -O RM55x_rcPCIe_toolkit.sh https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/RM55x_rcPCIe_toolkit.sh && chmod +x RM55x_rcPCIe_toolkit.sh && ./RM55x_rcPCIe_toolkit.sh && cd /
     exit 0
 elif echo "$ARCH" | grep -q "armv7l"; then
     # Continue if architecture is armv7l
     echo "Architecture is armv7l, continuing..."
 else
-    echo "Unsupported architecture."
+    uname -a
+	echo "Unsupported architecture."
     exit 1
 fi
 
