@@ -1,13 +1,21 @@
 #!/bin/bash
 
 # Define constants
+# Define GitHub repo info
 GITUSER="iamromulan"
-GITTREE="development"
+REPONAME="quectel-rgmii-toolkit"
+GITTREE="SDXLEMUR"
+GITMAINTREE="SDXLEMUR"
+GITDEVTREE="development-SDXLEMUR"
+GITROOT="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITTREE"
+GITROOTMAIN="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITMAINTREE"
+GITROOTDEV="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITDEVTREE"
+# Define filesystem path
 DIR_NAME="tailscale"
 SERVICE_FILE="/lib/systemd/system/install_tailscale.service"
 SERVICE_NAME="install_tailscale"
 TMP_SCRIPT="/tmp/install_tailscale.sh"
-LOG_FILE="/tmp/install_sshd.log"
+LOG_FILE="/tmp/install_tailscale.log"
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/opt/bin:/opt/sbin:/usrdata/root/bin
 
 # Tmp Script dependent constants 
@@ -48,8 +56,16 @@ cat <<EOF > "$TMP_SCRIPT"
 
 export HOME=/usrdata/root
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/opt/bin:/opt/sbin:/usrdata/root/bin
+# Define GitHub repo info
 GITUSER="iamromulan"
-GITTREE="development"
+REPONAME="quectel-rgmii-toolkit"
+GITTREE="SDXLEMUR"
+GITMAINTREE="SDXLEMUR"
+GITDEVTREE="development-SDXLEMUR"
+GITROOT="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITTREE"
+GITROOTMAIN="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITMAINTREE"
+GITROOTDEV="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITDEVTREE"
+# Define filesystem path
 TAILSCALE_DIR="/usrdata/tailscale/"
 TAILSCALE_SYSD_DIR="/usrdata/tailscale/systemd"
 
@@ -77,16 +93,16 @@ install_update_tailscale() {
         mkdir -p "$TAILSCALE_DIR" "$TAILSCALE_SYSD_DIR"
         echo "Downloading binary files..."
         cd /usrdata
-        curl -O https://pkgs.tailscale.com/stable/tailscale_1.70.0_arm.tgz
-        tar -xzf tailscale_1.70.0_arm.tgz
-		rm tailscale_1.70.0_arm.tgz
-        cd /usrdata/tailscale_1.70.0_arm
+        curl -O https://pkgs.tailscale.com/stable/tailscale_1.76.1_arm.tgz
+        tar -xzf tailscale_1.76.1_arm.tgz
+		rm tailscale_1.76.1_arm.tgz
+        cd /usrdata/tailscale_1.76.1_arm
         mv tailscale tailscaled "$TAILSCALE_DIR/"
-        rm -rf /usrdata/tailscale_1.70.0_arm
+        rm -rf /usrdata/tailscale_1.76.1_arm
         echo "Downloading systemd files..."
         cd "$TAILSCALE_SYSD_DIR"
-        wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.service
-        wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/main/tailscale/systemd/tailscaled.defaults
+        wget $GITROOT/tailscale/systemd/tailscaled.service
+        wget $GITROOT/tailscale/systemd/tailscaled.defaults
         sleep 2s
         echo "Setting Permissions..."
         chmod +x "$TAILSCALE_DIR/tailscaled" "$TAILSCALE_DIR/tailscale"
