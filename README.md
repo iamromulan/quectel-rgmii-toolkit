@@ -9,7 +9,7 @@ YouTube Video: [Watch](https://www.youtube.com/watch?v=dh7dbEyHwiY)
 
 This is a work in progress branch for early development for the RM551E-GL modem (Will probably work on the 550 as well)
 
-# The below commands will download the beta/work in progress toolkit only for RM55x modems/SDXPINN platform
+# The below commands will download the toolkit for RM55x modems/SDXPINN platform
 
 # Current state:
 The toolkit will do the following:
