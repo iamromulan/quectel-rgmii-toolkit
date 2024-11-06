@@ -1,8 +1,17 @@
 #!/bin/bash
 
 # Define constants
+# Define GitHub repo info
 GITUSER="iamromulan"
-GITTREE="development"
+REPONAME="quectel-rgmii-toolkit"
+GITTREE="SDXLEMUR"
+GITMAINTREE="SDXLEMUR"
+GITDEVTREE="development-SDXLEMUR"
+GITROOT="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITTREE"
+GITROOTMAIN="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITMAINTREE"
+GITROOTDEV="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITDEVTREE"
+
+# Define filesystem path
 DIR_NAME="simplefirewall"
 SERVICE_FILE="/lib/systemd/system/install_simplefirewall.service"
 SERVICE_NAME="install_simplefirewall"
@@ -41,8 +50,17 @@ EOF
 cat <<EOF > "$TMP_SCRIPT"
 #!/bin/bash
 
+# Define GitHub repo info
 GITUSER="iamromulan"
-GITTREE="development"
+REPONAME="quectel-rgmii-toolkit"
+GITTREE="SDXLEMUR"
+GITMAINTREE="SDXLEMUR"
+GITDEVTREE="development-SDXLEMUR"
+GITROOT="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITTREE"
+GITROOTMAIN="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITMAINTREE"
+GITROOTDEV="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITDEVTREE"
+
+# Define filesystem path
 SIMPLE_FIREWALL_DIR="/usrdata/simplefirewall"
 SIMPLE_FIREWALL_SCRIPT="$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
 SIMPLE_FIREWALL_SYSTEMD_DIR="$SIMPLE_FIREWALL_DIR/systemd"
@@ -76,14 +94,14 @@ install_simple_firewall() {
     mount -o remount,rw /
     mkdir -p "$SIMPLE_FIREWALL_DIR"
     mkdir -p "$SIMPLE_FIREWALL_SYSTEMD_DIR"
-    wget -O "$SIMPLE_FIREWALL_DIR/simplefirewall.sh" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/simplefirewall.sh
-    wget -O "$SIMPLE_FIREWALL_DIR/ttl-override" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttl-override
-    wget -O "$SIMPLE_FIREWALL_DIR/ttlvalue" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/ttlvalue
+    wget -O "$SIMPLE_FIREWALL_DIR/simplefirewall.sh" $GITROOT/simplefirewall/simplefirewall.sh
+    wget -O "$SIMPLE_FIREWALL_DIR/ttl-override" $GITROOT/simplefirewall/ttl-override
+    wget -O "$SIMPLE_FIREWALL_DIR/ttlvalue" $GITROOT/simplefirewall/ttlvalue
 	chmod 666 $SIMPLE_FIREWALL_DIR/ttlvalue
     chmod +x "$SIMPLE_FIREWALL_DIR/simplefirewall.sh"
     chmod +x "$SIMPLE_FIREWALL_DIR/ttl-override"	
-    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/simplefirewall.service
-    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/ttl-override.service" https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/simplefirewall/systemd/ttl-override.service
+    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/simplefirewall.service" $GITROOT/simplefirewall/systemd/simplefirewall.service
+    wget -O "$SIMPLE_FIREWALL_SYSTEMD_DIR/ttl-override.service" $GITROOT/simplefirewall/systemd/ttl-override.service
     cp -rf $SIMPLE_FIREWALL_SYSTEMD_DIR/* /lib/systemd/system
     ln -sf "/lib/systemd/system/simplefirewall.service" "/lib/systemd/system/multi-user.target.wants/"
     ln -sf "/lib/systemd/system/ttl-override.service" "/lib/systemd/system/multi-user.target.wants/"

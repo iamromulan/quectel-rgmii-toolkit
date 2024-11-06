@@ -1,8 +1,16 @@
 #!/bin/bash
 
 # Define constants
+# Define GitHub repo info
 GITUSER="iamromulan"
-GITTREE="development"
+REPONAME="quectel-rgmii-toolkit"
+GITTREE="SDXLEMUR"
+GITMAINTREE="SDXLEMUR"
+GITDEVTREE="development-SDXLEMUR"
+GITROOT="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITTREE"
+GITROOTMAIN="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITMAINTREE"
+GITROOTDEV="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITDEVTREE"
+# Define filesystem path
 DIR_NAME="socat-at-bridge"
 SERVICE_FILE="/lib/systemd/system/install_socat-at-bridge.service"
 SERVICE_NAME="install_socat-at-bridge"
@@ -39,8 +47,17 @@ EOF
 cat <<EOF > "$TMP_SCRIPT"
 #!/bin/bash
 
+# Define GitHub repo info
 GITUSER="iamromulan"
-GITTREE="development"
+REPONAME="quectel-rgmii-toolkit"
+GITTREE="SDXLEMUR"
+GITMAINTREE="SDXLEMUR"
+GITDEVTREE="development-SDXLEMUR"
+GITROOT="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITTREE"
+GITROOTMAIN="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITMAINTREE"
+GITROOTDEV="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITDEVTREE"
+
+# Define filesystem path
 SOCAT_AT_DIR="/usrdata/socat-at-bridge"
 SOCAT_AT_SYSD_DIR="/usrdata/socat-at-bridge/systemd_units"
 
@@ -85,18 +102,18 @@ install_at_socat() {
 	mkdir $SOCAT_AT_DIR
     cd $SOCAT_AT_DIR
     mkdir $SOCAT_AT_SYSD_DIR
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/socat-armel-static
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/killsmd7bridge
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/atcmd
-	wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/atcmd11
+    wget $GITROOT/socat-at-bridge/socat-armel-static
+    wget $GITROOT/socat-at-bridge/killsmd7bridge
+    wget $GITROOT/socat-at-bridge/atcmd
+	wget $GITROOT/socat-at-bridge/atcmd11
     cd $SOCAT_AT_SYSD_DIR
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11.service
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-from-ttyIN.service
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd11-to-ttyIN.service
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-killsmd7bridge.service	
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7-from-ttyIN2.service
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7-to-ttyIN2.service
-    wget https://raw.githubusercontent.com/$GITUSER/quectel-rgmii-toolkit/$GITTREE/socat-at-bridge/systemd_units/socat-smd7.service
+    wget $GITROOT/socat-at-bridge/systemd_units/socat-smd11.service
+    wget $GITROOT/socat-at-bridge/systemd_units/socat-smd11-from-ttyIN.service
+    wget $GITROOT/socat-at-bridge/systemd_units/socat-smd11-to-ttyIN.service
+    wget $GITROOT/socat-at-bridge/systemd_units/socat-killsmd7bridge.service	
+    wget $GITROOT/socat-at-bridge/systemd_units/socat-smd7-from-ttyIN2.service
+    wget $GITROOT/socat-at-bridge/systemd_units/socat-smd7-to-ttyIN2.service
+    wget $GITROOT/socat-at-bridge/systemd_units/socat-smd7.service
 
     # Set execute permissions
     cd $SOCAT_AT_DIR
