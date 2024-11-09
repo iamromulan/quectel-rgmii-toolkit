@@ -83,14 +83,14 @@ License: GPLv3
 
 
 Package: tailscale
-Version: 1.76.1-1
+Version: 1.76.1-2
 Depends: libc, tailscaled
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: e4fe865cf7dfc84c9f6c3f0974e049eb
-Size: 9439846
-Filename: tailscale_1.76.1-1_aarch64_cortex-a53.ipk
+MD5Sum: b19952ce72aba5447d4eaa90ca270766
+Size: 9440096
+Filename: tailscale_1.76.1-2_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
 Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
 License: GPLv3
