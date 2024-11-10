@@ -1,9 +1,8 @@
 #!/bin/sh
-
 echo "Content-type: application/json"
 echo ""
 
-CONFIG_FILE="/etc/quecmanager/apn_profile/apn_config.txt"
+CONFIG_FILE="/etc/quecmanager/imei_profile/imei_config.txt"
 
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "{}"
@@ -12,11 +11,9 @@ fi
 
 # Read the configuration file
 iccidProfile1=$(grep "^iccidProfile1=" "$CONFIG_FILE" | cut -d'=' -f2)
-apnProfile1=$(grep "^apnProfile1=" "$CONFIG_FILE" | cut -d'=' -f2)
-pdpType1=$(grep "^pdpType1=" "$CONFIG_FILE" | cut -d'=' -f2)
+imeiProfile1=$(grep "^imeiProfile1=" "$CONFIG_FILE" | cut -d'=' -f2)
 iccidProfile2=$(grep "^iccidProfile2=" "$CONFIG_FILE" | cut -d'=' -f2)
-apnProfile2=$(grep "^apnProfile2=" "$CONFIG_FILE" | cut -d'=' -f2)
-pdpType2=$(grep "^pdpType2=" "$CONFIG_FILE" | cut -d'=' -f2)
+imeiProfile2=$(grep "^imeiProfile2=" "$CONFIG_FILE" | cut -d'=' -f2)
 
 # Build the JSON response
 echo "{"
@@ -25,10 +22,8 @@ echo "{"
 if [ -n "$iccidProfile1" ]; then
     echo "  \"profile1\": {"
     echo "    \"iccid\": \"$iccidProfile1\","
-    echo "    \"apn\": \"$apnProfile1\","
-    echo "    \"pdpType\": \"$pdpType1\""
+    echo "    \"imei\": \"$imeiProfile1\""
     echo "  }"
-
     # Add comma if Profile 2 exists
     [ -n "$iccidProfile2" ] && echo "  ,"
 fi
@@ -37,8 +32,7 @@ fi
 if [ -n "$iccidProfile2" ]; then
     echo "  \"profile2\": {"
     echo "    \"iccid\": \"$iccidProfile2\","
-    echo "    \"apn\": \"$apnProfile2\","
-    echo "    \"pdpType\": \"$pdpType2\""
+    echo "    \"imei\": \"$imeiProfile2\""
     echo "  }"
 fi
 

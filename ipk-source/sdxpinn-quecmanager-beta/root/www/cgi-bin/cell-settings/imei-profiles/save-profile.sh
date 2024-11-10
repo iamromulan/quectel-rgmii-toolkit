@@ -30,32 +30,32 @@ if [ -z "$iccidProfile1" ] || [ -z "$imeiProfile1" ]; then
 fi
 
 # Check the directory if it exists, if not create it
-if [ ! -d /etc/quecmanager ]; then
-    mkdir -p /etc/quecmanager
+if [ ! -d /etc/quecmanager/imei_profile ]; then
+    mkdir -p /etc/quecmanager/imei_profile
 fi
 
 # Create a configuration file to store IMEI profiles
-cat > /etc/quecmanager/imei_config.txt << EOF
+cat >/etc/quecmanager/imei_profile/imei_config.txt <<EOF
 iccidProfile1=$iccidProfile1
 imeiProfile1=$imeiProfile1
 EOF
 
 # Add second profile only if ICCID is provided
 if [ -n "$iccidProfile2" ]; then
-    cat >> /etc/quecmanager/imei_config.txt << EOF
+    cat >>/etc/quecmanager/imei_profile/imei_config.txt <<EOF
 iccidProfile2=$iccidProfile2
 imeiProfile2=$imeiProfile2
 EOF
 fi
 
 # Create the imeiProfiles.sh script
-cat > /etc/quecmanager/imeiProfiles.sh << 'EOF'
+cat >/etc/quecmanager/imei_profile/imeiProfiles.sh <<'EOF'
 #!/bin/sh
 
 # Function to read config values
 get_config_value() {
     local key=$1
-    grep "^${key}=" /etc/quecmanager/imei_config.txt | cut -d'=' -f2
+    grep "^${key}=" /etc/quecmanager/imei_profile/imei_config.txt | cut -d'=' -f2
 }
 
 # Read configuration
@@ -108,6 +108,21 @@ get_current_iccid() {
     echo "$iccid"
 }
 
+# Function to get current IMEI
+get_current_imei() {
+    local input_file="/tmp/inputCGSN.txt"
+    local output_file="/tmp/outputCGSN.txt"
+    
+    echo "AT+CGSN" > "$input_file"
+    atinout "$input_file" "/dev/$AT_PORT" "$output_file"
+    
+    # Extract IMEI from the response, removing any whitespace or newlines
+    imei=$(cat "$output_file" | grep -v "AT+CGSN" | grep -v "OK" | tr -d '\r\n[:space:]')
+    
+    rm -f "$input_file" "$output_file"
+    echo "$imei"
+}
+
 # Function to set IMEI
 set_imei() {
     local imei="$1"
@@ -127,45 +142,63 @@ set_imei() {
     fi
 }
 
-# Get current ICCID
+# Get current ICCID and IMEI
 current_iccid=$(get_current_iccid)
+current_imei=$(get_current_imei)
 success=false
+
+echo "Current ICCID: $current_iccid" >> "$DEBUG_LOG"
+echo "Current IMEI: $current_imei" >> "$DEBUG_LOG"
+echo "Profile 1 - ICCID: $iccidProfile1, IMEI: $imeiProfile1" >> "$DEBUG_LOG"
+echo "Profile 2 - ICCID: $iccidProfile2, IMEI: $imeiProfile2" >> "$DEBUG_LOG"
 
 # Check ICCID against profile 1 (required)
 if [ "$current_iccid" = "$iccidProfile1" ]; then
-    if set_imei "$imeiProfile1"; then
+    if [ "$current_imei" != "$imeiProfile1" ]; then
+        echo "ICCID matches profile 1, but IMEI needs updating" >> "$DEBUG_LOG"
+        if set_imei "$imeiProfile1"; then
+            success=true
+        fi
+    else
+        echo "ICCID and IMEI already match profile 1, no action needed" >> "$DEBUG_LOG"
         success=true
     fi
 # Check ICCID against profile 2 (optional)
 elif [ -n "$iccidProfile2" ] && [ "$current_iccid" = "$iccidProfile2" ]; then
-    if set_imei "$imeiProfile2"; then
+    if [ "$current_imei" != "$imeiProfile2" ]; then
+        echo "ICCID matches profile 2, but IMEI needs updating" >> "$DEBUG_LOG"
+        if set_imei "$imeiProfile2"; then
+            success=true
+        fi
+    else
+        echo "ICCID and IMEI already match profile 2, no action needed" >> "$DEBUG_LOG"
         success=true
     fi
 fi
 
 if [ "$success" = "true" ]; then
-    echo "IMEI set successfully" > /tmp/imei_result.txt
+    echo "IMEI check/update completed successfully" > /tmp/imei_result.txt
 else
-    echo "Failed to set IMEI" > /tmp/imei_result.txt
+    echo "Failed to check/update IMEI" > /tmp/imei_result.txt
 fi
 EOF
 
 # Make the script executable
-chmod +x /etc/quecmanager/imeiProfiles.sh
+chmod +x /etc/quecmanager/imei_profile/imeiProfiles.sh
 
 # Add to rc.local if not already present
-if ! grep -q "/etc/quecmanager/imeiProfiles.sh" /etc/rc.local; then
-    sed -i '/^exit 0/i /etc/quecmanager/imeiProfiles.sh' /etc/rc.local
+if ! grep -q "/etc/quecmanager/imei_profile/imeiProfiles.sh" /etc/rc.local; then
+    sed -i '/^exit 0/i /etc/quecmanager/imei_profile/imeiProfiles.sh' /etc/rc.local
 fi
 
 # Run the script immediately
-/etc/quecmanager/imeiProfiles.sh
+/etc/quecmanager/imei_profile/imeiProfiles.sh
 
 # Check the result
 if [ -f /tmp/imei_result.txt ]; then
     result=$(cat /tmp/imei_result.txt)
     rm -f /tmp/imei_result.txt
-    
+
     if [ "$result" = "IMEI set successfully" ]; then
         echo '{"status": "success", "message": "IMEI profiles saved and applied successfully"}'
     else

@@ -18,8 +18,8 @@ append_error() {
 }
 
 # Remove the entire quecmanager directory
-if [ -d "/etc/quecmanager" ]; then
-    rm -rf /etc/quecmanager
+if [ -d "/etc/quecmanager/apn_profile/" ]; then
+    rm -rf /etc/quecmanager/apn_profile/
     if [ $? -ne 0 ]; then
         append_error "Failed to remove quecmanager directory"
     fi

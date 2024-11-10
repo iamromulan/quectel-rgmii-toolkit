@@ -33,12 +33,12 @@ if [ -z "$iccidProfile1" ] || [ -z "$apnProfile1" ] || [ -z "$pdpType1" ]; then
     exit 1
 fi
 
-if [ ! -d /etc/quecmanager ]; then
-    mkdir -p /etc/quecmanager
+if [ ! -d /etc/quecmanager/apn_profile ]; then
+    mkdir -p /etc/quecmanager/apn_profile
 fi
 
 # Create a configuration file to store APN profiles (as plain text)
-cat > /etc/quecmanager/apn_config.txt << EOF
+cat > /etc/quecmanager/apn_profile/apn_config.txt << EOF
 iccidProfile1=$iccidProfile1
 apnProfile1=$apnProfile1
 pdpType1=$pdpType1
@@ -46,7 +46,7 @@ EOF
 
 # Add second profile only if ICCID is provided
 if [ -n "$iccidProfile2" ]; then
-    cat >> /etc/quecmanager/apn_config.txt << EOF
+    cat >> /etc/quecmanager/apn_profile/apn_config.txt << EOF
 iccidProfile2=$iccidProfile2
 apnProfile2=$apnProfile2
 pdpType2=$pdpType2
@@ -54,13 +54,13 @@ EOF
 fi
 
 # Create the apnProfiles.sh script
-cat > /etc/quecmanager/apnProfiles.sh << 'EOF'
+cat > /etc/quecmanager/apn_profile/apnProfiles.sh << 'EOF'
 #!/bin/sh
 
 # Function to read config values
 get_config_value() {
     local key=$1
-    grep "^${key}=" /etc/quecmanager/apn_config.txt | cut -d'=' -f2
+    grep "^${key}=" /etc/quecmanager/apn_profile/apn_config.txt | cut -d'=' -f2
 }
 
 # Read configuration
@@ -164,15 +164,15 @@ fi
 EOF
 
 # Make the script executable
-chmod +x /etc/quecmanager/apnProfiles.sh
+chmod +x /etc/quecmanager/apn_profile/apnProfiles.sh
 
 # Add to rc.local if not already present
-if ! grep -q "/etc/quecmanager/apnProfiles.sh" /etc/rc.local; then
-    sed -i '/^exit 0/i /etc/quecmanager/apnProfiles.sh' /etc/rc.local
+if ! grep -q "/etc/quecmanager/apn_profile/apnProfiles.sh" /etc/rc.local; then
+    sed -i '/^exit 0/i /etc/quecmanager/apn_profile/apnProfiles.sh' /etc/rc.local
 fi
 
 # Run the script immediately
-/etc/quecmanager/apnProfiles.sh
+/etc/quecmanager/apn_profile/apnProfiles.sh
 
 # Check the result
 if [ -f /tmp/apn_result.txt ]; then
