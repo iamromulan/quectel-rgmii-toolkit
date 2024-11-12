@@ -32,7 +32,7 @@ for ipk_file in *.ipk; do
     pkg_name_version_arch=$(echo "$ipk_file" | sed -E 's/.ipk$//')
     pkg_name=$(echo "$pkg_name_version_arch" | cut -d '_' -f 1)
     version=$(echo "$pkg_name_version_arch" | cut -d '_' -f 2)
-    arch=$(echo "$pkg_name_version_arch" | cut -d '_' -f 3)
+    arch=$(echo "$pkg_name_version_arch" | cut -d '_' -f 3-)
 
     # Find the package entry in the Packages file
     pkg_start_line=$(grep -n "^Package: $pkg_name$" "$PACKAGES" | cut -d ':' -f 1)
@@ -51,6 +51,7 @@ for ipk_file in *.ipk; do
             echo "Section: packages"
             echo "Architecture: $arch"
             echo "Maintainer: Placeholder"
+            echo "MD5Sum: $current_md5"
             echo "Size: $current_size"
             echo "Filename: $ipk_file"
             echo "Source: Placeholder"
