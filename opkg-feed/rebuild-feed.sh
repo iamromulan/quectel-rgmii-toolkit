@@ -28,16 +28,37 @@ calculate_md5_and_size() {
 
 # Iterate over each .ipk file in the current directory
 for ipk_file in *.ipk; do
-    # Extract package name and version from the filename
-    pkg_name_version=$(echo "$ipk_file" | sed -E 's/(_[a-zA-Z0-9_]+)?.ipk$//')
-    pkg_name=$(echo "$pkg_name_version" | cut -d '_' -f 1)
-    version=$(echo "$pkg_name_version" | cut -d '_' -f 2)
+    # Extract package name, version, and architecture from the filename
+    pkg_name_version_arch=$(echo "$ipk_file" | sed -E 's/.ipk$//')
+    pkg_name=$(echo "$pkg_name_version_arch" | cut -d '_' -f 1)
+    version=$(echo "$pkg_name_version_arch" | cut -d '_' -f 2)
+    arch=$(echo "$pkg_name_version_arch" | cut -d '_' -f 3)
 
     # Find the package entry in the Packages file
     pkg_start_line=$(grep -n "^Package: $pkg_name$" "$PACKAGES" | cut -d ':' -f 1)
 
     if [ -z "$pkg_start_line" ]; then
-        echo "Package $pkg_name not found in $PACKAGES. Skipping..." | tee -a "$LOGFILE"
+        echo "Package $pkg_name not found in $PACKAGES. Adding as new entry..." | tee -a "$LOGFILE"
+        
+        # Calculate MD5 and size for the new package entry
+        read current_md5 current_size < <(calculate_md5_and_size "$ipk_file")
+
+        # Append a new package entry with placeholders to Packages
+        {
+            echo "Package: $pkg_name"
+            echo "Version: $version"
+            echo "Depends: libc"
+            echo "Section: packages"
+            echo "Architecture: $arch"
+            echo "Maintainer: Placeholder"
+            echo "Size: $current_size"
+            echo "Filename: $ipk_file"
+            echo "Source: Placeholder"
+            echo "Description: Placeholder"
+            echo "License: Placeholder"
+            echo ""
+        } >> "$PACKAGES"
+
         continue
     fi
 
