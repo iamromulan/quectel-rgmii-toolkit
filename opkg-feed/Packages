@@ -111,15 +111,15 @@ License: GPLv3
 
 
 Package: sdxpinn-quecmanager-beta
-Version: 0.0.2
+Version: 0.0.3
 Depends: libc, sdxpinn-mount-fix, atinout
 Conflicts: sdxpinn-quecmanager
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: d15e8c371bedb4de00770fbd3963c3e7
-Size: 694042
-Filename: sdxpinn-quecmanager-beta_0.0.2_aarch64_cortex-a53.ipk
+MD5Sum: 2b83af6635d616c0ae4ea28094c11cae
+Size: 696863
+Filename: sdxpinn-quecmanager-beta_0.0.3_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: BETA: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 License: GPLv3
