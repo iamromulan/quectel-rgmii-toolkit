@@ -1,4 +1,4 @@
-Starting package analysis - Mon Nov 18 10:36:41 PM UTC 2024
+Starting package analysis - Sun Dec  1 04:56:24 AM UTC 2024
 No update needed for atinout (version 0.9.1, MD5: 6c8d3c910477e31940ee7740111a7fdf, size: 4226)
 No update needed for luci-app-atinout-mod (version 1.3.4-20241006, MD5: 2dac55de763333c37dd1728957fc8294, size: 4827)
 No update needed for ookla-speedtest (version 1.2.0, MD5: 2183f2df42a00380e761cace096e17c3, size: 1075762)
@@ -6,8 +6,8 @@ No update needed for sdxpinn-console-menu (version 0.0.2, MD5: 42d2fd4c85b36a9c2
 No update needed for sdxpinn-mount-fix (version 1.1.0, MD5: f8e8f830a7ba794d3d090c206df2b729, size: 29357)
 No update needed for sdxpinn-quecmanager (version 0.0.3, MD5: c8fc47f8c59a6fc27955fccf0ff7c383, size: 661511)
 Updating package info for sdxpinn-quecmanager-beta...
-Updated sdxpinn-quecmanager-beta to version 0.0.7 with MD5: c732cb4ff492759f9e739a0a742573d9 and size: 706830
+Updated sdxpinn-quecmanager-beta to version 0.0.8 with MD5: b70d8c6f82f92c4f2c3411788019dd52 and size: 710686
 No update needed for tailscale (version 1.76.1-2, MD5: b19952ce72aba5447d4eaa90ca270766, size: 9440096)
 No update needed for tailscaled (version 1.76.1-1, MD5: 5785492476bb7c205e02bd8f7b3eeb50, size: 17506056)
 Package file and signature updated successfully.
-Package analysis completed - Mon Nov 18 10:36:41 PM UTC 2024
+Package analysis completed - Sun Dec  1 04:56:24 AM UTC 2024
