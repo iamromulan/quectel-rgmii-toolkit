@@ -226,17 +226,17 @@ mtu_setup() {
       > "$mtu_file"
     elif [[ "$response" =~ ^[0-9]+$ ]]; then
       echo "Setting MTU override to $response..."
-      # Write the dynamic MTU script to the configuration file
-      {
-        echo "for iface in \$(ls /sys/class/net | grep '^rmnet_data'); do"
-        echo "    ip link set \$iface mtu $response"
-        echo "done"
-      } > "$mtu_file"
+      # Write single commands for each interface to the configuration file
+      > "$mtu_file" # Clear the file
+      for iface in $(ls /sys/class/net | grep '^rmnet_data'); do
+        echo "ip link set $iface mtu $response" >> "$mtu_file"
+      done
     else
       echo "Invalid input. Please enter a number, 'exit', or '0'."
     fi
   done
 }
+
 
 
 
