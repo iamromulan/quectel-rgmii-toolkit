@@ -34,6 +34,16 @@ current_retries=$(get_config_value "CURRENT_RETRIES")
 connection_refresh=$(get_config_value "CONNECTION_REFRESH")
 refresh_count=$(get_config_value "REFRESH_COUNT")
 
+# New configuration options
+mobile_data_reconnect=$(get_config_value "MOBILE_DATA_RECONNECT")
+auto_sim_failover=$(get_config_value "AUTO_SIM_FAILOVER")
+sim_failover_schedule=$(get_config_value "SIM_FAILOVER_SCHEDULE")
+
+# Default values if not set
+mobile_data_reconnect=${mobile_data_reconnect:-false}
+auto_sim_failover=${auto_sim_failover:-false}
+sim_failover_schedule=${sim_failover_schedule:-30}
+
 # Check monitoring script existence
 QUECWATCH_SCRIPT="/etc/quecmanager/quecwatch/quecwatch.sh"
 if [ ! -f "$QUECWATCH_SCRIPT" ]; then
@@ -59,7 +69,10 @@ cat <<EOF
         "maxRetries": ${max_retries},
         "currentRetries": ${current_retries},
         "connectionRefresh": ${connection_refresh},
-        "refreshCount": ${refresh_count:-0}
+        "refreshCount": ${refresh_count:-0},
+        "mobileDataReconnect": ${mobile_data_reconnect},
+        "autoSimFailover": ${auto_sim_failover},
+        "simFailoverSchedule": ${sim_failover_schedule}
     },
     "lastActivity": "${last_log}"
 }
