@@ -210,7 +210,7 @@ mtu_setup() {
     if [ ! -s "$mtu_file" ]; then
       echo -e "\e[31mMTU override is not set. Default MTU is applied at boot.\e[0m"
     else
-      current_mtu=$(grep 'ip link set' "$mtu_file" | awk '{print $5}')
+      current_mtu=$(awk '/ip link set/ {print $6; exit}' "$mtu_file")
       echo -e "\e[32mCurrent MTU override: $current_mtu\e[0m"
     fi
 
