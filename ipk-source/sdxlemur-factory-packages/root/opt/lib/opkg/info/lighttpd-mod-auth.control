@@ -1,0 +1,15 @@
+Package: lighttpd-mod-auth
+Version: 1.4.76-2
+Depends: libc, libssp, librt, libpthread, lighttpd, libnettle
+Source: feeds/packages/net/lighttpd
+SourceName: lighttpd
+License: BSD-3-Clause
+LicenseFiles: COPYING
+Section: net
+SourceDateEpoch: 1720617668
+URL: https://www.lighttpd.net/
+CPE-ID: cpe:/a:lighttpd:lighttpd
+Maintainer: Glenn Strauss <gstrauss@gluelogic.com>
+Architecture: armv7-3.2
+Installed-Size: 40960
+Description:  Authentication module

@@ -1,0 +1,15 @@
+Package: libexpat
+Version: 2.6.2-1
+Depends: libc, libssp, librt, libpthread
+Source: feeds/packages/libs/expat
+SourceName: expat
+License: MIT
+LicenseFiles: COPYING
+Section: libs
+SourceDateEpoch: 1720611676
+URL: https://libexpat.github.io/
+CPE-ID: cpe:/a:libexpat_project:libexpat
+Maintainer: Ted Hess <thess@kitschensync.net>
+Architecture: armv7-3.2
+Installed-Size: 143360
+Description:  A fast, non-validating, stream-oriented XML parsing library.

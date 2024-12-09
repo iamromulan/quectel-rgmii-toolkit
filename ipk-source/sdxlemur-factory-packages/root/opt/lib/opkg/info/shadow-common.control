@@ -1,0 +1,14 @@
+Package: shadow-common
+Version: 4.8.1-3b
+Depends: libc, libssp, librt, libpthread, libiconv-full, libintl-full
+Source: feeds/packages/utils/shadow
+SourceName: shadow
+License: BSD-3-Clause
+LicenseFiles: COPYING
+Section: utils
+SourceDateEpoch: 1716287455
+URL: https://github.com/shadow-maint/shadow
+CPE-ID: cpe:/a:debian:shadow
+Architecture: armv7-3.2
+Installed-Size: 20480
+Description:  Shared definitions for the PLD Linux shadow utilities

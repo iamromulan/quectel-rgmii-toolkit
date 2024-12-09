@@ -1,0 +1,14 @@
+Package: dfc
+Version: 3.1.1-1
+Depends: libc, libssp, librt, libpthread
+Source: feeds/rtndev/dfc
+SourceName: dfc
+Section: utils
+SourceDateEpoch: 1708601332
+URL: https://github.com/rolinh/dfc
+Maintainer: Entware team, https://entware.net
+Architecture: armv7-3.2
+Installed-Size: 51200
+Description:  dfc displays file system space usage using graphs and colors. In some ways,
+ it is a modernized version of df as it is able to use colors, draw graphs and
+ export its output to different formats such as CSV or HTML.

@@ -67,16 +67,6 @@ fi
 echo -e '\033[32mInfo: Creating /opt mount pointed to /usrdata/opt ...\033[0m'
 create_opt_mount
 echo -e '\033[32mInfo: Proceeding with main installation ...\033[0m'
-# no need to create many folders. entware-opt package creates most
-for folder in bin etc lib/opkg tmp var/lock
-do
-  if [ -d "/opt/$folder" ]; then
-    echo -e '\033[31mWarning: Folder /opt/$folder exists!\033[0m'
-    echo -e '\033[31mWarning: If something goes wrong please clean /opt folder and try again.\033[0m'
-  else
-    mkdir -p /opt/$folder
-  fi
-done
 
 echo -e '\033[32mInfo: Opkg package manager deployment...\033[0m'
 URL=http://bin.entware.net/${ARCH}/installer

@@ -1,0 +1,467 @@
+Package: terminfo
+Version: 6.4-3
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807818
+Auto-Installed: yes
+
+Package: libc
+Version: 2.27-11
+Depends: libgcc
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807811
+Auto-Installed: yes
+
+Package: lighttpd-mod-openssl
+Version: 1.4.76-2
+Depends: libc, libssp, librt, libpthread, lighttpd, libopenssl
+Status: install user installed
+Architecture: armv7-3.2
+Conffiles:
+ /opt/etc/lighttpd/conf.d/30-openssl.conf cbedc1d748ded4196ec76bc35c9ff14b9977905548777cf0fe03e429860a8039
+Installed-Time: 1724807947
+
+Package: locales
+Version: 2.27-9
+Depends: libc, libssp, librt, libpthread, grep
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807821
+Auto-Installed: yes
+
+Package: entware-upgrade
+Version: 1.0-1
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: all
+Installed-Time: 1724807823
+Auto-Installed: yes
+
+Package: opkg
+Version: 2022.02.24~d038e5b6-2
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807822
+Auto-Installed: yes
+
+Package: libpthread
+Version: 2.27-11
+Depends: libgcc
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807812
+Auto-Installed: yes
+
+Package: zoneinfo-europe
+Version: 2024a-1
+Depends: libc, libssp, librt, libpthread, zoneinfo-core
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807816
+Auto-Installed: yes
+
+Package: lighttpd-mod-cgi
+Version: 1.4.76-2
+Depends: libc, libssp, librt, libpthread, lighttpd
+Status: install user installed
+Architecture: armv7-3.2
+Conffiles:
+ /opt/etc/lighttpd/conf.d/30-cgi.conf 7ce3426b6732ded36a4405e7295c805f9b5b6657d151b6e6e4b06088d76e0872
+Installed-Time: 1724807943
+
+Package: libatomic
+Version: 8.4.0-11
+Depends: libgcc
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807945
+Auto-Installed: yes
+
+Package: lsof
+Version: 4.99.0-1
+Depends: libc, libssp, librt, libpthread, libtirpc
+Status: install user installed
+Architecture: armv7-3.2
+Installed-Time: 1724807876
+
+Package: glib2
+Version: 2.80.3-1
+Depends: libc, libssp, librt, libpthread, libiconv-full, libintl-full, zlib, libpthread, libffi, libattr, libpcre2
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807864
+Auto-Installed: yes
+
+Package: libssh2
+Version: 1.11.0-1
+Depends: libc, libssp, librt, libpthread, libmbedtls, zlib
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807871
+Auto-Installed: yes
+
+Package: lighttpd-mod-authn_file
+Version: 1.4.76-2
+Depends: libc, libssp, librt, libpthread, lighttpd, lighttpd-mod-auth, libnettle
+Status: install user installed
+Architecture: armv7-3.2
+Conffiles:
+ /opt/etc/lighttpd/conf.d/20-authn_file.conf 8367afa989f6b08d1483b6119b70f0d5d6332a41dc8862b20ddbf360864011b9
+Installed-Time: 1724807943
+
+Package: mc
+Version: 4.8.31-1
+Depends: libc, libssp, librt, libpthread, glib2, libslang2, libmount, libe2p, libssh2, libiconv-full
+Status: install user installed
+Architecture: armv7-3.2
+Conffiles:
+ /opt/etc/mc/mc.menu c27296bdf60aa3734fa5d7355a1d7b2c59ca49bdd15d7b16d946bd3b09206dcf
+Installed-Time: 1724807871
+
+Package: grep
+Version: 3.11-1
+Depends: libc, libssp, librt, libpthread, libpcre2
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807820
+Auto-Installed: yes
+Alternatives: 300:/opt/bin/egrep:/opt/libexec/egrep-gnu, 300:/opt/bin/fgrep:/opt/libexec/fgrep-gnu, 300:/opt/bin/grep:/opt/libexec/grep-gnu
+
+Package: zoneinfo-asia
+Version: 2024a-1
+Depends: libc, libssp, librt, libpthread, zoneinfo-core
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807815
+Auto-Installed: yes
+
+Package: lighttpd-mod-proxy
+Version: 1.4.76-2
+Depends: libc, libssp, librt, libpthread, lighttpd
+Status: install user installed
+Architecture: armv7-3.2
+Conffiles:
+ /opt/etc/lighttpd/conf.d/30-proxy.conf 22ce54a7a4cf8b8e52ce06a5b485a0e444e67865ad044f68e8262d9708e6cfd2
+Installed-Time: 1724807948
+
+Package: libnettle
+Version: 3.9.1-1
+Depends: libc, libssp, librt, libpthread, libgmp
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807942
+Auto-Installed: yes
+
+Package: libblkid
+Version: 2.40.1-1
+Depends: libc, libssp, librt, libpthread, libuuid
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807867
+Auto-Installed: yes
+
+Package: libmbedtls
+Version: 3.6.0-1
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807870
+Auto-Installed: yes
+
+Package: libiconv-full
+Version: 1.17-1
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807843
+Auto-Installed: yes
+
+Package: libaprutil
+Version: 1.6.3-1
+Depends: libc, libssp, librt, libpthread, libapr, libexpat, libuuid, libiconv-full
+Status: install user installed
+Architecture: armv7-3.2
+Installed-Time: 1724807915
+
+Package: shadow-useradd
+Version: 4.8.1-3b
+Depends: libc, libssp, librt, libpthread, shadow-common
+Status: install user installed
+Architecture: armv7-3.2
+Installed-Time: 1724807846
+
+Package: lighttpd
+Version: 1.4.76-2
+Depends: libc, libssp, librt, libpthread, libpthread, libpcre2, libnettle
+Status: install user installed
+Architecture: armv7-3.2
+Conffiles:
+ /opt/etc/lighttpd/lighttpd.conf a445465f0e6193ca32af65c9b9939ae05323bf6d2e1a23e6b73c451ec5962308
+Installed-Time: 1724807942
+
+Package: shadow-passwd
+Version: 4.8.1-3b
+Depends: libc, libssp, librt, libpthread, shadow-common
+Status: install user installed
+Architecture: armv7-3.2
+Installed-Time: 1724807845
+Alternatives: 300:/opt/bin/passwd:/opt/libexec/passwd-shadow
+
+Package: dfc
+Version: 3.1.1-1
+Depends: libc, libssp, librt, libpthread
+Status: install user installed
+Architecture: armv7-3.2
+Installed-Time: 1724807874
+
+Package: libpcre2
+Version: 10.42-1
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807819
+Auto-Installed: yes
+
+Package: zoneinfo-core
+Version: 2024a-1
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807815
+Auto-Installed: yes
+
+Package: libstdcpp
+Version: 8.4.0-11
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807814
+Auto-Installed: yes
+
+Package: libgcc
+Version: 8.4.0-11
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807809
+Auto-Installed: yes
+
+Package: sudo
+Version: 1.8.31-1
+Depends: libc, libssp, librt, libpthread
+Status: install user installed
+Architecture: armv7-3.2
+Conffiles:
+ /opt/etc/sudoers 398a242fe6c35e0f23b0be794f777b1a75ada7c525e65561020f37d7190f1081
+Installed-Time: 1724807939
+
+Package: libslang2
+Version: 2.3.3-2
+Depends: libc, libssp, librt, libpthread, terminfo
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807866
+Auto-Installed: yes
+
+Package: libffi
+Version: 3.4.6-1
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807862
+Auto-Installed: yes
+
+Package: libuuid
+Version: 2.40.1-1
+Depends: libc, libssp, librt, libpthread, librt
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807866
+Auto-Installed: yes
+
+Package: libapr
+Version: 1.7.4-1
+Depends: libc, libssp, librt, libpthread, libpthread, librt, libuuid
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807914
+Auto-Installed: yes
+
+Package: librt
+Version: 2.27-11
+Depends: libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807812
+Auto-Installed: yes
+
+Package: entware-release
+Version: 2024.07-1
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: all
+Installed-Time: 1724807814
+Auto-Installed: yes
+
+Package: libintl-full
+Version: 0.22.5-1
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807844
+Auto-Installed: yes
+
+Package: libncurses
+Version: 6.4-3
+Depends: libc, libssp, librt, libpthread, libncursesw
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807874
+Auto-Installed: yes
+
+Package: libmount
+Version: 2.40.1-1
+Depends: libc, libssp, librt, libpthread, libblkid
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807868
+Auto-Installed: yes
+
+Package: zlib
+Version: 1.3.1-1
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807861
+Auto-Installed: yes
+
+Package: libncursesw
+Version: 6.4-3
+Depends: libc, libssp, librt, libpthread, terminfo
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807873
+Auto-Installed: yes
+
+Package: findutils
+Version: 4.10.0-1
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807817
+Auto-Installed: yes
+Alternatives: 300:/opt/bin/find:/opt/libexec/find-gnu, 300:/opt/bin/xargs:/opt/libexec/xargs-gnu
+
+Package: htop
+Version: 3.3.0-2
+Depends: libc, libssp, librt, libpthread, libncurses
+Status: install user installed
+Architecture: armv7-3.2
+Installed-Time: 1724807874
+
+Package: lighttpd-mod-auth
+Version: 1.4.76-2
+Depends: libc, libssp, librt, libpthread, lighttpd, libnettle
+Status: install user installed
+Architecture: armv7-3.2
+Conffiles:
+ /opt/etc/lighttpd/conf.d/20-auth.conf 6502aba9ef04d9305bedc9a313ca8d890634434482694ae814a210665f6c99bd
+Installed-Time: 1724807943
+
+Package: libssp
+Version: 8.4.0-11
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807811
+Auto-Installed: yes
+
+Package: libe2p
+Version: 1.47.0-2
+Depends: libc, libssp, librt, libpthread, libuuid
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807869
+Auto-Installed: yes
+
+Package: libgmp
+Version: 6.3.0-1
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807941
+Auto-Installed: yes
+
+Package: libexpat
+Version: 2.6.2-1
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807915
+Auto-Installed: yes
+
+Package: shadow-login
+Version: 4.8.1-3b
+Depends: libc, libssp, librt, libpthread, shadow-common
+Status: install user installed
+Architecture: armv7-3.2
+Installed-Time: 1724807844
+Alternatives: 300:/opt/bin/login:/opt/libexec/login-shadow
+
+Package: entware-opt
+Version: 227000-3
+Depends: libc, libssp, librt, libpthread, libgcc, libstdcpp, libpthread, librt, entware-release, zoneinfo-asia, zoneinfo-europe, findutils, terminfo, locales, opkg, entware-upgrade
+Conflicts: opt-ndmsv2
+Status: install user installed
+Architecture: all
+Conffiles:
+ /opt/etc/group.1 d0e5f0d86ff4c7027efd7bf0196c95a73e6b4407d6870ed36f969ff75d633d88
+ /opt/etc/passwd.1 e26f51b6cf450fed85cf6179e323e894ea413ccf913c8c9d3a230fd520e4ab19
+ /opt/etc/profile f3273b58a3f62d1a4216c2fab30c36f17b16fc97324119a62cf2ba68f3c75ffb
+ /opt/etc/shells.1 126b0362dce578a66ffe803a04e15dec74a854dd0786dcb004b5789fdde8781d
+Installed-Time: 1724807823
+
+Package: libtirpc
+Version: 1.3.4-1
+Depends: libc, libssp, librt, libpthread, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807876
+Auto-Installed: yes
+
+Package: libattr
+Version: 2.5.2-3
+Depends: libc, libssp, librt, libpthread
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807862
+Auto-Installed: yes
+
+Package: vsftpd
+Version: 3.0.5-2
+Depends: libc, libssp, librt, libpthread
+Conflicts: vsftpd-ext
+Status: install user installed
+Architecture: armv7-3.2
+Conffiles:
+ /opt/etc/vsftpd/vsftpd.conf 0cb17bd90a54f2a71a95f48f15e692ce30a4a470fc696df175b9efcc0d5cfddf
+ /opt/etc/vsftpd/vsftpd.conf 0cb17bd90a54f2a71a95f48f15e692ce30a4a470fc696df175b9efcc0d5cfddf
+Installed-Time: 1733767303
+
+Package: libopenssl
+Version: 3.0.14-2
+Depends: libc, libssp, librt, libpthread, zlib, libatomic
+Status: install ok installed
+Architecture: armv7-3.2
+Installed-Time: 1724807947
+Auto-Installed: yes
+
+Package: shadow-common
+Version: 4.8.1-3b
+Depends: libc, libssp, librt, libpthread, libiconv-full, libintl-full
+Status: install ok installed
+Architecture: armv7-3.2
+Conffiles:
+ /opt/etc/login.defs 283379b26b2628c6dc37dbf876ccf9f29f0cd1a966f98a705041d417a6fb40c8
+Installed-Time: 1724807844
+Auto-Installed: yes
+

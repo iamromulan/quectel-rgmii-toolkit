@@ -1,0 +1,11 @@
+/opt/lib/sudo/group_file.so
+/opt/bin/sudo
+/opt/lib/sudo/sudo_noexec.so
+/opt/sbin/visudo
+/opt/lib/sudo/libsudo_util.so.0
+/opt/lib/sudo/sudoers.so
+/opt/lib/sudo/libsudo_util.so
+/opt/lib/sudo/system_group.so
+/opt/lib/sudo/libsudo_util.so.0.0.0
+/opt/etc/sudoers
+/opt/lib/upgrade/keep.d/sudo

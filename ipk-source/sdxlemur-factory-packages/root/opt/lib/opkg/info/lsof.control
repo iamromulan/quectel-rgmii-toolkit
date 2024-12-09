@@ -1,0 +1,14 @@
+Package: lsof
+Version: 4.99.0-1
+Depends: libc, libssp, librt, libpthread, libtirpc
+Source: feeds/packages/utils/lsof
+SourceName: lsof
+License: lsof
+LicenseFiles: COPYING
+Section: utils
+SourceDateEpoch: 1716287455
+URL: http://people.freebsd.org/~abe/
+Maintainer: Maxim Storchak <m.storchak@gmail.com>
+Architecture: armv7-3.2
+Installed-Size: 163840
+Description:  LiSt Open Files - a diagnostic tool

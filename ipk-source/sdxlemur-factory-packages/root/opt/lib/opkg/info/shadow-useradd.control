@@ -1,0 +1,15 @@
+Package: shadow-useradd
+Version: 4.8.1-3b
+Depends: libc, libssp, librt, libpthread, shadow-common
+Source: feeds/packages/utils/shadow
+SourceName: shadow
+License: BSD-3-Clause
+LicenseFiles: COPYING
+Section: utils
+SourceDateEpoch: 1716287455
+URL: https://github.com/shadow-maint/shadow
+CPE-ID: cpe:/a:debian:shadow
+Architecture: armv7-3.2
+Installed-Size: 102400
+Description:  Full version of standard useradd utility. Normally, you would not use this
+ package, since the functionality in BusyBox is more than sufficient.

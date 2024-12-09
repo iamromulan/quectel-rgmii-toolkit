@@ -1,0 +1,2 @@
+/opt/lib/lighttpd/mod_auth.so
+/opt/etc/lighttpd/conf.d/20-auth.conf
