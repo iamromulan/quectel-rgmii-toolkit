@@ -69,14 +69,14 @@ License: GPLv3
 
 
 Package: sdxpinn-quecmanager
-Version: 0.0.3
+Version: 1.0.0
 Depends: libc, sdxpinn-mount-fix, atinout
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: c8fc47f8c59a6fc27955fccf0ff7c383
-Size: 661511
-Filename: sdxpinn-quecmanager_0.0.3_aarch64_cortex-a53.ipk
+MD5Sum: 85269b0853b05270ad962d8c1a774b74
+Size: 715271
+Filename: sdxpinn-quecmanager_1.0.0_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 License: GPLv3
@@ -111,15 +111,15 @@ License: GPLv3
 
 
 Package: sdxpinn-quecmanager-beta
-Version: 0.0.9
+Version: 1.0.0
 Depends: libc, sdxpinn-mount-fix, atinout
 Conflicts: sdxpinn-quecmanager
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: cfc95805c4a7f4119c3a83aa5d4435d5
-Size: 741404
-Filename: sdxpinn-quecmanager-beta_0.0.9_aarch64_cortex-a53.ipk
+MD5Sum: ed9087510c9c6ec6274badd99ab9eaf0
+Size: 715267
+Filename: sdxpinn-quecmanager-beta_1.0.0_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: BETA: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 License: GPLv3
