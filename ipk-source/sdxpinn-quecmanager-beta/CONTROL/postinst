@@ -2,5 +2,19 @@
 
 mv /www/index.html /www/index.html.old
 cp /www/login.html /www/index.html
+
+# Check if log_signal_metrics.sh is set to start in rc.local and add if not
+grep -qxF "/www/cgi-bin/home/log_signal_metrics.sh &" /etc/rc.local || \
+sed -i '/^exit 0/i /www/cgi-bin/home/log_signal_metrics.sh &' /etc/rc.local
+
+
+# Check if log_signal_metrics.sh is already running
+if ! pgrep -f "/www/cgi-bin/home/log_signal_metrics.sh" > /dev/null; then
+    echo "Starting log_signal_metrics.sh..."
+    /www/cgi-bin/home/log_signal_metrics.sh &
+else
+    echo "log_signal_metrics.sh is already running. Skipping start."
+fi
+
 exit 0
 

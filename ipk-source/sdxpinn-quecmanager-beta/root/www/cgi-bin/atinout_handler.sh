@@ -77,9 +77,6 @@ ESCAPED_COMMAND=$(echo "$COMMAND" | sed 's/"/\\"/g')
 # Create the JSON response
 JSON_RESPONSE=$(printf "{\"command\":\"%s\",\"output\":\"%s\"}" "$ESCAPED_COMMAND" "$ESCAPED_OUTPUT")
 
-# Log the JSON response to the debug log
-echo "$JSON_RESPONSE" >> /tmp/cgi_debug.log
-
 # Return the output as a valid JSON response
 echo "$JSON_RESPONSE"
 
