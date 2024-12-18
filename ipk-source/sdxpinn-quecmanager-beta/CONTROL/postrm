@@ -1,5 +1,30 @@
 #!/bin/ash
 
 mv /www/index.html.old /www/index.html
+
+# Check if log_signal_metrics.sh is in rc.local and remove it
+sed -i '/\/www\/cgi-bin\/home\/log_signal_metrics\.sh &/d' /etc/rc.local
+
+
+# Check if log_signal_metrics.sh is running and kill it
+
+PID=$(pgrep -f "/www/cgi-bin/home/log_signal_metrics.sh")
+
+if [ -n "$PID" ]; then
+    echo "Stopping log_signal_metrics.sh (PID: $PID)..."
+
+    # Kill the process
+    kill -TERM "$PID"
+
+    if [ $? -eq 0 ]; then
+        echo "Successfully stopped log_signal_metrics.sh."
+    else
+        echo "Failed to stop log_signal_metrics.sh."
+    fi
+else
+    echo "log_signal_metrics.sh is not running. Nothing to stop."
+fi
+
+
 exit 0
 
