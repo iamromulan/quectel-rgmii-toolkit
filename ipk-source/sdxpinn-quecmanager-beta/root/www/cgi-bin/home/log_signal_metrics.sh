@@ -24,7 +24,7 @@ log_signal_metric() {
     TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
    
     # Run the AT command and capture its output, then clean it
-    SIGNAL_OUTPUT=$(echo "$COMMAND" | atinout - /dev/smd11 - | clean_atinout_output)
+    SIGNAL_OUTPUT=$(echo "$COMMAND" | atinout - /dev/smd7 - | clean_atinout_output)
    
     # Ensure the file exists and is a valid JSON array
     if [ ! -s "$LOGFILE" ]; then
