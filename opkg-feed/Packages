@@ -112,7 +112,7 @@ License: GPLv3
 
 Package: sdxpinn-quecmanager-beta
 Version: 1.0.2
-Depends: libc, sdxpinn-mount-fix, atinout
+Depends: libc, sdxpinn-mount-fix, atinout, jq, ookla-speedtest
 Conflicts: sdxpinn-quecmanager
 Section: admin
 Architecture: aarch64_cortex-a53
