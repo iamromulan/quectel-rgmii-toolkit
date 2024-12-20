@@ -1,0 +1,4 @@
+root@sdxlemur:~# fndfiles
+Checking for files in /lib and /usr/lib...
+MISSING: libstdc++.so.6.0.25
+FOUND: /usr/lib/libstdc++.so.6

@@ -1,0 +1,8 @@
+Package: sdxlemur-factory-packages
+Version: 0.0.1
+Source: github/iamromulan/tookit/sdxlemur-factory-packages
+Section: base
+URL: https://github.com/iamromulan
+Maintainer: Cameron Thompson <github.com/iamromulan>
+Architecture: sdxlemur
+Description: An index of packages already included in the flashed firmware

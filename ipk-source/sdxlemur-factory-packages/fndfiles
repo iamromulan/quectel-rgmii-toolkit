@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# List of base file names to check
+files=(
+  "libgmodule-2.0.so.0"
+  "libgmodule-2.0.so.0.8000.3"
+  "libglib-2.0.so.0"
+  "libgirepository-2.0.so.0.8000.3"
+  "libgthread-2.0.so.0.8000.3"
+  "libgthread-2.0.so.0"
+  "libgio-2.0.so"
+  "libgobject-2.0.so"
+  "libgirepository-2.0.so.0"
+  "libgobject-2.0.so.0.8000.3"
+  "libgmodule-2.0.so"
+  "libglib-2.0.so"
+  "libgio-2.0.so.0.8000.3"
+  "libgio-2.0.so.0"
+  "libgobject-2.0.so.0"
+  "libgthread-2.0.so"
+  "libglib-2.0.so.0.8000.3"
+  "libgirepository-2.0.so"
+)
+
+# Directories to check
+check_dirs=("/lib" "/usr/lib")
+
+echo "Checking for files in /lib and /usr/lib..."
+
+# Loop through each file and check existence
+for file in "${files[@]}"; do
+  found=false
+
+  for dir in "${check_dirs[@]}"; do
+    if [ -e "$dir/$file" ]; then
+      echo "FOUND: $dir/$file"
+      found=true
+      break
+    fi
+  done
+
+  if [ "$found" = false ]; then
+    echo "MISSING: $file"
+  fi
+done
+

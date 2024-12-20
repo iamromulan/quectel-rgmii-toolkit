@@ -1,0 +1,3 @@
+root@sdxlemur:~# fndfiles
+Checking for files in /lib and /usr/lib...
+FOUND: /lib/libgcc_s.so.1

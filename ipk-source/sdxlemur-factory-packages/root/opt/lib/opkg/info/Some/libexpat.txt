@@ -1,0 +1,4 @@
+root@sdxlemur:~# fndfiles
+Checking for files in /lib and /usr/lib...
+FOUND: /usr/lib/libexpat.so.1
+MISSING: libexpat.so.1.9.2

@@ -1,0 +1,6 @@
+root@sdxlemur:~# fndfiles
+Checking for files in /lib and /usr/lib...
+FOUND: /usr/lib/libattr.so.1
+MISSING: libattr.so.1.1.2502
+MISSING: xattr.conf
+MISSING: libattr.so

@@ -1,0 +1,4 @@
+root@sdxlemur:~# fndfiles
+Checking for files in /lib and /usr/lib...
+FOUND: /lib/libpthread.so.0
+MISSING: libpthread-2.27.so
