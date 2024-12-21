@@ -1,14 +1,14 @@
 #!/bin/sh
 
 # Ensure the directory exists
-LOGDIR="/tmp/signal_graphs"
+LOGDIR="/www/signal_graphs"
 mkdir -p "$LOGDIR"
 
 # Maximum number of entries
 MAX_ENTRIES=10
 
 # Interval between logs (in seconds)
-INTERVAL=25
+INTERVAL=15
 
 # Function to clean and extract actual output from atinout
 clean_atinout_output() {
@@ -66,7 +66,7 @@ log_data_usage() {
     TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
     
     # Run the AT command and capture its output, then clean it
-    DATA_OUTPUT=$(echo "AT+QGDCNT?;+QGDNRCNT?" | atinout - /dev/smd7 - | clean_atinout_output)
+    DATA_OUTPUT=$(echo "AT+QGDCNT?;+QGDNRCNT?" | atinout - /dev/smd11 - | clean_atinout_output)
     
     # Ensure the file exists and is a valid JSON array
     if [ ! -s "$LOGFILE" ]; then

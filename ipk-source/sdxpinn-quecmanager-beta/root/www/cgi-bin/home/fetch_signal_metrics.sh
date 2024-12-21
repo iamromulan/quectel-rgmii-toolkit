@@ -5,7 +5,7 @@ echo "Content-Type: application/json"
 echo ""
 
 # Directory where JSON files are stored (adjust as needed)
-JSON_DIR="/tmp/signal_graphs/"
+JSON_DIR="/www/signal_graphs/"
 
 # Function to safely read JSON file
 read_json_file() {
