@@ -1,14 +1,14 @@
 #!/bin/sh
 
 # Ensure the directory exists
-LOGDIR="/tmp/signal_graphs"
+LOGDIR="/www/signal_graphs"
 mkdir -p "$LOGDIR"
 
 # Maximum number of entries
 MAX_ENTRIES=10
 
 # Interval between logs (in seconds)
-INTERVAL=25
+INTERVAL=15
 
 # Function to clean and extract actual output from atinout
 clean_atinout_output() {
