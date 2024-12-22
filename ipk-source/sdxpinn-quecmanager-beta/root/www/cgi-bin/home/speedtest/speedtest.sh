@@ -6,3 +6,6 @@ export HOME=/tmp/home
 
 # Run speedtest in background
 /usr/bin/speedtest --accept-license -f json -p yes --progress-update-interval=100 > /tmp/realtime_spd.json
+
+# Remove named pipe
+rm /tmp/realtime_spd.json

@@ -22,7 +22,7 @@ BEGIN {
         alreadyAdded[$0] = 1
         next
     }
-    if (/^# Put your custom commands here/) {
+    if (/^# the system init finished. By default/) {
         print
         if (!added) {
             for (i in cmdArr) if (!alreadyAdded[cmdArr[i]]) {
