@@ -34,4 +34,5 @@ if ! echo "AT+CMGL=\"ALL\"" | atinout - /dev/smd7 - | jq -R -s '
     exit 1
 fi
 
-echo "SMS initialization completed successfully"
+# Exit successfully
+exit 0

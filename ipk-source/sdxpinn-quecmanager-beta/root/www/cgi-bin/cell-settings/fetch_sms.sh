@@ -16,18 +16,19 @@ if [ ! -c "/dev/smd7" ]; then
     exit 1
 fi
 
-# Fetch all SMS messages and update the JSON file
-if ! echo "AT+CMGL=\"ALL\"" | atinout - /dev/smd7 - | jq -R -s '
-    split("\n") |
-    map(select(length > 0)) |
-    map(
-        select(startswith("+CMGL:") or (. != "OK" and . != "ERROR"))
-    ) |
-    {messages: .}
-' > /tmp/sms_inbox.json; then
-    echo '{"error": "Failed to fetch SMS messages"}'
-    exit 1
-fi
+# # Fetch all SMS messages and update the JSON file
+# Disabled until the atinout bug is fixed
+# if ! echo "AT+CMGL=\"ALL\"" | atinout - /dev/smd7 - | jq -R -s '
+#     split("\n") |
+#     map(select(length > 0)) |
+#     map(
+#         select(startswith("+CMGL:") or (. != "OK" and . != "ERROR"))
+#     ) |
+#     {messages: .}
+# ' > /tmp/sms_inbox.json; then
+#     echo '{"error": "Failed to fetch SMS messages"}'
+#     exit 1
+# fi
 
 # Return the contents of the JSON file
 if [ -f "/tmp/sms_inbox.json" ]; then
