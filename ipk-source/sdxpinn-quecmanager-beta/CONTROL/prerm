@@ -18,7 +18,6 @@ fi
 # Define a list of scripts to check and stop
 SCRIPTS="
 /www/cgi-bin/home/log_signal_metrics.sh
-/www/cgi-bin/settings/change_sms_code.sh
 "
 
 # Loop through each script, check if it's running, and kill it if necessary

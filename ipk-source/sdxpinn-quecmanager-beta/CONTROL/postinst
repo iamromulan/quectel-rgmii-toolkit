@@ -5,7 +5,7 @@ mv /www/index.html /www/index.html.old
 cp /www/login.html /www/index.html
 
 # Define the commands to add to rc.local
-COMMANDS="/www/cgi-bin/settings/change_sms_code.sh &
+COMMANDS="/www/cgi-bin/settings/change_sms_code.sh
 /www/cgi-bin/home/log_signal_metrics.sh &"
 
 # Create a new rc.local with commands correctly placed
@@ -57,7 +57,7 @@ fi
 # Ensure change_sms_code.sh is running
 if ! pgrep -f "/www/cgi-bin/settings/change_sms_code.sh" > /dev/null; then
     echo "Starting change_sms_code.sh..."
-    /www/cgi-bin/settings/change_sms_code.sh &
+    /www/cgi-bin/settings/change_sms_code.sh
 else
     echo "change_sms_code.sh is already running. Skipping start."
 fi
