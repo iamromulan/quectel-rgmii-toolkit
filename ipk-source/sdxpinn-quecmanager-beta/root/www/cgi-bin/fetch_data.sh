@@ -23,6 +23,8 @@ define_command_sets() {
     COMMAND_SET_5='AT+QRSRP AT+QRSRQ AT+QSINR AT+QCAINFO AT+QSPN'
 
     COMMAND_SET_6='AT+CEREG=2;+CEREG? AT+C5GREG=2;+C5GREG? AT+CPIN? AT+CGDCONT? AT+CGCONTRDP AT+QMAP="WWAN" AT+QRSRP AT+QTEMP AT+QNETRC?'
+
+    COMMAND_SET_7='AT+QNWPREFCFG="policy_band" AT+QNWPREFCFG="lte_band";+QNWPREFCFG="nsa_nr5g_band";+QNWPREFCFG="nr5g_band"'
 }
 
 # Define the lock file
@@ -114,7 +116,7 @@ process_commands() {
 define_command_sets
 
 # Get command set from query string
-COMMAND_SET=$(echo "$QUERY_STRING" | grep -o 'set=[1-6]' | cut -d'=' -f2)
+COMMAND_SET=$(echo "$QUERY_STRING" | grep -o 'set=[1-7]' | cut -d'=' -f2)
 
 # Select the appropriate command set
 case "$COMMAND_SET" in
@@ -124,6 +126,7 @@ case "$COMMAND_SET" in
     4) COMMANDS="$COMMAND_SET_4";;
     5) COMMANDS="$COMMAND_SET_5";;
     6) COMMANDS="$COMMAND_SET_6";;
+    7) COMMANDS="$COMMAND_SET_7";;
     *) COMMANDS="$COMMAND_SET_1";; # Default to set 1 if no valid set specified
 esac
 
