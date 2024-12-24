@@ -4,8 +4,8 @@
 echo "Content-Type: application/json"
 echo ""
 
-# Ping 8.8.8.8 and capture the result
-if ping -c 1 8.8.8.8 > /dev/null 2>&1; then
+# Ping 8.8.8.8 with 5 packets and capture the result
+if ping -c 5 8.8.8.8 > /dev/null 2>&1; then
     # Ping was successful
     echo '{"connection": "ACTIVE"}'
 else

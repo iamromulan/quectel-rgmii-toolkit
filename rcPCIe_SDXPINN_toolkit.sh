@@ -177,6 +177,69 @@ ttl_setup() {
   done
 }
 
+mtu_setup() {
+  local mtu_file="/etc/firewall.user.mtu"
+  local lan_utils_script="/etc/data/lanUtils.sh"
+  local combine_function="util_combine_iptable_rules"
+
+  overlay_check || return
+
+  while true; do
+    # Ensure the MTU configuration file exists
+    if [ ! -f "$mtu_file" ]; then
+      echo "Creating $mtu_file..."
+      touch "$mtu_file"
+
+      echo "Modifying $combine_function in $lan_utils_script..."
+
+      # Backup the original script
+      cp "$lan_utils_script" "${lan_utils_script}.bak"
+
+      # Add the local mtu_firewall_file line if it's not already present
+      if ! grep -q "local mtu_firewall_file" "$lan_utils_script"; then
+        sed -i '/local tcpmss_firewall_filev6/a \  local mtu_firewall_file=/etc/firewall.user.mtu' "$lan_utils_script"
+      fi
+
+      # Add the condition to include the mtu_firewall_file if it's not already present
+      if ! grep -q "if \[ -f \"\$mtu_firewall_file\" \]; then" "$lan_utils_script"; then
+        sed -i '/if \[ -f "\$ttl_firewall_file" \]; then/i \  if [ -f "\$mtu_firewall_file" ]; then\n    cat \$mtu_firewall_file >> \$firewall_file\n  fi' "$lan_utils_script"
+      fi
+    fi
+
+    # Display the current MTU override, if set
+    if [ ! -s "$mtu_file" ]; then
+      echo -e "\e[31mMTU override is not set. Default MTU is applied at boot.\e[0m"
+    else
+      current_mtu=$(awk '/ip link set/ {print $6; exit}' "$mtu_file")
+      echo -e "\e[32mCurrent MTU override: $current_mtu\e[0m"
+    fi
+
+    # Prompt user for actions
+    echo -e "\e[32mWould you like to edit the MTU override?\e[0m"
+    echo -e "\e[33mType a new MTU value, exit, or 0 to disable the override:\e[0m" && read -r response
+
+    if [ "$response" = "exit" ]; then
+      echo "Exiting..."
+      break
+    elif [ "$response" = "0" ]; then
+      echo "Disabling MTU override and clearing the file..."
+      > "$mtu_file"
+    elif [[ "$response" =~ ^[0-9]+$ ]]; then
+      echo "Setting MTU override to $response..."
+      # Write single commands for each interface to the configuration file
+      > "$mtu_file" # Clear the file
+      for iface in $(ls /sys/class/net | grep '^rmnet_data'); do
+        echo "ip link set $iface mtu $response" >> "$mtu_file"
+      done
+    else
+      echo "Invalid input. Please enter a number, 'exit', or '0'."
+    fi
+  done
+}
+
+
+
+
 set_root_passwd() {
     passwd
 }
@@ -312,11 +375,12 @@ while true; do
     echo -e "\e[96m1) Send AT Commands\e[0m" # Cyan
     echo -e "\e[92m2) Install sdxpinn-mount-fix/run me after a flash!\e[0m" # Green
     echo -e "\e[94m3) TTL Setup\e[0m" # Light Blue
-    echo -e "\e[94m4) Install Basic Packages/enable luci/add iamromulan's feed to opkg(\e[0m" # Light Blue    
-    echo -e "\e[94m5) Set root password\e[0m" # Light Blue
-    echo -e "\e[94m6) Tailscale Management\e[0m" # Light Blue
-    echo -e "\e[92m7) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
-    echo -e "\e[93m8) Exit\e[0m" # Yellow (repeated color for exit option)
+    echo -e "\e[92m4) MTU Setup\e[0m" # Light Green	
+    echo -e "\e[94m5) Install Basic Packages/enable luci/add iamromulan's feed to opkg(\e[0m" # Light Blue    
+    echo -e "\e[94m6) Set root password\e[0m" # Light Blue
+    echo -e "\e[94m7) Tailscale Management\e[0m" # Light Blue
+    echo -e "\e[92m8) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
+    echo -e "\e[93m9) Exit\e[0m" # Yellow (repeated color for exit option)
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -327,19 +391,24 @@ while true; do
             if [ $? -eq 1 ]; then continue; fi
             ttl_setup 
             ;;
-        4)  
+		4)
+            overlay_check
+            if [ $? -eq 1 ]; then continue; fi
+            mtu_setup 
+            ;;		
+        5)  
             overlay_check
             if [ $? -eq 1 ]; then continue; fi
             basic_55x_setup
             ;;       
             
-        5) 
+        6) 
             overlay_check
             if [ $? -eq 1 ]; then continue; fi
             set_root_passwd 
             ;;
-        6) tailscale_menu ;;
-        7)
+        7) tailscale_menu ;;
+        8)
             overlay_check
             if [ $? -eq 1 ]; then continue; fi
             echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
@@ -352,7 +421,7 @@ while true; do
             echo -e "\e[1;32mNormally only an issue in adb, ttyd, and ssh you are forced to login\e[0m"
             echo -e "\e[1;32mIf in adb just type login and then try to run the speedtest command\e[0m"
             ;;
-        8) echo -e "\e[1;32mGoodbye!\e[0m"; break ;;
+        9) echo -e "\e[1;32mGoodbye!\e[0m"; break ;;
         *) echo -e "\e[1;31mInvalid option\e[0m" ;;
     esac
 done

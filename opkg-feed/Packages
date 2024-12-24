@@ -69,57 +69,57 @@ License: GPLv3
 
 
 Package: sdxpinn-quecmanager
-Version: 0.0.3
+Version: 1.0.1
 Depends: libc, sdxpinn-mount-fix, atinout
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: c8fc47f8c59a6fc27955fccf0ff7c383
-Size: 661511
-Filename: sdxpinn-quecmanager_0.0.3_aarch64_cortex-a53.ipk
+MD5Sum: 142068c54af185e673b9e0ba0686b0f4
+Size: 715428
+Filename: sdxpinn-quecmanager_1.0.1_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 License: GPLv3
 
 
 Package: tailscale
-Version: 1.76.1-2
+Version: 1.78.1-1
 Depends: libc, tailscaled
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: b19952ce72aba5447d4eaa90ca270766
-Size: 9440096
-Filename: tailscale_1.76.1-2_aarch64_cortex-a53.ipk
+MD5Sum: 44ee97f75f2a85ccf146b11ae1d906b1
+Size: 9882827
+Filename: tailscale_1.78.1-1_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
 Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
 License: GPLv3
 
 
 Package: tailscaled
-Version: 1.76.1-1
+Version: 1.78.1-1
 Depends: libc, ca-bundle, kmod-tun
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 5785492476bb7c205e02bd8f7b3eeb50
-Size: 17506056
-Filename: tailscaled_1.76.1-1_aarch64_cortex-a53.ipk
+MD5Sum: 3a2eaf5f59c633379541d4e188a8c507
+Size: 17960526
+Filename: tailscaled_1.78.1-1_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
 Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
 License: GPLv3
 
 
 Package: sdxpinn-quecmanager-beta
-Version: 0.0.1
-Depends: libc, sdxpinn-mount-fix, atinout
+Version: 1.0.9
+Depends: libc, uhttpd, sdxpinn-mount-fix, atinout, jq, ookla-speedtest
 Conflicts: sdxpinn-quecmanager
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: 3b50b8cb09707d8c52c815d5d62be857
-Size: 693715
-Filename: sdxpinn-quecmanager-beta_0.0.1_aarch64_cortex-a53.ipk
+MD5Sum: c196dffd42b6023c6dac2dc6091b9992
+Size: 786608
+Filename: sdxpinn-quecmanager-beta_1.0.9_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: BETA: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 License: GPLv3

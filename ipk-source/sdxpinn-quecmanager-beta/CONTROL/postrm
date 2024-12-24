@@ -1,5 +1,6 @@
 #!/bin/ash
 
 mv /www/index.html.old /www/index.html
+
 exit 0
 
