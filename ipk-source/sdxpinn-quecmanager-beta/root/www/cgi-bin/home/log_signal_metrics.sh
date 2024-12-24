@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Ensure the directory exists
-LOGDIR="/www/signal_graphs"
+LOGDIR="/tmp/signal_graphs"
 mkdir -p "$LOGDIR"
 
 # Maximum number of entries
