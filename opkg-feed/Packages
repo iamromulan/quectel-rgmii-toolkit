@@ -125,3 +125,16 @@ Description: BETA: A custom web UI desgined to run alongside luci for Quectel RM
 License: GPLv3
 
 
+Package: sms-tool
+Version: 2024.07.25~fce2b931-r3
+Depends: libc
+Section: utils
+Architecture: aarch64_cortex-a53
+Maintainer: https://github.com/obsy/sms_tool
+MD5Sum: 476cb439cf35180b228c3667e753680a
+Size: 9837
+Filename: sms-tool_2024.07.25~fce2b931-r3_aarch64_cortex-a53.ipk
+Source: https://dl.openwrt.ai/packages-24.10/aarch64_cortex-a53/kiddin9/
+Description:  SMS Tool for 3G/4G/5G modem
+
+

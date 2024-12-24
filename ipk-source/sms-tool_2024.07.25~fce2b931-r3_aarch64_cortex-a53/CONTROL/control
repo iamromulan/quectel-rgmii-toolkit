@@ -1,0 +1,11 @@
+Package: sms-tool
+Version: 2024.07.25~fce2b931-r3
+Depends: libc
+Source: feeds/kiddin9/sms-tool
+SourceName: sms-tool
+Section: utils
+SourceDateEpoch: 1731357966
+URL: https://github.com/obsy/sms_tool
+Architecture: aarch64_cortex-a53
+Installed-Size: 71680
+Description:  SMS Tool for 3G/4G/5G modem
