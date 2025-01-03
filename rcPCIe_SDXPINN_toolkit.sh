@@ -77,7 +77,8 @@ install_mount_fix() {
     opkg install sdxpinn-mount-fix_1.1.0_aarch64_cortex-a53.ipk
 }
 
-basic_55x_setup() {    
+basic_55x_setup() {
+    overlay_check || return
 	echo "src/gz iamromulan-SDXPINN-repo https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/opkg-feed" >> /etc/opkg/customfeeds.conf
 	cd /tmp
 	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/iamromulan-SDXPINN-repo.key
@@ -95,7 +96,20 @@ basic_55x_setup() {
 
 	opkg install luci-app-ttyd
 	opkg install mc-skins
-	
+
+    # Check and download /etc/init.d/dropbear if missing
+    [ -f /etc/init.d/dropbear ] || { 
+        curl -o /etc/init.d/dropbear https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/missing/dropbear &&
+        chmod +x /etc/init.d/dropbear; 
+    }
+
+    # Check and download /etc/init.d/uhttpd if missing
+    [ -f /etc/init.d/uhttpd ] || { 
+        curl -o /etc/init.d/uhttpd https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/missing/uhttpd &&
+        chmod +x /etc/init.d/uhttpd; 
+    }
+
+
 	service uhttpd enable
 	service dropbear enable
 	service uhttpd start
@@ -376,7 +390,7 @@ while true; do
     echo -e "\e[92m2) Install sdxpinn-mount-fix/run me after a flash!\e[0m" # Green
     echo -e "\e[94m3) TTL Setup\e[0m" # Light Blue
     echo -e "\e[92m4) MTU Setup\e[0m" # Light Green	
-    echo -e "\e[94m5) Install Basic Packages/enable luci/add iamromulan's feed to opkg(\e[0m" # Light Blue    
+    echo -e "\e[94m5) Install Basic Packages/enable luci/add iamromulan's feed to opkg\e[0m" # Light Blue    
     echo -e "\e[94m6) Set root password\e[0m" # Light Blue
     echo -e "\e[94m7) Tailscale Management\e[0m" # Light Blue
     echo -e "\e[92m8) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
