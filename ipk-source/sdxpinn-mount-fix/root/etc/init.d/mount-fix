@@ -2,46 +2,70 @@
 
 START=03
 
+LOG_FILE="/tmp/mount-fix.log"
+
 start() {
-    # Log to tmp
-    rm /tmp/mount-fix.log >/dev/null 2>&1
-    /bin/touch /tmp/mount-fix.log
-    /bin/echo "Begin mount fix process to make a usable userspace" >> /tmp/mount-fix.log
+    # Initialize log
+    rm -f "$LOG_FILE" >/dev/null 2>&1
+    touch "$LOG_FILE"
+
+    # Redirect all output (stdout and stderr) to the log file
+    exec >>"$LOG_FILE" 2>&1
+
+    echo "Begin mount fix process to make a usable userspace."
+
+    # Determine firmware scenario
+    if mount | grep -q "/usrdata"; then
+        echo "New firmware scenario detected (with /usrdata)."
+        handle_new_firmware
+    elif mount | grep -q "/overlay"; then
+        echo "Old firmware scenario detected (with /overlay)."
+        handle_old_firmware
+    else
+        echo "Error: Unable to detect firmware scenario. Neither /usrdata nor /overlay mounts found. Exiting."
+        exit 1
+    fi
+}
+
+handle_old_firmware() {
+    # Redirect all output (stdout and stderr) to the log file
+    exec >>"$LOG_FILE" 2>&1
+    /bin/echo "Begin mount fix process to make a usable userspace"
 
     # Forcefully unmount /etc
-    /bin/echo "Unmounting the tiny overlay at /etc" >> /tmp/mount-fix.log
+    /bin/echo "Unmounting the tiny overlay at /etc"
     /bin/umount -lf /etc >/dev/null 2>&1
 
     # Remount root filesystem as read-write
-    /bin/echo "Remounting / as read-write" >> /tmp/mount-fix.log
-    /bin/mount -o remount,rw / >> /tmp/mount-fix.log
+    /bin/echo "Remounting / as read-write"
+    /bin/mount -o remount,rw /
 
     # Check if /overlay/etc-upper/merged.done exists
-    /bin/echo "First time this is ran the stuff you have been putting in the old overlay needs merged." >> /tmp/mount-fix.log
-    /bin/echo "Looking for evidence that this has already happened..." >> /tmp/mount-fix.log
+    /bin/echo "First time this is ran the stuff you have been putting in the old overlay needs merged."
+    /bin/echo "Looking for evidence that this has already happened..."
     if [ ! -f /overlay/etc-upper/merged.done ]; then
-        /bin/echo "/overlay/etc-upper/merged.done not found, merging /overlay/etc-upper/* to /etc/" >> /tmp/mount-fix.log
-        cp -rf /overlay/etc-upper/* /etc/ >> /tmp/mount-fix.log
-        /bin/touch /overlay/etc-upper/merged.done >> /tmp/mount-fix.log
+        /bin/echo "/overlay/etc-upper/merged.done not found, merging /overlay/etc-upper/* to /etc/"
+        cp -rf /overlay/etc-upper/* /etc/
+        /bin/touch /overlay/etc-upper/merged.done
     else
-        /bin/echo "/overlay/etc-upper/merged.done found, skipping merge" >> /tmp/mount-fix.log
+        /bin/echo "/overlay/etc-upper/merged.done found, skipping merge"
     fi
 
     # Unmount /overlay
-    /bin/echo "Unmounting the no longer needed /overlay" >> /tmp/mount-fix.log
-    /bin/umount /overlay >> /tmp/mount-fix.log
+    /bin/echo "Unmounting the no longer needed /overlay"
+    /bin/umount /overlay
 
     # Check if /etc/opkg.conf has a line containing "option overlay_root /overlay" and remove it if it exists
-    /bin/echo "Lets be sure your opkg config isn't using the old overlay" >> /tmp/mount-fix.log
+    /bin/echo "Lets be sure your opkg config isn't using the old overlay"
     if grep -q "option overlay_root /overlay" /etc/opkg.conf; then
-        /bin/echo "Removing 'option overlay_root /overlay' from /etc/opkg.conf" >> /tmp/mount-fix.log
-        sed -i '/option overlay_root \/overlay/d' /etc/opkg.conf >> /tmp/mount-fix.log
+        /bin/echo "Removing 'option overlay_root /overlay' from /etc/opkg.conf"
+        sed -i '/option overlay_root \/overlay/d' /etc/opkg.conf
     else
-        /bin/echo "'option overlay_root /overlay' not found in /etc/opkg.conf, no changes made" >> /tmp/mount-fix.log
+        /bin/echo "'option overlay_root /overlay' not found in /etc/opkg.conf, no changes made"
     fi
 
     # Ensure necessary directories exist for overlay and pivot_root
-    /bin/echo "Creating new overlay system" >> /tmp/mount-fix.log
+    /bin/echo "Creating new overlay system"
     if [ ! -d /data/rootfs ]; then
         mkdir -p /data/rootfs
     fi
@@ -53,7 +77,7 @@ start() {
     fi
 
     # Mount the new overlay filesystem
-    /bin/mount -t overlay overlay -o lowerdir=/,upperdir=/data/rootfs,workdir=/data/rootfs-workdir /rootfs >> /tmp/mount-fix.log
+    /bin/mount -t overlay overlay -o lowerdir=/,upperdir=/data/rootfs,workdir=/data/rootfs-workdir /rootfs
 
     # Create the real_rootfs directory in the new root
     if [ ! -d /rootfs/real_rootfs ]; then
@@ -61,27 +85,27 @@ start() {
     fi
 
     # Pivot root to the new root
-    /bin/echo "Pivoting Root / to /rootfs; Be back soon!!" >> /tmp/mount-fix.log
+    /bin/echo "Pivoting Root / to /rootfs; Be back soon!!"
     /sbin/pivot_root /rootfs /rootfs/real_rootfs >/dev/null 2>&1
 
     # Move the mounted filesystems to the new locations
-    /bin/mount --move /real_rootfs/sys /sys >> /tmp/mount-fix.log
-    /bin/mount --move /real_rootfs/proc /proc >> /tmp/mount-fix.log
-    /bin/mount --move /real_rootfs/tmp /tmp >> /tmp/mount-fix.log
-    /bin/mount --move /real_rootfs/dev /dev >> /tmp/mount-fix.log
-    /bin/mount --move /real_rootfs/firmware /firmware >> /tmp/mount-fix.log
-    /bin/mount --move /real_rootfs/persist /persist >> /tmp/mount-fix.log
-    /bin/mount --move /real_rootfs/cache /cache >> /tmp/mount-fix.log
-    /bin/mount --move /real_rootfs/data /data >> /tmp/mount-fix.log
+    /bin/mount --move /real_rootfs/sys /sys
+    /bin/mount --move /real_rootfs/proc /proc
+    /bin/mount --move /real_rootfs/tmp /tmp
+    /bin/mount --move /real_rootfs/dev /dev
+    /bin/mount --move /real_rootfs/firmware /firmware
+    /bin/mount --move /real_rootfs/persist /persist
+    /bin/mount --move /real_rootfs/cache /cache
+    /bin/mount --move /real_rootfs/data /data
 
     # Synchronize /etc/rc.d/ and /real_rootfs/etc/rc.d/
-    /bin/echo "Synchronizing /etc/rc.d/ and /real_rootfs/etc/rc.d/" >> /tmp/mount-fix.log
+    /bin/echo "Synchronizing /etc/rc.d/ and /real_rootfs/etc/rc.d/"
     for link in /etc/rc.d/*; do
         if [ -L "$link" ]; then
             link_name=$(basename "$link")
             if [ ! -e "/real_rootfs/etc/rc.d/$link_name" ]; then
-                /bin/echo "Copying $link_name to /real_rootfs/etc/rc.d/" >> /tmp/mount-fix.log
-                cp -a "$link" "/real_rootfs/etc/rc.d/$link_name" >> /tmp/mount-fix.log
+                /bin/echo "Copying $link_name to /real_rootfs/etc/rc.d/"
+                cp -a "$link" "/real_rootfs/etc/rc.d/$link_name"
             fi
         fi
     done
@@ -90,40 +114,166 @@ start() {
         if [ -L "$link" ]; then
             link_name=$(basename "$link")
             if [ ! -e "/etc/rc.d/$link_name" ]; then
-                /bin/echo "Removing $link_name from /real_rootfs/etc/rc.d/" >> /tmp/mount-fix.log
-                rm "/real_rootfs/etc/rc.d/$link_name" >> /tmp/mount-fix.log
+                /bin/echo "Removing $link_name from /real_rootfs/etc/rc.d/"
+                rm "/real_rootfs/etc/rc.d/$link_name"
             fi
         fi
     done
 
     # Final logs and remount the original root as read-only
-    /bin/echo "...and we're back! The original root now lives at /real_rootfs" >> /tmp/mount-fix.log
-    /bin/echo "Lets mount it as read-only for now, If you need it just remount it as read-write" >> /tmp/mount-fix.log
+    /bin/echo "...and we're back! The original root now lives at /real_rootfs"
+    /bin/echo "Lets mount it as read-only for now, If you need it just remount it as read-write"
     /bin/mount -o remount,ro /real_rootfs >/dev/null 2>&1
-    /bin/echo "Overlay and pivot_root setup completed" >> /tmp/mount-fix.log
+    /bin/echo "Overlay and pivot_root setup completed"
 }
 
+handle_new_firmware() {
+    # Redirect all output (stdout and stderr) to the log file
+    exec >>"$LOG_FILE" 2>&1
+    /bin/echo "Begin mount fix process to make a usable userspace"
+
+    # Forcefully unmount /etc
+    /bin/echo "Unmounting the 2 mounts over /etc"
+    /bin/umount -lf /etc >/dev/null 2>&1
+    /bin/umount -lf /etc >/dev/null 2>&1
+
+    # Remount root filesystem as read-write
+    /bin/echo "Remounting / as read-write"
+    /bin/mount -o remount,rw /
+
+    # Begin layer merge checks
+    # Layer 1
+    # Check if /overlay/etc-upper/merged.done exists
+    /bin/echo "First time this is ran the stuff you have been putting in the old overlay and /usrdata/etc needs merged."
+    /bin/echo "Looking for evidence that this has already happened..."
+    if [ ! -f /usrdata/overlay-work/etc-upper/merged.done ]; then
+        /bin/echo "/usrdata/overlay-work/etc-upper/merged.done not found, merging /usrdata/overlay-work/etc-upper/* to /usrdata/etc/"
+        cp -rf /usrdata/overlay-work/etc-upper/* /usrdata/etc/
+        /bin/touch /usrdata/overlay-work/etc-upper/merged.done
+    else
+        /bin/echo "/usrdata/overlay-work/etc-upper/merged.done found, skipping merge"
+    fi
+    # Layer 2
+    # Check if /usrdata/etc/merged.done exists
+    /bin/echo "First time this is ran the stuff you have been putting in /usrdata/etc and /etc needs merged."
+    /bin/echo "Looking for evidence that this has already happened..."
+    if [ ! -f /usrdata/etc/merged.done ]; then
+        /bin/echo "/usrdata/etc/merged.done not found, merging /usrdata/etc/* to /etc/"
+        cp -rf /usrdata/etc/* /etc/
+        /bin/touch /usrdata/etc/merged.done
+    else
+        /bin/echo "/usrdata/etc/merged.done found, skipping merge"
+    fi
+
+
+    # Check if /etc/opkg.conf has a line containing "option overlay_root /overlay" and remove it if it exists
+    /bin/echo "Lets be sure your opkg config isn't using the old overlay"
+    if grep -q "option overlay_root /overlay" /etc/opkg.conf; then
+        /bin/echo "Removing 'option overlay_root /overlay' from /etc/opkg.conf"
+        sed -i '/option overlay_root \/overlay/d' /etc/opkg.conf
+    else
+        /bin/echo "'option overlay_root /overlay' not found in /etc/opkg.conf, no changes made"
+    fi
+#                                 #
+#                                 #
+# Continue Working from here....  #
+#                                 #
+#                                 #
+#                                 #
+#
+    # Ensure necessary directories exist for overlay and pivot_root
+    /bin/echo "Creating new overlay system"
+    if [ ! -d /data/rootfs ]; then
+        mkdir -p /data/rootfs
+    fi
+    if [ ! -d /data/rootfs-workdir ]; then
+        mkdir -p /data/rootfs-workdir
+    fi
+    if [ ! -d /rootfs ]; then
+        mkdir -p /rootfs
+    fi
+
+    # Mount the new overlay filesystem
+    /bin/mount -t overlay overlay -o lowerdir=/,upperdir=/data/rootfs,workdir=/data/rootfs-workdir /rootfs
+
+    # Create the real_rootfs directory in the new root
+    if [ ! -d /rootfs/real_rootfs ]; then
+        mkdir -p /rootfs/real_rootfs
+    fi
+
+    # Pivot root to the new root
+    /bin/echo "Pivoting Root / to /rootfs; Be back soon!!"
+    /sbin/pivot_root /rootfs /rootfs/real_rootfs >/dev/null 2>&1
+
+    # Move the mounted filesystems to the new locations
+    /bin/mount --move /real_rootfs/sys /sys
+    /bin/mount --move /real_rootfs/proc /proc
+    /bin/mount --move /real_rootfs/tmp /tmp
+    /bin/mount --move /real_rootfs/dev /dev
+    /bin/mount --move /real_rootfs/firmware /firmware
+    /bin/mount --move /real_rootfs/persist /persist
+    /bin/mount --move /real_rootfs/cache /cache
+    /bin/mount --move /real_rootfs/data /data
+
+    # Synchronize /etc/rc.d/ and /real_rootfs/etc/rc.d/
+    /bin/echo "Synchronizing /etc/rc.d/ and /real_rootfs/etc/rc.d/"
+    for link in /etc/rc.d/*; do
+        if [ -L "$link" ]; then
+            link_name=$(basename "$link")
+            if [ ! -e "/real_rootfs/etc/rc.d/$link_name" ]; then
+                /bin/echo "Copying $link_name to /real_rootfs/etc/rc.d/"
+                cp -a "$link" "/real_rootfs/etc/rc.d/$link_name"
+            fi
+        fi
+    done
+
+    for link in /real_rootfs/etc/rc.d/*; do
+        if [ -L "$link" ]; then
+            link_name=$(basename "$link")
+            if [ ! -e "/etc/rc.d/$link_name" ]; then
+                /bin/echo "Removing $link_name from /real_rootfs/etc/rc.d/"
+                rm "/real_rootfs/etc/rc.d/$link_name"
+            fi
+        fi
+    done
+
+    # Final logs and remount the original root as read-only
+    /bin/echo "...and we're back! The original root now lives at /real_rootfs"
+    /bin/echo "Lets mount it as read-only for now, If you need it just remount it as read-write"
+    /bin/mount -o remount,ro /real_rootfs >/dev/null 2>&1
+    /bin/echo "Overlay and pivot_root setup completed"
+
+}
+
+
 stop() {
-    /bin/echo "Stopping and reverting overlay and pivot_root" >> /tmp/mount-fix.log
+    # Redirect all output (stdout and stderr) to the log file
+    exec >>"$LOG_FILE" 2>&1
+}
+
+stop_handle_old_firmware() {
+    # Redirect all output (stdout and stderr) to the log file
+    exec >>"$LOG_FILE" 2>&1
+    /bin/echo "Stopping and reverting overlay and pivot_root"
 
     # Remount the original root filesystem as read-write
-    /bin/mount -o remount,rw /real_rootfs >> /tmp/mount-fix.log
+    /bin/mount -o remount,rw /real_rootfs
 
     # Move the mounted filesystems back to the original locations
-    /bin/mount --move /sys /real_rootfs/sys >> /tmp/mount-fix.log
-    /bin/mount --move /proc /real_rootfs/proc >> /tmp/mount-fix.log
-    /bin/mount --move /tmp /real_rootfs/tmp >> /tmp/mount-fix.log
-    /bin/mount --move /dev /real_rootfs/dev >> /tmp/mount-fix.log
-    /bin/mount --move /firmware /real_rootfs/firmware >> /tmp/mount-fix.log
-    /bin/mount --move /persist /real_rootfs/persist >> /tmp/mount-fix.log
-    /bin/mount --move /cache /real_rootfs/cache >> /tmp/mount-fix.log
-    /bin/mount --move /data /real_rootfs/data >> /tmp/mount-fix.log
+    /bin/mount --move /sys /real_rootfs/sys
+    /bin/mount --move /proc /real_rootfs/proc
+    /bin/mount --move /tmp /real_rootfs/tmp
+    /bin/mount --move /dev /real_rootfs/dev
+    /bin/mount --move /firmware /real_rootfs/firmware
+    /bin/mount --move /persist /real_rootfs/persist
+    /bin/mount --move /cache /real_rootfs/cache
+    /bin/mount --move /data /real_rootfs/data
 
     # Pivot root back to the original root
-    /sbin/pivot_root /real_rootfs /real_rootfs/rootfs >> /tmp/mount-fix.log
+    /sbin/pivot_root /real_rootfs /real_rootfs/rootfs
 
-    /bin/echo "Reverted pivot_root" >> /tmp/mount-fix.log
-    /bin/echo "Previous root overlay available at /rootfs" >> /tmp/mount-fix.log
+    /bin/echo "Reverted pivot_root"
+    /bin/echo "Previous root overlay available at /rootfs"
 	
 	# Unmount /rootfs overlay
 	/bin/umount -lf /rootfs >/dev/null 2>&1
@@ -132,10 +282,15 @@ stop() {
 	mount -t ubifs /dev/ubi0_3 /overlay
 	
 	# Mount the old overlay filesystem back for etc
-    /bin/mount -t overlay overlay -o lowerdir=/etc,upperdir=/overlay/etc-upper,workdir=/overlay/.etc-work /etc >> /tmp/mount-fix.log
+    /bin/mount -t overlay overlay -o lowerdir=/etc,upperdir=/overlay/etc-upper,workdir=/overlay/.etc-work /etc
 	
 	echo -e "\e[31m / is read-write right now. Be careful\e[0m"
 	echo -e "\e[31m Reboot or run mount -o remount,ro / \e[0m"
+}
+
+stop_handle_new_firmware() {
+    # Redirect all output (stdout and stderr) to the log file
+    exec >>"$LOG_FILE" 2>&1
 }
 
 restart() {

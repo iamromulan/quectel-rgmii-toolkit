@@ -62,10 +62,23 @@ chmod +x /etc/init.d/mount-fix /etc/init.d/init-overlay-watchdog /etc/init.d/add
 
 # Enable and start the services
 echo "Starting services..."
+
 service mount-fix enable
+if grep -qs '/usrdata' /proc/mounts; then
+    echo "/usrdata is mounted. Synchronizing mount-fix files to /usrdata..."
+    cp /etc/init.d/mount-fix /usrdata/etc/init.d/mount-fix
+    cp -P /etc/rc.d/S03mount-fix /usrdata/etc/rc.d/S03mount-fix
+fi
 service mount-fix start
+
 sleep 1
+
 service init-overlay-watchdog enable
+if grep -qs '/usrdata' /proc/mounts; then
+    echo "/usrdata is mounted. Synchronizing init-overlay-watchdog files to /usrdata..."
+    cp /etc/init.d/init-overlay-watchdog /usrdata/etc/init.d/init-overlay-watchdog
+    cp -P /etc/rc.d/S04init-overlay-watchdog /usrdata/etc/rc.d/S04init-overlay-watchdog
+fi
 service init-overlay-watchdog start
 
 echo -e "\e[32m sdxpinn-mount-fix installed! Here is the new file structure! \e[0m"
@@ -103,7 +116,6 @@ if ! grep -q "Package:" "$INIT_SCRIPT"; then
 else
     # Enable and start the updated add_opkg_status_bundled script
     echo "Updated $INIT_SCRIPT with remaining bundled package info."
-    service add_opkg_status_bundled enable
     service add_opkg_status_bundled start
 fi
 
