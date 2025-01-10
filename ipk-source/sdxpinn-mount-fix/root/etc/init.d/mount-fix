@@ -98,27 +98,8 @@ handle_old_firmware() {
     /bin/mount --move /real_rootfs/cache /cache
     /bin/mount --move /real_rootfs/data /data
 
-    # Synchronize /etc/rc.d/ and /real_rootfs/etc/rc.d/
-    /bin/echo "Synchronizing /etc/rc.d/ and /real_rootfs/etc/rc.d/"
-    for link in /etc/rc.d/*; do
-        if [ -L "$link" ]; then
-            link_name=$(basename "$link")
-            if [ ! -e "/real_rootfs/etc/rc.d/$link_name" ]; then
-                /bin/echo "Copying $link_name to /real_rootfs/etc/rc.d/"
-                cp -a "$link" "/real_rootfs/etc/rc.d/$link_name"
-            fi
-        fi
-    done
-
-    for link in /real_rootfs/etc/rc.d/*; do
-        if [ -L "$link" ]; then
-            link_name=$(basename "$link")
-            if [ ! -e "/etc/rc.d/$link_name" ]; then
-                /bin/echo "Removing $link_name from /real_rootfs/etc/rc.d/"
-                rm "/real_rootfs/etc/rc.d/$link_name"
-            fi
-        fi
-    done
+    # Synchronize between /etc/rc.d and /real_rootfs/etc/rc.d
+    synchronize_rc_d "/etc/rc.d" "/real_rootfs/etc/rc.d"
 
     # Final logs and remount the original root as read-only
     /bin/echo "...and we're back! The original root now lives at /real_rootfs"
@@ -142,7 +123,7 @@ handle_new_firmware() {
     /bin/mount -o remount,rw /
 
     # Begin layer merge checks
-    # Layer 1
+    # Layer 1 to 2
     # Check if /overlay/etc-upper/merged.done exists
     /bin/echo "First time this is ran the stuff you have been putting in the old overlay and /usrdata/etc needs merged."
     /bin/echo "Looking for evidence that this has already happened..."
@@ -153,7 +134,7 @@ handle_new_firmware() {
     else
         /bin/echo "/usrdata/overlay-work/etc-upper/merged.done found, skipping merge"
     fi
-    # Layer 2
+    # Layer 2 to 3
     # Check if /usrdata/etc/merged.done exists
     /bin/echo "First time this is ran the stuff you have been putting in /usrdata/etc and /etc needs merged."
     /bin/echo "Looking for evidence that this has already happened..."
@@ -174,27 +155,21 @@ handle_new_firmware() {
     else
         /bin/echo "'option overlay_root /overlay' not found in /etc/opkg.conf, no changes made"
     fi
-#                                 #
-#                                 #
-# Continue Working from here....  #
-#                                 #
-#                                 #
-#                                 #
-#
+
     # Ensure necessary directories exist for overlay and pivot_root
     /bin/echo "Creating new overlay system"
-    if [ ! -d /data/rootfs ]; then
-        mkdir -p /data/rootfs
+    if [ ! -d /usrdata/rootfs ]; then
+        mkdir -p /usrata/rootfs
     fi
-    if [ ! -d /data/rootfs-workdir ]; then
-        mkdir -p /data/rootfs-workdir
+    if [ ! -d /usrdata/rootfs-workdir ]; then
+        mkdir -p /usrdata/rootfs-workdir
     fi
     if [ ! -d /rootfs ]; then
         mkdir -p /rootfs
     fi
 
     # Mount the new overlay filesystem
-    /bin/mount -t overlay overlay -o lowerdir=/,upperdir=/data/rootfs,workdir=/data/rootfs-workdir /rootfs
+    /bin/mount -t overlay overlay -o lowerdir=/,upperdir=/usrdata/rootfs,workdir=/usrdata/rootfs-workdir /rootfs
 
     # Create the real_rootfs directory in the new root
     if [ ! -d /rootfs/real_rootfs ]; then
@@ -211,31 +186,18 @@ handle_new_firmware() {
     /bin/mount --move /real_rootfs/tmp /tmp
     /bin/mount --move /real_rootfs/dev /dev
     /bin/mount --move /real_rootfs/firmware /firmware
-    /bin/mount --move /real_rootfs/persist /persist
-    /bin/mount --move /real_rootfs/cache /cache
+    /bin/mount --move /real_rootfs/usrdata /usrdata
     /bin/mount --move /real_rootfs/data /data
+    /bin/mount --move /real_rootfs/cache /cache
+    /bin/mount --move /real_rootfs/systemrw /systemrw
+    /bin/mount --move /real_rootfs/persist /persist
 
-    # Synchronize /etc/rc.d/ and /real_rootfs/etc/rc.d/
-    /bin/echo "Synchronizing /etc/rc.d/ and /real_rootfs/etc/rc.d/"
-    for link in /etc/rc.d/*; do
-        if [ -L "$link" ]; then
-            link_name=$(basename "$link")
-            if [ ! -e "/real_rootfs/etc/rc.d/$link_name" ]; then
-                /bin/echo "Copying $link_name to /real_rootfs/etc/rc.d/"
-                cp -a "$link" "/real_rootfs/etc/rc.d/$link_name"
-            fi
-        fi
-    done
 
-    for link in /real_rootfs/etc/rc.d/*; do
-        if [ -L "$link" ]; then
-            link_name=$(basename "$link")
-            if [ ! -e "/etc/rc.d/$link_name" ]; then
-                /bin/echo "Removing $link_name from /real_rootfs/etc/rc.d/"
-                rm "/real_rootfs/etc/rc.d/$link_name"
-            fi
-        fi
-    done
+    # Synchronize between /etc/rc.d and /real_rootfs/etc/rc.d
+    synchronize_rc_d "/etc/rc.d" "/real_rootfs/etc/rc.d"
+
+    # Synchronize between /etc/rc.d and /usrdata/etc/rc.d
+    synchronize_rc_d "/etc/rc.d" "/usrdata/etc/rc.d"
 
     # Final logs and remount the original root as read-only
     /bin/echo "...and we're back! The original root now lives at /real_rootfs"
@@ -246,12 +208,56 @@ handle_new_firmware() {
 }
 
 
-stop() {
-    # Redirect all output (stdout and stderr) to the log file
-    exec >>"$LOG_FILE" 2>&1
+synchronize_rc_d() {
+    local source_dir="$1"
+    local target_dir="$2"
+
+    /bin/echo "Synchronizing $source_dir with $target_dir"
+    for link in "$source_dir"/*; do
+        if [ -L "$link" ]; then
+            link_name=$(basename "$link")
+            if [ ! -e "$target_dir/$link_name" ]; then
+                /bin/echo "Copying $link_name to $target_dir"
+                cp -a "$link" "$target_dir/$link_name"
+            fi
+        fi
+    done
+
+    for link in "$target_dir"/*; do
+        if [ -L "$link" ]; then
+            link_name=$(basename "$link")
+            if [ ! -e "$source_dir/$link_name" ]; then
+                /bin/echo "Removing $link_name from $target_dir"
+                rm "$target_dir/$link_name"
+            fi
+        fi
+    done
 }
 
-stop_handle_old_firmware() {
+stop() {
+    # Initialize log
+    rm -f "$LOG_FILE" >/dev/null 2>&1
+    touch "$LOG_FILE"
+    # Redirect all output (stdout and stderr) to the log file
+    exec >>"$LOG_FILE" 2>&1
+    
+    # Check if /real_rootfs exists
+    if [ ! -d "/real_rootfs" ]; then
+        echo "Error: /real_rootfs does not exist. Cannot proceed with stop." >> "$LOG_FILE"
+        return 1
+    fi
+
+    # Determine firmware version based on mounts
+    if [ -d "/usrdata" ] && [ -d "/systemrw" ]; then
+        echo "New firmware scenario detected (with /usrdata and /systemrw)." >> "$LOG_FILE"
+        stop_handle_new_firmware
+    else
+        echo "Old firmware scenario detected (without /usrdata and /systemrw)." >> "$LOG_FILE"
+        stop_handle_old_firmware
+    fi
+}
+
+stop_handle_new_firmware() {
     # Redirect all output (stdout and stderr) to the log file
     exec >>"$LOG_FILE" 2>&1
     /bin/echo "Stopping and reverting overlay and pivot_root"
@@ -265,15 +271,52 @@ stop_handle_old_firmware() {
     /bin/mount --move /tmp /real_rootfs/tmp
     /bin/mount --move /dev /real_rootfs/dev
     /bin/mount --move /firmware /real_rootfs/firmware
-    /bin/mount --move /persist /real_rootfs/persist
-    /bin/mount --move /cache /real_rootfs/cache
+    /bin/mount --move /usrdata /real_rootfs/usrdata
     /bin/mount --move /data /real_rootfs/data
+    /bin/mount --move /cache /real_rootfs/cache
+    /bin/mount --move /systemrw /real_rootfs/systemrw
+    /bin/mount --move /persist /real_rootfs/persist
 
     # Pivot root back to the original root
     /sbin/pivot_root /real_rootfs /real_rootfs/rootfs
 
     /bin/echo "Reverted pivot_root"
-    /bin/echo "Previous root overlay available at /rootfs"
+	
+	# Unmount /rootfs overlay
+	/bin/umount -lf /rootfs >/dev/null 2>&1
+	
+	# Mount layer 2 /etc back
+    /bin/mount -t ubifs -o rw,relatime,bulk_read,assert=read-only,ubi=2,vol=0 /dev/ubi2_0 /etc
+
+    # Mount layer 3 /etc back
+    /bin/mount -t overlay overlay -o lowerdir=/etc,upperdir=/usrdata/overlay-work/etc-upper,workdir=/usrdata/overlay-work/.etc-work /etc
+	df -h
+	echo -e "\e[31m / is read-write right now. Be careful\e[0m"
+	echo -e "\e[31m Reboot or run mount -o remount,ro / \e[0m"
+}
+
+stop_handle_old_firmware() {
+    # Redirect all output (stdout and stderr) to the log file
+    exec >>"$LOG_FILE" 2>&1
+    /bin/echo "Stopping and reverting overlay and pivot_root" 
+
+    # Remount the original root filesystem as read-write
+    /bin/mount -o remount,rw /real_rootfs
+
+    # Move the mounted filesystems back to the original locations
+    /bin/mount --move /sys /real_rootfs/sys 
+    /bin/mount --move /proc /real_rootfs/proc 
+    /bin/mount --move /tmp /real_rootfs/tmp 
+    /bin/mount --move /dev /real_rootfs/dev 
+    /bin/mount --move /firmware /real_rootfs/firmware 
+    /bin/mount --move /persist /real_rootfs/persist 
+    /bin/mount --move /cache /real_rootfs/cache 
+    /bin/mount --move /data /real_rootfs/data 
+
+    # Pivot root back to the original root
+    /sbin/pivot_root /real_rootfs /real_rootfs/rootfs 
+
+    /bin/echo "Reverted pivot_root"
 	
 	# Unmount /rootfs overlay
 	/bin/umount -lf /rootfs >/dev/null 2>&1
@@ -282,15 +325,11 @@ stop_handle_old_firmware() {
 	mount -t ubifs /dev/ubi0_3 /overlay
 	
 	# Mount the old overlay filesystem back for etc
-    /bin/mount -t overlay overlay -o lowerdir=/etc,upperdir=/overlay/etc-upper,workdir=/overlay/.etc-work /etc
+    /bin/mount -t overlay overlay -o lowerdir=/etc,upperdir=/overlay/etc-upper,workdir=/overlay/.etc-work /etc 
 	
 	echo -e "\e[31m / is read-write right now. Be careful\e[0m"
 	echo -e "\e[31m Reboot or run mount -o remount,ro / \e[0m"
 }
-
-stop_handle_new_firmware() {
-    # Redirect all output (stdout and stderr) to the log file
-    exec >>"$LOG_FILE" 2>&1
 }
 
 restart() {
