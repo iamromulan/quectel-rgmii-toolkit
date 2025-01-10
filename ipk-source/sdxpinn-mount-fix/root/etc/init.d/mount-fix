@@ -330,7 +330,6 @@ stop_handle_old_firmware() {
 	echo -e "\e[31m / is read-write right now. Be careful\e[0m"
 	echo -e "\e[31m Reboot or run mount -o remount,ro / \e[0m"
 }
-}
 
 restart() {
     /bin/echo "This script should only be executed once at boot"
