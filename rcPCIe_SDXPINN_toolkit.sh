@@ -73,7 +73,7 @@ install_mount_fix() {
     fi
     # Install mount-fix
     cd /tmp
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-mount-fix_1.1.0_aarch64_cortex-a53.ipk
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-mount-fix_1.2.0_aarch64_cortex-a53.ipk
     opkg install sdxpinn-mount-fix_1.2.0_aarch64_cortex-a53.ipk
 }
 
