@@ -55,14 +55,14 @@ License: GPLv3
 
 
 Package: sdxpinn-mount-fix
-Version: 1.1.0
+Version: 1.2.0
 Depends: libc
 Section: base
 Architecture: aarch64_cortex-a53
 Maintainer: iamromulan <https://github.com/iamromulan>
-MD5Sum: f8e8f830a7ba794d3d090c206df2b729
-Size: 29357
-Filename: sdxpinn-mount-fix_1.1.0_aarch64_cortex-a53.ipk
+MD5Sum: 3f1279109adfba02bb7ca31026ec1c51
+Size: 55275
+Filename: sdxpinn-mount-fix_1.2.0_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: Creates a usable mount space and overlay for SDXPINN modems. Dependencies bundled: libinotifytools and inotifywait
 License: GPLv3
@@ -88,7 +88,7 @@ Depends: libc, tailscaled
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 44ee97f75f2a85ccf146b11ae1d906b1
+MD5Sum: bcf831b2c2cb9d32e6db3af2ea28610e
 Size: 9882827
 Filename: tailscale_1.78.1-1_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
