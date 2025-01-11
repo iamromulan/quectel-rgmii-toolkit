@@ -159,7 +159,7 @@ handle_new_firmware() {
     # Ensure necessary directories exist for overlay and pivot_root
     /bin/echo "Creating new overlay system"
     if [ ! -d /usrdata/rootfs ]; then
-        mkdir -p /usrata/rootfs
+        mkdir -p /usrdata/rootfs
     fi
     if [ ! -d /usrdata/rootfs-workdir ]; then
         mkdir -p /usrdata/rootfs-workdir
