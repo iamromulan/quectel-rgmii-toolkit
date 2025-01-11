@@ -4,6 +4,7 @@
 WATCH_DIR="/etc/rc.d"
 TARGET_DIR1="/real_rootfs/etc/rc.d"
 TARGET_DIR2="/usrdata/etc/rc.d"
+LOG_FILE="/tmp/init-overlay-watchdog.log"
 
 # Function to synchronize init scripts
 synchronize_init_scripts() {
@@ -55,6 +56,13 @@ synchronize_init_scripts() {
     # Restore /real_rootfs to read-only
     mount -o remount,ro /real_rootfs
 }
+
+# Initialize log
+rm -f "$LOG_FILE" >/dev/null 2>&1
+touch "$LOG_FILE"
+
+# Redirect all output (stdout and stderr) to the log file
+exec >>"$LOG_FILE" 2>&1
 
 # Initial synchronization
 synchronize_init_scripts
