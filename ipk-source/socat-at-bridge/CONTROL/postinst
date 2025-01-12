@@ -1,0 +1,9 @@
+#!/bin/ash
+
+echo "Enabling socat-at-bridge at startup"
+service socat-at-bridge enable
+echo "Starting socat-at-bridge"
+service socat-at-bridge start
+
+exit 0
+
