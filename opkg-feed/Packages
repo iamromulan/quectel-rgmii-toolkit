@@ -131,8 +131,8 @@ Depends: libc, socat-at-bridge
 Section: utils
 Architecture: aarch64_cortex-a53
 Maintainer: osby and iamromulan
-MD5Sum: 045967645a544d6df61aeff1c5ab559b
-Size: 13666
+MD5Sum: 24ad9e7380b8390764e8e55cbf2b658a
+Size: 13590
 Filename: sms-tool_2025.1.12-APmod-iamromulan_aarch64_cortex-a53.ipk
 Source: https://github.com/iamromulan/sms_tool
 Description:  SMS Tool for 3G/4G/5G modem
