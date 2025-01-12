@@ -127,7 +127,7 @@ License: GPLv3
 
 Package: sms-tool
 Version: 2025.1.2-APmod-iamromulan
-Depends: libc socat-at-bridge
+Depends: libc, socat-at-bridge
 Section: utils
 Architecture: aarch64_cortex-a53
 Maintainer: osby and iamromulan
@@ -140,7 +140,7 @@ Description:  SMS Tool for 3G/4G/5G modem
 
 Package: socat-at-bridge
 Version: 1.0.0
-Depends: libc socat
+Depends: libc, socat
 Section: utils
 Architecture: aarch64_cortex-a53
 Maintainer: iamromulan
