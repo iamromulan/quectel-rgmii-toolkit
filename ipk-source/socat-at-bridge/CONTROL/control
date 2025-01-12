@@ -1,0 +1,8 @@
+Package: socat-at-bridge
+Version: 1.0.0
+Depends: libc socat
+Source: github/iamromulan
+Section: utils
+URL: https://github.com/iamromulan
+Architecture: aarch64_cortex-a53
+Description:  Sets up a tty from SMD11
