@@ -55,14 +55,14 @@ License: GPLv3
 
 
 Package: sdxpinn-mount-fix
-Version: 1.1.0
+Version: 1.2.0
 Depends: libc
 Section: base
 Architecture: aarch64_cortex-a53
 Maintainer: iamromulan <https://github.com/iamromulan>
-MD5Sum: f8e8f830a7ba794d3d090c206df2b729
-Size: 29357
-Filename: sdxpinn-mount-fix_1.1.0_aarch64_cortex-a53.ipk
+MD5Sum: 3f1279109adfba02bb7ca31026ec1c51
+Size: 55275
+Filename: sdxpinn-mount-fix_1.2.0_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: Creates a usable mount space and overlay for SDXPINN modems. Dependencies bundled: libinotifytools and inotifywait
 License: GPLv3
@@ -88,7 +88,7 @@ Depends: libc, tailscaled
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 44ee97f75f2a85ccf146b11ae1d906b1
+MD5Sum: bcf831b2c2cb9d32e6db3af2ea28610e
 Size: 9882827
 Filename: tailscale_1.78.1-1_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
@@ -111,17 +111,30 @@ License: GPLv3
 
 
 Package: sdxpinn-quecmanager-beta
-Version: 1.0.9
+Version: 1.1.0-2
 Depends: libc, uhttpd, sdxpinn-mount-fix, atinout, jq, ookla-speedtest
 Conflicts: sdxpinn-quecmanager
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: c196dffd42b6023c6dac2dc6091b9992
-Size: 786608
-Filename: sdxpinn-quecmanager-beta_1.0.9_aarch64_cortex-a53.ipk
+MD5Sum: 3411a804f72d4f275866cc93d3795643
+Size: 824527
+Filename: sdxpinn-quecmanager-beta_1.1.0-2_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: BETA: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 License: GPLv3
+
+
+Package: sms-tool
+Version: 2024.07.25~fce2b931-r3
+Depends: libc
+Section: utils
+Architecture: aarch64_cortex-a53
+Maintainer: https://github.com/obsy/sms_tool
+MD5Sum: 476cb439cf35180b228c3667e753680a
+Size: 9837
+Filename: sms-tool_2024.07.25~fce2b931-r3_aarch64_cortex-a53.ipk
+Source: https://dl.openwrt.ai/packages-24.10/aarch64_cortex-a53/kiddin9/
+Description:  SMS Tool for 3G/4G/5G modem
 
 

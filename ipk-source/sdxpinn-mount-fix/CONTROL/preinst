@@ -1,5 +1,9 @@
 #!/bin/ash
 
+# Remount original rootfs as read-write 
+echo "Mounting / as read-write"
+mount -o remount,rw /
+
 # Define the location of detected packages file
 DETECTED_PACKAGES_FILE="/tmp/detected_packages.tmp"
 LIST_FILE_DELETED=false
@@ -49,13 +53,15 @@ if [ "$LIST_FILE_DELETED" = true ]; then
 fi
 
 # Check if /etc is mounted
-if grep -qs '/etc ' /proc/mounts; then
+if grep -qs '/etc' /proc/mounts; then
     echo "Unmounting /etc..."
     umount -lf /etc
 fi
 
-# Remount original rootfs as read-write 
-echo "Mounting / as read-write"
-mount -o remount,rw /
+# Check if /usrdata is mounted
+if grep -qs '/usrdata' /proc/mounts; then
+    echo "/usrdata is mounted. Unmounting /etc again to access rootfs /etc..."
+    umount -lf /etc
+fi
 
 exit 0
