@@ -1,8 +1,8 @@
 Package: socat-at-bridge
-Version: 1.0.1
+Version: 1.1.0
 Depends: libc socat
 Source: github/iamromulan/quectel-rgmii-toolkit
 Section: utils
 URL: https://github.com/iamromulan/quectel-rgmii-toolkit
 Architecture: aarch64_cortex-a53
-Description:  Sets up a tty from SMD11
+Description:  Sets up a tty from SMD11, SMD7 optional

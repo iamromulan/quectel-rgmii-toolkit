@@ -4,63 +4,8 @@
 mv /www/index.html /www/index.html.old
 cp /www/login.html /www/index.html
 
-# Define the commands to add to rc.local
-COMMANDS="/www/cgi-bin/settings/change_sms_code.sh
-/www/cgi-bin/home/log_signal_metrics.sh &"
-
-# Create a new rc.local with commands correctly placed
-TMP_RC_LOCAL=$(mktemp)
-
-awk -v commands="$COMMANDS" '
-BEGIN {
-    split(commands, cmdArr, "\n") # Split commands into an array
-    for (i in cmdArr) alreadyAdded[cmdArr[i]] = 0
-    added = 0
-}
-{
-    if ($0 in alreadyAdded) {
-        alreadyAdded[$0] = 1
-        next
-    }
-    if (/^# the system init finished. By default/) {
-        print
-        if (!added) {
-            for (i in cmdArr) if (!alreadyAdded[cmdArr[i]]) {
-                print cmdArr[i]
-                alreadyAdded[cmdArr[i]] = 1
-            }
-            print ""
-            added = 1
-        }
-    } else {
-        print
-    }
-}
-END {
-    # Add any missing commands at the end of the section
-    for (i in cmdArr) if (!alreadyAdded[cmdArr[i]]) print cmdArr[i]
-}
-' /etc/rc.local > "$TMP_RC_LOCAL"
-
-# Replace the original rc.local with the modified one
-mv "$TMP_RC_LOCAL" /etc/rc.local
-chmod +x /etc/rc.local
-
-# Ensure log_signal_metrics.sh is running
-if ! pgrep -f "/www/cgi-bin/home/log_signal_metrics.sh" > /dev/null; then
-    echo "Starting log_signal_metrics.sh..."
-    /www/cgi-bin/home/log_signal_metrics.sh &
-else
-    echo "log_signal_metrics.sh is already running. Skipping start."
-fi
-
-# Ensure change_sms_code.sh is running
-if ! pgrep -f "/www/cgi-bin/settings/change_sms_code.sh" > /dev/null; then
-    echo "Starting change_sms_code.sh..."
-    /www/cgi-bin/settings/change_sms_code.sh
-else
-    echo "change_sms_code.sh is already running. Skipping start."
-fi
+service quecmanager-services enable
+service quecmanager-services start
 
 exit 0
 

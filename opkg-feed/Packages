@@ -111,15 +111,15 @@ License: GPLv3
 
 
 Package: sdxpinn-quecmanager-beta
-Version: 1.1.0-3
+Version: 1.1.0-4
 Depends: libc, uhttpd, sdxpinn-mount-fix, atinout, jq, ookla-speedtest
 Conflicts: sdxpinn-quecmanager
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: 68f4e9fad3555637608b8baccd6d8f2b
-Size: 844475
-Filename: sdxpinn-quecmanager-beta_1.1.0-3_aarch64_cortex-a53.ipk
+MD5Sum: c2d8b8a29001ba3821280ccd0f220ce4
+Size: 884577
+Filename: sdxpinn-quecmanager-beta_1.1.0-4_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: BETA: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 License: GPLv3
@@ -139,14 +139,14 @@ Description:  SMS Tool for 3G/4G/5G modem
 
 
 Package: socat-at-bridge
-Version: 1.0.1
+Version: 1.1.0
 Depends: libc, socat
 Section: utils
 Architecture: aarch64_cortex-a53
 Maintainer: iamromulan
-MD5Sum: 3d7142e53c634bf23c31bd3a940f040b
-Size: 1238
-Filename: socat-at-bridge_1.0.1_aarch64_cortex-a53.ipk
+MD5Sum: 8192ace5fa449a8989eecdec09138dc8
+Size: 1392
+Filename: socat-at-bridge_1.1.0_aarch64_cortex-a53.ipk
 Source: https://github.com/iamromulan/quectel-rgmii-toolkit
 Description:  Sets up a tty from SMD11
 
