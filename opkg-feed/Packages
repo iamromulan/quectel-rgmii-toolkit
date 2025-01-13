@@ -88,8 +88,8 @@ Depends: libc, tailscaled
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 44ee97f75f2a85ccf146b11ae1d906b1
-Size: 9882827
+MD5Sum: f909644bc5a7bd23fa1827e3276cc2c3
+Size: 9906361
 Filename: tailscale_1.78.1-1_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
 Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
@@ -102,8 +102,8 @@ Depends: libc, ca-bundle, kmod-tun
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 3a2eaf5f59c633379541d4e188a8c507
-Size: 17960526
+MD5Sum: 950b788a00dccf5349e6bac1ec0cca6e
+Size: 18014482
 Filename: tailscaled_1.78.1-1_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
 Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
