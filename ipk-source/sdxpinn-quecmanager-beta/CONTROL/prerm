@@ -36,6 +36,9 @@ for SCRIPT in $SCRIPTS; do
     fi
 done
 
+service quecmanager-services stop 
+service quecmanager-services disable
+
 echo "Cleanup complete."
 exit 0
 

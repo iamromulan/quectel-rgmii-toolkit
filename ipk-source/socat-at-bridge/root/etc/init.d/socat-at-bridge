@@ -1,6 +1,6 @@
 #!/bin/sh /etc/rc.common
 
-START=99
+START=30
 STOP=10
 
 USE_PROCD=1
@@ -8,7 +8,7 @@ USE_PROCD=1
 start_service() {
     procd_open_instance
 
-    # Start socat to create /dev/ttyIN and /dev/ttyOUT
+    # Start socat to create /dev/ttySMD11IN and /dev/ttySMD11
     procd_set_param command \
         socat -d -d pty,link=/dev/ttySMD11IN,raw,echo=0,group=20,perm=660 \
                  pty,link=/dev/ttySMD11,raw,echo=1,group=20,perm=660
