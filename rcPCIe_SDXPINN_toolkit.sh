@@ -280,12 +280,12 @@ tailscale_menu() {
 
 # Function to install, update, or remove Tailscale
 install_update_tailscale() {
-    echo -e "\e[1;31mInstalling Tailscale 1.74.1...\e[0m"
+    echo -e "\e[1;31mInstalling Tailscale 1.78.1...\e[0m"
     cd /tmp
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/tailscaled_1.74.1-1_aarch64_cortex-a53.ipk
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/tailscale_1.74.1-1_aarch64_cortex-a53.ipk
-    opkg install tailscaled_1.74.1-1_aarch64_cortex-a53.ipk
-    opkg install tailscale_1.74.1-1_aarch64_cortex-a53.ipk
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/tailscaled_1.78.1-1_aarch64_cortex-a53.ipk
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/tailscale_1.78.1-1_aarch64_cortex-a53.ipk
+    opkg install tailscaled_1.78.1-1_aarch64_cortex-a53.ipk
+    opkg install tailscale_1.78.1-1_aarch64_cortex-a53.ipk
     
     echo -e "\e[1;32mTailscale version 1.74.1 installed\e[0m"
 }
