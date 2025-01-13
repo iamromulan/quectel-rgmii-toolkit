@@ -111,7 +111,9 @@ basic_55x_setup() {
 
 
 	service uhttpd enable
+	sleep 2
 	service dropbear enable
+	sleep 2
 	service uhttpd start
 	service dropbear start
 
