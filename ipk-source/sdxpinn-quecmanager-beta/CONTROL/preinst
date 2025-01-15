@@ -1,0 +1,43 @@
+#!/bin/ash
+echo "Cleaning anything that might be left fron old versions"
+echo "Stopping QuecManager Services and removing from rc.local..."
+
+# Remove services from rc.local if present
+if sed -i '/\/www\/cgi-bin\/home\/log_signal_metrics\.sh &/d' /etc/rc.local; then
+    echo "Removed log_signal_metrics.sh entry from rc.local."
+else
+    echo "Warning: Failed to remove log_signal_metrics.sh entry or it was not found."
+fi
+
+if sed -i '/\/www\/cgi-bin\/settings\/change_sms_code\.sh &/d' /etc/rc.local; then
+    echo "Removed change_sms_code.sh entry from rc.local."
+else
+    echo "Warning: Failed to remove change_sms_code.sh entry or it was not found."
+fi
+
+# Define a list of script file names to check and stop
+SCRIPTS="
+log_signal_metrics.sh
+"
+
+# Loop through each script, check if it's running, and kill it if necessary
+echo "Checking and stopping running scripts..."
+for SCRIPT in $SCRIPTS; do
+    PIDS=$(pgrep -f "$SCRIPT")
+    if [ -n "$PIDS" ]; then
+        echo "Stopping $SCRIPT (PIDs: $PIDS)..."
+        for PID in $PIDS; do
+            if kill -TERM "$PID"; then
+                echo "Successfully stopped PID $PID."
+            else
+                echo "Error: Failed to stop PID $PID."
+            fi
+        done
+    else
+        echo "$SCRIPT is not running. Nothing to stop."
+    fi
+done
+
+echo "Cleanup complete."
+exit 0
+

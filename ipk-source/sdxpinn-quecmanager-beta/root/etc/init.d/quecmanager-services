@@ -7,6 +7,9 @@ USE_PROCD=1
 
 start_service() {
     echo "Starting QuecManager services"
+    echo "Setting SMS text mode and Fetching initial SMS messages"
+    /www/cgi-bin/services/change_sms_code.sh
+    echo "Executed"
     echo "Starting Signal Metrics Logger"
     # Start Signal Metrics Logger
     procd_open_instance
