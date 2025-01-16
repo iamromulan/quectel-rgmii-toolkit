@@ -18,6 +18,7 @@ fi
 # Define a list of script file names to check and stop
 SCRIPTS="
 log_signal_metrics.sh
+change_sms_code.sh
 "
 
 # Loop through each script, check if it's running, and kill it if necessary
