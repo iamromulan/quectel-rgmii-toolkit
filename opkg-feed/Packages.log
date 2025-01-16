@@ -1,8 +1,7 @@
-Starting package analysis - Thu Jan 16 03:13:05 PM EST 2025
+Starting package analysis - Thu Jan 16 03:17:36 PM EST 2025
 No update needed for atinout (version 0.9.1, MD5: 6c8d3c910477e31940ee7740111a7fdf, size: 4226)
 No update needed for luci-app-atinout-mod (version 1.3.4-20241006, MD5: 2dac55de763333c37dd1728957fc8294, size: 4827)
-Updating package info for luci-app-tailscale...
-Updated luci-app-tailscale to version 1.2.3-2 with MD5: 65cedde5797eadd7b9903b51ad5f6e6f and size: 6483
+No update needed for luci-app-tailscale (version 1.2.3-2, MD5: 65cedde5797eadd7b9903b51ad5f6e6f, size: 6483)
 No update needed for ookla-speedtest (version 1.2.0, MD5: 2183f2df42a00380e761cace096e17c3, size: 1075762)
 No update needed for sdxpinn-console-menu (version 0.0.2, MD5: 42d2fd4c85b36a9c29e66092899080a4, size: 7365)
 No update needed for sdxpinn-mount-fix (version 1.2.0, MD5: 3f1279109adfba02bb7ca31026ec1c51, size: 55275)
@@ -11,6 +10,7 @@ No update needed for sdxpinn-quecmanager-beta (version 1.1.0-6, MD5: 309ff25b003
 No update needed for sms-tool (version 2025.1.12-APmod-iamromulan, MD5: 24ad9e7380b8390764e8e55cbf2b658a, size: 13590)
 No update needed for socat-at-bridge (version 1.1.1, MD5: 2f44c96722059294c162c845a3f628b9, size: 1828)
 No update needed for tailscale (version 1.78.1-1, MD5: f909644bc5a7bd23fa1827e3276cc2c3, size: 9906361)
-No update needed for tailscaled (version 1.78.1-2, MD5: a715fec5f877906bf780f93999960c63, size: 17961991)
+Updating package info for tailscaled...
+Updated tailscaled to version 1.78.1-2 with MD5: eb4f1a284e95fab5f0665e5db1511705 and size: 17962626
 Package file and signature updated successfully.
-Package analysis completed - Thu Jan 16 03:13:05 PM EST 2025
+Package analysis completed - Thu Jan 16 03:17:37 PM EST 2025
