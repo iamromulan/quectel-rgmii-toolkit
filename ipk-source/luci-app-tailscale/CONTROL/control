@@ -1,6 +1,6 @@
 Package: luci-app-tailscale
 Version: 1.2.3-2
-Depends: libc, tailscale, luci
+Depends: libc, tailscale
 Source: package/luci-app-tailscale
 SourceName: luci-app-tailscale
 Section: luci

@@ -98,7 +98,7 @@ License: GPLv3
 
 Package: tailscaled
 Version: 1.78.1-2
-Depends: libc, ca-bundle, kmod-tun
+Depends: libc, ca-bundle, kmod-tun, dnsmasq
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
@@ -153,12 +153,12 @@ Description:  Sets up a tty from SMD11
 
 Package: luci-app-tailscale
 Version: 1.2.3-2
-Depends: libc, tailscale, luci
+Depends: libc, tailscale
 Section: luci
 Architecture: all
 Maintainer: OpenWrt LuCI community
-MD5Sum: 4a222584db619c1dad38fdc4d1e533d9
-Size: 6503
+MD5Sum: 65cedde5797eadd7b9903b51ad5f6e6f
+Size: 6483
 Filename: luci-app-tailscale_1.2.3-2_all.ipk
 Source: github/iamromulan
 Description: Luci app for tailscale
