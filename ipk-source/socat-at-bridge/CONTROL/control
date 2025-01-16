@@ -1,5 +1,5 @@
 Package: socat-at-bridge
-Version: 1.1.0
+Version: 1.1.1
 Depends: libc socat
 Source: github/iamromulan/quectel-rgmii-toolkit
 Section: utils
