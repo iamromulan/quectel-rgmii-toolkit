@@ -2,6 +2,7 @@
 
 echo "Disabling socat-at-bridge at startup"
 service socat-at-bridge disable
+service socat-at-bridge-smd7 disable
 echo "Stopping socat-at-bridge"
 service socat-at-bridge stop
 service socat-at-bridge-smd7 stop
