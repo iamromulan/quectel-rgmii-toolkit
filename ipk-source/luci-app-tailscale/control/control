@@ -1,0 +1,11 @@
+Package: luci-app-tailscale
+Version: 1.2.3
+Depends: libc, tailscale
+Source: package/luci-app-tailscale
+SourceName: luci-app-tailscale
+Section: luci
+SourceDateEpoch: 1699969091
+Maintainer: OpenWrt LuCI community
+Architecture: all
+Installed-Size: 7745
+Description:  LuCI for Tailscale
