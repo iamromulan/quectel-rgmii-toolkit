@@ -1,6 +1,6 @@
 Package: tailscaled
-Version: 1.78.1-1
-Depends: libc, ca-bundle, kmod-tun
+Version: 1.78.1-2
+Depends: libc, ca-bundle, kmod-tun, dnsmasq
 Source: feeds/packages/net/tailscale
 SourceName: tailscaled
 License: BSD-3-Clause
