@@ -131,7 +131,6 @@ process_commands() {
                 "${ESCAPED_CMD}"
         fi
         
-        sleep 0.1
     done
     
     # Close JSON array
