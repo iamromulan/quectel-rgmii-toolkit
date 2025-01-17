@@ -1,0 +1,9 @@
+Package: sms-tool
+Version: 2025.1.12-APmod-iamromulan
+Depends: libc socat-at-bridge
+Source: github/iamromulan/sms_tool
+SourceName: github/iamromulan/sms_tool
+Section: utils
+URL: https://github.com/iamromulan/sms_tool
+Architecture: aarch64_cortex-a53
+Description:  SMS Tool for 3G/4G/5G modem AP

@@ -1,0 +1,6 @@
+Package: ookla-speedtest
+Version: 1.2.0
+Architecture: aarch64_cortex-a53
+Maintainer: Ookla speedtest.net https://www.speedtest.net/apps/cli
+Description: Allows you to test your internet speed with speedtest.net
+Depends: libc
