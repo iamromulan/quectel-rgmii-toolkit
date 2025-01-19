@@ -1,6 +1,6 @@
 Package: sms-tool
-Version: 2025.1.12-APmod-iamromulan
-Depends: libc socat-at-bridge
+Version: 2025.1.19-APmod-iamromulan
+Depends: libc, socat-at-bridge
 Source: github/iamromulan/sms_tool
 SourceName: github/iamromulan/sms_tool
 Section: utils
