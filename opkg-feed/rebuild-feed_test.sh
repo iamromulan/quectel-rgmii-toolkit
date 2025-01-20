@@ -55,11 +55,18 @@ for pkg_dir in "$IPK_SOURCE_DIR"/*; do
     fi
 
     control_file="$pkg_dir/CONTROL/control"
-    ipk_file="${pkg_name}_${pkg_arch}.ipk"
+    ipk_file="./${pkg_name}_*_${pkg_arch}.ipk"
 
-    # Skip if control file or ipk is missing
-    if [[ ! -f "$control_file" ]] || [[ ! -f "$ipk_file" ]]; then
-        echo "Skipping $pkg_name (missing control file or .ipk file)" | tee -a "$LOGFILE"
+    # Check if control file exists
+    if [[ ! -f "$control_file" ]]; then
+        echo "Skipping $pkg_name (missing control file)" | tee -a "$LOGFILE"
+        continue
+    fi
+
+    # Match the .ipk file
+    ipk_file=$(ls ./"${pkg_name}"_*_"${pkg_arch}".ipk 2>/dev/null)
+    if [[ -z "$ipk_file" ]]; then
+        echo "Skipping $pkg_name (missing .ipk file)" | tee -a "$LOGFILE"
         continue
     fi
 
@@ -114,7 +121,7 @@ done
 
 # Remove packages not in ipk-source
 grep "^Package: " "$PACKAGES" | awk '{print $2}' | while read -r pkg_name; do
-    if [[ ! -d "$IPK_SOURCE_DIR/$pkg_name" ]]; then
+    if [[ ! -d "$IPK_SOURCE_DIR/$pkg_name"* ]]; then
         echo "Removing orphaned package $pkg_name from Packages file..." | tee -a "$LOGFILE"
         sed -i "/^Package: $pkg_name$/,/^$/d" "$PACKAGES"
     fi
