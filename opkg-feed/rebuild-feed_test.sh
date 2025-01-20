@@ -27,7 +27,7 @@ calculate_md5_and_size() {
     echo "$md5sum $filesize"
 }
 
-# Function to parse control file
+# Function to parse control file into an associative array
 parse_control_file() {
     local control_file=$1
     declare -A control_data
@@ -38,7 +38,7 @@ parse_control_file() {
         control_data["$key"]="$value"
     done < "$control_file"
 
-    echo "${control_data[@]}"
+    echo "${!control_data[@]} ${control_data[@]}"
 }
 
 # Process each package directory in ipk-source
@@ -68,7 +68,12 @@ for pkg_dir in "$IPK_SOURCE_DIR"/*; do
     fi
 
     # Parse control file
-    read -r -a control_data <<< "$(parse_control_file "$control_file")"
+    read -r -a control_fields control_values <<< "$(parse_control_file "$control_file")"
+
+    declare -A control_data
+    for i in "${!control_fields[@]}"; do
+        control_data["${control_fields[i]}"]="${control_values[i]}"
+    done
 
     # Calculate MD5 and size
     read current_md5 current_size < <(calculate_md5_and_size "$ipk_file")
