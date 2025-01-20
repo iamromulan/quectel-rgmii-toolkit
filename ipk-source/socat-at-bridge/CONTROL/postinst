@@ -2,6 +2,7 @@
 
 echo "Enabling socat-at-bridge at startup"
 service socat-at-bridge enable
+rc_sync
 echo "Starting socat-at-bridge"
 service socat-at-bridge start
 echo "/dev/ttySMD11 is now available"
