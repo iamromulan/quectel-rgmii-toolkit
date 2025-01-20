@@ -1,6 +1,7 @@
 Package: atinout
 Version: 0.9.1
 Depends: libc
+Source: feeds/kiddin9/atinout
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Adrian Guenter <a@gntr.me>
@@ -24,6 +25,19 @@ Filename: luci-app-atinout-mod_1.3.4-20241006_all.ipk
 Source: package/luci-app-atinout-mod
 Description: Web UI for atinout
 License: GPLv3
+
+
+Package: luci-app-tailscale
+Version: 1.2.3-2
+Depends: libc, tailscale, tailscaled (>= 1.78.1-4)
+Section: luci
+Architecture: all
+Maintainer: OpenWrt LuCI community
+MD5Sum: 65cedde5797eadd7b9903b51ad5f6e6f
+Size: 6483
+Filename: luci-app-tailscale_1.2.3-2_all.ipk
+Source: github/iamromulan
+Description: Luci app for tailscale
 
 
 Package: ookla-speedtest
@@ -71,6 +85,7 @@ License: GPLv3
 Package: sdxpinn-quecmanager
 Version: 1.0.1
 Depends: libc, sdxpinn-mount-fix, atinout
+Conflicts: sdxpinn-quecmanager-beta
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
@@ -82,37 +97,9 @@ Description: A custom web UI desgined to run alongside luci for Quectel RM55x mo
 License: GPLv3
 
 
-Package: tailscale
-Version: 1.78.1-1
-Depends: libc, tailscaled
-Section: net
-Architecture: aarch64_cortex-a53
-Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: f909644bc5a7bd23fa1827e3276cc2c3
-Size: 9906361
-Filename: tailscale_1.78.1-1_aarch64_cortex-a53.ipk
-Source: feeds/packages/net/tailscale
-Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
-License: GPLv3
-
-
-Package: tailscaled
-Version: 1.78.1-3
-Depends: libc, ca-bundle, kmod-tun
-Section: net
-Architecture: aarch64_cortex-a53
-Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 99d04e05e23071e4f18d19c08aa12b05
-Size: 17962546
-Filename: tailscaled_1.78.1-3_aarch64_cortex-a53.ipk
-Source: feeds/packages/net/tailscale
-Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
-License: GPLv3
-
-
 Package: sdxpinn-quecmanager-beta
 Version: 1.1.1
-Depends: sdxpinn-mount-fix, libc, coreutils-timeout, uhttpd, sms-tool, jq, ookla-speedtest
+Depends: sdxpinn-mount-fix, libc, coreutils-timeout, uhttpd, sms-tool (>= 2025.1.19-APmod-iamromulan), jq, ookla-speedtest
 Conflicts: sdxpinn-quecmanager
 Section: admin
 Architecture: aarch64_cortex-a53
@@ -151,16 +138,31 @@ Source: https://github.com/iamromulan/quectel-rgmii-toolkit
 Description:  Sets up a tty from SMD11
 
 
-Package: luci-app-tailscale
-Version: 1.2.3-2
-Depends: libc, tailscale
-Section: luci
-Architecture: all
-Maintainer: OpenWrt LuCI community
-MD5Sum: 65cedde5797eadd7b9903b51ad5f6e6f
-Size: 6483
-Filename: luci-app-tailscale_1.2.3-2_all.ipk
-Source: github/iamromulan
-Description: Luci app for tailscale
+Package: tailscale
+Version: 1.78.1-1
+Depends: libc, tailscaled
+Section: net
+Architecture: aarch64_cortex-a53
+Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
+MD5Sum: f909644bc5a7bd23fa1827e3276cc2c3
+Size: 9906361
+Filename: tailscale_1.78.1-1_aarch64_cortex-a53.ipk
+Source: feeds/packages/net/tailscale
+Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
+License: GPLv3
+
+
+Package: tailscaled
+Version: 1.78.1-3
+Depends: libc, ca-bundle, kmod-tun
+Section: net
+Architecture: aarch64_cortex-a53
+Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
+MD5Sum: 99d04e05e23071e4f18d19c08aa12b05
+Size: 17962546
+Filename: tailscaled_1.78.1-3_aarch64_cortex-a53.ipk
+Source: feeds/packages/net/tailscale
+Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
+License: GPLv3
 
 
