@@ -5,17 +5,33 @@ echo "Content-type: application/json"
 echo ""
 
 # Read POST data
-read POST_DATA
+read -r POST_DATA
 
 # Debug log for generated hash
-DEBUG_LOG = "/tmp/auth.log"
+DEBUG_LOG="/tmp/auth.log"
 
 # Extract the password from POST data (URL encoded)
 USER="root"
-INPUT_PASSWORD=$(echo "$POST_DATA" | sed -n 's/^.*password=\([^&]*\).*$/\1/p')
+INPUT_PASSWORD=$(echo "$POST_DATA" | grep -o 'password=[^&]*' | cut -d= -f2-)
 
-# URL-decode the password (replace + with space and decode %XX)
-INPUT_PASSWORD=$(echo "$INPUT_PASSWORD" | sed 's/+/ /g;s/%\(..\)/\\x\1/g' | xargs -0 printf "%b")
+# URL-decode the password while preserving most special characters
+# First decode percent-encoded sequences
+urldecode() {
+    local encoded="${1//+/ }"
+    printf '%b' "${encoded//%/\\x}"
+}
+
+# Decode the password
+INPUT_PASSWORD=$(urldecode "$INPUT_PASSWORD")
+
+# Basic validation to reject & and $ characters
+if echo "$INPUT_PASSWORD" | grep -q '[&$]'; then
+    echo '{"state":"failed", "message":"Password contains forbidden characters (& or $)"}'
+    exit 1
+fi
+
+# Sanitize the password for shell usage
+INPUT_PASSWORD=$(printf '%s' "$INPUT_PASSWORD" | sed 's/[\"]/\\&/g')
 
 # Extract the hashed password from /etc/shadow for the specified user
 USER_SHADOW_ENTRY=$(grep "^$USER:" /etc/shadow)
@@ -32,14 +48,15 @@ USER_HASH=$(echo "$USER_SHADOW_ENTRY" | cut -d: -f2)
 SALT=$(echo "$USER_HASH" | cut -d'$' -f3)
 
 # Generate a hash from the input password using the same salt
-GENERATED_HASH=$(echo "$INPUT_PASSWORD" | openssl passwd -1 -salt "$SALT" -stdin)
+# Use printf to avoid issues with special characters in echo
+GENERATED_HASH=$(printf '%s' "$INPUT_PASSWORD" | openssl passwd -1 -salt "$SALT" -stdin)
 
 # Log generated hash for debugging
-echo "Generated hash: $GENERATED_HASH" >> $DEBUG_LOG
+printf "Generated hash: %s\n" "$GENERATED_HASH" >> "$DEBUG_LOG"
 
 # Compare the generated hash with the one in the shadow file
 if [ "$GENERATED_HASH" = "$USER_HASH" ]; then
     echo '{"state":"success"}'
 else
-    echo '{"state":"failed"}'
+    echo '{"state":"failed", "message":"Authentication failed"}'
 fi
