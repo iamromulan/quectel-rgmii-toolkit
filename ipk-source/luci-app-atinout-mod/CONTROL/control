@@ -1,5 +1,5 @@
 Package: luci-app-atinout-mod
-Version: 1.3.4-20241006
+Version: 1.3.4-20250119
 Depends: libc, atinout, luci-compat
 Source: package/luci-app-atinout-mod
 SourceName: luci-app-atinout-mod

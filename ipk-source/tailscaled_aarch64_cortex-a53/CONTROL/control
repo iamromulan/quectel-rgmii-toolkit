@@ -1,5 +1,5 @@
 Package: tailscaled
-Version: 1.78.1-3
+Version: 1.78.1-4
 Depends: libc, ca-bundle, kmod-tun
 Source: feeds/packages/net/tailscale
 SourceName: tailscaled
@@ -8,6 +8,4 @@ LicenseFiles: LICENSE
 Section: net
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
 Architecture: aarch64_cortex-a53
-Description:  It creates a secure network between your servers, computers,
- and cloud instances. Even when separated by firewalls or subnets. Updated
- by iamromulan to 1.76.1
+Description: It creates a secure network between your servers, computers,and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1

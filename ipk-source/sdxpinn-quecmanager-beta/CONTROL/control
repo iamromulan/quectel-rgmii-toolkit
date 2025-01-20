@@ -1,7 +1,8 @@
 Package: sdxpinn-quecmanager-beta
-Version: 1.1.1
+Version: 1.1.1-1
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol dr-dolomite@github.com Cameron Thompson iamromulan@github.com
+Source: github.com/iamromulan
 Description: A custom web UI desgined to run alongside luci for Quectel RM55x modems
-Depends: sdxpinn-mount-fix, libc, coreutils-timeout, uhttpd, sms-tool, jq, ookla-speedtest
+Depends: sdxpinn-mount-fix, libc, coreutils-timeout, uhttpd, sms-tool (>= 2025.1.19-APmod-iamromulan), jq, ookla-speedtest
 Conflicts: sdxpinn-quecmanager
