@@ -1,4 +1,4 @@
 
 config atinout 'general'
-	option atcport '/dev/smd11'
+	option atcport '/dev/smd7'
 

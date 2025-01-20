@@ -2,6 +2,7 @@ Package: socat-at-bridge
 Version: 1.1.1
 Depends: libc, socat
 Source: github/iamromulan/quectel-rgmii-toolkit
+Maintainer: github.com/iamromulan
 Section: utils
 URL: https://github.com/iamromulan/quectel-rgmii-toolkit
 Architecture: aarch64_cortex-a53
