@@ -30,21 +30,18 @@ calculate_md5_and_size() {
 # Function to parse control file
 parse_control_file() {
     local control_file=$1
-    local fields=(Package Version Depends Architecture Maintainer Source Description Section Conflicts License)
     declare -A control_data
 
     while IFS=':' read -r key value; do
         key=$(echo "$key" | xargs)
         value=$(echo "$value" | xargs)
-        if [[ " ${fields[*]} " == *" $key "* ]]; then
-            control_data["$key"]="$value"
-        fi
+        control_data["$key"]="$value"
     done < "$control_file"
 
     echo "${control_data[@]}"
 }
 
-# Scan ipk-source directory and process packages
+# Process each package directory in ipk-source
 for pkg_dir in "$IPK_SOURCE_DIR"/*; do
     pkg_name=$(basename "$pkg_dir")
     if [[ "$pkg_name" =~ _ ]]; then
@@ -84,12 +81,19 @@ for pkg_dir in "$IPK_SOURCE_DIR"/*; do
 
         # Append new entry to Packages file
         {
-            for key in "${!control_data[@]}"; do
-                echo "$key: ${control_data[$key]}"
-            done
+            echo "Package: ${control_data[Package]}"
+            echo "Version: ${control_data[Version]}"
+            echo "Depends: ${control_data[Depends]}"
+            echo "Architecture: ${control_data[Architecture]}"
+            echo "Maintainer: ${control_data[Maintainer]}"
             echo "MD5Sum: $current_md5"
             echo "Size: $current_size"
             echo "Filename: $ipk_file"
+            echo "Source: ${control_data[Source]}"
+            echo "Description: ${control_data[Description]}"
+            [[ -n ${control_data[Section]} ]] && echo "Section: ${control_data[Section]}"
+            [[ -n ${control_data[Conflicts]} ]] && echo "Conflicts: ${control_data[Conflicts]}"
+            [[ -n ${control_data[License]} ]] && echo "License: ${control_data[License]}"
             echo ""
         } >> "$PACKAGES"
 
@@ -119,7 +123,7 @@ for pkg_dir in "$IPK_SOURCE_DIR"/*; do
     fi
 done
 
-# Remove packages not in ipk-source
+# Remove orphaned packages
 grep "^Package: " "$PACKAGES" | awk '{print $2}' | while read -r pkg_name; do
     if [[ ! -d "$IPK_SOURCE_DIR/$pkg_name"* ]]; then
         echo "Removing orphaned package $pkg_name from Packages file..." | tee -a "$LOGFILE"
