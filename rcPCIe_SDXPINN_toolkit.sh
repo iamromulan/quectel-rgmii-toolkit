@@ -282,12 +282,14 @@ tailscale_menu() {
 install_update_tailscale() {
     echo -e "\e[1;31mInstalling Tailscale 1.78.1...\e[0m"
     cd /tmp
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/tailscaled_1.78.1-1_aarch64_cortex-a53.ipk
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/tailscale_1.78.1-1_aarch64_cortex-a53.ipk
-    opkg install tailscaled_1.78.1-1_aarch64_cortex-a53.ipk
-    opkg install tailscale_1.78.1-1_aarch64_cortex-a53.ipk
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/tailscaled_1.78.1-4_aarch64_cortex-a53.ipk
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/tailscale_1.78.1-2_aarch64_cortex-a53.ipk
+    opkg install tailscaled_1.78.1-4_aarch64_cortex-a53.ipk
+    opkg install tailscale_1.78.1-2_aarch64_cortex-a53.ipk
     
-    echo -e "\e[1;32mTailscale version 1.74.1 installed\e[0m"
+    echo -e "\e[1;32mTailscale version 1.78.1 installed\e[0m"
+    echo -e "\e[1;32mNEW! The luci-app-tailscale package is avalible in iamromulan's repo!\e[0m"
+    echo -e "\e[1;32mInstall from Luci Software after installing the repo.\e[0m"
 }
 
 
