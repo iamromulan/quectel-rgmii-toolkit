@@ -1,11 +1,11 @@
 #!/bin/sh
-
 # Configuration
 LOGDIR="/www/signal_graphs"
 MAX_ENTRIES=10
 INTERVAL=60
 QUEUE_FILE="/tmp/at_pipe.txt"
 FETCH_LOCK_KEYWORD="FETCH_LOCK"
+CELL_SCAN_KEYWORD="CELL_SCAN"  # Added to check for cell scan
 PAUSE_FILE="/tmp/signal_logging.pause"
 
 # Ensure the directory exists
@@ -13,7 +13,7 @@ mkdir -p "$LOGDIR"
 
 # Check for stale entries and clean them
 check_and_clean_stale() {
-    local command_type="$1"  # Either "FETCH_LOCK" or "AT_COMMAND"
+    local command_type="$1"
     local wait_count=0
     
     while [ $wait_count -lt 6 ]; do
@@ -33,13 +33,30 @@ check_and_clean_stale() {
     return 0
 }
 
-# Simplified lock handling
+# Wait for high-priority operations
+wait_for_high_priority() {
+    while grep -q "\"priority\":\"high\"" "$QUEUE_FILE"; do
+        logger -t signal_metrics "Waiting for high-priority operation to complete"
+        sleep 1
+    done
+}
+
+# Simplified lock handling with priority awareness
 handle_lock() {
-    # First check and clean any FETCH_LOCK entries
+    # Wait for any high-priority operations first
+    wait_for_high_priority
+    
+    # Check and clean any FETCH_LOCK entries
     check_and_clean_stale "FETCH_LOCK"
     
-    # Add our own entry
-    printf '{"command":"AT_COMMAND","pid":"%s","timestamp":"%s"}\n' \
+    # Check for cell scan operations
+    while grep -q "\"command\":\"$CELL_SCAN_KEYWORD\"" "$QUEUE_FILE"; do
+        logger -t signal_metrics "Waiting for cell scan to complete"
+        sleep 1
+    done
+    
+    # Add our low-priority entry
+    printf '{"command":"AT_COMMAND","pid":"%s","timestamp":"%s","priority":"low"}\n' \
         "$$" \
         "$(date '+%H:%M:%S')" >>"$QUEUE_FILE"
     

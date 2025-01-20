@@ -7,6 +7,7 @@ echo ""
 # Define file paths and configuration
 QUEUE_FILE="/tmp/at_pipe.txt"
 LOCK_KEYWORD="FETCH_DATA_LOCK"
+CELL_SCAN_KEYWORD="CELL_SCAN"  # Added cell scan keyword
 MAX_WAIT=6  # Maximum seconds to wait for lock
 
 # Function to output error in JSON format
@@ -15,10 +16,22 @@ output_error() {
     exit 1
 }
 
+# Function to wait for high-priority operations
+wait_for_high_priority() {
+    while grep -q "\"command\":\"$CELL_SCAN_KEYWORD\"" "$QUEUE_FILE" || \
+          grep -q "\"priority\":\"high\"" "$QUEUE_FILE"; do
+        logger -t at_commands "Waiting for high-priority operation to complete"
+        sleep 1
+    done
+}
+
 # Function to clean and add lock with simplified timeout logic
 add_clean_lock() {
     local TIMESTAMP=$(date +%s)
     local WAIT_START=$(date +%s)
+    
+    # First, wait for any high-priority operations
+    wait_for_high_priority
     
     while true; do
         local CURRENT_TIME=$(date +%s)
@@ -30,8 +43,8 @@ add_clean_lock() {
             logger -t at_commands "Removed existing lock after $MAX_WAIT seconds timeout"
         fi
         
-        # Add our lock entry
-        printf '{"id":"%s","timestamp":"%s","command":"%s","status":"lock","pid":"%s","start_time":"%s"}\n' \
+        # Add our lock entry with low priority
+        printf '{"id":"%s","timestamp":"%s","command":"%s","status":"lock","pid":"%s","start_time":"%s","priority":"low"}\n' \
             "${LOCK_KEYWORD}" \
             "$(date '+%H:%M:%S')" \
             "${LOCK_KEYWORD}" \

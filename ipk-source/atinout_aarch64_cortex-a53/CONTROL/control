@@ -10,5 +10,4 @@ SourceDateEpoch: 1691250335
 Maintainer: Adrian Guenter <a@gntr.me>
 Architecture: aarch64_cortex-a53
 Installed-Size: 3571
-Description:  Atinout is a program that will execute AT commands in sequence and
- capture the response from the modem.
+Description:  Atinout is a program that will execute AT commands in sequence and capture the response from the modem.
