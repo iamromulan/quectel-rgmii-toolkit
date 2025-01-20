@@ -104,8 +104,8 @@ Conflicts: sdxpinn-quecmanager
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: b9665be3c0bc65ac1573998cf3edf691
-Size: 911550
+MD5Sum: ec8d3a84bead2f35cc6e60460f306efd
+Size: 904782
 Filename: sdxpinn-quecmanager-beta_1.1.1-1_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: BETA: A custom web UI desgined to run alongside luci for Quectel RM55x modems
@@ -131,8 +131,8 @@ Depends: libc, socat
 Section: utils
 Architecture: aarch64_cortex-a53
 Maintainer: iamromulan
-MD5Sum: 5cb6a39cd32f8c3d24a2e3f437dc9885
-Size: 1802
+MD5Sum: 2fd73d7679b3db54113d93bb5949077a
+Size: 1969
 Filename: socat-at-bridge_1.1.1_aarch64_cortex-a53.ipk
 Source: https://github.com/iamromulan/quectel-rgmii-toolkit
 Description:  Sets up a tty from SMD11
