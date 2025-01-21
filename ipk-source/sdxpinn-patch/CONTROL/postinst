@@ -1,0 +1,5 @@
+#!/bin/ash
+
+opkg update
+
+exit 0

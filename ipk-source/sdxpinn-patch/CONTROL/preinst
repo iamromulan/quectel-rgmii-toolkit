@@ -1,5 +1,165 @@
 #!/bin/ash
 
+clean_distfeeds() {
+    # Define the list of items to comment out
+    items_to_comment="
+src/gz openwrt_core https://downloads.openwrt.org/releases/22.03.5/targets/sdx75/generic/packages
+src/gz openwrt_qtiagm https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiagm
+src/gz openwrt_qtiargs https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiargs
+src/gz openwrt_qtiaudio https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiaudio
+src/gz openwrt_qtiaudioprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiaudioprop
+src/gz openwrt_qtibsp https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtibsp
+src/gz openwrt_qtibspprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtibspprop
+src/gz openwrt_qtibt https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtibt
+src/gz openwrt_qtibtprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtibtprop
+src/gz openwrt_qticore https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qticore
+src/gz openwrt_qticoreinternal https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qticoreinternal
+src/gz openwrt_qticoreprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qticoreprop
+src/gz openwrt_qtictainternal https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtictainternal
+src/gz openwrt_qtidata https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtidata
+src/gz openwrt_qtidatainternal https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtidatainternal
+src/gz openwrt_qtidataprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtidataprop
+src/gz openwrt_qtiipq https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiipq
+src/gz openwrt_qtiipqezmesh https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiipqezmesh
+src/gz openwrt_qtiipqprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiipqprop
+src/gz openwrt_qtilocation https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtilocation
+src/gz openwrt_qtilocationinternal https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtilocationinternal
+src/gz openwrt_qtilocationprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtilocationprop
+src/gz openwrt_qtimsdcprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtimsdcprop
+src/gz openwrt_qtinternal https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtinternal
+src/gz openwrt_qtipal https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtipal
+src/gz openwrt_qtiperfprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiperfprop
+src/gz openwrt_qtippatprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtippatprop
+src/gz openwrt_qtiquectel https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiquectel
+src/gz openwrt_qtiquectelprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiquectelprop
+src/gz openwrt_qtirilprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtirilprop
+src/gz openwrt_qtisecurity https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtisecurity
+src/gz openwrt_qtisecurityinternal https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtisecurityinternal
+src/gz openwrt_qtisecurityprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtisecurityprop
+src/gz openwrt_qtisensorsinternal https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtisensorsinternal
+src/gz openwrt_qtisensorsprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtisensorsprop
+src/gz openwrt_qtissdk https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtissdk
+src/gz openwrt_qtissmgr https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtissmgr
+src/gz openwrt_qtissmgrprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtissmgrprop
+src/gz openwrt_qtiwlan https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiwlan
+src/gz openwrt_qtiwlanprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiwlanprop
+"
+
+    # Define the list of items to ensure are uncommented
+    items_to_keep="
+src/gz openwrt_base https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/base
+src/gz openwrt_luci https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/luci
+src/gz openwrt_packages https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/packages
+src/gz openwrt_routing https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/routing
+src/gz openwrt_telephony https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/telephony/
+"
+
+    # Input file to process
+    INPUT_FILE="/etc/opkg/distfeeds.conf"
+    # Backup the original file
+    cp "$INPUT_FILE" "${INPUT_FILE}.bak"
+
+    # Create a temporary file for the modified content
+    TEMP_FILE="${INPUT_FILE}.tmp"
+
+    # Process the file line by line
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Check if the line should be commented out
+        for item in $items_to_comment; do
+            if [ "$line" = "$item" ] || [ "$line" = "# $item" ]; then
+                echo "# $item" >> "$TEMP_FILE"
+                continue 2
+            fi
+        done
+
+        # Check if the line should be uncommented
+        for item in $items_to_keep; do
+            if [ "$line" = "# $item" ] || [ "$line" = "$item" ]; then
+                echo "$item" >> "$TEMP_FILE"
+                continue 2
+            fi
+        done
+
+        # Preserve other lines as is
+        echo "$line" >> "$TEMP_FILE"
+    done < "$INPUT_FILE"
+
+    # Ensure all items_to_keep are present and uncommented
+    for item in $items_to_keep; do
+        if ! grep -qx "$item" "$TEMP_FILE"; then
+            echo "$item" >> "$TEMP_FILE"
+        fi
+    done
+
+    # Replace the original file with the modified one
+    mv "$TEMP_FILE" "$INPUT_FILE"
+
+    echo "Processed '$INPUT_FILE'. Backup saved as '${INPUT_FILE}.bak'."
+}
 
 
+repo_iamromulanSDXPINN_check() {
+    # Define the repository and key details
+    REPO_URL="https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/opkg-feed"
+    REPO_LINE="src/gz iamromulan-SDXPINN-repo $REPO_URL"
+    FEEDS_FILE="/etc/opkg/customfeeds.conf"
+    PUBLIC_KEY_URL="https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/opkg-feed/iamromulan-SDXPINN-repo.key"
+    TMP_KEY="/tmp/iamromulan-SDXPINN-repo.key"
+    KEYS_DIR="/etc/opkg/keys"
+
+    # Clean up duplicate entries in customfeeds.conf
+    if grep -q "$REPO_LINE" "$FEEDS_FILE" 2>/dev/null; then
+        echo "Cleaning up duplicate entries in $FEEDS_FILE."
+        sed -i "/$REPO_LINE/d" "$FEEDS_FILE"
+    fi
+
+    # Add the repository to customfeeds.conf
+    echo "Adding repository to $FEEDS_FILE."
+    echo "$REPO_LINE" >> "$FEEDS_FILE" || {
+        echo "Error: Could not add repository to $FEEDS_FILE."
+        return 1
+    }
+
+    # Download the key temporarily for verification
+    curl -fsSL "$PUBLIC_KEY_URL" -o "$TMP_KEY" || {
+        echo "Error: Failed to download public key from $PUBLIC_KEY_URL."
+        return 1
+    }
+
+    # Check if the key already exists in /etc/opkg/keys/
+    local key_installed=0
+    for key in "$KEYS_DIR"/*; do
+        if cmp -s "$TMP_KEY" "$key"; then
+            echo "Public key already installed: $(basename "$key")."
+            key_installed=1
+            break
+        fi
+    done
+
+    # If the key is not installed, add it
+    if [ "$key_installed" -eq 0 ]; then
+        echo "Installing public key..."
+        opkg-key add "$TMP_KEY" || {
+            echo "Error: Failed to add public key."
+            rm -f "$TMP_KEY"
+            return 1
+        }
+        echo "Public key installed successfully."
+    fi
+
+    # Clean up temporary key file
+    rm -f "$TMP_KEY"
+
+    return 0
+}
+
+# Begin Patch Process 
+echo -e "\e[92mBegining sdxpinn-patch process...\e[0m"
+echo -e "\e[92mEnsuring distfeeds is clean of any non-working sources and has stock OpenWRT ones...\e[0m"
+clean_distfeeds
+echo -e "\e[92mEnsuring iamromulan's SDXPINN repo is listed in customfeeds and public key is installed...\e[0m"
+repo_iamromulanSDXPINN_check
+echo -e "\e[92miamromulan's SDXPINN repo source and key is installed.\e[0m"
+
+echo -e "\e[92msdxpinn-patch process complete.\e[0m"
 exit 0
