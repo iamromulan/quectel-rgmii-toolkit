@@ -64,14 +64,17 @@ src/gz openwrt_telephony https://downloads.openwrt.org/releases/22.03.5/packages
 
     # Process the file line by line
     while IFS= read -r line || [ -n "$line" ]; do
-        # Remove malformed lines
-        if [ -z "$line" ] || ! echo "$line" | grep -qE '^src/gz '; then
+        # Trim leading/trailing spaces from the line
+        trimmed_line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
+        # Skip empty lines
+        if [ -z "$trimmed_line" ]; then
             continue
         fi
 
         # Check if the line should be commented out
         for item in $items_to_comment; do
-            if [ "$line" = "$item" ] || [ "$line" = "# $item" ]; then
+            if [ "$trimmed_line" = "$item" ] || [ "$trimmed_line" = "# $item" ]; then
                 echo "# $item" >> "$TEMP_FILE"
                 continue 2
             fi
@@ -79,14 +82,14 @@ src/gz openwrt_telephony https://downloads.openwrt.org/releases/22.03.5/packages
 
         # Check if the line should be uncommented
         for item in $items_to_keep; do
-            if [ "$line" = "# $item" ] || [ "$line" = "$item" ]; then
+            if [ "$trimmed_line" = "# $item" ] || [ "$trimmed_line" = "$item" ]; then
                 echo "$item" >> "$TEMP_FILE"
                 continue 2
             fi
         done
 
         # Preserve other lines as is
-        echo "$line" >> "$TEMP_FILE"
+        echo "$trimmed_line" >> "$TEMP_FILE"
     done < "$INPUT_FILE"
 
     # Ensure all items_to_keep are present and uncommented

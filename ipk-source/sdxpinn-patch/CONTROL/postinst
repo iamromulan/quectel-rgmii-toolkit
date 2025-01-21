@@ -1,5 +1,5 @@
 #!/bin/ash
 
-opkg update
+echo "Complete"
 
 exit 0
