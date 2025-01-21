@@ -82,6 +82,19 @@ Description: Creates a usable mount space and overlay for SDXPINN modems. Depend
 License: GPLv3
 
 
+Package: sdxpinn-patch
+Version: 1
+Depends: sdxpinn-mount-fix
+Section: base
+Architecture: all
+Maintainer: Cameron Thompson iamromulan@github.com
+MD5Sum: 915a5b410fecbb5ed51b12c8d1577593
+Size: 2611
+Filename: sdxpinn-patch_1_all.ipk
+Source: github.com/iamromulan
+Description: A general first system patch for SDXPINN OpenWRT
+
+
 Package: sdxpinn-quecmanager
 Version: 1.0.1
 Depends: libc, sdxpinn-mount-fix, atinout
