@@ -64,6 +64,11 @@ src/gz openwrt_telephony https://downloads.openwrt.org/releases/22.03.5/packages
 
     # Process the file line by line
     while IFS= read -r line || [ -n "$line" ]; do
+        # Remove malformed lines
+        if [ -z "$line" ] || ! echo "$line" | grep -qE '^src/gz '; then
+            continue
+        fi
+
         # Check if the line should be commented out
         for item in $items_to_comment; do
             if [ "$line" = "$item" ] || [ "$line" = "# $item" ]; then
@@ -100,22 +105,22 @@ src/gz openwrt_telephony https://downloads.openwrt.org/releases/22.03.5/packages
 
 repo_iamromulanSDXPINN_check() {
     # Define the repository and key details
-    REPO_URL="https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/opkg-feed"
-    REPO_LINE="src/gz iamromulan-SDXPINN-repo $REPO_URL"
+    STABLE_REPO_LINE="src/gz iamromulan-SDXPINN-repo https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/opkg-feed"
+    DEV_REPO_LINE="src/gz iamromulan-SDXPINN-repo https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/development-SDXPINN/opkg-feed"
     FEEDS_FILE="/etc/opkg/customfeeds.conf"
     PUBLIC_KEY_URL="https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/opkg-feed/iamromulan-SDXPINN-repo.key"
     TMP_KEY="/tmp/iamromulan-SDXPINN-repo.key"
     KEYS_DIR="/etc/opkg/keys"
 
-    # Clean up duplicate entries in customfeeds.conf
-    if grep -q "$REPO_LINE" "$FEEDS_FILE" 2>/dev/null; then
-        echo "Cleaning up duplicate entries in $FEEDS_FILE."
-        sed -i "/$REPO_LINE/d" "$FEEDS_FILE"
+    # Remove duplicate and development repo lines
+    if grep -q "iamromulan-SDXPINN-repo" "$FEEDS_FILE"; then
+        echo "Cleaning up duplicate or development repo entries in $FEEDS_FILE."
+        sed -i "/iamromulan-SDXPINN-repo/d" "$FEEDS_FILE"
     fi
 
-    # Add the repository to customfeeds.conf
-    echo "Adding repository to $FEEDS_FILE."
-    echo "$REPO_LINE" >> "$FEEDS_FILE" || {
+    # Add the stable repository to customfeeds.conf
+    echo "Adding stable repository to $FEEDS_FILE."
+    echo "$STABLE_REPO_LINE" >> "$FEEDS_FILE" || {
         echo "Error: Could not add repository to $FEEDS_FILE."
         return 1
     }
@@ -152,6 +157,7 @@ repo_iamromulanSDXPINN_check() {
 
     return 0
 }
+
 
 # Begin Patch Process 
 echo -e "\e[92mBegining sdxpinn-patch process...\e[0m"
