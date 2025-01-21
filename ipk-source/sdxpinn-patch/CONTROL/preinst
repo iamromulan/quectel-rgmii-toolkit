@@ -2,7 +2,7 @@
 
 clean_distfeeds() {
     # Define the list of items to comment out
-    items_to_comment="
+    items_to_comment=$(cat <<EOF
 src/gz openwrt_core https://downloads.openwrt.org/releases/22.03.5/targets/sdx75/generic/packages
 src/gz openwrt_qtiagm https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiagm
 src/gz openwrt_qtiargs https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiargs
@@ -43,16 +43,18 @@ src/gz openwrt_qtissmgr https://downloads.openwrt.org/releases/22.03.5/packages/
 src/gz openwrt_qtissmgrprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtissmgrprop
 src/gz openwrt_qtiwlan https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiwlan
 src/gz openwrt_qtiwlanprop https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/qtiwlanprop
-"
+EOF
+)
 
     # Define the list of items to ensure are uncommented
-    items_to_keep="
+    items_to_keep=$(cat <<EOF
 src/gz openwrt_base https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/base
 src/gz openwrt_luci https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/luci
 src/gz openwrt_packages https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/packages
 src/gz openwrt_routing https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/routing
 src/gz openwrt_telephony https://downloads.openwrt.org/releases/22.03.5/packages/aarch64_cortex-a53/telephony/
-"
+EOF
+)
 
     # Input file to process
     INPUT_FILE="/etc/opkg/distfeeds.conf"
@@ -64,35 +66,32 @@ src/gz openwrt_telephony https://downloads.openwrt.org/releases/22.03.5/packages
 
     # Process the file line by line
     while IFS= read -r line || [ -n "$line" ]; do
-        # Trim leading/trailing spaces from the line
-        trimmed_line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-
-        # Skip empty lines
-        if [ -z "$trimmed_line" ]; then
+        # Remove malformed or empty lines
+        if [ -z "$line" ] || ! echo "$line" | grep -qE '^src/gz '; then
             continue
         fi
 
-        # Check if the line should be commented out
+        # Check if the line matches items to comment out
         for item in $items_to_comment; do
-            if [ "$trimmed_line" = "$item" ] || [ "$trimmed_line" = "# $item" ]; then
+            if [ "$line" = "$item" ] || [ "$line" = "# $item" ]; then
                 echo "# $item" >> "$TEMP_FILE"
                 continue 2
             fi
         done
 
-        # Check if the line should be uncommented
+        # Check if the line matches items to keep
         for item in $items_to_keep; do
-            if [ "$trimmed_line" = "# $item" ] || [ "$trimmed_line" = "$item" ]; then
+            if [ "$line" = "$item" ] || [ "$line" = "# $item" ]; then
                 echo "$item" >> "$TEMP_FILE"
                 continue 2
             fi
         done
 
-        # Preserve other lines as is
-        echo "$trimmed_line" >> "$TEMP_FILE"
+        # Preserve all other lines
+        echo "$line" >> "$TEMP_FILE"
     done < "$INPUT_FILE"
 
-    # Ensure all items_to_keep are present and uncommented
+    # Ensure all items_to_keep are present
     for item in $items_to_keep; do
         if ! grep -qx "$item" "$TEMP_FILE"; then
             echo "$item" >> "$TEMP_FILE"
