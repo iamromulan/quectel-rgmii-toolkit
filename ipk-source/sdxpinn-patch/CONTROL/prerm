@@ -1,0 +1,5 @@
+#!/bin/ash
+
+echo -e "\e[38;5;196mINFO: This package can not be removed by opkg\e[0m"
+echo -e "\e[38;5;40mINFO: This package can be upgraded...\e[0m"
+exit 0

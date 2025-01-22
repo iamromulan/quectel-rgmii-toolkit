@@ -1,0 +1,7 @@
+Package: sdxpinn-patch
+Depends: sdxpinn-mount-fix
+Version: 1
+Architecture: all
+Maintainer: Cameron Thompson iamromulan@github.com
+Source: github.com/iamromulan
+Description: A general first system patch for SDXPINN OpenWRT
