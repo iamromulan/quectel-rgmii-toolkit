@@ -1,15 +1,20 @@
 #!/bin/ash
-
 # Paths to monitor and synchronize
 WATCH_DIR="/etc/rc.d"
 TARGET_DIR1="/real_rootfs/etc/rc.d"
 TARGET_DIR2="/usrdata/etc/rc.d"
 
+# Function to check if a path is a mountpoint
+is_mountpoint() {
+    grep -q " $1 " /proc/mounts
+    return $?
+}
+
 # Function to synchronize init scripts
 synchronize_init_scripts() {
     # Ensure /real_rootfs is writable for updates
     mount -o remount,rw /real_rootfs
-
+    
     # Synchronize with TARGET_DIR1
     echo "Synchronizing $WATCH_DIR with $TARGET_DIR1..."
     for link in "$WATCH_DIR"/*; do
@@ -20,7 +25,7 @@ synchronize_init_scripts() {
             fi
         fi
     done
-
+    
     for link in "$TARGET_DIR1"/*; do
         if [ -L "$link" ]; then
             link_name=$(basename "$link")
@@ -30,8 +35,8 @@ synchronize_init_scripts() {
         fi
     done
 
-    # Synchronize with TARGET_DIR2 if /usrdata exists
-    if [ -d "/usrdata" ]; then
+    # Synchronize with TARGET_DIR2 only if /usrdata is a mountpoint
+    if is_mountpoint "/usrdata"; then
         echo "Synchronizing $WATCH_DIR with $TARGET_DIR2..."
         for link in "$WATCH_DIR"/*; do
             if [ -L "$link" ]; then
@@ -41,7 +46,7 @@ synchronize_init_scripts() {
                 fi
             fi
         done
-
+        
         for link in "$TARGET_DIR2"/*; do
             if [ -L "$link" ]; then
                 link_name=$(basename "$link")
@@ -56,7 +61,6 @@ synchronize_init_scripts() {
     mount -o remount,ro /real_rootfs
 }
 
-# Synchronization
+# Run synchronization
 synchronize_init_scripts
 exit 0
-
