@@ -63,38 +63,40 @@ EOF
 
     # Create a temporary file for the modified content
     TEMP_FILE="${INPUT_FILE}.tmp"
+    : > "$TEMP_FILE"  # Clear/create the temp file
 
-    # Process the file line by line
+    # Process each line in the input file
     while IFS= read -r line || [ -n "$line" ]; do
-        # Remove malformed or empty lines
-        if [ -z "$line" ] || ! echo "$line" | grep -qE '^src/gz '; then
+        # Skip empty lines
+        [ -z "$line" ] && continue
+        
+        # Skip malformed lines
+        echo "$line" | grep -qE '^(#[[:space:]]*)?src/gz ' || continue
+        
+        # Remove any existing comment marks for comparison
+        clean_line=$(echo "$line" | sed 's/^#[[:space:]]*//')
+        
+        # Check if line should be commented
+        if echo "$items_to_comment" | grep -Fxq "$clean_line"; then
+            echo "# $clean_line" >> "$TEMP_FILE"
             continue
         fi
-
-        # Check if the line matches items to comment out
-        for item in $items_to_comment; do
-            if [ "$line" = "$item" ] || [ "$line" = "# $item" ]; then
-                echo "# $item" >> "$TEMP_FILE"
-                continue 2
-            fi
-        done
-
-        # Check if the line matches items to keep
-        for item in $items_to_keep; do
-            if [ "$line" = "$item" ] || [ "$line" = "# $item" ]; then
-                echo "$item" >> "$TEMP_FILE"
-                continue 2
-            fi
-        done
-
-        # Preserve all other lines
+        
+        # Check if line should be kept uncommented
+        if echo "$items_to_keep" | grep -Fxq "$clean_line"; then
+            echo "$clean_line" >> "$TEMP_FILE"
+            continue
+        fi
+        
+        # Preserve other lines as-is
         echo "$line" >> "$TEMP_FILE"
     done < "$INPUT_FILE"
 
-    # Ensure all items_to_keep are present
-    for item in $items_to_keep; do
-        if ! grep -qx "$item" "$TEMP_FILE"; then
-            echo "$item" >> "$TEMP_FILE"
+    # Add any missing items_to_keep entries
+    echo "$items_to_keep" | while IFS= read -r keep_item; do
+        [ -z "$keep_item" ] && continue
+        if ! grep -Fxq "$keep_item" "$TEMP_FILE"; then
+            echo "$keep_item" >> "$TEMP_FILE"
         fi
     done
 
