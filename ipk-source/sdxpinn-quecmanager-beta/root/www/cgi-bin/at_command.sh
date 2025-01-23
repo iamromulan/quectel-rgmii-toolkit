@@ -7,7 +7,7 @@ echo ""
 # Define file paths and configuration
 QUEUE_FILE="/tmp/at_pipe.txt"
 LOG_FILE="/var/log/at_commands.log"
-LOCK_KEYWORD="FETCH_DATA_LOCK"
+LOCK_KEYWORD="AT_COMMAND_LOCK"
 CELL_SCAN_KEYWORD="CELL_SCAN"
 MAX_WAIT=6  # Maximum seconds to wait for lock
 COMMAND_TIMEOUT=4  # Timeout for individual AT commands
@@ -50,8 +50,8 @@ add_clean_lock() {
             log_message "Removed existing lock after $MAX_WAIT seconds timeout"
         fi
         
-        # Add our lock entry with low priority
-        printf '{"id":"%s","timestamp":"%s","command":"%s","status":"lock","pid":"%s","start_time":"%s","priority":"low"}\n' \
+        # Add our lock entry with high priority
+        printf '{"id":"%s","timestamp":"%s","command":"%s","status":"lock","pid":"%s","start_time":"%s","priority":"high"}\n' \
             "${LOCK_KEYWORD}" \
             "$(date '+%H:%M:%S')" \
             "${LOCK_KEYWORD}" \

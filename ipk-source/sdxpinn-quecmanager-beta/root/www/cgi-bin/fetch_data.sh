@@ -7,7 +7,8 @@ echo ""
 # Define file paths and configuration
 QUEUE_FILE="/tmp/at_pipe.txt"
 LOCK_KEYWORD="FETCH_DATA_LOCK"
-CELL_SCAN_KEYWORD="CELL_SCAN"  # Added cell scan keyword
+CELL_SCAN_KEYWORD="CELL_SCAN"
+CELL_SCAN_WAIT=3  # Wait time for cell scan in seconds
 MAX_WAIT=6  # Maximum seconds to wait for lock
 
 # Function to output error in JSON format
@@ -16,35 +17,52 @@ output_error() {
     exit 1
 }
 
-# Function to wait for high-priority operations
-wait_for_high_priority() {
-    while grep -q "\"command\":\"$CELL_SCAN_KEYWORD\"" "$QUEUE_FILE" || \
-          grep -q "\"priority\":\"high\"" "$QUEUE_FILE"; do
-        logger -t at_commands "Waiting for high-priority operation to complete"
-        sleep 1
+# Function to remove cell scan entries after timeout
+remove_cell_scan() {
+    local start_time=$(date +%s)
+    local has_waited=0
+
+    # Wait for cell scan to complete naturally
+    while [ $has_waited -eq 0 ]; do
+        if ! grep -q "\"command\":\"$CELL_SCAN_KEYWORD\"" "$QUEUE_FILE"; then
+            return 0
+        fi
+
+        current_time=$(date +%s)
+        if [ $((current_time - start_time)) -ge $CELL_SCAN_WAIT ]; then
+            has_waited=1
+        else
+            sleep 1
+        fi
     done
+
+    # After wait period, forcibly remove cell scan entries
+    if grep -q "\"command\":\"$CELL_SCAN_KEYWORD\"" "$QUEUE_FILE"; then
+        logger -t at_commands "Removing cell scan entry after $CELL_SCAN_WAIT seconds timeout"
+        sed -i "/${CELL_SCAN_KEYWORD}/d" "$QUEUE_FILE"
+        sync
+    fi
 }
 
-# Function to clean and add lock with simplified timeout logic
+# Function to clean and add high-priority lock
 add_clean_lock() {
     local TIMESTAMP=$(date +%s)
     local WAIT_START=$(date +%s)
     
-    # First, wait for any high-priority operations
-    wait_for_high_priority
+    # First, handle any cell scan operations
+    remove_cell_scan
     
     while true; do
         local CURRENT_TIME=$(date +%s)
         
         # After MAX_WAIT seconds, forcibly remove any existing lock
         if [ $((CURRENT_TIME - WAIT_START)) -ge $MAX_WAIT ]; then
-            # Remove any existing lock entries regardless of owner
             sed -i "/${LOCK_KEYWORD}/d" "$QUEUE_FILE"
             logger -t at_commands "Removed existing lock after $MAX_WAIT seconds timeout"
         fi
         
-        # Add our lock entry with low priority
-        printf '{"id":"%s","timestamp":"%s","command":"%s","status":"lock","pid":"%s","start_time":"%s","priority":"low"}\n' \
+        # Add our lock entry with high priority
+        printf '{"id":"%s","timestamp":"%s","command":"%s","status":"lock","pid":"%s","start_time":"%s","priority":"high"}\n' \
             "${LOCK_KEYWORD}" \
             "$(date '+%H:%M:%S')" \
             "${LOCK_KEYWORD}" \
@@ -53,13 +71,11 @@ add_clean_lock() {
         
         # Verify our lock was written
         if grep -q "\"pid\":\"$$\".*\"start_time\":\"$TIMESTAMP\"" "$QUEUE_FILE"; then
-            logger -t at_commands "Lock created by PID $$ at $TIMESTAMP"
-            # Register cleanup handler
+            logger -t at_commands "High priority lock created by PID $$ at $TIMESTAMP"
             trap 'remove_lock; exit' INT TERM EXIT
             return 0
         fi
         
-        # If we haven't exceeded MAX_WAIT, sleep and try again
         if [ $((CURRENT_TIME - WAIT_START)) -lt $MAX_WAIT ]; then
             sleep 1
         else
@@ -117,24 +133,18 @@ process_commands() {
     local commands="$1"
     local first=1
     
-    # Start JSON array
     printf '['
     
-    # Process each command
     for cmd in $commands; do
-        # Add comma separator if not first item
         [ $first -eq 0 ] && printf ','
         first=0
         
-        # Execute command with retries
         OUTPUT=$(execute_at_command "$cmd")
         local CMD_STATUS=$?
         
-        # Properly escape both command and output for JSON
         ESCAPED_CMD=$(escape_json "$cmd")
         ESCAPED_OUTPUT=$(escape_json "$OUTPUT")
         
-        # Format JSON object with proper escaping
         if [ $CMD_STATUS -eq 0 ]; then
             printf '{"command":"%s","response":"%s","status":"success"}' \
                 "${ESCAPED_CMD}" \
@@ -143,16 +153,13 @@ process_commands() {
             printf '{"command":"%s","response":"Command failed","status":"error"}' \
                 "${ESCAPED_CMD}"
         fi
-        
     done
     
-    # Close JSON array
     printf ']\n'
 }
 
 # Main process wrapper with automatic lock handling
 main_with_clean_lock() {
-    # Set timeout for the entire script
     ( sleep 60; kill -TERM $$ 2>/dev/null ) & 
     TIMEOUT_PID=$!
     
@@ -162,10 +169,8 @@ main_with_clean_lock() {
         exit 1
     fi
     
-    # Process commands
     process_commands "$COMMANDS"
     
-    # Clean up
     remove_lock
     kill $TIMEOUT_PID 2>/dev/null
 }
@@ -188,7 +193,7 @@ define_command_sets
 # Get command set from query string with validation
 COMMAND_SET=$(echo "$QUERY_STRING" | grep -o 'set=[1-8]' | cut -d'=' -f2 | tr -cd '0-9')
 if [ -z "$COMMAND_SET" ] || [ "$COMMAND_SET" -lt 1 ] || [ "$COMMAND_SET" -gt 8 ]; then
-    COMMAND_SET=1  # Default to set 1 if invalid or no set specified
+    COMMAND_SET=1
 fi
 
 # Select the appropriate command set

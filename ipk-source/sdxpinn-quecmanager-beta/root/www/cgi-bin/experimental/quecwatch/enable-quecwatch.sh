@@ -96,6 +96,21 @@ QUEUE_FILE="/tmp/at_pipe.txt"
 LOG_FILE="/tmp/log/quecwatch/quecwatch.log"
 [ ! -f "${QUEUE_FILE}" ] && touch "${QUEUE_FILE}"
 
+# Function to persist retry count to a more permanent location
+persist_retry_count() {
+    local count=$1
+    echo "$count" > /etc/quecmanager/quecwatch/retry_count
+}
+
+# Function to load persisted retry count
+load_retry_count() {
+    if [ -f /etc/quecmanager/quecwatch/retry_count ]; then
+        cat /etc/quecmanager/quecwatch/retry_count
+    else
+        echo "0"
+    fi
+}
+
 # Enhanced logging function with debug level
 log_message() {
     local level="$1"
@@ -178,9 +193,12 @@ execute_at_command() {
     return 1
 }
 
-# Function to update retry count in config
+# Function to update retry count in config and persistent storage
 update_retry_count() {
     local new_retry_count=$1
+    # Update the persistent count file
+    persist_retry_count "$new_retry_count"
+    # Update the config file
     sed -i "s/CURRENT_RETRIES=[0-9]*/CURRENT_RETRIES=${new_retry_count}/" /etc/quecmanager/quecwatch/quecwatch.conf
     # Reload config to ensure latest values
     . /etc/quecmanager/quecwatch/quecwatch.conf
@@ -215,7 +233,7 @@ switch_sim_card() {
     if [ $? -ne 0 ]; then
         log_message "ERROR" "Failed to get current SIM slot"
         return 1
-    fi    # Changed from } to fi
+    fi
     
     # Toggle between SIM slots
     new_sim_slot=$((current_sim_slot % 2 + 1))
@@ -254,7 +272,7 @@ perform_connection_recovery() {
         if ! execute_at_command "AT+COPS=0"; then
             log_message "ERROR" "Failed to reattach to network"
             return 1
-        fi  # <-- Changed from } to fi
+        fi
         
         sleep 5
         
@@ -285,7 +303,7 @@ fi
 
 # Main monitoring loop
 failure_count=0
-retry_trigger=0
+retry_trigger=$(load_retry_count)
 sim_failover_interval=0
 
 while true; do
@@ -309,12 +327,19 @@ while true; do
                         failure_count=0
                         update_retry_count 0
                     else
-                        log_message "ERROR" "SIM failover failed. Performing system reboot."
+                        log_message "ERROR" "SIM failover failed. Updating retry count before reboot."
+                        retry_trigger=$((retry_trigger + 1))
+                        update_retry_count ${retry_trigger}
+                        log_message "INFO" "Updated retry count to ${retry_trigger}. Performing system reboot."
                         reboot
                     fi
                 else
                     log_message "INFO" "Max retries exhausted. Auto SIM failover disabled. Removing QuecWatch."
+                    # Clean up the retry count file
+                    rm -f /etc/quecmanager/quecwatch/retry_count
+                    # Remove from rc.local and disable
                     sed -i '\|/etc/quecmanager/quecwatch/quecwatch.sh|d' /etc/rc.local
+                    sed -i 's/ENABLED=true/ENABLED=false/' /etc/quecmanager/quecwatch/quecwatch.conf
                     reboot
                     exit 0
                 fi
@@ -324,7 +349,10 @@ while true; do
                     failure_count=0
                     update_retry_count 0
                 else
-                    log_message "ERROR" "Recovery failed. Performing system reboot."
+                    log_message "ERROR" "Recovery failed. Updating retry count before reboot."
+                    retry_trigger=$((retry_trigger + 1))
+                    update_retry_count ${retry_trigger}
+                    log_message "INFO" "Updated retry count to ${retry_trigger}. Performing system reboot."
                     reboot
                 fi
             fi
