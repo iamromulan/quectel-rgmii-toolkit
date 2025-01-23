@@ -50,7 +50,6 @@ done
 
 service quecmanager-services stop
 service quecmanager-services disable
-rc_sync
 
 echo "Cleanup complete."
 exit 0
