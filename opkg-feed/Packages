@@ -83,14 +83,14 @@ License: GPLv3
 
 
 Package: sdxpinn-patch
-Version: 1
+Version: 2
 Depends: sdxpinn-mount-fix
 Section: base
 Architecture: all
 Maintainer: Cameron Thompson iamromulan@github.com
-MD5Sum: 325bba5d51b1d0579e6b12f1cb608c08
-Size: 2768
-Filename: sdxpinn-patch_1_all.ipk
+MD5Sum: 94afa15dac3eb49b62f731bf526ccb79
+Size: 3027
+Filename: sdxpinn-patch_2_all.ipk
 Source: github.com/iamromulan
 Description: A general first system patch for SDXPINN OpenWRT
 
@@ -117,8 +117,8 @@ Conflicts: sdxpinn-quecmanager
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: 8ad5b2321bf270680e5d156924926dde
-Size: 1047920
+MD5Sum: bcb2775216382f6a479cc10983df8e0d
+Size: 1050194
 Filename: sdxpinn-quecmanager-beta_1.1.1-2_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: BETA: A custom web UI desgined to run alongside luci for Quectel RM55x modems
