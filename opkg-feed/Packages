@@ -74,8 +74,8 @@ Depends: libc
 Section: base
 Architecture: aarch64_cortex-a53
 Maintainer: iamromulan <https://github.com/iamromulan>
-MD5Sum: f6f785617ac6092d2e7e0396c3949b26
-Size: 4691
+MD5Sum: bfb762735b457ff049963ccb475010a4
+Size: 4671
 Filename: sdxpinn-mount-fix_1.3.0_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: Creates a usable mount space and overlay for SDXPINN modems. Dependencies bundled: libinotifytools and inotifywait
