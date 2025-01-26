@@ -162,7 +162,7 @@ repo_iamromulanSDXPINN_check() {
     return 0
 }
 
-noprerm_mount-fix() {
+noprerm_mount_fix() {
     
     if [ -f /real_rootfs/usr/lib/opkg/info/sdxpinn-mount-fix.prerm ]; then
         mount -o remount,rw /real_rootfs
@@ -204,7 +204,7 @@ echo -e "\e[92mEnsuring iamromulan's SDXPINN repo is listed in customfeeds and p
 repo_iamromulanSDXPINN_check
 echo -e "\e[92miamromulan's SDXPINN repo source and key is installed.\e[0m"
 echo -e "\e[92mEnsuring mount-fix does not have a prerm\e[0m"
-noprerm_mount-fix
+noprerm_mount_fix
 echo -e "\e[92mEnsuring opkg reconizes needed archs\e[0m"
 opkg_arch_patch
 echo -e "\e[92msdxpinn-patch process complete.\e[0m"
