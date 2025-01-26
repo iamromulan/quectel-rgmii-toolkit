@@ -1,62 +1,123 @@
 #!/bin/ash
 
+LOG_FILE="/tmp/pre-mount-fixinst.log"
+# Initialize log
+rm -f "$LOG_FILE" >/dev/null 2>&1
+touch "$LOG_FILE"
+# Redirect all output (stdout and stderr) to the log file
+exec >>"$LOG_FILE" 2>&1
+
+mount_factory() {
+    # Redirect all output (stdout and stderr) to the log file
+    exec >>"$LOG_FILE" 2>&1
+    
+    # Check if /real_rootfs exists
+    if [ ! -d "/real_rootfs" ]; then
+        echo "Error: /real_rootfs does not exist. Cannot proceed with stop." >> "$LOG_FILE"
+        return 1
+    fi
+
+    # Determine firmware version based on mounts
+    if [ -d "/usrdata" ] && [ -d "/systemrw" ]; then
+        echo "New firmware scenario detected (with /usrdata and /systemrw)." >> "$LOG_FILE"
+        stop_handle_new_firmware
+    else
+        echo "Old firmware scenario detected (without /usrdata and /systemrw)." >> "$LOG_FILE"
+        stop_handle_old_firmware
+    fi
+}
+
+stop_handle_new_firmware() {
+    # Redirect all output (stdout and stderr) to the log file
+    exec >>"$LOG_FILE" 2>&1
+    /bin/echo "Stopping and reverting overlay and pivot_root"
+    service init-overlay-watchdog stop
+    service init-overlay-watchdog disable
+    # Remount the original root filesystem as read-write
+    /bin/mount -o remount,rw /real_rootfs
+
+    # Move the mounted filesystems back to the original locations
+    /bin/mount --move /sys /real_rootfs/sys
+    /bin/mount --move /proc /real_rootfs/proc
+    /bin/mount --move /tmp /real_rootfs/tmp
+    /bin/mount --move /dev /real_rootfs/dev
+    /bin/mount --move /firmware /real_rootfs/firmware
+    /bin/mount --move /usrdata /real_rootfs/usrdata
+    /bin/mount --move /data /real_rootfs/data
+    /bin/mount --move /cache /real_rootfs/cache
+    /bin/mount --move /systemrw /real_rootfs/systemrw
+    /bin/mount --move /persist /real_rootfs/persist
+
+    # Pivot root back to the original root
+    /sbin/pivot_root /real_rootfs /real_rootfs/rootfs
+
+    /bin/echo "Reverted pivot_root"
+	
+	# Unmount /rootfs overlay
+	/bin/umount -lf /rootfs >/dev/null 2>&1
+    service init-overlay-watchdog disable
+	
+	# Mount layer 2 /etc back
+    /bin/mount --bind /usrdata/etc /etc
+    service init-overlay-watchdog disable
+
+    # Mount layer 3 /etc back
+    /bin/mount -t overlay overlay -o lowerdir=/etc,upperdir=/usrdata/overlay-work/etc-upper,workdir=/usrdata/overlay-work/.etc-work /etc
+    service init-overlay-watchdog disable
+	df -h
+	echo -e "\e[31m / is read-write right now. Be careful\e[0m"
+	echo -e "\e[31m Reboot or run mount -o remount,ro / \e[0m"
+}
+
+stop_handle_old_firmware() {
+    # Redirect all output (stdout and stderr) to the log file
+    exec >>"$LOG_FILE" 2>&1
+    /bin/echo "Stopping and reverting overlay and pivot_root" 
+
+    # Remount the original root filesystem as read-write
+    /bin/mount -o remount,rw /real_rootfs
+
+    # Move the mounted filesystems back to the original locations
+    /bin/mount --move /sys /real_rootfs/sys 
+    /bin/mount --move /proc /real_rootfs/proc 
+    /bin/mount --move /tmp /real_rootfs/tmp 
+    /bin/mount --move /dev /real_rootfs/dev 
+    /bin/mount --move /firmware /real_rootfs/firmware 
+    /bin/mount --move /persist /real_rootfs/persist 
+    /bin/mount --move /cache /real_rootfs/cache 
+    /bin/mount --move /data /real_rootfs/data 
+
+    # Pivot root back to the original root
+    /sbin/pivot_root /real_rootfs /real_rootfs/rootfs 
+
+    /bin/echo "Reverted pivot_root"
+	
+	# Unmount /rootfs overlay
+	/bin/umount -lf /rootfs >/dev/null 2>&1
+	
+	# Mount the location of etc-upper back
+	mount -t ubifs /dev/ubi0_3 /overlay
+	
+	# Mount the old overlay filesystem back for etc
+    /bin/mount -t overlay overlay -o lowerdir=/etc,upperdir=/overlay/etc-upper,workdir=/overlay/.etc-work /etc 
+	
+	echo -e "\e[31m / is read-write right now. Be careful\e[0m"
+	echo -e "\e[31m Reboot or run mount -o remount,ro / \e[0m"
+}
+
+
 if grep -qs '/real_rootfs' /proc/mounts; then
-    echo "This package is meant to be installed once after a clean flash."
-    echo "You should not upgrade or reinstall it. Flash first then run the toolkit otherwise."
-    exit 1
+    echo "Upgrade scenario detected."
+    mount_factory
+    service mount-fix disable
+    rm /usrdata/etc/rc.d/S03mount-fix
+    echo "Filesystem structure returned to Quectel Stock"
+    echo "Backup exists at /usrdata/rootfs or /data/rootfs"
 fi
 
 # Remount original rootfs as read-write 
 echo "Mounting / as read-write"
 mount -o remount,rw /
-
-# Define the location of detected packages file
-DETECTED_PACKAGES_FILE="/tmp/detected_packages.tmp"
-LIST_FILE_DELETED=false
-
-# Clear temp file before begining
-rm -f "$DETECTED_PACKAGES_FILE" 
-# Function to check if a specific bundled package is already installed and delete its list file
-detect_and_remove_list_files() {
-    local package_name="$1"
-    local list_file="/usr/lib/opkg/info/${package_name}.list"
-
-    # Check if the bundled package is installed by checking its .list file
-    if [ -f "$list_file" ]; then
-        echo "$package_name is already installed. Deleting its $list_file to avoid future conflicts."
-        rm -f "$list_file"
-        echo "$package_name" >> "$DETECTED_PACKAGES_FILE"
-        LIST_FILE_DELETED=true
-    else
-        echo "$package_name is not currently installed."
-		echo "$package_name is included in this package and will be installed."
-    fi
-}
-
-# Check for installed packages and handle accordingly
-detect_and_remove_list_files "libinotifytools"
-detect_and_remove_list_files "inotifywait"
-
-# Report if any packages were detected and list them
-if [ -f "$DETECTED_PACKAGES_FILE" ]; then
-    echo "Detected the following installed packages, which were handled to avoid clashes:"
-    cat "$DETECTED_PACKAGES_FILE"
-else
-    echo "No pre-existing bundled packages detected."
-fi
-
-# If any list files were deleted, show a warning message at the end of the script
-if [ "$LIST_FILE_DELETED" = true ]; then
-    echo -e "\e[31m================================================\e[0m"
-    echo -e "\e[31mPre-bundled packages detected\e[0m"
-    echo -e "\e[32mAssociation between said packages and respective files has been removed\e[0m"
-    echo -e "\e[31m================================================\e[0m"
-    echo -e "\e[31mopkg will fail now\e[0m"
-    echo -e "\e[32mYou need to try installing this package again\e[0m"
-    echo -e "\e[32mThen it will work\e[0m"
-    echo -e "\e[31m================================================\e[0m"
-    echo -e "\e[32m================================================\e[0m"
-fi
 
 # Check if /etc is mounted
 if grep -qs '/etc' /proc/mounts; then

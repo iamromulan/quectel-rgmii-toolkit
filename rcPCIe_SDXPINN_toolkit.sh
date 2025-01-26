@@ -57,38 +57,24 @@ install_mount_fix() {
         echo -e "\033[31mI was expecting either /etc or /real_rootfs to be a mount point.\033[0m"
         exit 1
     fi
-
-    # Check if /etc is mounted
-    if grep -qs '/etc ' /proc/mounts; then
-        echo "Unmounting /etc..."
-        umount -lf /etc
-    fi
-
-    # Check if /real_rootfs is mounted
-    if grep -qs '/real_rootfs ' /proc/mounts; then
-        # Echo message in red
-        echo -e "\033[31mThe environment has already been setup. If you want to undo the changes temporarily run service mount-fix stop.\033[0m"
-        echo -e "\033[31mWant to uninstal? Then run opkg remove sdxpinn-mount-fix\033[0m"
-        exit 1
-    fi
     # Install mount-fix
     cd /tmp
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-mount-fix_1.2.0_aarch64_cortex-a53.ipk
-    opkg install sdxpinn-mount-fix_1.2.0_aarch64_cortex-a53.ipk
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-mount-fix_1.3.1_aarch64_cortex-a53.ipk
+    opkg install sdxpinn-mount-fix_1.3.1_aarch64_cortex-a53.ipk
 }
 
 basic_55x_setup() {
     overlay_check || return
-	echo "src/gz iamromulan-SDXPINN-repo https://raw.githubusercontent.com/iamromulan/quectel-rgmii-toolkit/SDXPINN/opkg-feed" >> /etc/opkg/customfeeds.conf
 	cd /tmp
-	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/iamromulan-SDXPINN-repo.key
- 	opkg-key add /tmp/iamromulan-SDXPINN-repo.key
+	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-patch_2.5_all.ipk
+    opkg install sdxpinn-patch_2.5_all.ipk
 	opkg update
     	echo -e "\e[92m"
-	echo "iamromulan's ipk/opkg repo added!...."	
-    	echo -e "\e[0m"
+	echo "iamromulan's ipk/opkg repo added!"
+    echo "Installing basic packages..."
 	opkg install atinout luci-app-atinout-mod sdxpinn-console-menu
-	
+    echo "Patching default Quectel login binary..."
+        echo -e "\e[0m"
 	# Get rid of the Quectel Login Binary
 	opkg install shadow-login
 	mv /bin/login /bin/login.old
@@ -111,9 +97,7 @@ basic_55x_setup() {
 
 
 	service uhttpd enable
-	sleep 2
 	service dropbear enable
-	sleep 2
 	service uhttpd start
 	service dropbear start
 
@@ -278,18 +262,15 @@ tailscale_menu() {
     done
 }
 
-# Function to install, update, or remove Tailscale
+# Function to install tailscale
 install_update_tailscale() {
+    overlay_check || return
     echo -e "\e[1;31mInstalling Tailscale 1.78.1...\e[0m"
-    cd /tmp
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/tailscaled_1.78.1-4_aarch64_cortex-a53.ipk
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/tailscale_1.78.1-2_aarch64_cortex-a53.ipk
-    opkg install tailscaled_1.78.1-4_aarch64_cortex-a53.ipk
-    opkg install tailscale_1.78.1-2_aarch64_cortex-a53.ipk
+    opkg update
+    opkg install luci-app-tailscale
     
     echo -e "\e[1;32mTailscale version 1.78.1 installed\e[0m"
-    echo -e "\e[1;32mNEW! The luci-app-tailscale package is avalible in iamromulan's repo!\e[0m"
-    echo -e "\e[1;32mInstall from Luci Software after installing the repo.\e[0m"
+    echo -e "\e[1;32mNEW! Tailscale can be configured from Luci\e[0m"
 }
 
 
@@ -297,25 +278,21 @@ install_update_tailscale() {
 configure_tailscale() {
     while true; do
         echo "Configure Tailscale"
-        echo -e "\e[38;5;40m1) Enable Tailscale Web UI at http://192.168.225.1:8088 (Gateway on port 8088)\e[0m"  # Green
-        echo -e "\e[38;5;196m2) Disable Tailscale Web UI\e[0m"  # Red
-        echo -e "\e[38;5;27m3) Connect to Tailnet\e[0m"  # Brown
-        echo -e "\e[38;5;87m4) Connect to Tailnet with SSH ON\e[0m"  # Light cyan
-        echo -e "\e[38;5;105m5) Reconnect to Tailnet with SSH OFF\e[0m"  # Light magenta
-        echo -e "\e[38;5;172m6) Disconnect from Tailnet (reconnects at reboot)\e[0m"  # Light yellow
-        echo -e "\e[1;31m7) Logout from tailscale account\e[0m"
-        echo -e "\e[38;5;27m8) Return to Tailscale Menu\e[0m"
+        echo -e "\e[38;5;27m1) Connect to Tailnet\e[0m"  # Brown
+        echo -e "\e[38;5;87m2) Connect to Tailnet with SSH ON\e[0m"  # Light cyan
+        echo -e "\e[38;5;105m3) Reconnect to Tailnet with SSH OFF\e[0m"  # Light magenta
+        echo -e "\e[38;5;172m4) Disconnect from Tailnet (reconnects at reboot)\e[0m"  # Light yellow
+        echo -e "\e[1;31m5) Logout from tailscale account\e[0m"
+        echo -e "\e[38;5;27m6) Return to Tailscale Menu\e[0m"
         read -p "Enter your choice: " config_choice
 
         case $config_choice in
-            1) echo -e "\e[38;5;196mNot for the 551 yet\e[0m" ;;  # Red
-            2) echo -e "\e[38;5;196mNot for the 551 yet\e[0m" ;;  # Red
+            1) tailscale up --accept-dns=false --reset ;;
+            2) tailscale up --ssh --accept-dns=false --reset ;;
             3) tailscale up --accept-dns=false --reset ;;
-            4) tailscale up --ssh --accept-dns=false --reset ;;
-            5) tailscale up --accept-dns=false --reset ;;
-            6) tailscale down ;;
-            7) tailscale logout ;;
-            8) break ;;
+            4) tailscale down ;;
+            5) tailscale logout ;;
+            6) break ;;
             *) echo "Invalid option" ;;
         esac
     done
@@ -394,7 +371,7 @@ while true; do
     echo -e "\e[92m2) Install sdxpinn-mount-fix/run me after a flash!\e[0m" # Green
     echo -e "\e[94m3) TTL Setup\e[0m" # Light Blue
     echo -e "\e[92m4) MTU Setup\e[0m" # Light Green	
-    echo -e "\e[94m5) Install Basic Packages/enable luci/add iamromulan's feed to opkg\e[0m" # Light Blue    
+    echo -e "\e[94m5) Install Basic Packages/enable luci/dropbear and add iamromulan's feed to opkg\e[0m" # Light Blue    
     echo -e "\e[94m6) Set root password\e[0m" # Light Blue
     echo -e "\e[94m7) Tailscale Management\e[0m" # Light Blue
     echo -e "\e[92m8) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
