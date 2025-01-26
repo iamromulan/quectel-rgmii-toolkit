@@ -31,7 +31,8 @@ stop_handle_new_firmware() {
     # Redirect all output (stdout and stderr) to the log file
     exec >>"$LOG_FILE" 2>&1
     /bin/echo "Stopping and reverting overlay and pivot_root"
-
+    service init-overlay-watchdog stop
+    service init-overlay-watchdog disable
     # Remount the original root filesystem as read-write
     /bin/mount -o remount,rw /real_rootfs
 
@@ -54,12 +55,15 @@ stop_handle_new_firmware() {
 	
 	# Unmount /rootfs overlay
 	/bin/umount -lf /rootfs >/dev/null 2>&1
+    service init-overlay-watchdog disable
 	
 	# Mount layer 2 /etc back
     /bin/mount --bind /usrdata/etc /etc
+    service init-overlay-watchdog disable
 
     # Mount layer 3 /etc back
     /bin/mount -t overlay overlay -o lowerdir=/etc,upperdir=/usrdata/overlay-work/etc-upper,workdir=/usrdata/overlay-work/.etc-work /etc
+    service init-overlay-watchdog disable
 	df -h
 	echo -e "\e[31m / is read-write right now. Be careful\e[0m"
 	echo -e "\e[31m Reboot or run mount -o remount,ro / \e[0m"
