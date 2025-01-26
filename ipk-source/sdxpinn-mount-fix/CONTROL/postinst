@@ -7,9 +7,12 @@ service mount-fix enable
 if grep -qs '/usrdata' /proc/mounts; then
     echo "/usrdata is mounted. Enabling at /usrdata..."
     cp -P /etc/rc.d/S03mount-fix /usrdata/etc/rc.d/S03mount-fix
+	rm /usrdata/overlay-work/etc-upper/rc.d/S03mount-fix
+	cp -P /etc/rc.d/S03mount-fix /usrdata/overlay-work/etc-upper/rc.d/S03mount-fix
 fi
 
 service mount-fix start
+service mount-fix enable
 
 echo -e "\e[32m sdxpinn-mount-fix installed! Here is the new file structure! \e[0m"
 echo -e "\e[32m ============================================================ \e[0m"
