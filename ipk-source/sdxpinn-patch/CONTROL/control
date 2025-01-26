@@ -1,6 +1,6 @@
 Package: sdxpinn-patch
 Depends: sdxpinn-mount-fix
-Version: 2
+Version: 2.5
 Architecture: all
 Maintainer: Cameron Thompson iamromulan@github.com
 Source: github.com/iamromulan

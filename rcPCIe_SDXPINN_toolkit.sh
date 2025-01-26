@@ -59,22 +59,22 @@ install_mount_fix() {
     fi
     # Install mount-fix
     cd /tmp
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-mount-fix_1.3.0_aarch64_cortex-a53.ipk
-    opkg install sdxpinn-mount-fix_1.3.0_aarch64_cortex-a53.ipk
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-mount-fix_1.3.1_aarch64_cortex-a53.ipk
+    opkg install sdxpinn-mount-fix_1.3.1_aarch64_cortex-a53.ipk
 }
 
 basic_55x_setup() {
     overlay_check || return
 	cd /tmp
-	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-patch_2_all.ipk
-    opkg install sdxpinn-patch_2_all.ipk
+	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-patch_2.5_all.ipk
+    opkg install sdxpinn-patch_2.5_all.ipk
 	opkg update
     	echo -e "\e[92m"
 	echo "iamromulan's ipk/opkg repo added!"
     echo "Installing basic packages..."
 	opkg install atinout luci-app-atinout-mod sdxpinn-console-menu
     echo "Patching default Quectel login binary..."
-    echo -e "\e[0m"
+        echo -e "\e[0m"
 	# Get rid of the Quectel Login Binary
 	opkg install shadow-login
 	mv /bin/login /bin/login.old
@@ -371,7 +371,7 @@ while true; do
     echo -e "\e[92m2) Install sdxpinn-mount-fix/run me after a flash!\e[0m" # Green
     echo -e "\e[94m3) TTL Setup\e[0m" # Light Blue
     echo -e "\e[92m4) MTU Setup\e[0m" # Light Green	
-    echo -e "\e[94m5) Install Basic Packages/enable luci/add iamromulan's feed to opkg\e[0m" # Light Blue    
+    echo -e "\e[94m5) Install Basic Packages/enable luci/dropbear and add iamromulan's feed to opkg\e[0m" # Light Blue    
     echo -e "\e[94m6) Set root password\e[0m" # Light Blue
     echo -e "\e[94m7) Tailscale Management\e[0m" # Light Blue
     echo -e "\e[92m8) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
