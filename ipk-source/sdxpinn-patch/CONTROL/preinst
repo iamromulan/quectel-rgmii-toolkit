@@ -191,6 +191,7 @@ echo -e "\e[92miamromulan's SDXPINN repo source and key is installed.\e[0m"
 echo -e "\e[92mEnsuring mount-fix does not have a prerm\e[0m"
 mount -o remount,rw /real_rootfs
 rm /real_rootfs/usr/lib/opkg/info/sdxpinn-mount-fix.prerm
+sleep 1
 mount -o remount,ro /real_rootfs
 rm /usr/lib/opkg/info/sdxpinn-mount-fix.prerm
 echo -e "\e[92mEnsuring opkg reconizes needed archs\e[0m"
