@@ -162,6 +162,24 @@ repo_iamromulanSDXPINN_check() {
     return 0
 }
 
+opkg_arch_patch() {
+if [ ! -f /etc/opkg/arch.conf ]; then
+ cat > /etc/opkg/arch.conf << 'EOF'
+arch all 1
+arch noarch 1
+arch sdxpinn 2
+arch aarch64_cortex-a53 10
+arch aarch64_generic 20
+EOF
+else
+ for arch in "all 1" "noarch 1" "sdxpinn 2" "aarch64_cortex-a53 10" "aarch64_generic 20"; do
+   if ! grep -q "^arch $arch$" /etc/opkg/arch.conf; then
+     echo "arch $arch" >> /etc/opkg/arch.conf
+   fi
+ done
+fi
+}
+
 
 # Begin Patch Process 
 echo -e "\e[92mBegining sdxpinn-patch process...\e[0m"
@@ -170,6 +188,12 @@ clean_distfeeds
 echo -e "\e[92mEnsuring iamromulan's SDXPINN repo is listed in customfeeds and public key is installed...\e[0m"
 repo_iamromulanSDXPINN_check
 echo -e "\e[92miamromulan's SDXPINN repo source and key is installed.\e[0m"
-
+echo -e "\e[92mEnsuring mount-fix does not have a prerm\e[0m"
+mount -o remount,rw /real_rootfs
+rm /real_rootfs/usr/lib/opkg/info/sdxpinn-mount-fix.prerm
+mount -o remount,ro /real_rootfs
+rm /usr/lib/opkg/info/sdxpinn-mount-fix.prerm
+echo -e "\e[92mEnsuring opkg reconizes needed archs\e[0m"
+opkg_arch_patch
 echo -e "\e[92msdxpinn-patch process complete.\e[0m"
 exit 0

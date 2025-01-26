@@ -112,7 +112,7 @@ License: GPLv3
 
 Package: sdxpinn-quecmanager-beta
 Version: 1.1.1-2
-Depends: sdxpinn-mount-fix, libc, coreutils-timeout, uhttpd, sms-tool (>= 2025.1.19-APmod-iamromulan), jq, ookla-speedtest
+Depends: sdxpinn-mount-fix, libc, inotifywait, coreutils-timeout, uhttpd, sms-tool (>= 2025.1.19-APmod-iamromulan), jq, ookla-speedtest
 Conflicts: sdxpinn-quecmanager
 Section: admin
 Architecture: aarch64_cortex-a53
