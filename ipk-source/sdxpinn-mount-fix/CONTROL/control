@@ -1,5 +1,5 @@
 Package: sdxpinn-mount-fix
-Version: 1.2.0
+Version: 1.3.0
 Architecture: aarch64_cortex-a53
 Maintainer: Cameron Thompson iamromulan@github.com
 Source: github.com/iamromulan
