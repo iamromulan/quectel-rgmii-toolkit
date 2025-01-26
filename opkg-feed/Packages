@@ -88,8 +88,8 @@ Depends: sdxpinn-mount-fix
 Section: base
 Architecture: all
 Maintainer: Cameron Thompson iamromulan@github.com
-MD5Sum: aeb9a5f27bdc1891e4f30301e2749a28
-Size: 3059
+MD5Sum: 0ec65238142dad95de1666b01a6f09c6
+Size: 3054
 Filename: sdxpinn-patch_2.5_all.ipk
 Source: github.com/iamromulan
 Description: A general first system patch for SDXPINN OpenWRT
