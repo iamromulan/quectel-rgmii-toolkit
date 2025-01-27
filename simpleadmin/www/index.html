@@ -1186,7 +1186,7 @@
                       .replace(/"/g, "");
 
                     // Get the eNBID. Its just Cell ID minus the last 2 characters
-                    this.eNBID = longCID.substring(0, longCID.length - 2);
+                    this.eNBID = parseInt(longCID.substring(0, longCID.length - 2), 16);
 
                     // Get the short Cell ID (Last 2 characters of the Cell ID)
                     const shortCID = longCID.substring(longCID.length - 2);
@@ -1334,7 +1334,7 @@
                       .replace(/"/g, "");
 
                     // Get the eNBID. Its just Cell ID minus the last 2 characters
-                    this.eNBID = longCID.substring(0, longCID.length - 2);
+                    this.eNBID = parseInt(longCID.substring(0, longCID.length - 2), 16);
 
                     // Get the short Cell ID (Last 2 characters of the Cell ID)
                     const shortCID = longCID.substring(longCID.length - 2);
