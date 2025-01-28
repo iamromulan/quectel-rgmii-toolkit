@@ -6,8 +6,6 @@ cp /www/login.html /www/index.html
 
 service quecmanager-services enable
 service quecmanager-services start
-sleep 3
-rc_sync
 
 exit 0
 
