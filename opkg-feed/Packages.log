@@ -1,18 +1,17 @@
-Starting package analysis - Tue Jan 28 12:06:04 AM EST 2025
+Starting package analysis - Tue Jan 28 07:50:38 PM EST 2025
 No update needed for atinout (version 0.9.1, MD5: 444eb87488bad1927b6ed069dedf7393, size: 4323)
 No update needed for luci-app-atinout-mod (version 1.3.4-20250119, MD5: 1ffee9ec8fe5723b8140bf2c21fea508, size: 4864)
 No update needed for luci-app-tailscale (version 1.2.3-2, MD5: 53c84c947c42d7518aecb4a6b8a9c5a8, size: 6501)
 No update needed for ookla-speedtest (version 1.2.0, MD5: b26e1909599f73cab40ea0281c5a6283, size: 1075696)
 No update needed for sdxpinn-console-menu (version 0.0.2, MD5: de75d2889510e92b57fc8a7ca087ced4, size: 7361)
-No update needed for sdxpinn-mount-fix (version 1.3.1, MD5: 4bb33e6ca7365f722440f1a83ae1bcea, size: 4672)
+Updating package info for sdxpinn-mount-fix...
+Updated sdxpinn-mount-fix to version 1.3.2 with MD5: 004d4f1c792efc2d32c2de27629bae3b and size: 4648
 No update needed for sdxpinn-patch (version 2.5, MD5: 0ec65238142dad95de1666b01a6f09c6, size: 3054)
 No update needed for sdxpinn-quecmanager (version 1.0.1, MD5: cb96c5ec96c2166f39d989f277ebc0f7, size: 722109)
-Updating package info for sdxpinn-quecmanager-beta...
-Updated sdxpinn-quecmanager-beta to version 1.1.1-3 with MD5: 918f318f87e6b1cb3777cb0f4675164d and size: 1040588
+No update needed for sdxpinn-quecmanager-beta (version 1.1.1-3, MD5: 918f318f87e6b1cb3777cb0f4675164d, size: 1040588)
 No update needed for sms-tool (version 2025.1.19-APmod-iamromulan, MD5: 83dc8bfd2d4ac8d8952a2a95b2be943f, size: 13687)
-Updating package info for socat-at-bridge...
-Updated socat-at-bridge to version 1.1.1 with MD5: a5f4c4c371426fbe12bf2345938af195 and size: 1795
+No update needed for socat-at-bridge (version 1.1.1, MD5: a5f4c4c371426fbe12bf2345938af195, size: 1795)
 No update needed for tailscale (version 1.78.1-2, MD5: baa4d97ba49aa42ef104accba2dc2fd8, size: 9882856)
 No update needed for tailscaled (version 1.78.1-4, MD5: 647b4d3c6e51f700dd96362f92f20b54, size: 17960998)
 Package file and signature updated successfully.
-Package analysis completed - Tue Jan 28 12:06:05 AM EST 2025
+Package analysis completed - Tue Jan 28 07:50:39 PM EST 2025
