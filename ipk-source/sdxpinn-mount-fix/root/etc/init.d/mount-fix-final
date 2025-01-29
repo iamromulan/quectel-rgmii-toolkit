@@ -1,0 +1,18 @@
+#!/bin/sh /etc/rc.common
+
+START=04
+
+start() {
+    # mount the bind mount as rw
+    /bin/mount -o remount,rw /etc/rc.d
+}
+
+stop() {
+    # mount the bind mount as ro
+    /bin/mount -o remount,ro /etc/rc.d
+}
+
+restart() {
+    stop
+    start
+}

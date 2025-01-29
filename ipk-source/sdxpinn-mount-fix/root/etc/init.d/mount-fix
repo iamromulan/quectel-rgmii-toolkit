@@ -97,13 +97,9 @@ handle_old_firmware() {
     /bin/mount --move /real_rootfs/persist /persist
     /bin/mount --move /real_rootfs/cache /cache
     /bin/mount --move /real_rootfs/data /data
-
-    # Synchronize rc.d
-    synchronize_rc_d "/real_rootfs/etc/rc.d" "/etc/rc.d"
     
     # Bind the orignal rc.d back and make writable
     /bin/mount -o bind,rw /real_rootfs/etc/rc.d /etc/rc.d
-    /bin/mount -o remount,rw /etc/rc.d
 
     # Final logs and remount the original root as read-only
     /bin/echo "...and we're back! The original root now lives at /real_rootfs"
@@ -195,16 +191,9 @@ handle_new_firmware() {
     /bin/mount --move /real_rootfs/cache /cache
     /bin/mount --move /real_rootfs/systemrw /systemrw
     /bin/mount --move /real_rootfs/persist /persist
-
-    # Synchronize between rc.d layer 1 to Final
-    synchronize_rc_d "/real_rootfs/etc/rc.d" "/etc/rc.d"
-
-    # Synchronize between rc.d layer 2 to Final
-    synchronize_rc_d "/usrdata/etc/rc.d" "/etc/rc.d"
     
-    # Bind the orignal rc.d back and make writable
+    # Bind the orignal rc.d back
     /bin/mount -o bind,rw /real_rootfs/etc/rc.d /etc/rc.d
-    /bin/mount -o remount,rw /etc/rc.d
 
     # Final logs and remount the original root as read-only
     /bin/echo "...and we're back! The original root now lives at /real_rootfs"
@@ -212,31 +201,6 @@ handle_new_firmware() {
     /bin/mount -o remount,ro /real_rootfs >/dev/null 2>&1
     /bin/echo "Overlay and pivot_root setup completed"
 
-}
-
-
-synchronize_rc_d() {
-    local source_dir="$1"
-    local target_dir="$2"
-    /bin/echo "Synchronizing $source_dir with $target_dir"
-    for link in "$source_dir"/*; do
-        if [ -L "$link" ]; then
-            link_name=$(basename "$link")
-            if [ ! -e "$target_dir/$link_name" ]; then
-                /bin/echo "Copying $link_name to $target_dir"
-                cp -a "$link" "$target_dir/$link_name"
-            fi
-        fi
-    done
-    for link in "$target_dir"/*; do
-        if [ -L "$link" ]; then
-            link_name=$(basename "$link")
-            if [ ! -e "$source_dir/$link_name" ]; then
-                /bin/echo "Copying $link_name to $source_dir"
-                cp -a "$link" "$source_dir/$link_name"
-            fi
-        fi
-    done
 }
 
 stop() {
@@ -266,7 +230,10 @@ stop_handle_new_firmware() {
     # Redirect all output (stdout and stderr) to the log file
     exec >>"$LOG_FILE" 2>&1
     /bin/echo "Stopping and reverting overlay and pivot_root"
-
+    
+    # Unmount /etc/rc.d bind
+    /bin/umount -lf /etc/rc.d
+    
     # Remount the original root filesystem as read-write
     /bin/mount -o remount,rw /real_rootfs
 
@@ -304,6 +271,9 @@ stop_handle_old_firmware() {
     # Redirect all output (stdout and stderr) to the log file
     exec >>"$LOG_FILE" 2>&1
     /bin/echo "Stopping and reverting overlay and pivot_root" 
+    
+    # Unmount /etc/rc.d bind
+    /bin/umount -lf /etc/rc.d
 
     # Remount the original root filesystem as read-write
     /bin/mount -o remount,rw /real_rootfs
