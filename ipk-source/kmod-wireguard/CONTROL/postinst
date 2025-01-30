@@ -1,0 +1,5 @@
+#!/bin/ash
+
+echo "kmod-wireguard registration Complete"
+
+exit 0
