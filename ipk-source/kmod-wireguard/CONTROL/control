@@ -1,0 +1,7 @@
+Package: kmod-wireguard
+Depends: sdxpinn-patch
+Version: 1
+Architecture: sdxpinn
+Maintainer: Cameron Thompson iamromulan@github.com
+Source: github.com/iamromulan
+Description: Wireguard is compiled into the kernel
