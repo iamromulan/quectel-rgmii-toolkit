@@ -13,6 +13,18 @@ Description: Atinout is a program that will execute AT commands in sequence and
 License: GPLv2
 
 
+Package: kmod-wireguard
+Version: 1
+Depends: sdxpinn-patch
+Architecture: sdxpinn
+Maintainer: Cameron Thompson iamromulan@github.com
+MD5Sum: 98e77b68c2f1b5ff46ef7713b4f63a94
+Size: 789
+Filename: kmod-wireguard_1_sdxpinn.ipk
+Source: github.com/iamromulan
+Description: Wireguard is compiled into the kernel
+
+
 Package: luci-app-atinout-mod
 Version: 1.3.4-20250119
 Depends: libc, atinout, luci-compat
