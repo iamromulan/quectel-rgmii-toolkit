@@ -1,0 +1,7 @@
+Package: wgcf
+Depends: libc
+Version: 2.2.24
+Architecture: aarch64_generic
+Maintainer: ViRb3
+Source: github.com/ViRb3/wgcf/releases
+Description: wgcf is an unofficial, cross-platform CLI for Cloudflare Warp

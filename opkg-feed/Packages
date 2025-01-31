@@ -206,3 +206,15 @@ Description: It creates a secure network between your servers, computers, and cl
 License: GPLv3
 
 
+Package: wgcf
+Version: 2.2.24
+Depends: libc
+Architecture: aarch64_generic
+Maintainer: ViRb3
+MD5Sum: a4e6a7622b0fe953e90065d9c604cdd0
+Size: 3677780
+Filename: wgcf_2.2.24_aarch64_generic.ipk
+Source: github.com/ViRb3/wgcf/releases
+Description: wgcf is an unofficial, cross-platform CLI for Cloudflare Warp
+
+
