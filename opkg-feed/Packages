@@ -39,6 +39,21 @@ Description: Web UI for atinout
 License: GPLv3
 
 
+Package: luci-app-go-wireguard
+Version: 4.500-1
+Depends: libc, wireguard-tools, kmod-wireguard, luci-proto-wireguard, udptunnel, eoip
+Source: package/rooter/0optionalapps/ext-wireguard
+SourceName: ext-wireguard
+Section: utils
+Architecture: all
+SourceDateEpoch: 1716401566
+Maintainer: Created by DM/makefile by Cobia@whirlpool
+MD5Sum: b586305255284278b9012483da246bc3
+Size: 24327
+Filename: luci-app-go-wireguard_4.500-1_all.ipk
+Description:  Wireguard luci App
+
+
 Package: luci-app-tailscale
 Version: 1.2.3-2
 Depends: libc, tailscale, tailscaled (>= 1.78.1-4)
