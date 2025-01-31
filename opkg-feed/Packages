@@ -211,8 +211,8 @@ Version: 2.2.24
 Depends: libc
 Architecture: aarch64_generic
 Maintainer: ViRb3
-MD5Sum: a4e6a7622b0fe953e90065d9c604cdd0
-Size: 3677780
+MD5Sum: b2ba181f9181c2bd8f37933c60c0713f
+Size: 3677883
 Filename: wgcf_2.2.24_aarch64_generic.ipk
 Source: github.com/ViRb3/wgcf/releases
 Description: wgcf is an unofficial, cross-platform CLI for Cloudflare Warp
