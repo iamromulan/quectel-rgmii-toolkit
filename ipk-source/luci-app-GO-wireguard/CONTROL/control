@@ -1,0 +1,11 @@
+Package: ext-wireguard
+Version: 4.500-1
+Depends: libc, wireguard-tools, kmod-wireguard, luci-proto-wireguard, udptunnel, eoip
+Source: package/rooter/0optionalapps/ext-wireguard
+SourceName: ext-wireguard
+Section: utils
+SourceDateEpoch: 1716401566
+Maintainer: Created by DM/makefile by Cobia@whirlpool
+Architecture: all
+Installed-Size: 23912
+Description:  Install scripts for Wireguard
