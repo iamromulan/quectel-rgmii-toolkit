@@ -1,6 +1,6 @@
 Package: warp
 Depends: libc, wgcf, luci-app-go-wireguard
-Version: 1
+Version: 1.0
 Architecture: sdxpinn
 Maintainer: iamromulan
 Source: github.com/iamromulan

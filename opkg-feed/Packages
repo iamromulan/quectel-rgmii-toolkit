@@ -40,7 +40,7 @@ License: GPLv3
 
 
 Package: luci-app-go-wireguard
-Version: 4.500-1
+Version: 4.500-2
 Depends: libc, wireguard-tools, kmod-wireguard, luci-proto-wireguard, udptunnel, eoip
 Source: package/rooter/0optionalapps/ext-wireguard
 SourceName: ext-wireguard
@@ -48,9 +48,9 @@ Section: utils
 Architecture: all
 SourceDateEpoch: 1716401566
 Maintainer: Created by DM/makefile by Cobia@whirlpool
-MD5Sum: b586305255284278b9012483da246bc3
-Size: 24327
-Filename: luci-app-go-wireguard_4.500-1_all.ipk
+MD5Sum: 66549e8d970b9046440e6a836f9c9639
+Size: 24213
+Filename: luci-app-go-wireguard_4.500-2_all.ipk
 Description:  Wireguard luci App
 
 
@@ -204,6 +204,18 @@ Filename: tailscaled_1.78.1-4_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
 Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
 License: GPLv3
+
+
+Package: warp
+Depends: libc, wgcf, luci-app-go-wireguard
+Version: 1.0
+Architecture: sdxpinn
+Maintainer: iamromulan
+MD5Sum: ea95658bf84f619cabe5dd62280fe787
+Size: 2698
+Filename: warp_1.0_sdxpinn.ipk
+Source: github.com/iamromulan
+Description: Installs the 'warp' command to help setup Cloudflare WARP on SDXPINN
 
 
 Package: wgcf

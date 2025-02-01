@@ -1,8 +1,9 @@
-Starting package analysis - Fri Jan 31 06:48:37 PM EST 2025
+Starting package analysis - Sat Feb  1 02:03:08 AM EST 2025
 No update needed for atinout (version 0.9.1, MD5: 444eb87488bad1927b6ed069dedf7393, size: 4323)
 No update needed for kmod-wireguard (version 1, MD5: 98e77b68c2f1b5ff46ef7713b4f63a94, size: 789)
 No update needed for luci-app-atinout-mod (version 1.3.4-20250119, MD5: 1ffee9ec8fe5723b8140bf2c21fea508, size: 4864)
-No update needed for luci-app-go-wireguard (version 4.500-1, MD5: b586305255284278b9012483da246bc3, size: 24327)
+Updating package info for luci-app-go-wireguard...
+Updated luci-app-go-wireguard to version 4.500-2 with MD5: 66549e8d970b9046440e6a836f9c9639 and size: 24213
 No update needed for luci-app-tailscale (version 1.2.3-2, MD5: 53c84c947c42d7518aecb4a6b8a9c5a8, size: 6501)
 No update needed for ookla-speedtest (version 1.2.0, MD5: b26e1909599f73cab40ea0281c5a6283, size: 1075696)
 No update needed for sdxpinn-console-menu (version 0.0.2, MD5: de75d2889510e92b57fc8a7ca087ced4, size: 7361)
@@ -14,7 +15,8 @@ No update needed for sms-tool (version 2025.1.19-APmod-iamromulan, MD5: 83dc8bfd
 No update needed for socat-at-bridge (version 1.1.1, MD5: a5f4c4c371426fbe12bf2345938af195, size: 1795)
 No update needed for tailscale (version 1.78.1-2, MD5: baa4d97ba49aa42ef104accba2dc2fd8, size: 9882856)
 No update needed for tailscaled (version 1.78.1-4, MD5: 647b4d3c6e51f700dd96362f92f20b54, size: 17960998)
-Updating package info for wgcf...
-Updated wgcf to version 2.2.24 with MD5: b2ba181f9181c2bd8f37933c60c0713f and size: 3677883
+Updating package info for warp...
+Updated warp to version 1.0 with MD5: ea95658bf84f619cabe5dd62280fe787 and size: 2698
+No update needed for wgcf (version 2.2.24, MD5: b2ba181f9181c2bd8f37933c60c0713f, size: 3677883)
 Package file and signature updated successfully.
-Package analysis completed - Fri Jan 31 06:48:38 PM EST 2025
+Package analysis completed - Sat Feb  1 02:03:09 AM EST 2025
