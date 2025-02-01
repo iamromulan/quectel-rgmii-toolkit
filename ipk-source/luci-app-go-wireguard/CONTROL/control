@@ -1,5 +1,5 @@
 Package: luci-app-go-wireguard
-Version: 4.500-1
+Version: 4.500-2
 Depends: libc, wireguard-tools, kmod-wireguard, luci-proto-wireguard, udptunnel, eoip
 Source: package/rooter/0optionalapps/ext-wireguard
 SourceName: ext-wireguard

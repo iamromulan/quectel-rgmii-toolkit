@@ -1,0 +1,235 @@
+#!/bin/sh
+
+# Combined WARP management script
+VERSION="1.0"
+SCRIPT_NAME="warp"
+
+# Configuration directories
+WGCF_FREE_CONFIG_DIR="/etc/warp/free"
+WGCF_PLUS_CONFIG_DIR="/etc/warp/plus"
+
+# Color codes
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+# Usage information
+show_usage() {
+  cat <<EOF
+${SCRIPT_NAME} - WARP VPN management tool for SDXPINN by iamromulan v${VERSION}
+Reqiures wgcf from https://github.com/ViRb3/wgcf
+
+Usage:
+  ${SCRIPT_NAME} <mode> <command>
+  
+Modes:
+  free                 Manage free WARP configuration
+  plus                 Manage WARP+ configuration
+
+Commands:
+  setup                Initial setup for WARP configuration
+  update-key           Update license key in wgcf-account.toml
+  install-profile      Install WARP profile to UCI config
+
+Examples:
+  ${SCRIPT_NAME} free setup
+  ${SCRIPT_NAME} plus update-key
+  ${SCRIPT_NAME} free install-profile
+
+EOF
+}
+
+# Setup wizard
+setup_warp() {
+  MODE=$1
+  case $MODE in
+    free) 
+      CONFIG_DIR="$WGCF_FREE_CONFIG_DIR"
+      PROFILE_NAME="WARPfree"
+      ;;
+    plus) 
+      CONFIG_DIR="$WGCF_PLUS_CONFIG_DIR"
+      PROFILE_NAME="WARPplus"
+      ;;
+    *) return 1 ;;
+  esac
+
+  # Create config directory if needed
+  mkdir -p "$CONFIG_DIR" || {
+    echo "Error: Failed to create configuration directory $CONFIG_DIR"
+    return 1
+  }
+
+  ACCOUNT_FILE="${CONFIG_DIR}/wgcf-account.toml"
+  PROFILE_FILE="${CONFIG_DIR}/wgcf-profile.conf"
+
+  # Check for existing account
+  if [ -f "$ACCOUNT_FILE" ]; then
+    echo "Warning: Existing account found in $CONFIG_DIR"
+    echo "This will DELETE ALL EXISTING CONFIGURATION for WARP $MODE!"
+    printf "Do you want to continue? [1=Yes 2=No] "
+    
+    while true; do
+      read choice
+      case $choice in
+        1)
+          rm -f "$ACCOUNT_FILE" "$PROFILE_FILE"
+          break
+          ;;
+        2)
+          echo "Setup aborted by user"
+          return 1
+          ;;
+        *)
+          printf "Invalid choice. Enter 1 or 2: "
+          ;;
+      esac
+    done
+  fi
+
+  # Register new account
+  echo "Creating new WARP $MODE account..."
+  if ! wgcf --config "$ACCOUNT_FILE" register; then
+    echo "Error: Failed to register WARP account"
+    return 1
+  fi
+
+  # Update license key for plus accounts
+  if [ "$MODE" = "plus" ]; then
+    echo "Please enter your WARP+ license key:"
+    if ! update_license_key "$MODE"; then
+      echo "Error: Failed to update license key"
+      return 1
+    fi
+  fi
+
+  # Generate profile
+  echo "Generating WireGuard profile..."
+  if ! wgcf --config "$ACCOUNT_FILE" update; then
+    echo "Error: Failed to update WARP account"
+    return 1
+  fi
+
+  if ! wgcf --config "$ACCOUNT_FILE" generate -p "$PROFILE_FILE"; then
+    echo "Error: Failed to generate WireGuard profile"
+    return 1
+  fi
+
+  # Install profile
+  if ! install_warp_profile "$MODE"; then
+    echo "Error: Failed to install WireGuard profile"
+    return 1
+  fi
+
+  # Success message
+  printf "${GREEN}Cloudflare WARP %s has been setup and installed to your WireGuard profiles in Luci.${NC}\n" "$MODE"
+  printf "${GREEN}Head to Luci to connect the VPN.${NC}\n"
+}
+
+# License key updater
+update_license_key() {
+  MODE=$1
+  case $MODE in
+    free) CONFIG_DIR="$WGCF_FREE_CONFIG_DIR" ;;
+    plus) CONFIG_DIR="$WGCF_PLUS_CONFIG_DIR" ;;
+    *) return 1 ;;
+  esac
+
+  ACCOUNT="${CONFIG_DIR}/wgcf-account.toml"
+  
+  LINE=$(grep -n "license_key" "$ACCOUNT" | cut -d: -f1)
+  if [ -z "$LINE" ]; then
+    echo "Error: License key line not found in $ACCOUNT"
+    return 1
+  fi
+
+  read -p "Enter WARP+ license key from your phone app: " NEW_KEY
+  sed -i "${LINE}s/'.*'/'$NEW_KEY'/" "$ACCOUNT"
+  echo "License key updated successfully in $ACCOUNT"
+}
+
+# Profile installer
+install_warp_profile() {
+  MODE=$1
+  case $MODE in
+    free) 
+      CONFIG_DIR="$WGCF_FREE_CONFIG_DIR"
+      PROFILE_NAME="WARPfree"
+      ;;
+    plus) 
+      CONFIG_DIR="$WGCF_PLUS_CONFIG_DIR"
+      PROFILE_NAME="WARPplus"
+      ;;
+    *) return 1 ;;
+  esac
+
+  WGCF_CONF="${CONFIG_DIR}/wgcf-profile.conf"
+
+  # Validate config file exists
+  [ ! -f "$WGCF_CONF" ] && {
+    echo "Error: $WGCF_CONF not found"
+    return 1
+  }
+
+  # Extract values
+  ENDPOINT=$(awk -F' = ' '/Endpoint/ {print $2}' "$WGCF_CONF")
+  ENDPOINT_HOST=$(echo "$ENDPOINT" | cut -d':' -f1)
+  ENDPOINT_PORT=$(echo "$ENDPOINT" | cut -d':' -f2)
+
+  # Delete existing section
+  uci delete wireguard.${PROFILE_NAME} 2>/dev/null
+
+  # Create new section
+  uci add wireguard wireguard >/dev/null
+  uci rename wireguard.@wireguard[-1]="${PROFILE_NAME}"
+
+  # Set configuration values
+  uci batch <<EOF
+set wireguard.${PROFILE_NAME}.privatekey="$(awk -F' = ' '/PrivateKey/ {print $2}' "$WGCF_CONF")"
+set wireguard.${PROFILE_NAME}.addresses="$(awk -F' = ' '/Address/ {gsub(" ", "", $2); print $2}' "$WGCF_CONF")"
+set wireguard.${PROFILE_NAME}.dns="$(awk -F' = ' '/DNS/ {gsub(" ", "", $2); print $2}' "$WGCF_CONF")"
+set wireguard.${PROFILE_NAME}.mtu="$(awk -F' = ' '/MTU/ {print $2}' "$WGCF_CONF")"
+set wireguard.${PROFILE_NAME}.publickey="$(awk -F' = ' '/PublicKey/ {print $2}' "$WGCF_CONF")"
+set wireguard.${PROFILE_NAME}.ips="$(awk -F' = ' '/AllowedIPs/ {gsub(" ", "", $2); print $2}' "$WGCF_CONF")"
+set wireguard.${PROFILE_NAME}.endpoint_host="$ENDPOINT_HOST"
+set wireguard.${PROFILE_NAME}.sport="$ENDPOINT_PORT"
+set wireguard.${PROFILE_NAME}.auto='0'
+set wireguard.${PROFILE_NAME}.client='1'
+set wireguard.${PROFILE_NAME}.active='0'
+set wireguard.${PROFILE_NAME}.wginter='0'
+set wireguard.${PROFILE_NAME}.persistent_keepalive='25'
+set wireguard.${PROFILE_NAME}.udptunnel='0'
+set wireguard.${PROFILE_NAME}.forward='1'
+set wireguard.${PROFILE_NAME}.name='${PROFILE_NAME}'
+set wireguard.${PROFILE_NAME}.presharedkey=''
+EOF
+
+  uci commit wireguard
+  echo "${PROFILE_NAME} profile installed in /etc/config/wireguard"
+}
+
+# Main execution
+if [ $# -lt 2 ]; then
+  show_usage
+  exit 1
+fi
+
+MODE=$1
+COMMAND=$2
+
+case $COMMAND in
+  setup)
+    setup_warp "$MODE"
+    ;;
+  update-key)
+    update_license_key "$MODE"
+    ;;
+  install-profile)
+    install_warp_profile "$MODE"
+    ;;
+  *)
+    show_usage
+    exit 1
+    ;;
+esac
+
+exit 0

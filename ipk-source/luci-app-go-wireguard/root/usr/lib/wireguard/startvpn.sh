@@ -324,4 +324,5 @@ fi
 
 uci set wireguard."$WG".active="1"
 uci commit wireguard
+service firewall reload
 

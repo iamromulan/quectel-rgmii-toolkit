@@ -1,0 +1,7 @@
+Package: warp
+Depends: libc, wgcf, luci-app-go-wireguard
+Version: 1.0
+Architecture: sdxpinn
+Maintainer: iamromulan
+Source: github.com/iamromulan
+Description: Installs the 'warp' command to help setup Cloudflare WARP on SDXPINN
