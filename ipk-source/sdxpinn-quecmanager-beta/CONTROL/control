@@ -1,5 +1,5 @@
 Package: sdxpinn-quecmanager-beta
-Version: 1.1.1-3
+Version: 1.1.1-4
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol dr-dolomite@github.com Cameron Thompson iamromulan@github.com
 Source: github.com/iamromulan
