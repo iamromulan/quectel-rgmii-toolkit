@@ -1,0 +1,6 @@
+#!/bin/sh
+
+
+service cloudflare-warp-service enable
+service cloudflare-warp-service start
+exit 0

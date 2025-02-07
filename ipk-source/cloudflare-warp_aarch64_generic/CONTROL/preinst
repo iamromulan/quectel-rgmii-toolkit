@@ -1,0 +1,6 @@
+#!/bin/sh
+
+
+service cloudflare-warp-service disable
+service cloudflare-warp-service stop
+exit 0
