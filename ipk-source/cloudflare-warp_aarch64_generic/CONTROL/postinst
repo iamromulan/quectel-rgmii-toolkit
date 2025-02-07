@@ -1,6 +1,0 @@
-#!/bin/sh
-
-# Disabled for testing
-# service cloudflare-warp-service enable
-# service cloudflare-warp-service start
-exit 0
