@@ -13,6 +13,20 @@ Description: Atinout is a program that will execute AT commands in sequence and
 License: GPLv2
 
 
+Package: cloudflare-warp
+Version: 2024.12.554.0
+Depends: dbus-utils, libc, ip-full, nftables-json, gnupg2-utils, libcap-bin, ca-certificates, libpcap1
+Suggests: traceroute, libnss3-tools
+Architecture: aarch64_generic
+Maintainer: Cloudflare <support@cloudflare.com>
+MD5Sum: 3e88f9af8e114e74552c41382bc7c3f3
+Size: 36621829
+Filename: cloudflare-warp_2024.12.554.0_aarch64_generic.ipk
+Section: net
+Homepage: https://1.1.1.1
+Description: Cloudflare Warp Client
+
+
 Package: kmod-wireguard
 Version: 1
 Depends: sdxpinn-patch
