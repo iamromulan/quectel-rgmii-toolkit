@@ -4,8 +4,8 @@ License: unknown
 Architecture: aarch64_generic
 Maintainer: Cloudflare <support@cloudflare.com>
 Installed-Size: 109659
-Depends: libdbus-1-3, libc6, iproute2, nftables, gnupg2, desktop-file-utils, libcap2-bin, libnss3-tools, ca-certificates, libpcap0.8
-Suggests: traceroute
+Depends: dbus-utils, libc, ip-full, nftables-json, gnupg2-utils, libcap-bin, ca-certificates, libpcap1
+Suggests: traceroute, libnss3-tools
 Section: net
 Priority: optional
 Homepage: https://1.1.1.1
