@@ -1,0 +1,11 @@
+Package: luci-app-argon-config
+Version: 0.9
+Depends: libc, luci-compat
+Source: /home/runner/work/gl-sdk-action/gl-sdk-action/buildsource/luci-app-argon-config
+SourceName: luci-app-argon-config
+Section: luci
+SourceDateEpoch: 1650782942
+Maintainer: OpenWrt LuCI community
+Architecture: all
+Installed-Size: 3586
+Description:  LuCI page for Argon Config
