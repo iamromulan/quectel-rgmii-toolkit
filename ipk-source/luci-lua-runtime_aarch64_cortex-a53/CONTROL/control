@@ -1,7 +1,7 @@
 Package: luci-lua-runtime
 Version: 25.034.70690~7b0663a
 Depends: libc, luci-base, lua, luci-lib-base, luci-lib-nixio, luci-lib-ip, luci-lib-jsonc, libubus-lua, liblucihttp-lua, ucode-mod-lua
-Source: feeds/luci/modules/luci-lua-runtime
+Source: https://dl.openwrt.ai/packages-24.10/aarch64_cortex-a53/luci/luci-lua-runtime_25.049.66344~2b8e93c_aarch64_cortex-a53.ipk
 SourceName: luci-lua-runtime
 License: Apache-2.0
 Section: luci
