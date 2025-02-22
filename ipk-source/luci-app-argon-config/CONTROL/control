@@ -1,0 +1,12 @@
+Package: luci-app-argon-config
+Version: 0.9
+Depends: libc, luci-compat
+Recommends: luci-theme-argon
+Source: github.com/jerrykuku/luci-app-argon-config/releases/tag/v0.9
+SourceName: luci-app-argon-config
+Section: luci
+SourceDateEpoch: 1650782942
+Maintainer: github.com/jerrykuku
+Architecture: all
+Installed-Size: 3586
+Description:  LuCI page for Argon Config

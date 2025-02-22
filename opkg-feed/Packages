@@ -13,6 +13,40 @@ Description: Atinout is a program that will execute AT commands in sequence and
 License: GPLv2
 
 
+Package: libucode20230711
+Version: 2024.07.22~b610860d-r3
+Architecture: aarch64_cortex-a53
+Depends: libc, libjson-c5
+Provides: libucode
+Source: https://dl.openwrt.ai/packages-24.10/aarch64_cortex-a53/base/libucode20230711_2025.02.10~a8a11aea-r1_aarch64_cortex-a53.ipk
+SourceName: ucode
+License: ISC
+Section: libs
+SourceDateEpoch: 1729600843
+ABIVersion: 20230711
+Maintainer: Jo-Philipp Wich <jo@mein.io>
+MD5Sum: c38bd45a6aa14a969b7e92f051481d7e
+Size: 79358
+Filename: libucode20230711_2024.07.22~b610860d-r3_aarch64_cortex-a53.ipk
+Description:  The libucode package provides the shared runtime library for the ucode interpreter.
+
+
+Package: luci-app-argon-config
+Version: 0.9
+Architecture: all
+Depends: libc, luci-compat
+Recommends: luci-theme-argon
+Source: github.com/jerrykuku/luci-app-argon-config/releases/tag/v0.9
+SourceName: luci-app-argon-config
+Section: luci
+SourceDateEpoch: 1650782942
+Maintainer: github.com/jerrykuku
+MD5Sum: 717d967b4a4ec408d99edf6adc090b70
+Size: 4535
+Filename: luci-app-argon-config_0.9_all.ipk
+Description:  LuCI page for Argon Config
+
+
 Package: kmod-wireguard
 Version: 1
 Depends: sdxpinn-patch
@@ -65,6 +99,40 @@ Size: 6501
 Filename: luci-app-tailscale_1.2.3-2_all.ipk
 Source: github/iamromulan
 Description: Luci app for tailscale
+
+
+Package: luci-lua-runtime
+Version: 25.034.70690~7b0663a
+Architecture: aarch64_cortex-a53
+Depends: libc, luci-base, lua, luci-lib-base, luci-lib-nixio, luci-lib-ip, luci-lib-jsonc, libubus-lua, liblucihttp-lua, ucode-mod-lua
+Source: https://dl.openwrt.ai/packages-24.10/aarch64_cortex-a53/luci/luci-lua-runtime_25.049.66344~2b8e93c_aarch64_cortex-a53.ipk
+SourceName: luci-lua-runtime
+License: Apache-2.0
+Section: luci
+SourceDateEpoch: 1738611490
+URL: https://github.com/openwrt/luci
+Maintainer: OpenWrt LuCI community
+MD5Sum: 73ad81aa525e7ca829175ab3ace1e542
+Size: 31355
+Filename: luci-lua-runtime_25.034.70690~7b0663a_aarch64_cortex-a53.ipk
+Description:  LuCI Lua runtime libraries
+
+
+Package: luci-theme-argon
+Version: 2.3.2-r20250207
+Architecture: all
+Depends: libc, curl, jsonfilter, luci-lua-runtime
+Recommends: luci-app-argon-config
+Source: https://github.com/jerrykuku/luci-theme-argon/releases
+SourceName: luci-theme-argon
+Section: luci
+SourceDateEpoch: 1739087731
+URL: https://github.com/jerrykuku/luci-theme-argon
+Maintainer: github.com/jerrykuku
+MD5Sum: 1354d843e7a0257fc8684548ec37a284
+Size: 401244
+Filename: luci-theme-argon_2.3.2-r20250207_all.ipk
+Description:  Argon Theme
 
 
 Package: ookla-speedtest
@@ -204,6 +272,22 @@ Filename: tailscaled_1.78.1-4_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
 Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.76.1
 License: GPLv3
+
+
+Package: ucode-mod-lua
+Version: 1
+Architecture: aarch64_cortex-a53
+Depends: libc, libucode20230711, liblua5.1.5
+Source: feeds/luci/contrib/package/ucode-mod-lua
+SourceName: ucode-mod-lua
+License: ISC
+Section: utils
+SourceDateEpoch: 1738611490
+Maintainer: Jo-Philipp Wich <jo@mein.io>
+MD5Sum: cd83c6848867112332d1155b4c4f0640
+Size: 10085
+Filename: ucode-mod-lua_1_aarch64_cortex-a53.ipk
+Description:  ucode to Lua bridge library
 
 
 Package: warp

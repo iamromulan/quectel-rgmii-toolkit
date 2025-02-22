@@ -1,0 +1,13 @@
+Package: luci-theme-argon
+Version: 2.3.2-r20250207
+Depends: libc, curl, jsonfilter, luci-lua-runtime
+Recommends: luci-app-argon-config
+Source: https://github.com/jerrykuku/luci-theme-argon/releases
+SourceName: luci-theme-argon
+Section: luci
+SourceDateEpoch: 1739087731
+URL: https://github.com/jerrykuku/luci-theme-argon
+Maintainer: github.com/jerrykuku
+Architecture: all
+Installed-Size: 768000
+Description:  Argon Theme
