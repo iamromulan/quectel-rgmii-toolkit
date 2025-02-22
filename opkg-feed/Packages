@@ -32,18 +32,18 @@ Description:  The libucode package provides the shared runtime library for the u
 
 
 Package: luci-app-argon-config
-Version: 0.9
+Version: 0.9-1
 Architecture: all
-Depends: libc, luci-compat
+Depends: libc, luci-compat, luci-lib-ipkg
 Recommends: luci-theme-argon
 Source: github.com/jerrykuku/luci-app-argon-config/releases/tag/v0.9
 SourceName: luci-app-argon-config
 Section: luci
 SourceDateEpoch: 1650782942
 Maintainer: github.com/jerrykuku
-MD5Sum: 717d967b4a4ec408d99edf6adc090b70
-Size: 4535
-Filename: luci-app-argon-config_0.9_all.ipk
+MD5Sum: 5a418efdfeee34fb11c7f9cb5fff67fe
+Size: 4546
+Filename: luci-app-argon-config_0.9-1_all.ipk
 Description:  LuCI page for Argon Config
 
 

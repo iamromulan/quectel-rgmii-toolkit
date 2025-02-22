@@ -1,6 +1,6 @@
 Package: luci-app-argon-config
-Version: 0.9
-Depends: libc, luci-compat
+Version: 0.9-1
+Depends: libc, luci-compat, luci-lib-ipkg
 Recommends: luci-theme-argon
 Source: github.com/jerrykuku/luci-app-argon-config/releases/tag/v0.9
 SourceName: luci-app-argon-config
