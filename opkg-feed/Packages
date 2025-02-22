@@ -102,8 +102,8 @@ Description: Luci app for tailscale
 
 
 Package: luci-lua-runtime
-Version: 25.034.70690~7b0663a
-Architecture: aarch64_cortex-a53
+Version: 25.034.70690~7b0663a-sdxpinn
+Architecture: sdxpinn
 Depends: libc, luci-base, lua, luci-lib-base, luci-lib-nixio, luci-lib-ip, luci-lib-jsonc, libubus-lua, liblucihttp-lua, ucode-mod-lua
 Source: https://dl.openwrt.ai/packages-24.10/aarch64_cortex-a53/luci/luci-lua-runtime_25.049.66344~2b8e93c_aarch64_cortex-a53.ipk
 SourceName: luci-lua-runtime
@@ -111,10 +111,10 @@ License: Apache-2.0
 Section: luci
 SourceDateEpoch: 1738611490
 URL: https://github.com/openwrt/luci
-Maintainer: OpenWrt LuCI community
-MD5Sum: 73ad81aa525e7ca829175ab3ace1e542
-Size: 31355
-Filename: luci-lua-runtime_25.034.70690~7b0663a_aarch64_cortex-a53.ipk
+Maintainer: github/iamromulan
+MD5Sum: c6c571d34de434c6a55262112bc9261d
+Size: 2072
+Filename: luci-lua-runtime_25.034.70690~7b0663a-sdxpinn_sdxpinn.ipk
 Description:  LuCI Lua runtime libraries
 
 

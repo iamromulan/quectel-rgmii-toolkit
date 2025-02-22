@@ -1,5 +1,5 @@
 Package: luci-lua-runtime
-Version: 25.034.70690~7b0663a
+Version: 25.034.70690~7b0663a-sdxpinn
 Depends: libc, luci-base, lua, luci-lib-base, luci-lib-nixio, luci-lib-ip, luci-lib-jsonc, libubus-lua, liblucihttp-lua, ucode-mod-lua
 Source: https://dl.openwrt.ai/packages-24.10/aarch64_cortex-a53/luci/luci-lua-runtime_25.049.66344~2b8e93c_aarch64_cortex-a53.ipk
 SourceName: luci-lua-runtime
@@ -7,7 +7,7 @@ License: Apache-2.0
 Section: luci
 SourceDateEpoch: 1738611490
 URL: https://github.com/openwrt/luci
-Maintainer: OpenWrt LuCI community
-Architecture: aarch64_cortex-a53
+Maintainer: github/iamromulan
+Architecture: sdxpinn
 Installed-Size: 153600
-Description:  LuCI Lua runtime libraries
+Description:  Missing LuCI Lua runtime libraries for sdxpinn
