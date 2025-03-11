@@ -3,177 +3,193 @@
 LOGDIR="/www/signal_graphs"
 MAX_ENTRIES=10
 INTERVAL=60
-QUEUE_FILE="/tmp/at_pipe.txt"
-AT_COMMAND_KEYWORD="AT_COMMAND_LOCK"
-CELL_SCAN_KEYWORD="CELL_SCAN" # Added to check for cell scan
-PAUSE_FILE="/tmp/signal_logging.pause"
+QUEUE_DIR="/tmp/at_queue"
+TOKEN_FILE="$QUEUE_DIR/token"
+LOCK_FILE="/tmp/signal_metrics.lock"
+METRICS_PID_FILE="/tmp/signal_metrics.pid"
+MAX_TOKEN_WAIT=5  # seconds to wait for token acquisition
 
-# Ensure the directory exists
-mkdir -p "$LOGDIR"
+# Ensure required directories exist
+mkdir -p "$LOGDIR" "$QUEUE_DIR"
 
-# Wait for high-priority operations
-wait_for_high_priority() {
-    while grep -q "\"priority\":\"high\"" "$QUEUE_FILE"; do
-        logger -t signal_metrics "Waiting for high-priority operation to complete"
-        sleep 1
-    done
-}
-
-# Enhanced lock handling with better priority awareness
-handle_lock() {
-    # Check for any CGI script operations (high priority)
-    while grep -q "\"priority\":\"high\"" "$QUEUE_FILE" ||
-        grep -q "\"command\":\"$AT_COMMAND_KEYWORD\"" "$QUEUE_FILE"; do
-        logger -t signal_metrics "Waiting for high-priority CGI operation to complete"
-        sleep 2
-    done
-
-    # Check and clean any stale FETCH_LOCK entries
-    check_and_clean_stale "FETCH_LOCK"
-
-    # Check for cell scan operations
-    while grep -q "\"command\":\"$CELL_SCAN_KEYWORD\"" "$QUEUE_FILE"; do
-        logger -t signal_metrics "Waiting for cell scan to complete"
-        sleep 1
-    done
-
-    # Add our low-priority entry
-    printf '{"command":"AT_COMMAND","pid":"%s","timestamp":"%s","priority":"low"}\n' \
-        "$$" \
-        "$(date '+%H:%M:%S')" >>"$QUEUE_FILE"
-
-    # Then check and clean our own entry if it gets stuck
-    check_and_clean_stale "AT_COMMAND"
-}
-
-# Increase the wait time for stale entry checking
-check_and_clean_stale() {
-    local command_type="$1"
-    local wait_count=0
-
-    while [ $wait_count -lt 10 ]; do # Increased from 6 to 10
-        # Check if our type of entry exists
-        if grep -q "\"command\":\"${command_type}\"" "$QUEUE_FILE"; then
-            sleep 2 # Increased from 1 to 2
-            wait_count=$((wait_count + 1))
-        else
-            # Entry is gone, we can proceed
+# Check if another instance is running
+check_running() {
+    if [ -f "$METRICS_PID_FILE" ]; then
+        pid=$(cat "$METRICS_PID_FILE")
+        if kill -0 "$pid" 2>/dev/null; then
             return 0
         fi
-    done
-
-    # Only clean low-priority entries
-    if ! grep -q "\"priority\":\"high\".*\"command\":\"${command_type}\"" "$QUEUE_FILE"; then
-        logger -t signal_metrics "Removing stale ${command_type} entry after ${wait_count}s"
-        sed -i "/\"command\":\"${command_type}\"/d" "$QUEUE_FILE"
+        rm -f "$METRICS_PID_FILE" 2>/dev/null
     fi
+    return 1
+}
+
+# Acquire token directly (minimized version)
+acquire_token() {
+    local metrics_id="METRICS_$(date +%s)_$$"
+    local priority=20  # Lowest priority for metrics
+    local max_attempts=20
+    local attempt=0
+    
+    while [ $attempt -lt $max_attempts ]; do
+        # Check if token exists
+        if [ -f "$TOKEN_FILE" ]; then
+            # Check current token
+            local current_holder=$(cat "$TOKEN_FILE" | jsonfilter -e '@.id' 2>/dev/null)
+            local current_priority=$(cat "$TOKEN_FILE" | jsonfilter -e '@.priority' 2>/dev/null)
+            local timestamp=$(cat "$TOKEN_FILE" | jsonfilter -e '@.timestamp' 2>/dev/null)
+            local current_time=$(date +%s)
+            
+            # Check for expired token
+            if [ $((current_time - timestamp)) -gt 30 ] || [ -z "$current_holder" ]; then
+                rm -f "$TOKEN_FILE" 2>/dev/null
+            elif [ $priority -lt $current_priority ]; then
+                rm -f "$TOKEN_FILE" 2>/dev/null
+            else
+                # Wait and try again
+                sleep 0.5
+                attempt=$((attempt + 1))
+                continue
+            fi
+        fi
+        
+        # Try to create token
+        echo "{\"id\":\"$metrics_id\",\"priority\":$priority,\"timestamp\":$(date +%s)}" > "$TOKEN_FILE" 2>/dev/null
+        chmod 644 "$TOKEN_FILE" 2>/dev/null
+        
+        # Verify we got it
+        local holder=$(cat "$TOKEN_FILE" 2>/dev/null | jsonfilter -e '@.id' 2>/dev/null)
+        if [ "$holder" = "$metrics_id" ]; then
+            echo "$metrics_id"
+            return 0
+        fi
+        
+        sleep 0.5
+        attempt=$((attempt + 1))
+    done
+    
+    return 1
+}
+
+# Release token directly
+release_token() {
+    local metrics_id="$1"
+    
+    if [ -f "$TOKEN_FILE" ]; then
+        local current_holder=$(cat "$TOKEN_FILE" | jsonfilter -e '@.id' 2>/dev/null)
+        if [ "$current_holder" = "$metrics_id" ]; then
+            rm -f "$TOKEN_FILE" 2>/dev/null
+        fi
+    fi
+}
+
+# Execute AT command directly
+execute_at_command() {
+    local CMD="$1"
+    sms_tool at "$CMD" -t 3 2>/dev/null
+}
+
+# Process all metrics commands with a single token
+process_all_metrics() {
+    # Try to get token
+    local metrics_id=$(acquire_token)
+    if [ -z "$metrics_id" ]; then
+        logger -t at_queue -p daemon.warn "Could not acquire token for metrics - will try again later"
+        return 1
+    fi
+    
+    logger -t at_queue -p daemon.info "Processing all metrics with token $metrics_id"
+    
+    # Execute all metrics commands with the single token
+    local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+    
+    # RSRP
+    local rsrp_output=$(execute_at_command "AT+QRSRP")
+    if [ -n "$rsrp_output" ] && echo "$rsrp_output" | grep -q "QRSRP"; then
+        local logfile="$LOGDIR/rsrp.json"
+        [ ! -s "$logfile" ] && echo "[]" > "$logfile"
+        
+        local temp_file="${logfile}.tmp.$$"
+        jq --arg dt "$timestamp" \
+           --arg out "$rsrp_output" \
+           '. + [{"datetime": $dt, "output": $out}] | .[-'"$MAX_ENTRIES"':]' \
+           "$logfile" > "$temp_file" 2>/dev/null && mv "$temp_file" "$logfile"
+        chmod 644 "$logfile"
+    fi
+    
+    sleep 0.5
+    
+    # RSRQ
+    local rsrq_output=$(execute_at_command "AT+QRSRQ")
+    if [ -n "$rsrq_output" ] && echo "$rsrq_output" | grep -q "QRSRQ"; then
+        local logfile="$LOGDIR/rsrq.json"
+        [ ! -s "$logfile" ] && echo "[]" > "$logfile"
+        
+        local temp_file="${logfile}.tmp.$$"
+        jq --arg dt "$timestamp" \
+           --arg out "$rsrq_output" \
+           '. + [{"datetime": $dt, "output": $out}] | .[-'"$MAX_ENTRIES"':]' \
+           "$logfile" > "$temp_file" 2>/dev/null && mv "$temp_file" "$logfile"
+        chmod 644 "$logfile"
+    fi
+    
+    sleep 0.5
+    
+    # SINR
+    local sinr_output=$(execute_at_command "AT+QSINR")
+    if [ -n "$sinr_output" ] && echo "$sinr_output" | grep -q "QSINR"; then
+        local logfile="$LOGDIR/sinr.json"
+        [ ! -s "$logfile" ] && echo "[]" > "$logfile"
+        
+        local temp_file="${logfile}.tmp.$$"
+        jq --arg dt "$timestamp" \
+           --arg out "$sinr_output" \
+           '. + [{"datetime": $dt, "output": $out}] | .[-'"$MAX_ENTRIES"':]' \
+           "$logfile" > "$temp_file" 2>/dev/null && mv "$temp_file" "$logfile"
+        chmod 644 "$logfile"
+    fi
+    
+    sleep 0.5
+    
+    # Data usage
+    local usage_output=$(execute_at_command "AT+QGDCNT?;+QGDNRCNT?")
+    if [ -n "$usage_output" ] && echo "$usage_output" | grep -q "QGDCNT\|QGDNRCNT"; then
+        local logfile="$LOGDIR/data_usage.json"
+        [ ! -s "$logfile" ] && echo "[]" > "$logfile"
+        
+        local temp_file="${logfile}.tmp.$$"
+        jq --arg dt "$timestamp" \
+           --arg out "$usage_output" \
+           '. + [{"datetime": $dt, "output": $out}] | .[-'"$MAX_ENTRIES"':]' \
+           "$logfile" > "$temp_file" 2>/dev/null && mv "$temp_file" "$logfile"
+        chmod 644 "$logfile"
+    fi
+    
+    # Release token
+    release_token "$metrics_id"
+    logger -t at_queue -p daemon.info "Metrics processing completed"
     return 0
 }
 
-# Clean output function
-clean_output() {
-    local output=""
-    read -r line
-
-    while read -r line; do
-        case "$line" in
-        "OK" | "")
-            continue
-            ;;
-        *)
-            if [ -n "$output" ]; then
-                output="$output\\n$line"
-            else
-                output="$line"
-            fi
-            ;;
-        esac
-    done
-
-    echo "$output"
-}
-
-# Execute AT command
-execute_at_command() {
-    local COMMAND="$1"
-    handle_lock
-    local OUTPUT=$(sms_tool at "$COMMAND" -t 4 2>/dev/null | clean_output)
-    sed -i "/\"pid\":\"$$\"/d" "$QUEUE_FILE" # Remove our entry
-    echo "$OUTPUT"
-}
-
-# Log signal metric with response validation
-log_signal_metric() {
-    [ -f "$PAUSE_FILE" ] && return
-
-    local COMMAND="$1"
-    local FILENAME="$2"
-    local EXPECTED_RESPONSE="$3" # New parameter for expected response content
-    local LOGFILE="$LOGDIR/$FILENAME"
-
-    mkdir -p "$(dirname "$LOGFILE")"
-
-    local TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
-    local SIGNAL_OUTPUT=$(execute_at_command "$COMMAND")
-
-    # Validate response based on command type
-    case "$COMMAND" in
-    "AT+QRSRP")
-        if ! echo "$SIGNAL_OUTPUT" | grep -q "QRSRP"; then
-            logger -t signal_metrics "Invalid RSRP response: $SIGNAL_OUTPUT"
-            return 1
-        fi
-        ;;
-    "AT+QRSRQ")
-        if ! echo "$SIGNAL_OUTPUT" | grep -q "QRSRQ"; then
-            logger -t signal_metrics "Invalid RSRQ response: $SIGNAL_OUTPUT"
-            return 1
-        fi
-        ;;
-    "AT+QSINR")
-        if ! echo "$SIGNAL_OUTPUT" | grep -q "QSINR"; then
-            logger -t signal_metrics "Invalid SINR response: $SIGNAL_OUTPUT"
-            return 1
-        fi
-        ;;
-    "AT+QGDCNT?;+QGDNRCNT?")
-        if ! echo "$SIGNAL_OUTPUT" | grep -q "QGDCNT\|QGDNRCNT"; then
-            logger -t signal_metrics "Invalid data usage response: $SIGNAL_OUTPUT"
-            return 1
-        fi
-        ;;
-    esac
-
-    [ ! -s "$LOGFILE" ] && echo "[]" >"$LOGFILE"
-
-    if [ -n "$SIGNAL_OUTPUT" ]; then
-        local TEMP_FILE="${LOGFILE}.tmp.$$"
-        if jq --arg dt "$TIMESTAMP" \
-            --arg out "$SIGNAL_OUTPUT" \
-            '. + [{"datetime": $dt, "output": $out}] | .[-'"$MAX_ENTRIES"':]' \
-            "$LOGFILE" >"$TEMP_FILE"; then
-            mv "$TEMP_FILE" "$LOGFILE"
-        else
-            rm -f "$TEMP_FILE"
-            return 1
-        fi
-    fi
-}
-
-# Main continuous logging function
+# Main continuous logging function with proper locking
 start_continuous_logging() {
-    sleep 20
-    logger -t signal_metrics "Starting continuous signal metrics logging (PID: $$)"
+    # Check if already running
+    if check_running; then
+        logger -t at_queue -p daemon.error "Signal metrics logging already running"
+        exit 1
+    fi
+    
+    # Store PID
+    echo "$$" > "$METRICS_PID_FILE"
+    chmod 644 "$METRICS_PID_FILE"
+    
+    sleep 20  # Initial delay to allow system startup
+    logger -t at_queue -p daemon.info "Starting continuous signal metrics logging (PID: $$)"
 
-    trap 'logger -t signal_metrics "Stopping signal metrics logging"; exit 0' INT TERM
+    trap 'logger -t at_queue -p daemon.info "Stopping signal metrics logging"; rm -f "$METRICS_PID_FILE"; exit 0' INT TERM
 
     while true; do
-        if [ ! -f "$PAUSE_FILE" ]; then
-            log_signal_metric "AT+QRSRP" "rsrp.json"
-            log_signal_metric "AT+QRSRQ" "rsrq.json"
-            log_signal_metric "AT+QSINR" "sinr.json"
-            log_signal_metric "AT+QGDCNT?;+QGDNRCNT?" "data_usage.json"
-        fi
+        process_all_metrics
         sleep "$INTERVAL"
     done
 }
