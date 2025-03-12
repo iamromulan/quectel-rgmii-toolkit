@@ -7,13 +7,12 @@ USE_PROCD=1
 start_service() {
         if [ ! -f /etc/config/system ]; then
                 touch /etc/config/system
-
+        fi
         sh /etc/init.d/ntp.config.h
         procd_open_instance
         procd_set_param command user ntp
         procd_set_param command group ntp
         procd_close_instance
-        fi
         echo "Starting ntp config service..."
 }
 
