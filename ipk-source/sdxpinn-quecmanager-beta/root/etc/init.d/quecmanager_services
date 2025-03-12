@@ -1,0 +1,48 @@
+#!/bin/sh /etc/rc.common
+START=49
+STOP=10
+USE_PROCD=1
+
+# Configuration paths
+QUEUE_DIR="/tmp/at_queue"
+RESULTS_DIR="$QUEUE_DIR/results"
+LOG_DIR="/www/signal_graphs"
+
+start_service() {
+    # Ensure required directories exist
+    mkdir -p "$QUEUE_DIR" "$RESULTS_DIR" "$LOG_DIR"
+    chmod 755 "$QUEUE_DIR" "$RESULTS_DIR" "$LOG_DIR"
+    
+    # Start the AT Command Queue Manager
+    echo "Starting AT Command Queue Manager..."
+    procd_open_instance
+    procd_set_param command /www/cgi-bin/services/at_queue_manager.sh
+    procd_set_param respawn
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_close_instance
+    echo "AT Queue Manager Started"
+
+    # Start the Signal Metrics Logger
+    echo "Starting Signal Metrics Logger..."
+    procd_open_instance
+    procd_set_param command /www/cgi-bin/services/log_signal_metrics.sh
+    procd_set_param respawn
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_close_instance
+    echo "Signal Metrics Logger started"
+    service quecmanager_cell_locking start
+    service quecprofiles start
+    service quecwatch start
+
+    echo "All QuecManager services Started"
+}
+
+stop_service() {
+    # procd will handle stopping all instances automatically
+    echo "Stopping QuecManager services."
+    service quecmanager_cell_locking stop
+    service quecprofiles stop
+    service quecwatch stop
+}

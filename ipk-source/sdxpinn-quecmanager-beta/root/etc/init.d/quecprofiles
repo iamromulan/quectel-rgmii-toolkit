@@ -1,0 +1,84 @@
+#!/bin/sh /etc/rc.common
+START=99
+STOP=10
+USE_PROCD=1
+
+# Configuration paths
+PROG="/www/cgi-bin/services/quecprofile.sh"
+CONF="/etc/config/quecprofiles"
+TRACK_FILE="/tmp/quecprofiles_active"
+CHECK_TRIGGER="/tmp/quecprofiles_check"
+STATUS_FILE="/tmp/quecprofiles_status.json"
+DEBUG_LOG="/tmp/quecprofiles_debug.log"
+
+start_service() {
+    # Ensure configuration exists
+    if [ ! -f "$CONF" ]; then
+        # Create default configuration
+        cat > "$CONF" <<-EOF
+config quecprofiles 'settings'
+    option check_interval '60'
+    option enable_autoswitch '1'
+    option apply_priority '20'
+EOF
+    fi
+
+    # Ensure script is executable
+    if [ -f "$PROG" ]; then
+        chmod 755 "$PROG"
+    else
+        logger -t quecprofiles -p daemon.error "Profile daemon script not found at $PROG"
+        return 1
+    fi
+
+    # Clear any existing logs
+    echo "$(date) - Init script starting service" > "$DEBUG_LOG"
+    
+    # Check if service is enabled
+    local enabled
+    config_load quecprofiles
+    config_get_bool enabled settings enable_autoswitch 1
+    
+    if [ "$enabled" -eq 0 ]; then
+        logger -t quecprofiles -p daemon.info "QuecProfiles service is disabled in config"
+        echo "$(date) - Service is disabled in config" >> "$DEBUG_LOG"
+        return 0
+    fi
+    
+    # Log before starting daemon
+    logger -t quecprofiles -p daemon.info "Starting QuecProfiles Daemon with script: $PROG"
+    echo "$(date) - Starting daemon using script: $PROG" >> "$DEBUG_LOG"
+    
+    # Start the profile daemon
+    echo "Starting QuecProfiles Daemon..."
+    procd_open_instance "quecprofiles"
+    procd_set_param command "$PROG"
+    procd_set_param respawn
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_close_instance
+    echo "QuecProfiles Daemon Started"
+    echo "$(date) - Daemon started via procd" >> "$DEBUG_LOG"
+}
+
+stop_service() {
+    # Clean up state files
+    rm -f "$TRACK_FILE"
+    rm -f "$CHECK_TRIGGER"
+    
+    # Log stop action
+    logger -t quecprofiles -p daemon.info "Stopping QuecProfiles service"
+    echo "$(date) - Stopping service" >> "$DEBUG_LOG"
+    
+    # procd will handle stopping the instance automatically
+    echo "Stopping QuecProfiles service."
+}
+
+service_triggers() {
+    procd_add_reload_trigger "quecprofiles"
+}
+
+reload_service() {
+    touch "$CHECK_TRIGGER"
+    restart
+}
