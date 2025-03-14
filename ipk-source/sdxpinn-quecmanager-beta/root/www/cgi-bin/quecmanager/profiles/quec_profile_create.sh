@@ -153,6 +153,7 @@ set quecprofiles.@profile[-1].sa_nr5g_bands='$sa_nr5g_bands'
 set quecprofiles.@profile[-1].nsa_nr5g_bands='$nsa_nr5g_bands'
 set quecprofiles.@profile[-1].network_type='$network_type'
 set quecprofiles.@profile[-1].ttl='$ttl'
+set quecprofiles.@profile[-1].paused='0'
 commit quecprofiles
 EOF
 

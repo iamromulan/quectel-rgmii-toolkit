@@ -83,9 +83,10 @@ get_profiles() {
         local nsa_nr5g_bands=$(uci -q get "quecprofiles.$idx.nsa_nr5g_bands" 2>/dev/null)
         local network_type=$(uci -q get "quecprofiles.$idx.network_type" 2>/dev/null)
         local ttl=$(uci -q get "quecprofiles.$idx.ttl" 2>/dev/null)
+        local paused=$(uci -q get "quecprofiles.$idx.paused" 2>/dev/null)
         
         # Debug output
-        log_message "Retrieved for $idx: name=$name, iccid=$iccid, apn=$apn"
+        log_message "Retrieved for $idx: name=$name, iccid=$iccid, apn=$apn, paused=$paused"
 
         # Skip if missing required fields
         if [ -z "$name" ] || [ -z "$iccid" ] || [ -z "$apn" ]; then
@@ -104,6 +105,7 @@ get_profiles() {
         nsa_nr5g_bands=$(sanitize_for_json "${nsa_nr5g_bands:-""}")
         network_type=$(sanitize_for_json "${network_type:-"LTE"}")
         ttl=$(sanitize_for_json "${ttl:-0}")
+        paused=$(sanitize_for_json "${paused:-0}")
         
         # Create profile JSON
         local profile_json="{"
@@ -116,7 +118,8 @@ get_profiles() {
         profile_json="${profile_json}\"sa_nr5g_bands\":\"${sa_nr5g_bands}\","
         profile_json="${profile_json}\"nsa_nr5g_bands\":\"${nsa_nr5g_bands}\","
         profile_json="${profile_json}\"network_type\":\"${network_type}\","
-        profile_json="${profile_json}\"ttl\":\"${ttl}\""
+        profile_json="${profile_json}\"ttl\":\"${ttl}\","
+        profile_json="${profile_json}\"paused\":\"${paused}\""
         profile_json="${profile_json}}"
         
         # Add comma if not first
