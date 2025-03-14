@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Set content type to JSON
-echo "Content-type: application/json"
+echo "Content-type: application/json" 
 echo ""
 
 # Configuration
@@ -71,30 +71,10 @@ check_results() {
         # Check if the result file contains valid JSON data
         local result_content=$(cat "$RESULT_FILE" 2>/dev/null)
         if [ -n "$result_content" ] && echo "$result_content" | grep -q "status"; then
-            # Also check the results directory for AT command results
-            local cmd_id
-            cmd_id=$(echo "$result_content" | jsonfilter -e '@.command.id' 2>/dev/null)
-            
-            # Log the result we found
-            log_message "Found result file with command ID: $cmd_id" "info"
-            
-            # Check how old the result file is
-            local file_time=$(stat -c %Y "$RESULT_FILE" 2>/dev/null || echo "0")
-            local current_time=$(date +%s)
-            local age=$((current_time - file_time))
-            
-            log_message "Result file age: $age seconds" "info"
-            
-            # If file_time is valid and result is less than 1 hour old
-            if [ $age -lt 3600 ]; then
-                log_message "Recent scan results available" "info"
-                output_json "success" "Scan results available"
-                exit 0
-            else
-                log_message "Scan results too old, suggesting new scan" "info"
-                output_json "idle" "Previous scan results outdated"
-                exit 0
-            fi
+            # REMOVED AGE CHECK - Always return the file contents regardless of age
+            log_message "Found valid result file, returning contents" "info"
+            output_json "success" "Scan results available"
+            exit 0
         else
             log_message "Result file exists but contains invalid data" "warn"
             rm -f "$RESULT_FILE"  # Remove invalid result file
