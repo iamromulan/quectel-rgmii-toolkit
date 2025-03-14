@@ -47,7 +47,8 @@ done
 
 service quecmanager-services stop
 service quecmanager-services disable
-
+service quecmanager_services stop
+service quecmanager_services disable
 echo "Cleanup complete."
 exit 0
 

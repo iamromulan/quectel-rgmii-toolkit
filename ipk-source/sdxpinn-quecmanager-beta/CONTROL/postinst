@@ -4,8 +4,8 @@
 mv /www/index.html /www/index.html.old
 cp /www/login.html /www/index.html
 
-service quecmanager-services enable
-service quecmanager-services start
+service quecmanager_services enable
+service quecmanager_services start
 
 exit 0
 
