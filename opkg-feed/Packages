@@ -212,8 +212,8 @@ Conflicts: sdxpinn-quecmanager
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: b373c16833eff33b9f5d90ef5b2e4912
-Size: 983583
+MD5Sum: be08a6517a57b14552d980a56e5c7510
+Size: 983510
 Filename: sdxpinn-quecmanager-beta_2.0.1_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: BETA: A custom web UI desgined to run alongside luci for Quectel RM55x modems
