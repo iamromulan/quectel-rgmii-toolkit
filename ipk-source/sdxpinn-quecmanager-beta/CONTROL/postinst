@@ -7,5 +7,14 @@ cp /www/login.html /www/index.html
 service quecmanager_services enable
 service quecmanager_services start
 
+service quecmanager_cell_locking enable
+service quecmanager_cell_locking start
+
+service quecprofiles enable
+service quecprofiles start
+
+service quecwatch enable
+service quecwatch start
+
 exit 0
 

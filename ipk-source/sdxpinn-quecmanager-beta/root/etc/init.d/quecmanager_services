@@ -32,12 +32,6 @@ start_service() {
     procd_set_param stderr 1
     procd_close_instance
     echo "Signal Metrics Logger started"
-    echo "Starting QuecManager Cell Locking service..."
-    service quecmanager_cell_locking start
-    echo "Starting QuecManager Profiles service..."
-    service quecprofiles start
-    echo "Starting QuecManager QuecWatch service..."
-    service quecwatch start
 
     echo "All QuecManager services Started"
 }
@@ -45,10 +39,4 @@ start_service() {
 stop_service() {
     # procd will handle stopping all instances automatically
     echo "Stopping QuecManager services."
-    echo "Stopping QuecManager Cell Locking service..."
-    service quecmanager_cell_locking stop
-    echo "Stopping QuecManager Profiles service..."
-    service quecprofiles stop
-    echo "Stopping QuecManager QuecWatch service..."
-    service quecwatch stop
 }

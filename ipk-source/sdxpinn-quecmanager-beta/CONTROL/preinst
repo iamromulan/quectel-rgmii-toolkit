@@ -49,6 +49,15 @@ service quecmanager-services stop
 service quecmanager-services disable
 service quecmanager_services stop
 service quecmanager_services disable
+
+service quecmanager_cell_locking stop
+service quecmanager_cell_locking disable
+
+service quecprofiles stop
+service quecprofiles disable
+
+service quecwatch stop
+service quecwatch disable
 echo "Cleanup complete."
 exit 0
 
