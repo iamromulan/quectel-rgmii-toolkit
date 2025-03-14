@@ -913,6 +913,17 @@ check_profile() {
     local pdp_type=$(uci -q get quecprofiles.$profile_index.pdp_type)
     local imei=$(uci -q get quecprofiles.$profile_index.imei)
     local ttl=$(uci -q get quecprofiles.$profile_index.ttl)
+    
+    # Check if profile is paused
+    local paused=$(uci -q get quecprofiles.$profile_index.paused)
+    paused="${paused:-0}" # Default to not paused if not set
+    
+    # Skip applying paused profiles
+    if [ "$paused" = "1" ]; then
+        log_message "Profile '$profile_name' is paused, skipping application" "info"
+        update_track "paused" "Profile is paused. Resume the profile to apply settings." "$profile_name" "0"
+        return 0
+    fi
 
     # Default pdp_type to "IP" if not specified
     pdp_type="${pdp_type:-IP}"
