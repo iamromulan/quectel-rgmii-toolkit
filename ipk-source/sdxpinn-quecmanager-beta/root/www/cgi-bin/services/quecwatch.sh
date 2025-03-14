@@ -306,6 +306,33 @@ perform_connection_recovery() {
         log_message "Failed to acquire token for connection recovery" "error"
         return 1
     fi
+
+    # First check if CFUN is 1, if not set it to 1
+    local cfun_status=$(execute_at_command "AT+CFUN?" 5 "$token_id")
+    if [ $? -ne 0 ]; then
+        log_message "Failed to get CFUN status" "error"
+        release_token "$token_id"
+        return 1
+    fi
+
+    if echo "$cfun_status" | grep -q '+CFUN: 1'; then
+        log_message "CFUN is already 1, no action needed" "debug"
+    else
+        log_message "Setting CFUN to 1"
+        execute_at_command "AT+CFUN=1" 10 "$token_id"
+        sleep 2
+        
+        # Recheck CFUN status
+        cfun_status=$(execute_at_command "AT+CFUN?" 5 "$token_id")
+        if [ $? -ne 0 ] || ! echo "$cfun_status" | grep -q '+CFUN: 1'; then
+            log_message "Failed to set CFUN to 1" "error"
+            release_token "$token_id"
+            return 1
+        fi
+
+        log_message "CFUN set to 1 successfully" "debug"
+        sleep 2
+    fi
     
     # Detach from network
     log_message "Detaching from network" "debug"
