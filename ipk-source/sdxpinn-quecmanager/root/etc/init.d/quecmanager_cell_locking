@@ -1,0 +1,65 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+STOP=10
+
+SCRIPTS_DIR="/www/cgi-bin/quecmanager/cell-locking"
+BOOT_SCRIPT="$SCRIPTS_DIR/boot_check.sh"
+UPDATE_SCRIPT="$SCRIPTS_DIR/update_crontab.sh"
+UCI_CONFIG="quecmanager"
+LOG_DIR="/tmp/log/cell_lock"
+LOG_FILE="$LOG_DIR/cell_lock.log"
+
+# Function to log messages
+log_message() {
+    local message="$1"
+    local level="${2:-info}"
+    local component="init_script"
+    local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+    
+    # Ensure log directory exists
+    mkdir -p "$LOG_DIR"
+    
+    # Format: [timestamp] [level] [component] message
+    echo "[$timestamp] [$level] [$component] $message" >> "$LOG_FILE"
+    
+    # Also log to system log
+    logger -t "cell_lock_$component" -p "daemon.$level" "$message"
+}
+
+start() {
+    # Make scripts executable
+    chmod +x "$SCRIPTS_DIR"/*.sh
+    chmod +x /www/cgi-bin/quecmanager/cell-locking/handle_scheduled_locking.sh
+    
+    # Check if enabled
+    local enabled
+    config_load "$UCI_CONFIG"
+    config_get_bool enabled cell_lock enabled 0
+    
+    if [ "$enabled" -eq 1 ]; then
+        # Update crontab entries
+        "$UPDATE_SCRIPT"
+        
+        # Run boot check
+        "$BOOT_SCRIPT"
+        
+        log_message "Cell lock scheduler service started" "info"
+    else
+        log_message "Cell lock scheduler is disabled in config" "info"
+    fi
+}
+
+stop() {
+    # Remove crontab entries
+    crontab -l | grep -v "$SCRIPTS_DIR/" | crontab -
+    
+    log_message "Cell lock scheduler service stopped" "info"
+}
+
+reload() {
+    # Update crontab entries based on current config
+    "$UPDATE_SCRIPT"
+    
+    log_message "Cell lock scheduler service reloaded" "info"
+}
