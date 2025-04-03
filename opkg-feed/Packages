@@ -191,30 +191,30 @@ Description: A general first system patch for SDXPINN OpenWRT
 
 
 Package: sdxpinn-quecmanager
-Version: 1.0.1
+Version: 2.1.6
 Depends: libc, sdxpinn-mount-fix, atinout
 Conflicts: sdxpinn-quecmanager-beta
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: cb96c5ec96c2166f39d989f277ebc0f7
-Size: 722109
-Filename: sdxpinn-quecmanager_1.0.1_aarch64_cortex-a53.ipk
+MD5Sum: d0948fb506444f0d58eb0f7a60699880
+Size: 1309843
+Filename: sdxpinn-quecmanager_2.1.6_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 License: GPLv3
 
 
 Package: sdxpinn-quecmanager-beta
-Version: 2.1.6
+Version: 2.2.2
 Depends: sdxpinn-mount-fix, sdxpinn-patch (>= 2.5), libc, inotifywait, coreutils-timeout, uhttpd, sms-tool (>= 2025.1.19-APmod-iamromulan), jq, ookla-speedtest
 Conflicts: sdxpinn-quecmanager
 Section: admin
 Architecture: aarch64_cortex-a53
 Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
-MD5Sum: 72973cbfdae458067c64456a9241cb2c
-Size: 1307012
-Filename: sdxpinn-quecmanager-beta_2.1.6_aarch64_cortex-a53.ipk
+MD5Sum: 172f6434fa5f316632f4c0c31564471c
+Size: 1919284
+Filename: sdxpinn-quecmanager-beta_2.2.2_aarch64_cortex-a53.ipk
 Source: github/iamromulan
 Description: BETA: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 License: GPLv3
