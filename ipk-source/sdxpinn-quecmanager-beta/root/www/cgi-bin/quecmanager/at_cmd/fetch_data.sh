@@ -39,7 +39,7 @@ acquire_token() {
     local priority="${1:-10}"
     local max_attempts=10
     local attempt=0
-    
+
     while [ $attempt -lt $max_attempts ]; do
         # Check if token file exists
         if [ -f "$TOKEN_FILE" ]; then
@@ -47,7 +47,7 @@ acquire_token() {
             local current_priority=$(cat "$TOKEN_FILE" | jsonfilter -e '@.priority' 2>/dev/null)
             local timestamp=$(cat "$TOKEN_FILE" | jsonfilter -e '@.timestamp' 2>/dev/null)
             local current_time=$(date +%s)
-            
+
             # Check for expired token (> 30 seconds old)
             if [ $((current_time - timestamp)) -gt 30 ] || [ -z "$current_holder" ]; then
                 # Remove expired token
@@ -62,21 +62,21 @@ acquire_token() {
                 continue
             fi
         fi
-        
+
         # Try to create token file
-        echo "{\"id\":\"$LOCK_ID\",\"priority\":$priority,\"timestamp\":$(date +%s)}" > "$TOKEN_FILE" 2>/dev/null
+        echo "{\"id\":\"$LOCK_ID\",\"priority\":$priority,\"timestamp\":$(date +%s)}" >"$TOKEN_FILE" 2>/dev/null
         chmod 644 "$TOKEN_FILE" 2>/dev/null
-        
+
         # Verify we got the token
         local holder=$(cat "$TOKEN_FILE" 2>/dev/null | jsonfilter -e '@.id' 2>/dev/null)
         if [ "$holder" = "$LOCK_ID" ]; then
             return 0
         fi
-        
+
         sleep 0.1
         attempt=$((attempt + 1))
     done
-    
+
     return 1
 }
 
@@ -102,7 +102,7 @@ process_all_commands() {
     local commands="$1"
     local priority="${2:-10}"
     local first=1
-    
+
     # Acquire a single token for all commands
     if ! acquire_token "$priority"; then
         log_message "error" "Failed to acquire token for batch processing"
@@ -118,19 +118,19 @@ process_all_commands() {
         printf ']\n'
         return 1
     fi
-    
+
     # Process all commands with the single token
     printf '['
     for cmd in $commands; do
         [ $first -eq 0 ] && printf ','
         first=0
-        
+
         OUTPUT=$(execute_at_command "$cmd")
         local CMD_STATUS=$?
-        
+
         ESCAPED_CMD=$(escape_json "$cmd")
         ESCAPED_OUTPUT=$(escape_json "$OUTPUT")
-        
+
         if [ $CMD_STATUS -eq 0 ] && [ -n "$OUTPUT" ]; then
             printf '{"command":"%s","response":"%s","status":"success"}' \
                 "${ESCAPED_CMD}" \
@@ -141,7 +141,7 @@ process_all_commands() {
         fi
     done
     printf ']\n'
-    
+
     # Release token after all commands are done
     release_token
     return 0
@@ -151,9 +151,9 @@ process_all_commands() {
 trap 'release_token; exit 1' INT TERM
 
 # Command sets
-COMMAND_SET_1='AT+QUIMSLOT? AT+CNUM AT+COPS? AT+CIMI AT+ICCID AT+CGSN AT+CPIN? AT+CGDCONT? AT+CREG? AT+CFUN? AT+QENG="servingcell" AT+QTEMP AT+CGCONTRDP AT+QCAINFO=1;+QCAINFO;+QCAINFO=0 AT+QRSRP AT+QMAP="WWAN" AT+C5GREG=2;+C5GREG? AT+CGREG=2;+CGREG? AT+QRSRQ AT+QSINR AT+CGCONTRDP'
-COMMAND_SET_2='AT+CGDCONT? AT+CGCONTRDP AT+QNWPREFCFG="mode_pref" AT+QNWPREFCFG="nr5g_disable_mode" AT+QUIMSLOT? AT+CFUN? AT+QMBNCFG="AutoSel" AT+QMBNCFG="list" AT+QMAP="WWAN"'
-COMMAND_SET_3='AT+CGMI AT+CGMM AT+QGMR AT+CNUM AT+CIMI AT+ICCID AT+CGSN AT+QMAP="LANIP" AT+QMAP="WWAN" AT+QGETCAPABILITY'
+COMMAND_SET_1='AT+QUIMSLOT? AT+CNUM AT+COPS? AT+CIMI AT+ICCID AT+CGSN AT+CPIN? AT+CGDCONT? AT+CREG? AT+CFUN? AT+QENG="servingcell" AT+QTEMP AT+CGCONTRDP AT+QCAINFO=1;+QCAINFO;+QCAINFO=0 AT+QRSRP AT+QMAP="WWAN" AT+C5GREG=2;+C5GREG? AT+CGREG=2;+CGREG? AT+QRSRQ AT+QSINR AT+CGCONTRDP AT+QNWCFG="lte_time_advance",1;+QNWCFG="lte_time_advance" AT+QNWCFG="nr5g_time_advance",1;+QNWCFG="nr5g_time_advance"'
+COMMAND_SET_2='AT+CGDCONT? AT+CGCONTRDP AT+QNWPREFCFG="mode_pref" AT+QNWPREFCFG="nr5g_disable_mode" AT+QUIMSLOT? AT+CFUN? AT+QMBNCFG="AutoSel" AT+QMBNCFG="list" AT+QMAP="WWAN" AT+QNWCFG="lte_ambr" AT+QNWCFG="nr5g_ambr"'
+COMMAND_SET_3='AT+CGMI AT+CGMM AT+QGMR AT+CNUM AT+CIMI AT+ICCID AT+CGSN AT+QMAP="LANIP" AT+QMAP="WWAN" AT+QGETCAPABILITY AT+QNWCFG="3gpp_rel"'
 COMMAND_SET_4='AT+QMAP="MPDN_RULE" AT+QMAP="DHCPV4DNS" AT+QCFG="usbnet"'
 COMMAND_SET_5='AT+QRSRP AT+QRSRQ AT+QSINR AT+QCAINFO AT+QSPN'
 COMMAND_SET_6='AT+CEREG=2;+CEREG? AT+C5GREG=2;+C5GREG? AT+CPIN? AT+CGDCONT? AT+CGCONTRDP AT+QMAP="WWAN" AT+QRSRP AT+QTEMP AT+QNETRC?'
@@ -168,14 +168,14 @@ fi
 
 # Select the appropriate command set
 case "$COMMAND_SET" in
-    1) COMMANDS="$COMMAND_SET_1";;
-    2) COMMANDS="$COMMAND_SET_2";;
-    3) COMMANDS="$COMMAND_SET_3";;
-    4) COMMANDS="$COMMAND_SET_4";;
-    5) COMMANDS="$COMMAND_SET_5";;
-    6) COMMANDS="$COMMAND_SET_6";;
-    7) COMMANDS="$COMMAND_SET_7";;
-    8) COMMANDS="$COMMAND_SET_8";;
+1) COMMANDS="$COMMAND_SET_1" ;;
+2) COMMANDS="$COMMAND_SET_2" ;;
+3) COMMANDS="$COMMAND_SET_3" ;;
+4) COMMANDS="$COMMAND_SET_4" ;;
+5) COMMANDS="$COMMAND_SET_5" ;;
+6) COMMANDS="$COMMAND_SET_6" ;;
+7) COMMANDS="$COMMAND_SET_7" ;;
+8) COMMANDS="$COMMAND_SET_8" ;;
 esac
 
 # Set priority based on content
@@ -185,7 +185,10 @@ if echo "$COMMANDS" | grep -qi "AT+QSCAN"; then
 fi
 
 # Process commands with timeout protection
-( sleep 60; kill -TERM $$ 2>/dev/null ) & 
+(
+    sleep 60
+    kill -TERM $$ 2>/dev/null
+) &
 TIMEOUT_PID=$!
 
 process_all_commands "$COMMANDS" "$PRIORITY"
