@@ -985,7 +985,7 @@
                     // find this value from lines "+QCAINFO: \"PCC\"
                     const lte_pcc_arfcn = lines
                       .find((line) => line.includes('+QCAINFO: "PCC"'))
-                      .split(",")[5];
+                      .split(",")[1];
 
                     try {
                       // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
