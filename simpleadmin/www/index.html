@@ -67,6 +67,9 @@
                     >Device Information</a
                   >
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/cgi-bin/logout">Logout</a>
+                </li>
               </ul>
               <span class="navbar-text">
                 <button class="btn btn-link text-reset" id="darkModeToggle">
@@ -607,8 +610,8 @@
         </div>
       </div>
     </main>
-    <script src="js/dark-mode.js"></script>
-
+    <script src="/js/dark-mode.js"></script>
+    <script src="js/session-checker.js"></script>
     <script>
       function processAllInfos() {
         return {
@@ -664,6 +667,8 @@
 
             fetch(
               "/cgi-bin/get_atcommand?" +
+                new Date().getTime() +
+                "&" +
                 new URLSearchParams({
                   atcmd: this.atcmd,
                 })
@@ -1186,7 +1191,10 @@
                       .replace(/"/g, "");
 
                     // Get the eNBID. Its just Cell ID minus the last 2 characters
-                    this.eNBID = parseInt(longCID.substring(0, longCID.length - 2), 16);
+                    this.eNBID = parseInt(
+                      longCID.substring(0, longCID.length - 2),
+                      16
+                    );
 
                     // Get the short Cell ID (Last 2 characters of the Cell ID)
                     const shortCID = longCID.substring(longCID.length - 2);
@@ -1334,7 +1342,10 @@
                       .replace(/"/g, "");
 
                     // Get the eNBID. Its just Cell ID minus the last 2 characters
-                    this.eNBID = parseInt(longCID.substring(0, longCID.length - 2), 16);
+                    this.eNBID = parseInt(
+                      longCID.substring(0, longCID.length - 2),
+                      16
+                    );
 
                     // Get the short Cell ID (Last 2 characters of the Cell ID)
                     const shortCID = longCID.substring(longCID.length - 2);
@@ -1476,7 +1487,7 @@
           },
 
           requestPing() {
-            return fetch("/cgi-bin/get_ping")
+            return fetch("/cgi-bin/get_ping?" + new Date().getTime())
               .then((response) => response.text())
               .then((data) => {
                 return data;
@@ -1611,7 +1622,7 @@
             // Content-Type: text/plain
             //
             // 1 hour 44, minute
-            fetch("/cgi-bin/get_uptime")
+            fetch("/cgi-bin/get_uptime?" + new Date().getTime())
               .then((response) => response.text())
               .then((data) => {
                 // Example result

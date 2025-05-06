@@ -1,0 +1,49 @@
+#!/bin/sh
+
+# Get content length
+CONTENT_LENGTH=$(echo "$CONTENT_LENGTH" | tr -cd '0-9')
+
+# Read POST data from stdin
+if [ -n "$CONTENT_LENGTH" ]; then
+    POST_DATA=$(dd bs="$CONTENT_LENGTH" count=1 2>/dev/null)
+else
+    POST_DATA=""
+fi
+
+# Extract username and password
+USERNAME=$(echo "$POST_DATA" | grep -oE "username=[^&]+" | cut -d= -f2-)
+PASSWORD=$(echo "$POST_DATA" | grep -oE "password=[^&]+" | cut -d= -f2-)
+
+# URL decode (basic version)
+USERNAME=$(echo "$USERNAME" | sed 's/+/ /g;s/%\([0-9A-F][0-9A-F]\)/\\x\1/g' | xargs -0 echo -e)
+PASSWORD=$(echo "$PASSWORD" | sed 's/+/ /g;s/%\([0-9A-F][0-9A-F]\)/\\x\1/g' | xargs -0 echo -e)
+
+# Verify credentials using htpasswd directly
+HTPASSWD_BIN="/opt/bin/htpasswd"
+TEMP_FILE=$(mktemp)
+
+# Copy the existing htpasswd file to temp location (to avoid permissions issues)
+cat /opt/etc/.htpasswd > $TEMP_FILE
+
+# Verify password
+$HTPASSWD_BIN -vb $TEMP_FILE "$USERNAME" "$PASSWORD" > /dev/null 2>&1
+AUTH_RESULT=$?
+rm $TEMP_FILE
+
+if [ $AUTH_RESULT -eq 0 ]; then
+    # Success - generate session token
+    SESSION_TOKEN=$(date +%s | md5sum | head -c 32)
+    echo "Status: 200 OK"
+    echo "Content-type: text/html"
+    echo "Set-Cookie: AuthSession=$SESSION_TOKEN; Path=/; Max-Age=3600; HttpOnly; SameSite=Strict"
+    echo ""
+    
+    # Include the entire login_success.html content
+    cat /usrdata/simpleadmin/www/login_success.html
+else
+    # Failed login - redirect to login page
+    echo "Status: 302 Found"
+    echo "Location: /login.html?error=1"
+    echo ""
+    echo "Invalid username or password. Redirecting to login page..."
+fi

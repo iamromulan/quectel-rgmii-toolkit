@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Print headers
+echo "Status: 302 Found"
+# Expire the cookie by setting it with a past date
+echo "Set-Cookie: AuthSession=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict"
+echo "Location: /login.html"
+echo ""
+echo "Logged out successfully. Redirecting to login page..."

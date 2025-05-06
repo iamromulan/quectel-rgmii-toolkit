@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Check if the AuthSession cookie is present
+if echo "$HTTP_COOKIE" | grep -q "AuthSession="; then
+    # Cookie is present, return OK
+    echo "Status: 200 OK"
+    echo "Content-type: text/plain"
+    echo ""
+    echo "OK"
+else
+    # No cookie or invalid cookie, return Unauthorized
+    echo "Status: 403 Forbidden"
+    echo "Content-type: text/plain"
+    echo ""
+    echo "Unauthorized"
+fi
