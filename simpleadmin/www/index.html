@@ -1200,7 +1200,7 @@
                         .find((line) => line.includes('+QENG: "servingcell"'))
                         .split(",")[8]
                         .replace(/"/g, "");
-                      this.tac = parseInt(localTac, 10) + "(" + localTac + ")";
+                      this.tac = parseInt(localTac, 16) + " (" + localTac + ")";
                       // CSQ
                       this.csq = "NR-SA Mode";
 
@@ -1254,7 +1254,7 @@
                         .find((line) => line.includes('+QENG: "servingcell"'))
                         .split(",")[12]
                         .replace(/"/g, "");
-                      this.tac = parseInt(localTac, 10) + "(" + localTac + ")";
+                      this.tac = parseInt(localTac, 16) + " (" + localTac + ")";
                       // CSQ
                       this.csq = lines
                         .find((line) => line.includes("+CSQ:"))
@@ -1358,7 +1358,7 @@
                       .find((line) => line.includes('+QENG: "LTE"'))
                       .split(",")[10]
                       .replace(/"/g, "");
-                    this.tac = parseInt(localTac, 10) + "("+localTac+")";
+                    this.tac = parseInt(localTac, 16) + " ("+localTac+")";
 
                     this.cellID =
                       "Short " +
