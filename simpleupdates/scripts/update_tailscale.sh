@@ -95,7 +95,7 @@ install_update_tailscale() {
         cd /usrdata
         curl -O https://pkgs.tailscale.com/stable/tailscale_1.76.1_arm.tgz
         tar -xzf tailscale_1.76.1_arm.tgz
-		rm tailscale_1.76.1_arm.tgz
+	rm tailscale_1.76.1_arm.tgz
         cd /usrdata/tailscale_1.76.1_arm
         mv tailscale tailscaled "$TAILSCALE_DIR/"
         rm -rf /usrdata/tailscale_1.76.1_arm
@@ -113,6 +113,7 @@ install_update_tailscale() {
         echo "Starting Tailscaled..."
         systemctl start tailscaled
         cd /
+	ln -sf /usrdata/tailscale/tailscale /usrdata/root/bin
         remount_ro
         echo -e "\e[32mTailscale installed successfully.\e[0m"
 		exit 0
