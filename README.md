@@ -1,9 +1,9 @@
 # RGMII Toolkit
 Software deployment Toolkit for Quectel RM5xxx series 5G modems utilizing an m.2 to RJ45 adapter (RGMII)
 
-Current Branch: **Development**
+Current Branch: **development-SDXLEMUR**
 
-Please PR to this branch instead of main :)
+Please PR to this branch instead of SDXLEMUR direct for testing purposes :)
 
 Fork development, and PR development to development :)
 
