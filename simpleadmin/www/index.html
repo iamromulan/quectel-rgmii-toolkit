@@ -852,14 +852,15 @@
                   }
 
                   // --- Bandwidth ---
+                    // find this example value from lines "+QENG: \"servingcell\"
+                  const bandwidth_line = lines.find((line) =>
+                    line.includes('+QENG: "servingcell"')
+                  );
                   if (
                     this.networkMode == "5G SA TDD" ||
                     this.networkMode == "5G SA FDD"
                   ) {
-                    // find this example value from lines "+QENG: \"servingcell\"
-                    const bandwidth_line = lines.find((line) =>
-                      line.includes('+QENG: "servingcell"')
-                    );
+
                     const nr_bw = bandwidth_line.split(",")[11];
                     const calculated_bandwidth = this.calculate_nr_bw(nr_bw);
                     this.bandwidth = "NR " + calculated_bandwidth + " MHz";
@@ -867,11 +868,6 @@
                     this.networkMode == "4G LTE FDD" ||
                     this.networkMode == "4G LTE TDD"
                   ) {
-                    // find this example value from lines "+QENG: \"servingcell\"
-                    const bandwidth_line = lines.find((line) =>
-                      line.includes('+QENG: "servingcell"')
-                    );
-
                     const lte_bw_ul = bandwidth_line.split(",")[10];
                     const lte_bw_dl = bandwidth_line.split(",")[11];
                     const calculated_bandwidth_ul =
