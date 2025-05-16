@@ -1078,15 +1078,38 @@
                       this.sccPCI = "-";
                     }
                   } else if (this.networkMode == "5G NSA") {
-                    const PCI_ARRAY = getCurrentBandsPCI(lines);
-
-                    try {
-                      this.pccPCI = PCI_ARRAY[0];
-                      this.sccPCI = PCI_ARRAY.join(", ");
-                    } catch (error) {
-                      this.pccPCI = lte_pcc_pci.replace(/,/g, "");
-                      this.sccPCI = "-";
+                    const pccparts = lines.find((m) => m.includes("QCAINFO: \"PCC\"")).split(":")[1].split(",");
+                    const sccarr = lines.filter((m) => m.includes("QCAINFO: \"SCC\""));
+                    const sccpci = [];
+                    sccarr.forEach((s) => {
+                      const sccparts = s.split(":")[1].split(",");
+                      let sccIndex = 5;
+                      switch (sccparts.length) {
+                        case 8: // length 8, PCI is at index 4, NR5G PCC and NR5G SCC Band when NR5G-NSA
+                          sccIndex = 4;
+                          break;
+                        case 13: // length 13, PCI is at index 5, LTE SCC Band
+                        case 12: // length 12, PCI is at index 5, NR5G SCC Band
+                        case 10: // length 10, PCI is at index 5, LTE PCC Band
+                        default:
+                          sccIndex = 5;
+                          break;
+                      }
+                      sccpci.push(sccparts[sccIndex]);
+                    });
+                    this.sccPCI = sccpci.join(', ');
+                    switch (pccparts.length) {
+                      case 8: // length 8, PCI is at index 4, NR5G PCC and NR5G SCC Band when NR5G-NSA
+                        pccIndex = 4;
+                        break;
+                      case 13: // length 13, PCI is at index 5, LTE SCC Band
+                      case 12: // length 12, PCI is at index 5, NR5G SCC Band
+                      case 10: // length 10, PCI is at index 5, LTE PCC Band
+                      default:
+                        pccIndex = 5;
+                        break;
                     }
+                    this.pccPCI = pccparts[pccIndex]?.trim();
                   } else {
                     this.pccPCI = "0";
                     this.sccPCI = "-";
@@ -1448,31 +1471,6 @@
             if (bytes == 0) return "0 Byte";
             const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
             return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
-          },
-
-          getCurrentBandsPCI (lines) {
-            const getPCIFromParts = (parts) => {
-              if (!parts) return "Unknown";
-              const pciIndex = (() => {
-                switch (parts.length) {
-                  case 8: // length 8, PCI is at index 4, NR5G PCC and NR5G SCC Band when NR5G-NSA
-                    return 4;
-                  case 13: // length 13, PCI is at index 5, LTE SCC Band
-                  case 12: // length 12, PCI is at index 5, NR5G SCC Band
-                  case 10: // length 10, PCI is at index 5, LTE PCC Band
-                  default:
-                    return 5;
-                }
-              })();
-              return parts[pciIndex]?.trim() || "Unknown";
-            };
-            const extractPCI = lines.map((line) => getPCIFromParts(line.split(":")[1]?.split(",")));
-
-            // const lines = response.split("\n");
-            const pccPCI = extractPCI(lines.filter((m) => m.includes("QCAINFO")).filter((l) => l.includes("PCC")))[0];
-            const sccPCIs = extractPCI(lines.filter((m) => m.includes("QCAINFO")).filter((l) => l.includes("SCC")));
-            return [pccPCI, ...sccPCIs].filter((pci) => pci !== "Unknown");
-
           },
 
           requestPing() {
