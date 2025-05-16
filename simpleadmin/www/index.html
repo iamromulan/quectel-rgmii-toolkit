@@ -985,7 +985,7 @@
                     // find this value from lines "+QCAINFO: \"PCC\"
                     const lte_pcc_arfcn = lines
                       .find((line) => line.includes('+QCAINFO: "PCC"'))
-                      .split(",")[5];
+                      .split(",")[1];
 
                     try {
                       // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
@@ -1054,7 +1054,6 @@
                     const lte_pcc_pci = lines
                       .find((line) => line.includes('+QCAINFO: "PCC"'))
                       .split(",")[5];
-
                     try {
                       // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
                       const lte_scc_pci = lines.filter((line) =>
@@ -1079,35 +1078,11 @@
                       this.sccPCI = "-";
                     }
                   } else if (this.networkMode == "5G NSA") {
-                    // find this value from lines "+QCAINFO: \"PCC\"
-                    const lte_pcc_pci = lines
-                      .find((line) => line.includes('+QCAINFO: "PCC"'))
-                      .split(",")[5];
+                    const PCI_ARRAY = getCurrentBandsPCI(lines);
 
                     try {
-                      // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
-                      const lte_scc_pci = lines.filter((line) =>
-                        line.includes('+QCAINFO: "SCC"')
-                      );
-
-                      // if empty, then proceed to error block
-                      if (lte_scc_pci.length == 0) {
-                        throw "No SCC PCI";
-                      }
-
-                      // process all the values in the array and extract the PCI part only
-                      for (let i = 0; i < lte_scc_pci.length; i++) {
-                        // if line contains LTE BAND then do this process
-                        if (lte_scc_pci[i].includes("LTE BAND")) {
-                          lte_scc_pci[i] = lte_scc_pci[i].split(",")[5];
-                        } else {
-                          lte_scc_pci[i] = lte_scc_pci[i].split(",")[4];
-                        }
-                      }
-
-                      // combine the PCC and SCC PCI values
-                      this.pccPCI = lte_pcc_pci;
-                      this.sccPCI = lte_scc_pci.join(", ");
+                      this.pccPCI = PCI_ARRAY[0];
+                      this.sccPCI = PCI_ARRAY.join(", ");
                     } catch (error) {
                       this.pccPCI = lte_pcc_pci.replace(/,/g, "");
                       this.sccPCI = "-";
@@ -1473,6 +1448,31 @@
             if (bytes == 0) return "0 Byte";
             const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
             return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
+          },
+
+          getCurrentBandsPCI (lines) {
+            const getPCIFromParts = (parts) => {
+              if (!parts) return "Unknown";
+              const pciIndex = (() => {
+                switch (parts.length) {
+                  case 8: // length 8, PCI is at index 4, NR5G PCC and NR5G SCC Band when NR5G-NSA
+                    return 4;
+                  case 13: // length 13, PCI is at index 5, LTE SCC Band
+                  case 12: // length 12, PCI is at index 5, NR5G SCC Band
+                  case 10: // length 10, PCI is at index 5, LTE PCC Band
+                  default:
+                    return 5;
+                }
+              })();
+              return parts[pciIndex]?.trim() || "Unknown";
+            };
+            const extractPCI = lines.map((line) => getPCIFromParts(line.split(":")[1]?.split(",")));
+
+            // const lines = response.split("\n");
+            const pccPCI = extractPCI(lines.filter((m) => m.includes("QCAINFO")).filter((l) => l.includes("PCC")))[0];
+            const sccPCIs = extractPCI(lines.filter((m) => m.includes("QCAINFO")).filter((l) => l.includes("SCC")));
+            return [pccPCI, ...sccPCIs].filter((pci) => pci !== "Unknown");
+
           },
 
           requestPing() {
