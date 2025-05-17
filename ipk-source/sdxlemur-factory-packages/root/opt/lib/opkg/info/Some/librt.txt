@@ -1,4 +1,0 @@
-root@sdxlemur:~# fndfiles
-Checking for files in /lib and /usr/lib...
-MISSING: librt-2.27.so
-FOUND: /lib/librt.so.1

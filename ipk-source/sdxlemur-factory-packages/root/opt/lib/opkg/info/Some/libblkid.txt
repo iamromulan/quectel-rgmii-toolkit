@@ -1,4 +1,0 @@
-root@sdxlemur:~# fndfiles
-Checking for files in /lib and /usr/lib...
-FOUND: /lib/libblkid.so.1.1.0
-MISSING: ibblkid.so.1
