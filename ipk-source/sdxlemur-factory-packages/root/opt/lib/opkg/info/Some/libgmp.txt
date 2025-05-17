@@ -1,4 +1,0 @@
-root@sdxlemur:~# fndfiles
-Checking for files in /lib and /usr/lib...
-FOUND: /usr/lib/libgmp.so.10
-MISSING: libgmp.so.10.5.0

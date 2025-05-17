@@ -1,4 +1,0 @@
-root@sdxlemur:~# fndfiles
-Checking for files in /lib and /usr/lib...
-FOUND: /lib/libe2p.so.2
-FOUND: /lib/libe2p.so.2.3
