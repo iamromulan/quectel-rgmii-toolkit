@@ -1,4 +1,0 @@
-/opt/lib/upgrade/keep.d/vsftpd
-/opt/etc/vsftpd/vsftpd.conf
-/opt/sbin/vsftpd
-/opt/etc/init.d/S49vsftpd

@@ -1,2 +1,0 @@
-/opt/etc/lighttpd/conf.d/30-proxy.conf
-/opt/lib/lighttpd/mod_proxy.so
