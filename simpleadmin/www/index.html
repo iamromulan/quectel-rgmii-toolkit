@@ -981,7 +981,7 @@
                     // find this value from lines "+QCAINFO: \"PCC\"
                     const lte_pcc_arfcn = lines
                       .find((line) => line.includes('+QCAINFO: "PCC"'))
-                      .split(",")[5];
+                      .split(",")[1];
 
                     try {
                       // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
@@ -1050,7 +1050,6 @@
                     const lte_pcc_pci = lines
                       .find((line) => line.includes('+QCAINFO: "PCC"'))
                       .split(",")[5];
-
                     try {
                       // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
                       const lte_scc_pci = lines.filter((line) =>
@@ -1075,39 +1074,38 @@
                       this.sccPCI = "-";
                     }
                   } else if (this.networkMode == "5G NSA") {
-                    // find this value from lines "+QCAINFO: \"PCC\"
-                    const lte_pcc_pci = lines
-                      .find((line) => line.includes('+QCAINFO: "PCC"'))
-                      .split(",")[5];
-
-                    try {
-                      // Look for all the lines with this value "+QCAINFO: \"SCC\" and store them in an array
-                      const lte_scc_pci = lines.filter((line) =>
-                        line.includes('+QCAINFO: "SCC"')
-                      );
-
-                      // if empty, then proceed to error block
-                      if (lte_scc_pci.length == 0) {
-                        throw "No SCC PCI";
+                    const pccparts = lines.find((m) => m.includes("QCAINFO: \"PCC\"")).split(":")[1].split(",");
+                    const sccarr = lines.filter((m) => m.includes("QCAINFO: \"SCC\""));
+                    const sccpci = [];
+                    sccarr.forEach((s) => {
+                      const sccparts = s.split(":")[1].split(",");
+                      let sccIndex = 5;
+                      switch (sccparts.length) {
+                        case 8: // length 8, PCI is at index 4, NR5G PCC and NR5G SCC Band when NR5G-NSA
+                          sccIndex = 4;
+                          break;
+                        case 13: // length 13, PCI is at index 5, LTE SCC Band
+                        case 12: // length 12, PCI is at index 5, NR5G SCC Band
+                        case 10: // length 10, PCI is at index 5, LTE PCC Band
+                        default:
+                          sccIndex = 5;
+                          break;
                       }
-
-                      // process all the values in the array and extract the PCI part only
-                      for (let i = 0; i < lte_scc_pci.length; i++) {
-                        // if line contains LTE BAND then do this process
-                        if (lte_scc_pci[i].includes("LTE BAND")) {
-                          lte_scc_pci[i] = lte_scc_pci[i].split(",")[5];
-                        } else {
-                          lte_scc_pci[i] = lte_scc_pci[i].split(",")[4];
-                        }
-                      }
-
-                      // combine the PCC and SCC PCI values
-                      this.pccPCI = lte_pcc_pci;
-                      this.sccPCI = lte_scc_pci.join(", ");
-                    } catch (error) {
-                      this.pccPCI = lte_pcc_pci.replace(/,/g, "");
-                      this.sccPCI = "-";
+                      sccpci.push(sccparts[sccIndex]);
+                    });
+                    this.sccPCI = sccpci.join(', ');
+                    switch (pccparts.length) {
+                      case 8: // length 8, PCI is at index 4, NR5G PCC and NR5G SCC Band when NR5G-NSA
+                        pccIndex = 4;
+                        break;
+                      case 13: // length 13, PCI is at index 5, LTE SCC Band
+                      case 12: // length 12, PCI is at index 5, NR5G SCC Band
+                      case 10: // length 10, PCI is at index 5, LTE PCC Band
+                      default:
+                        pccIndex = 5;
+                        break;
                     }
+                    this.pccPCI = pccparts[pccIndex]?.trim();
                   } else {
                     this.pccPCI = "0";
                     this.sccPCI = "-";
