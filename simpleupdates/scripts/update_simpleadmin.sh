@@ -4,7 +4,7 @@
 # Define GitHub repo info
 GITUSER="iamromulan"
 REPONAME="quectel-rgmii-toolkit"
-GITTREE="SDXLEMUR"
+GITTREE="development-SDXLEMUR"
 GITMAINTREE="SDXLEMUR"
 GITDEVTREE="development-SDXLEMUR"
 GITROOT="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITTREE"
@@ -57,7 +57,7 @@ cat <<EOF > "$TMP_SCRIPT"
 # Define GitHub repo info
 GITUSER="iamromulan"
 REPONAME="quectel-rgmii-toolkit"
-GITTREE="SDXLEMUR"
+GITTREE="development-SDXLEMUR"
 GITMAINTREE="SDXLEMUR"
 GITDEVTREE="development-SDXLEMUR"
 GITROOT="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITTREE"
@@ -156,6 +156,7 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
 			mkdir $SIMPLE_ADMIN_DIR/www/cgi-bin
 			mkdir $SIMPLE_ADMIN_DIR/www/css
     		mkdir $SIMPLE_ADMIN_DIR/www/js
+    		mkdir $SIMPLE_ADMIN_DIR/www/fonts
             cd $SIMPLE_ADMIN_DIR/systemd
             wget $GITROOT/simpleadmin/systemd/lighttpd.service
 			sleep 1
@@ -194,6 +195,19 @@ echo -e "\e[1;31m2) Installing simpleadmin from the $GITTREE branch\e[0m"
     		cd $SIMPLE_ADMIN_DIR/www/css
     		wget $GITROOT/simpleadmin/www/css/bootstrap.min.css
       		wget $GITROOT/simpleadmin/www/css/styles.css
+      		wget $GITROOT/simpleadmin/www/css/all.min.css
+      		sleep 1
+      		cd $SIMPLE_ADMIN_DIR/www/fonts
+      		wget $GITROOT/simpleadmin/www/fonts/poppins-v23-latin-300italic.woff2
+      		wget $GITROOT/simpleadmin/www/fonts/poppins-v23-latin-300.woff2
+      		wget $GITROOT/simpleadmin/www/fonts/poppins-v23-latin-500italic.woff2
+      		wget $GITROOT/simpleadmin/www/fonts/poppins-v23-latin-500.woff2
+      		wget $GITROOT/simpleadmin/www/fonts/poppins-v23-latin-600italic.woff2
+      		wget $GITROOT/simpleadmin/www/fonts/poppins-v23-latin-600.woff2
+      		wget $GITROOT/simpleadmin/www/fonts/poppins-v23-latin-700italic.woff2
+      		wget $GITROOT/simpleadmin/www/fonts/poppins-v23-latin-700.woff2
+      		wget $GITROOT/simpleadmin/www/fonts/poppins-v23-latin-italic.woff2
+      		wget $GITROOT/simpleadmin/www/fonts/poppins-v23-latin-regular.woff2
 			sleep 1
 			cd $SIMPLE_ADMIN_DIR/www/cgi-bin
 			wget $GITROOT/simpleadmin/www/cgi-bin/get_atcommand

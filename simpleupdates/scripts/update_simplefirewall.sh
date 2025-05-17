@@ -4,7 +4,7 @@
 # Define GitHub repo info
 GITUSER="iamromulan"
 REPONAME="quectel-rgmii-toolkit"
-GITTREE="SDXLEMUR"
+GITTREE="development-SDXLEMUR"
 GITMAINTREE="SDXLEMUR"
 GITDEVTREE="development-SDXLEMUR"
 GITROOT="https://raw.githubusercontent.com/$GITUSER/$REPONAME/$GITTREE"
