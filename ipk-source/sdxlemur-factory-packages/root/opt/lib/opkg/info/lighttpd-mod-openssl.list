@@ -1,2 +1,0 @@
-/opt/lib/lighttpd/mod_openssl.so
-/opt/etc/lighttpd/conf.d/30-openssl.conf

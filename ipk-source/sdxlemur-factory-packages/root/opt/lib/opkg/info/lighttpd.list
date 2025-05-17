@@ -1,6 +1,0 @@
-/opt/lib/lighttpd/mod_h2.so
-/opt/etc/init.d/S80lighttpd
-/opt/lib/lighttpd/mod_dirlisting.so
-/opt/etc/lighttpd/mime.conf
-/opt/etc/lighttpd/lighttpd.conf
-/opt/sbin/lighttpd
