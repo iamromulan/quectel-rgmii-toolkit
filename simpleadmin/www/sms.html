@@ -220,10 +220,10 @@
           while ((match = cmglRegex.exec(data)) !== null) {
             const index = parseInt(match[1]);
             const senderHex = match[2];
-             // Maximum world wide phone number length is 17, UTF-16BE Hex string comes back at 48+ for US Number, min lenght is 4. 
-             // When 4 digit SMS short code is used the result is a 16 length string (which we then need to check if the sender hex starts with 003 or 002(+))
-             // This check is probably completley unecessary but I have no data on how the modems behave around the world otherwise.
-            const sender = senderHex.length > 15 && (senderHex.startsWith('002B') || senderHex.startsWith('003')) ? this.convertHexToText(senderHex) : senderHex;
+             // Maximum world wide phone number length is 17 (North Korea), UTF-16BE Hex string comes back at 48+ for US Number, min length is 3. 
+             // When 3 digit SMS short code is used the result is a 12 length string (which we then need to check if the sender hex starts with 003 or 002B(+))
+             // This check is probably completley unecessary but I have no data on how the modems behave with different firmware(whether support for CSCS="UCS2" is available).
+            const sender = senderHex.length > 11 && (senderHex.startsWith('002B') || senderHex.startsWith('003')) ? this.convertHexToText(senderHex) : senderHex;
             const dateStr = match[3].replace(/\+\d{2}$/, "");
             const date = this.parseCustomDate(dateStr);
             if (isNaN(date)) {
