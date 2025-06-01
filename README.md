@@ -33,7 +33,7 @@ Current Branch: **Main**
 
    		- [RM550V-GL](https://github.com/iamromulan/cellular-modem-wiki/blob/main/quectel/sdxpinn/RM550V-GL.md) :warning: You need iamromulan's RM550V-GL firmware for PCIe RC mode to work :warning:
 
-	 	- [RM550V-GL](https://github.com/iamromulan/cellular-modem-wiki/blob/main/quectel/sdxpinn/RM551E-GL.md)
+	 	- [RM551E-GL](https://github.com/iamromulan/cellular-modem-wiki/blob/main/quectel/sdxpinn/RM551E-GL.md)
 
    	- Will probably work fine on:
 		
