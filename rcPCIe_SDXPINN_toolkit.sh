@@ -84,9 +84,9 @@ basic_55x_setup() {
 	opkg install mc-skins
 
     # /etc/config/ttyd # fix default ttyd interface
-    uci set ttyd.@ttyd[0].interface='eth0'
+    uci set ttyd.@ttyd[0].interface='@eth'
 
-    # Check and download /etc/init.d/dropbear if missing
+	# Check and download /etc/init.d/dropbear if missing
     [ -f /etc/init.d/dropbear ] || { 
         curl -o /etc/init.d/dropbear https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/missing/dropbear &&
         chmod +x /etc/init.d/dropbear; 
