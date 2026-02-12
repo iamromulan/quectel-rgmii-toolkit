@@ -59,15 +59,15 @@ install_mount_fix() {
     fi
     # Install mount-fix
     cd /tmp
-    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-mount-fix_1.3.2_aarch64_cortex-a53.ipk
-    opkg install sdxpinn-mount-fix_1.3.2_aarch64_cortex-a53.ipk
+    curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-mount-fix_1.4_aarch64_cortex-a53.ipk
+    opkg install sdxpinn-mount-fix_1.4_aarch64_cortex-a53.ipk
 }
 
 basic_55x_setup() {
     overlay_check || return
 	cd /tmp
-	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-patch_2.5_all.ipk
-    opkg install sdxpinn-patch_2.5_all.ipk
+	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-patch_2.7_all.ipk
+    opkg install sdxpinn-patch_2.7_all.ipk
 	opkg update
     	echo -e "\e[92m"
 	echo "iamromulan's ipk/opkg repo added!"
