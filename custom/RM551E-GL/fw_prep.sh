@@ -22,6 +22,10 @@ prep_sysfs() {
 	remount_rw
 	echo "Unmounting /etc from usrdata"
 	umount -lf /etc
+	#R01
+	#umount -lf /etc
+	#cp -rfP /usrdata/overlay-work/etc-upper/* /usrdata/etc/
+	#cp -rfP /usrdata/etc/* /etc/
 	echo "Starting phase 1 prep"
 	cd /tmp
 	# Check if /etc/opkg.conf has a line containing "option overlay_root /overlay" and remove it if it exists
