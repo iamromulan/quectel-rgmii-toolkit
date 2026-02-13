@@ -300,28 +300,28 @@ Description:  Sets up a tty from SMD11
 
 
 Package: tailscale
-Version: 1.92.5
+Version: 1.94.1
 Depends: libc, tailscaled
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 5228ca75ab97fa4ff3c477114214774e
-Size: 12496729
-Filename: tailscale_1.92.5_aarch64_cortex-a53.ipk
+MD5Sum: 02a823f40cccb397dfa07d486e8e9cdb
+Size: 13904823
+Filename: tailscale_1.94.1_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
 Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.90.6
 License: GPLv3
 
 
 Package: tailscaled
-Version: 1.92.5
+Version: 1.94.1
 Depends: libc, ca-bundle, kmod-tun
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 50703f55ae2b7e859765162f0027d813
-Size: 18180155
-Filename: tailscaled_1.92.5_aarch64_cortex-a53.ipk
+MD5Sum: 1c369855325754ed2ccd32a28c054060
+Size: 18409379
+Filename: tailscaled_1.94.1_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
 Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.90.6
 License: GPLv3
