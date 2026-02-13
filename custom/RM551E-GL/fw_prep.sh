@@ -33,8 +33,8 @@ prep_sysfs() {
        	 echo "'option overlay_root /overlay' not found in /etc/opkg.conf, no changes made"
     	fi
 
-	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-patch_2.6_all.ipk
-    	opkg install ./sdxpinn-patch_2.6_all.ipk
+	curl -O https://raw.githubusercontent.com/$GITUSER/$GITREPO/$GITTREE/opkg-feed/sdxpinn-patch_2.7_all.ipk
+    	opkg install ./sdxpinn-patch_2.7_all.ipk
 	opkg update
     	echo -e "\e[92m"
 	echo "iamromulan's ipk/opkg repo added!"
