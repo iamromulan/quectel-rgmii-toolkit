@@ -231,14 +231,14 @@ License: GPLv3
 
 
 Package: sdxpinn-patch
-Version: 2.9
+Version: 3.0
 Depends: libc
 Section: base
 Architecture: all
 Maintainer: Cameron Thompson iamromulan@github.com
-MD5Sum: eedd56e4aaba5e79224edee0e26a1d63
-Size: 4016
-Filename: sdxpinn-patch_2.9_all.ipk
+MD5Sum: 16e6a55e00fb85d554d3e6895ae90192
+Size: 4034
+Filename: sdxpinn-patch_3.0_all.ipk
 Source: github.com/iamromulan
 Description: A general first system patch for SDXPINN OpenWRT
 

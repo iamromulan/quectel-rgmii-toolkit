@@ -203,7 +203,7 @@ uci show firewall | grep "\.src='wan_all'" | sed "s/firewall\.@rule\[\([0-9]*\)\
     uci set firewall.@rule[$i].enabled='0'
 done
 uci commit firewall
-/etc/init.d/firewall restart
+/etc/init.d/firewall restart >/dev/null 2>&1
 }
 
 

@@ -44,6 +44,15 @@ ipkname="${pkgname}_${version}_${architecture}.ipk"
 echo "Setting permissions for CONTROL scripts..."
 chmod +x "${build_path}/CONTROL"/*
 
+# Ensure init.d and other scripts in root are executable
+if [ -d "${build_path}/root/etc/init.d" ]; then
+    echo "Setting permissions for init.d scripts..."
+    chmod +x "${build_path}/root/etc/init.d"/*
+fi
+if [ -d "${build_path}/root/etc/hotplug.d" ]; then
+    find "${build_path}/root/etc/hotplug.d" -type f -exec chmod +x {} \;
+fi
+
 # Set ownership for CONTROL and root files
 echo "Setting ownership for all package files..."
 chown -R root:root "${build_path}/CONTROL"/*
