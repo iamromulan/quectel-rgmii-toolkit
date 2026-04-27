@@ -1,5 +1,9 @@
 #!/bin/ash
 
+# Enable and start the boot-time service
+/etc/init.d/sdxpinn-patch enable
+/etc/init.d/sdxpinn-patch restart
+
 echo "Complete"
 
 exit 0

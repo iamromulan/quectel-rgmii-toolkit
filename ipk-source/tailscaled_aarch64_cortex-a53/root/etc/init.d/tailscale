@@ -91,7 +91,7 @@ custom_instance() {
 				ts_ip=$(tailscale ip -4)
 				uci set network.tailscale.proto='static'
 				uci set network.tailscale.ipaddr=$ts_ip
-				uci set network.tailscale.netmask='255.0.0.0'
+				uci set network.tailscale.netmask='255.192.0.0'
 				uci set network.tailscale.device=$ts0
 			fi
 		fi
@@ -99,7 +99,7 @@ custom_instance() {
 		lan2wan=$(uci show firewall | grep "firewall.@forwarding\[[0-9]\+\]\.src='lan'" -B 1 -A 1 | grep "firewall.@forwarding\[[0-9]\+\]\.dest='wan'" | grep -o '[0-9]\+')
 		if [ -n "$exitNode" ];  then
 			uci set firewall.@defaults[0].forward='REJECT'
-			[ -n $lan2wan ] && uci set firewall.@forwarding[$lan2wan].enabled='0'
+			[ -n "$lan2wan" ] && uci set firewall.@forwarding[$lan2wan].enabled='0'
 		else
 			uci -q delete firewall.@forwarding[$lan2wan].enabled
 		fi
@@ -182,14 +182,14 @@ start_instance() {
 	fi
 
 	config_get port $cfg 'port'
-	config_get config_path $cfg 'config_path'
+	config_get state_file $cfg 'state_file'
+	[ -z "$state_file" ] && state_file="/etc/tailscale/tailscaled.state"
 	config_get fw_mode $cfg 'fw_mode'
 	config_get_bool std_out $cfg 'log_stdout'
 	config_get_bool std_err $cfg 'log_stderr'
 
-	[ -d $config_path ] || mkdir -p $config_path
+	[ -d "$(dirname "$state_file")" ] || mkdir -p "$(dirname "$state_file")"
 	[ -d $CONFIG_PATH ] || mkdir -p $CONFIG_PATH
-	state_file=$config_path/tailscaled.state
 	
 	/usr/sbin/tailscaled --cleanup
 
