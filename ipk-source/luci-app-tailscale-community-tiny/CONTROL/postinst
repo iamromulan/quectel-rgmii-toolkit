@@ -5,7 +5,7 @@
 default_postinst $0 $@
 [ -n "${IPKG_INSTROOT}" ] && exit 0
 rm -rf /tmp/luci-modulecache/
-killall -HUP rpcd 2>/dev/null
+/etc/init.d/rpcd restart 2>/dev/null
 /etc/init.d/tailscale-settings enable 2>/dev/null
 /etc/init.d/tailscale-settings start 2>/dev/null
 exit 0
