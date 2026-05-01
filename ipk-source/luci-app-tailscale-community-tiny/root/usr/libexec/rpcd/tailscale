@@ -24,12 +24,12 @@ handle_get_status() {
 	json_get_var BACKEND "BackendState"
 	json_get_var TUN_MODE "TUN"
 
-	json_select "CurrentTailnet" 2>/dev/null
+	json_select "CurrentTailnet" >/dev/null 2>&1
 	json_get_var DOMAIN "Name"
 	json_select ..
 
-	json_select "Self" 2>/dev/null
-	json_select "TailscaleIPs" 2>/dev/null
+	json_select "Self" >/dev/null 2>&1
+	json_select "TailscaleIPs" >/dev/null 2>&1
 	json_get_var SELF_IPV4 1
 	json_get_var SELF_IPV6 2
 	json_select ..
@@ -48,7 +48,7 @@ handle_get_status() {
 
 	# Collect peer data into numbered shell variables
 	local PEER_COUNT=0
-	json_select "Peer" 2>/dev/null
+	json_select "Peer" >/dev/null 2>&1
 	if [ $? -eq 0 ]; then
 		local _pkeys
 		json_get_keys _pkeys
@@ -69,7 +69,7 @@ handle_get_status() {
 			json_get_var _rx "RxBytes"
 			json_get_var _dns "DNSName"
 
-			json_select "TailscaleIPs" 2>/dev/null
+			json_select "TailscaleIPs" >/dev/null 2>&1
 			if [ $? -eq 0 ]; then
 				json_get_var _ip0 1
 				json_get_var _ip1 2
@@ -97,7 +97,7 @@ handle_get_status() {
 
 	# Collect health warnings
 	local HEALTH_COUNT=0
-	json_select "Health" 2>/dev/null
+	json_select "Health" >/dev/null 2>&1
 	if [ $? -eq 0 ]; then
 		local _hkeys
 		json_get_keys _hkeys
@@ -326,7 +326,7 @@ handle_do_login() {
 	input=$(cat)
 
 	json_load "$input"
-	json_select "form_data" 2>/dev/null
+	json_select "form_data" >/dev/null 2>&1
 	if [ $? -ne 0 ]; then
 		json_cleanup
 		json_init
