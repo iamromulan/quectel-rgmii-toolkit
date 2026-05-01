@@ -108,8 +108,8 @@ Conflicts: luci-app-tailscale, luci-app-tailscale-community
 Section: luci
 Architecture: all
 Maintainer: Cameron Thompson <iamromulan@github>
-MD5Sum: d6a95bd5891836c406c22e876a109564
-Size: 14156
+MD5Sum: 835d97a70514ad68a193641eaff3ac85
+Size: 14100
 Filename: luci-app-tailscale-community-tiny_1.0.0_all.ipk
 Source: github/iamromulan
 Description: Luci app for tailscale-tiny
@@ -334,8 +334,8 @@ Conflicts: tailscale, tailscaled
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Cameron Thompson <iamromulan@github>
-MD5Sum: f0a689316f2d0a3840ebcef03517ea2c
-Size: 7331382
+MD5Sum: 47c77fd7797751b77d3eada94b399968
+Size: 7344274
 Filename: tailscale-tiny_1.96.5_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
 Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.96.5
