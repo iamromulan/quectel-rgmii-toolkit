@@ -101,6 +101,20 @@ Source: github/iamromulan
 Description: Luci app for tailscale
 
 
+Package: luci-app-tailscale-community-tiny
+Version: 1.0.0
+Depends: tailscale-tiny, ip-full, luci-base
+Conflicts: luci-app-tailscale, luci-app-tailscale-community
+Section: luci
+Architecture: all
+Maintainer: Cameron Thompson <iamromulan@github>
+MD5Sum: d6a95bd5891836c406c22e876a109564
+Size: 14156
+Filename: luci-app-tailscale-community-tiny_1.0.0_all.ipk
+Source: github/iamromulan
+Description: Luci app for tailscale-tiny
+
+
 Package: luci-app-zerotier
 Version: 1.0
 Depends: libc, zerotier
@@ -309,7 +323,22 @@ MD5Sum: ba98cffba9266611a4f8086983f44f30
 Size: 14383323
 Filename: tailscale_1.96.4_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
-Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.90.6
+Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.96.4
+License: GPLv3
+
+
+Package: tailscale-tiny
+Version: 1.96.5
+Depends: ca-bundle, kmod-tun
+Conflicts: tailscale, tailscaled
+Section: net
+Architecture: aarch64_cortex-a53
+Maintainer: Cameron Thompson <iamromulan@github>
+MD5Sum: f0a689316f2d0a3840ebcef03517ea2c
+Size: 7331382
+Filename: tailscale-tiny_1.96.5_aarch64_cortex-a53.ipk
+Source: feeds/packages/net/tailscale
+Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.96.5
 License: GPLv3
 
 
@@ -323,7 +352,7 @@ MD5Sum: 35201767438069ae0db5c936e0439f30
 Size: 18884362
 Filename: tailscaled_1.96.4_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
-Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.90.6
+Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.96.4
 License: GPLv3
 
 
