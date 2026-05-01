@@ -1,0 +1,12 @@
+Package: tailscale-tiny
+Version: 1.96.5
+Depends: ca-bundle, kmod-tun
+Conflicts: tailscale, tailscaled
+Source: feeds/packages/net/tailscale
+SourceName: tailscale-tiny
+License: BSD-3-Clause
+LicenseFiles: LICENSE
+Section: net
+Maintainer: Cameron Thompson <iamromulan@github>
+Architecture: aarch64_cortex-a53
+Description: Zero config VPN. Stripped combined binary from tiny-tailscale with 24 features kept. Static, no libc dependency.
