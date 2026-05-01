@@ -1,0 +1,11 @@
+Package: luci-app-tailscale-community-tiny
+Version: 1.0.0
+Depends: tailscale-tiny, ip-full, luci-base
+Conflicts: luci-app-tailscale, luci-app-tailscale-community
+Source: https://github.com/iamromulan/luci-app-tailscale-community/tree/tiny
+SourceName: luci-app-tailscale-community-tiny
+License: Apache-2.0
+Section: luci
+Maintainer: Cameron Thompson <iamromulan@github>
+Architecture: all
+Description: LuCI web interface for Tailscale. Stripped variant for tiny-tailscale — no DNS or webclient toggles. Shell rpcd backend for all OpenWrt versions (21.02+).

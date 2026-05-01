@@ -3,3 +3,7 @@
 [ -s ${IPKG_INSTROOT}/lib/functions.sh ] || exit 0
 . ${IPKG_INSTROOT}/lib/functions.sh
 default_postinst $0 $@
+[ -n "${IPKG_INSTROOT}" ] && exit 0
+/etc/init.d/tailscale enable 2>/dev/null
+/etc/init.d/tailscale start 2>/dev/null
+exit 0

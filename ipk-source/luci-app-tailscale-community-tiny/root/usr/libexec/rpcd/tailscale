@@ -1,0 +1,576 @@
+#!/bin/sh
+
+. /usr/share/libubox/jshn.sh
+
+bool2num() { [ "$1" = "1" ] || [ "$1" = "true" ] && echo 1 || echo 0; }
+
+handle_get_status() {
+	if ! [ -x /usr/sbin/tailscale ] && ! [ -x /usr/bin/tailscale ]; then
+		echo '{"status":"not_installed","version":"","TUNMode":"","health":"","ipv4":"Not running","ipv6":null,"domain_name":"","peers":[]}'
+		return
+	fi
+
+	local SJ
+	SJ=$(tailscale status --json 2>/dev/null)
+	if [ -z "$SJ" ]; then
+		echo '{"status":"","version":"","TUNMode":"","health":"","ipv4":"Not running","ipv6":null,"domain_name":"","peers":[]}'
+		return
+	fi
+
+	local VERSION BACKEND TUN_MODE DOMAIN SELF_IPV4 SELF_IPV6 STATUS
+
+	json_load "$SJ"
+	json_get_var VERSION "Version"
+	json_get_var BACKEND "BackendState"
+	json_get_var TUN_MODE "TUN"
+
+	json_select "CurrentTailnet" 2>/dev/null
+	json_get_var DOMAIN "Name"
+	json_select ..
+
+	json_select "Self" 2>/dev/null
+	json_select "TailscaleIPs" 2>/dev/null
+	json_get_var SELF_IPV4 1
+	json_get_var SELF_IPV6 2
+	json_select ..
+	json_select ..
+
+	case "$BACKEND" in
+		Running)    STATUS="running" ;;
+		NeedsLogin) STATUS="logout" ;;
+		*)          STATUS="$BACKEND" ;;
+	esac
+
+	case "$TUN_MODE" in
+		1|true) TUN_MODE="true" ;;
+		*)      TUN_MODE="false" ;;
+	esac
+
+	# Collect peer data into numbered shell variables
+	local PEER_COUNT=0
+	json_select "Peer" 2>/dev/null
+	if [ $? -eq 0 ]; then
+		local _pkeys
+		json_get_keys _pkeys
+		for _nk in $_pkeys; do
+			json_select "$_nk"
+			PEER_COUNT=$((PEER_COUNT + 1))
+
+			local _id _os _online _curaddr _relay _lastseen _exitnode _exitopt _tx _rx _dns _ip0 _ip1
+			json_get_var _id "ID"
+			json_get_var _os "OS"
+			json_get_var _online "Online"
+			json_get_var _curaddr "CurAddr"
+			json_get_var _relay "Relay"
+			json_get_var _lastseen "LastSeen"
+			json_get_var _exitnode "ExitNode"
+			json_get_var _exitopt "ExitNodeOption"
+			json_get_var _tx "TxBytes"
+			json_get_var _rx "RxBytes"
+			json_get_var _dns "DNSName"
+
+			json_select "TailscaleIPs" 2>/dev/null
+			if [ $? -eq 0 ]; then
+				json_get_var _ip0 1
+				json_get_var _ip1 2
+				json_select ..
+			fi
+
+			eval "P${PEER_COUNT}_id=\"\$_id\""
+			eval "P${PEER_COUNT}_ip0=\"\$_ip0\""
+			eval "P${PEER_COUNT}_ip1=\"\$_ip1\""
+			eval "P${PEER_COUNT}_dns=\"\$_dns\""
+			eval "P${PEER_COUNT}_os=\"\$_os\""
+			eval "P${PEER_COUNT}_online=\"\$_online\""
+			eval "P${PEER_COUNT}_curaddr=\"\$_curaddr\""
+			eval "P${PEER_COUNT}_relay=\"\$_relay\""
+			eval "P${PEER_COUNT}_lastseen=\"\$_lastseen\""
+			eval "P${PEER_COUNT}_exitnode=\"\$_exitnode\""
+			eval "P${PEER_COUNT}_exitopt=\"\$_exitopt\""
+			eval "P${PEER_COUNT}_tx=\"\$_tx\""
+			eval "P${PEER_COUNT}_rx=\"\$_rx\""
+
+			json_select ..
+		done
+		json_select ..
+	fi
+
+	# Collect health warnings
+	local HEALTH_COUNT=0
+	json_select "Health" 2>/dev/null
+	if [ $? -eq 0 ]; then
+		local _hkeys
+		json_get_keys _hkeys
+		for _hk in $_hkeys; do
+			HEALTH_COUNT=$((HEALTH_COUNT + 1))
+			local _hval
+			json_get_var _hval "$_hk"
+			eval "H${HEALTH_COUNT}=\"\$_hval\""
+		done
+		json_select ..
+	fi
+
+	json_cleanup
+
+	# Build output
+	json_init
+	json_add_string "status" "$STATUS"
+	json_add_string "version" "${VERSION:-Unknown}"
+	json_add_string "TUNMode" "$TUN_MODE"
+
+	if [ "$HEALTH_COUNT" -gt 0 ]; then
+		json_add_array "health"
+		local _hi=1
+		while [ "$_hi" -le "$HEALTH_COUNT" ]; do
+			eval "json_add_string \"\" \"\$H${_hi}\""
+			_hi=$((_hi + 1))
+		done
+		json_close_array
+	else
+		json_add_string "health" ""
+	fi
+
+	json_add_string "ipv4" "${SELF_IPV4:-No IP assigned}"
+	if [ -n "$SELF_IPV6" ]; then
+		json_add_string "ipv6" "$SELF_IPV6"
+	else
+		json_add_string "ipv6" ""
+	fi
+	json_add_string "domain_name" "${DOMAIN:-}"
+
+	json_add_object "peers"
+	local _pi=1
+	while [ "$_pi" -le "$PEER_COUNT" ]; do
+		local _pid _pip0 _pip1 _pdns _pos _ponline _pcuraddr _prelay
+		local _plastseen _pexitnode _pexitopt _ptx _prx
+		eval "_pid=\"\$P${_pi}_id\""
+		eval "_pip0=\"\$P${_pi}_ip0\""
+		eval "_pip1=\"\$P${_pi}_ip1\""
+		eval "_pdns=\"\$P${_pi}_dns\""
+		eval "_pos=\"\$P${_pi}_os\""
+		eval "_ponline=\"\$P${_pi}_online\""
+		eval "_pcuraddr=\"\$P${_pi}_curaddr\""
+		eval "_prelay=\"\$P${_pi}_relay\""
+		eval "_plastseen=\"\$P${_pi}_lastseen\""
+		eval "_pexitnode=\"\$P${_pi}_exitnode\""
+		eval "_pexitopt=\"\$P${_pi}_exitopt\""
+		eval "_ptx=\"\$P${_pi}_tx\""
+		eval "_prx=\"\$P${_pi}_rx\""
+
+		local _hostname _ip_display _linkaddr
+		_hostname="${_pdns%%.*}"
+
+		if [ -n "$_pip1" ]; then
+			_ip_display="${_pip0}<br>${_pip1}"
+		else
+			_ip_display="$_pip0"
+		fi
+
+		if [ -z "$_pcuraddr" ]; then
+			_linkaddr="$_prelay"
+		else
+			_linkaddr="$_pcuraddr"
+		fi
+
+		json_add_object "$_pid"
+		json_add_string "ip" "$_ip_display"
+		json_add_string "hostname" "$_hostname"
+		json_add_string "ostype" "$_pos"
+		json_add_boolean "online" "$(bool2num "$_ponline")"
+		json_add_string "linkadress" "$_linkaddr"
+		json_add_string "lastseen" "$_plastseen"
+		json_add_boolean "exit_node" "$(bool2num "$_pexitnode")"
+		json_add_boolean "exit_node_option" "$(bool2num "$_pexitopt")"
+		json_add_string "tx" "${_ptx:-}"
+		json_add_string "rx" "${_prx:-}"
+		json_close_object
+
+		_pi=$((_pi + 1))
+	done
+	json_close_object
+
+	json_dump
+	json_cleanup
+}
+
+handle_get_settings() {
+	local state_file fw_mode
+	state_file=$(uci -q get tailscale.settings.state_file)
+	state_file="${state_file:-/etc/tailscale/tailscaled.state}"
+
+	if [ ! -f "$state_file" ]; then
+		echo '{}'
+		return
+	fi
+
+	local state_json
+	state_json=$(cat "$state_file" 2>/dev/null)
+	if [ -z "$state_json" ]; then
+		echo '{}'
+		return
+	fi
+
+	local profiles_b64
+	json_load "$state_json"
+	json_get_var profiles_b64 "_profiles"
+	json_cleanup
+
+	if [ -z "$profiles_b64" ]; then
+		echo '{}'
+		return
+	fi
+
+	local profiles_decoded profile_key
+	profiles_decoded=$(echo "$profiles_b64" | base64 -d 2>/dev/null)
+	if [ -z "$profiles_decoded" ]; then
+		echo '{}'
+		return
+	fi
+
+	json_load "$profiles_decoded"
+	local _profile_keys
+	json_get_keys _profile_keys
+	json_cleanup
+
+	profile_key=""
+	for _k in $_profile_keys; do
+		profile_key="$_k"
+		break
+	done
+
+	if [ -z "$profile_key" ]; then
+		echo '{}'
+		return
+	fi
+
+	local profile_field profile_b64 profile_decoded
+	profile_field="profile-${profile_key}"
+
+	json_load "$state_json"
+	json_get_var profile_b64 "$profile_field"
+	json_cleanup
+
+	if [ -z "$profile_b64" ]; then
+		echo '{}'
+		return
+	fi
+
+	profile_decoded=$(echo "$profile_b64" | base64 -d 2>/dev/null)
+	if [ -z "$profile_decoded" ]; then
+		echo '{}'
+		return
+	fi
+
+	local accept_routes advertise_exit_node exit_node exit_node_allow_lan
+	local shields_up ssh_val runwebclient nosnat corp_dns
+	local _adv_routes=""
+
+	json_load "$profile_decoded"
+	json_get_var accept_routes "RouteAll"
+	json_get_var advertise_exit_node "AdvertiseExitNode"
+	json_get_var exit_node "ExitNodeID"
+	json_get_var exit_node_allow_lan "ExitNodeAllowLANAccess"
+	json_get_var shields_up "ShieldsUp"
+	json_get_var ssh_val "RunSSH"
+	json_get_var runwebclient "RunWebClient"
+	json_get_var nosnat "NoSNAT"
+	json_get_var corp_dns "CorpDNS"
+
+	local _rtype
+	json_get_type _rtype "AdvertiseRoutes"
+	if [ "$_rtype" = "array" ]; then
+		json_select "AdvertiseRoutes"
+		local _rkeys
+		json_get_keys _rkeys
+		for _rk in $_rkeys; do
+			local _route
+			json_get_var _route "$_rk"
+			_adv_routes="${_adv_routes:+$_adv_routes }$_route"
+		done
+		json_select ..
+	fi
+	json_cleanup
+
+	fw_mode=$(uci -q get tailscale.settings.fw_mode)
+	fw_mode="${fw_mode%% *}"
+	fw_mode="${fw_mode:-nftables}"
+
+	local disable_magic_dns
+	case "$corp_dns" in
+		1|true) disable_magic_dns=0 ;;
+		*)      disable_magic_dns=1 ;;
+	esac
+
+	json_init
+	json_add_boolean "accept_routes" "$(bool2num "$accept_routes")"
+	json_add_boolean "advertise_exit_node" "$(bool2num "$advertise_exit_node")"
+	json_add_array "advertise_routes"
+	for _r in $_adv_routes; do
+		json_add_string "" "$_r"
+	done
+	json_close_array
+	json_add_string "exit_node" "${exit_node:-}"
+	json_add_boolean "exit_node_allow_lan_access" "$(bool2num "$exit_node_allow_lan")"
+	json_add_boolean "shields_up" "$(bool2num "$shields_up")"
+	json_add_boolean "ssh" "$(bool2num "$ssh_val")"
+	json_add_boolean "runwebclient" "$(bool2num "$runwebclient")"
+	json_add_boolean "nosnat" "$(bool2num "$nosnat")"
+	json_add_boolean "disable_magic_dns" "$disable_magic_dns"
+	json_add_string "fw_mode" "$fw_mode"
+	json_dump
+	json_cleanup
+}
+
+handle_do_login() {
+	local input loginserver loginserver_authkey
+	input=$(cat)
+
+	json_load "$input"
+	json_select "form_data" 2>/dev/null
+	if [ $? -ne 0 ]; then
+		json_cleanup
+		json_init
+		json_add_string "error" "Missing or invalid form_data parameter. Please provide login data."
+		json_dump
+		json_cleanup
+		return
+	fi
+	json_get_var loginserver "loginserver"
+	json_get_var loginserver_authkey "loginserver_authkey"
+	json_cleanup
+
+	local backend_state
+	backend_state=$(tailscale status --json 2>/dev/null | jsonfilter -q -e '@.BackendState')
+	if [ "$backend_state" != "NeedsLogin" ]; then
+		json_init
+		json_add_string "error" "Tailscale is already logged in and running."
+		json_dump
+		json_cleanup
+		return
+	fi
+
+	local login_args=""
+	if [ -n "$loginserver" ]; then
+		login_args="--login-server '$(echo "$loginserver" | sed "s/'/'\\\\''/g")'"
+		if [ -n "$loginserver_authkey" ]; then
+			login_args="$login_args --auth-key '$(echo "$loginserver_authkey" | sed "s/'/'\\\\''/g")'"
+		fi
+	fi
+
+	/bin/sh -c "tailscale login $login_args &" >/dev/null 2>&1
+
+	local attempt=0
+	while [ "$attempt" -lt 15 ]; do
+		local ts_out url_match
+		ts_out=$(tailscale status 2>/dev/null)
+		url_match=$(echo "$ts_out" | grep -o 'https://[^ ]*')
+		if [ -n "$url_match" ]; then
+			json_init
+			json_add_string "url" "$url_match"
+			json_dump
+			json_cleanup
+			return
+		fi
+		sleep 2
+		attempt=$((attempt + 1))
+	done
+
+	json_init
+	json_add_string "error" "Could not retrieve login URL from tailscale command after 30 seconds."
+	json_dump
+	json_cleanup
+}
+
+handle_do_logout() {
+	local backend_state
+	backend_state=$(tailscale status --json 2>/dev/null | jsonfilter -q -e '@.BackendState')
+
+	if [ "$backend_state" != "Running" ]; then
+		json_init
+		json_add_string "error" "Tailscale is not running. Cannot perform logout."
+		json_dump
+		json_cleanup
+		return
+	fi
+
+	local result
+	result=$(tailscale logout 2>&1)
+	if [ $? -ne 0 ]; then
+		json_init
+		json_add_string "error" "Failed to logout: $result"
+		json_dump
+		json_cleanup
+		return
+	fi
+
+	json_init
+	json_add_boolean "success" 1
+	json_dump
+	json_cleanup
+}
+
+handle_get_subroutes() {
+	local routes_json _subroutes=""
+	routes_json=$(ip -j route 2>/dev/null)
+
+	if [ -n "$routes_json" ]; then
+		json_load "{\"r\":$routes_json}"
+		json_select "r"
+		local _rkeys
+		json_get_keys _rkeys
+
+		for _idx in $_rkeys; do
+			json_select "$_idx"
+			local dst="" scope=""
+			json_get_var dst "dst"
+			json_get_var scope "scope"
+			json_select ..
+
+			[ "$dst" = "default" ] && continue
+			[ "$scope" != "link" ] && continue
+			case "$dst" in
+				*.*) _subroutes="${_subroutes:+$_subroutes }$dst" ;;
+			esac
+		done
+		json_select ..
+		json_cleanup
+	fi
+
+	json_init
+	json_add_array "routes"
+	for _r in $_subroutes; do
+		json_add_string "" "$_r"
+	done
+	json_close_array
+	json_dump
+	json_cleanup
+}
+
+handle_setup_firewall() {
+	local changed_network=0 changed_firewall=0
+
+	# 1. Network interface
+	local net_ts
+	net_ts=$(uci -q get network.tailscale)
+	if [ -z "$net_ts" ]; then
+		uci set network.tailscale=interface
+		uci set network.tailscale.proto='none'
+		uci set network.tailscale.device='tailscale0'
+		changed_network=1
+	else
+		local current_dev
+		current_dev=$(uci -q get network.tailscale.device)
+		if [ "$current_dev" != "tailscale0" ]; then
+			uci set network.tailscale.device='tailscale0'
+			changed_network=1
+		fi
+	fi
+
+	# 2. Firewall zone
+	local ts_zone="" fwd_lan_ts=0 fwd_ts_lan=0
+
+	local _sections
+	_sections=$(uci show firewall 2>/dev/null | grep '=zone$' | cut -d= -f1)
+	for _sec in $_sections; do
+		local _zname
+		_zname=$(uci -q get "${_sec}.name")
+		if [ "$_zname" = "tailscale" ]; then
+			ts_zone="$_sec"
+			break
+		fi
+	done
+
+	_sections=$(uci show firewall 2>/dev/null | grep '=forwarding$' | cut -d= -f1)
+	for _sec in $_sections; do
+		local _src _dest
+		_src=$(uci -q get "${_sec}.src")
+		_dest=$(uci -q get "${_sec}.dest")
+		[ "$_src" = "lan" ] && [ "$_dest" = "tailscale" ] && fwd_lan_ts=1
+		[ "$_src" = "tailscale" ] && [ "$_dest" = "lan" ] && fwd_ts_lan=1
+	done
+
+	if [ -z "$ts_zone" ]; then
+		local zid
+		zid=$(uci add firewall zone)
+		uci set "firewall.${zid}.name=tailscale"
+		uci set "firewall.${zid}.input=ACCEPT"
+		uci set "firewall.${zid}.output=ACCEPT"
+		uci set "firewall.${zid}.forward=ACCEPT"
+		uci set "firewall.${zid}.masq=1"
+		uci set "firewall.${zid}.mtu_fix=1"
+		uci add_list "firewall.${zid}.network=tailscale"
+		changed_firewall=1
+	else
+		local _has_ts_net=0
+		local _nets
+		_nets=$(uci -q get "${ts_zone}.network")
+		for _n in $_nets; do
+			[ "$_n" = "tailscale" ] && _has_ts_net=1 && break
+		done
+		if [ "$_has_ts_net" = "0" ]; then
+			uci add_list "${ts_zone}.network=tailscale"
+			changed_firewall=1
+		fi
+	fi
+
+	# 3. Forwarding rules
+	if [ "$fwd_lan_ts" = "0" ]; then
+		local fid
+		fid=$(uci add firewall forwarding)
+		uci set "firewall.${fid}.src=lan"
+		uci set "firewall.${fid}.dest=tailscale"
+		changed_firewall=1
+	fi
+
+	if [ "$fwd_ts_lan" = "0" ]; then
+		local fid
+		fid=$(uci add firewall forwarding)
+		uci set "firewall.${fid}.src=tailscale"
+		uci set "firewall.${fid}.dest=lan"
+		changed_firewall=1
+	fi
+
+	# 4. Commit and reload
+	if [ "$changed_network" = "1" ]; then
+		uci commit network
+		/etc/init.d/network reload 2>/dev/null
+	fi
+
+	if [ "$changed_firewall" = "1" ]; then
+		uci commit firewall
+		/etc/init.d/firewall reload 2>/dev/null
+	fi
+
+	local msg
+	if [ "$changed_network" = "1" ] || [ "$changed_firewall" = "1" ]; then
+		msg="Tailscale firewall/interface configuration applied."
+	else
+		msg="Tailscale firewall/interface already configured."
+	fi
+
+	json_init
+	json_add_boolean "success" 1
+	json_add_boolean "changed_network" "$changed_network"
+	json_add_boolean "changed_firewall" "$changed_firewall"
+	json_add_string "message" "$msg"
+	json_dump
+	json_cleanup
+}
+
+case "$1" in
+	list)
+		cat <<'EOF'
+{"get_status":{},"get_settings":{},"do_login":{"form_data":{}},"do_logout":{},"get_subroutes":{},"setup_firewall":{}}
+EOF
+		;;
+	call)
+		case "$2" in
+			get_status)     handle_get_status ;;
+			get_settings)   handle_get_settings ;;
+			do_login)       handle_do_login ;;
+			do_logout)      handle_do_logout ;;
+			get_subroutes)  handle_get_subroutes ;;
+			setup_firewall) handle_setup_firewall ;;
+		esac
+		;;
+esac
