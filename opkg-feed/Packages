@@ -95,8 +95,8 @@ Conflicts: luci-app-tailscale, luci-app-tailscale-community
 Section: luci
 Architecture: all
 Maintainer: Cameron Thompson <iamromulan@github>
-MD5Sum: b1c47b11d5c0508e73b2e58f9b9b279c
-Size: 14093
+MD5Sum: 30f60315f36cd366b3c966ae9926cb10
+Size: 14122
 Filename: luci-app-tailscale-community-tiny_1.0.0_all.ipk
 Source: github/iamromulan
 Description: Luci app for tailscale-tiny
