@@ -1,13 +1,12 @@
-Starting package analysis - Fri May  1 04:29:33 PM EDT 2026
+Starting package analysis - Fri May  1 08:25:38 PM EDT 2026
 No update needed for atinout (version 0.9.1, MD5: 444eb87488bad1927b6ed069dedf7393, size: 4323)
 No update needed for kmod-wireguard (version 1, MD5: 98e77b68c2f1b5ff46ef7713b4f63a94, size: 789)
 No update needed for libucode20230711 (version 2024.07.22~b610860d-r3, MD5: c38bd45a6aa14a969b7e92f051481d7e, size: 79358)
 No update needed for luci-app-argon-config (version 0.9-1, MD5: 5a418efdfeee34fb11c7f9cb5fff67fe, size: 4546)
 No update needed for luci-app-atinout-mod (version 1.3.4-20250119, MD5: 1ffee9ec8fe5723b8140bf2c21fea508, size: 4864)
 No update needed for luci-app-go-wireguard (version 4.500-2, MD5: 66549e8d970b9046440e6a836f9c9639, size: 24213)
-No update needed for luci-app-tailscale (version 1.2.3-2, MD5: 53c84c947c42d7518aecb4a6b8a9c5a8, size: 6501)
 Updating package info for luci-app-tailscale-community-tiny...
-Updated luci-app-tailscale-community-tiny to version 1.0.0 with MD5: 835d97a70514ad68a193641eaff3ac85 and size: 14100
+Updated luci-app-tailscale-community-tiny to version 1.0.0 with MD5: b1c47b11d5c0508e73b2e58f9b9b279c and size: 14093
 No update needed for luci-app-zerotier (version 1.0, MD5: 62dccab49d8f53ce08f8650eda0c547d, size: 1399)
 No update needed for luci-app-zerotier-22 (version 1.0-20, MD5: 7a0d9d5a33eb2fce4f03363ff1446c0c, size: 3257)
 No update needed for luci-app-zerotier-23 (version 1.14.1-1, MD5: b6818c3c17ebef35a3fcc7653e9e3827, size: 5891)
@@ -22,13 +21,11 @@ No update needed for sdxpinn-quecmanager (version 2.3.4, MD5: 57c8459f23120ce906
 No update needed for sdxpinn-quecmanager-beta (version 2.3.9, MD5: 4ee32aa37e03f7c6f6b15e7c5c655e85, size: 1900607)
 No update needed for sms-tool (version 2025.1.19-APmod-iamromulan, MD5: 83dc8bfd2d4ac8d8952a2a95b2be943f, size: 13687)
 No update needed for socat-at-bridge (version 1.2.0, MD5: eccb5b567c5fd7969ebedbef3c6fdebb, size: 1445)
-No update needed for tailscale (version 1.96.4, MD5: ba98cffba9266611a4f8086983f44f30, size: 14383323)
-No update needed for tailscaled (version 1.96.4, MD5: 35201767438069ae0db5c936e0439f30, size: 18884362)
 Updating package info for tailscale-tiny...
-Updated tailscale-tiny to version 1.96.5 with MD5: 47c77fd7797751b77d3eada94b399968 and size: 7344274
+Updated tailscale-tiny to version 1.96.4 with MD5: 618503fbdff8727cf0bb52e7634afd15 and size: 7344019
 No update needed for ucode-mod-lua (version 1, MD5: cd83c6848867112332d1155b4c4f0640, size: 10085)
 No update needed for warp (version 1.0, MD5: ea95658bf84f619cabe5dd62280fe787, size: 2698)
 No update needed for websocat (version 1.14.0, MD5: e877135ca393c19a17ee81966d88ec38, size: 3067044)
 No update needed for wgcf (version 2.2.24, MD5: b2ba181f9181c2bd8f37933c60c0713f, size: 3677883)
 Package file and signature updated successfully.
-Package analysis completed - Fri May  1 04:29:34 PM EDT 2026
+Package analysis completed - Fri May  1 08:25:38 PM EDT 2026

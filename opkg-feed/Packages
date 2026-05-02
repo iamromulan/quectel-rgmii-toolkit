@@ -88,19 +88,6 @@ Filename: luci-app-go-wireguard_4.500-2_all.ipk
 Description:  Wireguard luci App
 
 
-Package: luci-app-tailscale
-Version: 1.2.3-2
-Depends: libc, tailscale, tailscaled (>= 1.78.1-4)
-Section: luci
-Architecture: all
-Maintainer: OpenWrt LuCI community
-MD5Sum: 53c84c947c42d7518aecb4a6b8a9c5a8
-Size: 6501
-Filename: luci-app-tailscale_1.2.3-2_all.ipk
-Source: github/iamromulan
-Description: Luci app for tailscale
-
-
 Package: luci-app-tailscale-community-tiny
 Version: 1.0.0
 Depends: tailscale-tiny, ip-full, luci-base
@@ -108,8 +95,8 @@ Conflicts: luci-app-tailscale, luci-app-tailscale-community
 Section: luci
 Architecture: all
 Maintainer: Cameron Thompson <iamromulan@github>
-MD5Sum: 835d97a70514ad68a193641eaff3ac85
-Size: 14100
+MD5Sum: b1c47b11d5c0508e73b2e58f9b9b279c
+Size: 14093
 Filename: luci-app-tailscale-community-tiny_1.0.0_all.ipk
 Source: github/iamromulan
 Description: Luci app for tailscale-tiny
@@ -313,46 +300,18 @@ Source: https://github.com/iamromulan/quectel-rgmii-toolkit
 Description:  Sets up a tty from SMD11
 
 
-Package: tailscale
-Version: 1.96.4
-Depends: libc, tailscaled
-Section: net
-Architecture: aarch64_cortex-a53
-Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: ba98cffba9266611a4f8086983f44f30
-Size: 14383323
-Filename: tailscale_1.96.4_aarch64_cortex-a53.ipk
-Source: feeds/packages/net/tailscale
-Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.96.4
-License: GPLv3
-
-
 Package: tailscale-tiny
-Version: 1.96.5
+Version: 1.96.4
 Depends: ca-bundle, kmod-tun
 Conflicts: tailscale, tailscaled
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Cameron Thompson <iamromulan@github>
-MD5Sum: 47c77fd7797751b77d3eada94b399968
-Size: 7344274
-Filename: tailscale-tiny_1.96.5_aarch64_cortex-a53.ipk
+MD5Sum: 618503fbdff8727cf0bb52e7634afd15
+Size: 7344019
+Filename: tailscale-tiny_1.96.4_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
 Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.96.5
-License: GPLv3
-
-
-Package: tailscaled
-Version: 1.96.4
-Depends: libc, ca-bundle, kmod-tun
-Section: net
-Architecture: aarch64_cortex-a53
-Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 35201767438069ae0db5c936e0439f30
-Size: 18884362
-Filename: tailscaled_1.96.4_aarch64_cortex-a53.ipk
-Source: feeds/packages/net/tailscale
-Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.96.4
 License: GPLv3
 
 
