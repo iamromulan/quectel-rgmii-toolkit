@@ -293,7 +293,7 @@ handle_get_settings() {
 
 	fw_mode=$(uci -q get tailscale.settings.fw_mode)
 	fw_mode="${fw_mode%% *}"
-	fw_mode="${fw_mode:-nftables}"
+	fw_mode="${fw_mode:-auto}"
 
 	local disable_magic_dns
 	case "$corp_dns" in
