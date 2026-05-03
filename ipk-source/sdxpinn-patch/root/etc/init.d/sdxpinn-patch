@@ -1,0 +1,46 @@
+#!/bin/sh /etc/rc.common
+
+START=14
+
+LOG_FILE="/tmp/sdxpinn-patch.log"
+
+start() {
+    rm -f "$LOG_FILE" >/dev/null 2>&1
+    touch "$LOG_FILE"
+    exec >>"$LOG_FILE" 2>&1
+
+    echo "sdxpinn-patch service starting - $(date)"
+
+    # PCIe ASPM fix
+    # The platform defaults to powersupersave which causes TX watchdog
+    # timeouts on the RTL8125 PCIe NIC (and adds latency to all PCIe).
+    # Set global policy to performance — this is a mains-powered device.
+    if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
+        echo "Setting PCIe ASPM policy to performance..."
+        echo performance > /sys/module/pcie_aspm/parameters/policy
+        echo "ASPM policy set to: $(cat /sys/module/pcie_aspm/parameters/policy)"
+    fi
+
+    # Fallback: per-device ASPM disable for RTL8125 if global policy doesn't stick
+    # Uncomment if the above doesn't work
+    # if [ -d /sys/bus/pci/devices/0000:01:00.0/link ]; then
+    #     echo "Disabling ASPM L1 substates on RTL8125 PCIe NIC..."
+    #     echo 0 > /sys/bus/pci/devices/0000:01:00.0/link/l1_aspm
+    #     echo 0 > /sys/bus/pci/devices/0000:01:00.0/link/l1_1_aspm
+    #     echo 0 > /sys/bus/pci/devices/0000:01:00.0/link/l1_2_aspm
+    #     echo 0 > /sys/bus/pci/devices/0000:01:00.0/link/l1_1_pcipm
+    #     echo 0 > /sys/bus/pci/devices/0000:01:00.0/link/l1_2_pcipm
+    #     echo 0 > /sys/bus/pci/devices/0000:01:00.0/link/clkpm
+    #     echo "ASPM L1 substates disabled."
+    # fi
+
+    echo "sdxpinn-patch service complete - $(date)"
+}
+
+stop() {
+    echo "sdxpinn-patch: nothing to undo"
+}
+
+restart() {
+    start
+}

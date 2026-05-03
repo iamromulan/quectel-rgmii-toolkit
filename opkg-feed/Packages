@@ -88,17 +88,18 @@ Filename: luci-app-go-wireguard_4.500-2_all.ipk
 Description:  Wireguard luci App
 
 
-Package: luci-app-tailscale
-Version: 1.2.3-2
-Depends: libc, tailscale, tailscaled (>= 1.78.1-4)
+Package: luci-app-tailscale-community-tiny
+Version: 1.0.0
+Depends: tailscale-tiny, ip-full, luci-base
+Conflicts: luci-app-tailscale, luci-app-tailscale-community
 Section: luci
 Architecture: all
-Maintainer: OpenWrt LuCI community
-MD5Sum: 53c84c947c42d7518aecb4a6b8a9c5a8
-Size: 6501
-Filename: luci-app-tailscale_1.2.3-2_all.ipk
+Maintainer: Cameron Thompson <iamromulan@github>
+MD5Sum: 30f60315f36cd366b3c966ae9926cb10
+Size: 14122
+Filename: luci-app-tailscale-community-tiny_1.0.0_all.ipk
 Source: github/iamromulan
-Description: Luci app for tailscale
+Description: Luci app for tailscale-tiny
 
 
 Package: luci-app-zerotier
@@ -231,14 +232,14 @@ License: GPLv3
 
 
 Package: sdxpinn-patch
-Version: 2.7
+Version: 3.0
 Depends: libc
 Section: base
 Architecture: all
 Maintainer: Cameron Thompson iamromulan@github.com
-MD5Sum: 9a7bfd3df46d4d7363ec00a250b9ffa5
-Size: 3323
-Filename: sdxpinn-patch_2.7_all.ipk
+MD5Sum: 16e6a55e00fb85d554d3e6895ae90192
+Size: 4034
+Filename: sdxpinn-patch_3.0_all.ipk
 Source: github.com/iamromulan
 Description: A general first system patch for SDXPINN OpenWRT
 
@@ -299,31 +300,18 @@ Source: https://github.com/iamromulan/quectel-rgmii-toolkit
 Description:  Sets up a tty from SMD11
 
 
-Package: tailscale
-Version: 1.94.1
-Depends: libc, tailscaled
+Package: tailscale-tiny
+Version: 1.96.4-1
+Depends: ca-bundle, kmod-tun
+Conflicts: tailscale, tailscaled
 Section: net
 Architecture: aarch64_cortex-a53
-Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 02a823f40cccb397dfa07d486e8e9cdb
-Size: 13904823
-Filename: tailscale_1.94.1_aarch64_cortex-a53.ipk
+Maintainer: Cameron Thompson <iamromulan@github>
+MD5Sum: 312993cd47bd5d51ddf65e3cd6ddaed5
+Size: 7345246
+Filename: tailscale-tiny_1.96.4-1_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
-Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.90.6
-License: GPLv3
-
-
-Package: tailscaled
-Version: 1.94.1
-Depends: libc, ca-bundle, kmod-tun
-Section: net
-Architecture: aarch64_cortex-a53
-Maintainer: Jan Pavlinec <jan.pavlinec1@gmail.com>
-MD5Sum: 1c369855325754ed2ccd32a28c054060
-Size: 18409379
-Filename: tailscaled_1.94.1_aarch64_cortex-a53.ipk
-Source: feeds/packages/net/tailscale
-Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.90.6
+Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.96.5
 License: GPLv3
 
 

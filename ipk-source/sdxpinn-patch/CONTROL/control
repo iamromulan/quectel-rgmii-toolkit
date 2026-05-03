@@ -1,6 +1,6 @@
 Package: sdxpinn-patch
 Depends: libc
-Version: 2.7
+Version: 3.0
 Architecture: all
 Maintainer: Cameron Thompson iamromulan@github.com
 Source: github.com/iamromulan
