@@ -94,6 +94,8 @@ ensure_firewall_zone() {
   uci add_list "firewall.${zid}.network=tailscale"
   uci commit firewall
 
+  /etc/init.d/network reload 2>/dev/null
+  sleep 2
   /etc/init.d/firewall reload 2>/dev/null
   logger -t tailscale "created minimal fw4 zone for tailscale0 reachability"
 }
