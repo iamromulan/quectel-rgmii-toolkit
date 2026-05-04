@@ -301,15 +301,15 @@ Description:  Sets up a tty from SMD11
 
 
 Package: tailscale-tiny
-Version: 1.96.4-1
+Version: 1.96.4-2
 Depends: ca-bundle, kmod-tun
 Conflicts: tailscale, tailscaled
 Section: net
 Architecture: aarch64_cortex-a53
 Maintainer: Cameron Thompson <iamromulan@github>
-MD5Sum: 312993cd47bd5d51ddf65e3cd6ddaed5
-Size: 7345246
-Filename: tailscale-tiny_1.96.4-1_aarch64_cortex-a53.ipk
+MD5Sum: e0f9b8146a4e09d2a892b5c73dc4ddb2
+Size: 7344675
+Filename: tailscale-tiny_1.96.4-2_aarch64_cortex-a53.ipk
 Source: feeds/packages/net/tailscale
 Description: It creates a secure network between your servers, computers, and cloud instances. Even when separated by firewalls or subnets. Updated by iamromulan to 1.96.5
 License: GPLv3
