@@ -59,6 +59,45 @@ ensure_mwan3_compat() {
   fi
 }
 
+# On fw4/nftables systems (OpenWrt 23.05+) the input chain defaults to
+# policy drop. Without a zone for tailscale0, the device is unreachable
+# over tailscale. Create a minimal zone for basic reachability. The LuCI
+# "Auto Configure Firewall" button upgrades this with forwarding, masq,
+# and mss clamping when the user wants subnet routing / exit node features.
+ensure_firewall_zone() {
+  # Only needed on fw4 systems
+  [ -x /sbin/fw4 ] || return 0
+
+  # Check if a tailscale zone already exists
+  local _sections _sec _zname
+  _sections=$(uci show firewall 2>/dev/null | grep '=zone$' | cut -d= -f1)
+  for _sec in $_sections; do
+    _zname=$(uci -q get "${_sec}.name")
+    [ "$_zname" = "tailscale" ] && return 0
+  done
+
+  # Ensure the network interface exists
+  if [ -z "$(uci -q get network.tailscale)" ]; then
+    uci set network.tailscale=interface
+    uci set network.tailscale.proto='none'
+    uci set network.tailscale.device='tailscale0'
+    uci commit network
+  fi
+
+  # Create minimal zone: accept in/out, reject forward
+  local zid
+  zid=$(uci add firewall zone)
+  uci set "firewall.${zid}.name=tailscale"
+  uci set "firewall.${zid}.input=ACCEPT"
+  uci set "firewall.${zid}.output=ACCEPT"
+  uci set "firewall.${zid}.forward=REJECT"
+  uci add_list "firewall.${zid}.network=tailscale"
+  uci commit firewall
+
+  /etc/init.d/firewall reload 2>/dev/null
+  logger -t tailscale "created minimal fw4 zone for tailscale0 reachability"
+}
+
 start_service() {
   local state_file
   local port
@@ -92,6 +131,7 @@ start_service() {
 }
 
 service_started() {
+  ensure_firewall_zone
   ensure_mwan3_compat &
 }
 
