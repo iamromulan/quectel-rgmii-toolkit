@@ -1,0 +1,15 @@
+Package: autoupgrade
+Version: 0.5.2-r1
+Depends: libc
+Source: /feed/utils/autoupgrade
+SourceName: autoupgrade
+License: GPL-2.0-only
+LicenseFiles: LICENSE
+Section: utils
+SourceDateEpoch: 1779010265
+Maintainer: Cameron Thompson <cameronst2@gmail.com>
+Architecture: all
+Installed-Size: 20480
+Description:  Automatically upgrade a user-defined list of packages on a schedule.
+ Configurable via UCI. Each package is upgraded individually with full
+ logging of successes, warnings, and failures.

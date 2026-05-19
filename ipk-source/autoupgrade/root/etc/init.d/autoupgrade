@@ -1,0 +1,131 @@
+#!/bin/sh /etc/rc.common
+
+USE_PROCD=1
+START=99
+
+CRON_FILE="/etc/crontabs/root"
+UPGRADE_BIN="/usr/bin/autoupgrade"
+
+remove_cron() {
+	[ -r "$CRON_FILE" ] || return
+	sed -i "\|${UPGRADE_BIN}|d" "$CRON_FILE"
+	/etc/init.d/cron restart 2> /dev/null
+}
+
+days_in_month() {
+	local year="$1"
+	local month="$2"
+	# get last day by asking date for day 0 of next month
+	local next_month=$((month + 1))
+	local next_year="$year"
+	if [ "$next_month" -gt 12 ]; then
+		next_month=1
+		next_year=$((year + 1))
+	fi
+	date -d "$next_year-$(printf '%02d' $next_month)-01" +%s 2> /dev/null | {
+		read ts
+		date -d "@$((ts - 86400))" +%d 2> /dev/null
+	}
+}
+
+days_in_month_busybox() {
+	local year="$1"
+	local month="$2"
+	case "$month" in
+	1 | 3 | 5 | 7 | 8 | 10 | 12) echo 31 ;;
+	4 | 6 | 9 | 11) echo 30 ;;
+	2)
+		if [ $((year % 4)) -eq 0 ] && { [ $((year % 100)) -ne 0 ] || [ $((year % 400)) -eq 0 ]; }; then
+			echo 29
+		else
+			echo 28
+		fi
+		;;
+	esac
+}
+
+get_effective_day() {
+	local configured_day="$1"
+	local year month max_day
+
+	year="$(date +%Y)"
+	month="$(date +%m)"
+	month="${month#0}"
+
+	# After a monthly run, AUTOUPGRADE_NEXT_MONTH=1 is set so we
+	# calculate the effective day for the next month, not this one.
+	if [ "$AUTOUPGRADE_NEXT_MONTH" = "1" ]; then
+		month=$((month + 1))
+		if [ "$month" -gt 12 ]; then
+			month=1
+			year=$((year + 1))
+		fi
+	fi
+
+	max_day="$(days_in_month "$year" "$month")"
+	[ -z "$max_day" ] && max_day="$(days_in_month_busybox "$year" "$month")"
+
+	if [ "$configured_day" -gt "$max_day" ] 2> /dev/null; then
+		echo "$max_day"
+	else
+		echo "$configured_day"
+	fi
+}
+
+update_cron() {
+	local enabled interval time hour minute cron_expr
+	local day_of_week day_of_month effective_day
+
+	config_load "autoupgrade"
+	config_get enabled settings enabled "0"
+	config_get interval settings interval "daily"
+	config_get time settings time "03:00"
+	config_get day_of_week settings day_of_week "0"
+	config_get day_of_month settings day_of_month "1"
+
+	remove_cron
+
+	[ "$enabled" != "1" ] && return
+
+	hour="${time%%:*}"
+	minute="${time##*:}"
+	hour="${hour#0}"
+	minute="${minute#0}"
+	[ -z "$hour" ] && hour="0"
+	[ -z "$minute" ] && minute="0"
+
+	case "$interval" in
+	daily)
+		cron_expr="$minute $hour * * *"
+		;;
+	weekly)
+		cron_expr="$minute $hour * * $day_of_week"
+		;;
+	monthly)
+		effective_day="$(get_effective_day "$day_of_month")"
+		cron_expr="$minute $hour $effective_day * *"
+		;;
+	*)
+		cron_expr="$minute $hour * * *"
+		;;
+	esac
+
+	echo "$cron_expr $UPGRADE_BIN" >> "$CRON_FILE"
+	/etc/init.d/cron restart 2> /dev/null
+}
+
+start_service() {
+	update_cron
+}
+
+stop_service() {
+	remove_cron
+}
+
+reload_service() {
+	update_cron
+}
+
+service_triggers() {
+	procd_add_reload_trigger "autoupgrade"
+}

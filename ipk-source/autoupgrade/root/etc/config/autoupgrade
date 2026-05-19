@@ -1,0 +1,10 @@
+config autoupgrade 'settings'
+	option enabled '0'
+	option interval 'daily'
+	option time '03:00'
+	option retry_interval '30'
+	option day_of_week '0'
+	option day_of_month '1'
+
+#config package
+#	option name 'example-package'

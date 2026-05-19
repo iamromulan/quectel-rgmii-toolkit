@@ -1,0 +1,13 @@
+Package: luci-app-autoupgrade
+Version: 0.5.2-r1
+Depends: libc, luci-base, autoupgrade
+Source: /feed/applications/luci-app-autoupgrade
+SourceName: luci-app-autoupgrade
+License: Apache-2.0
+Section: luci
+SourceDateEpoch: 1779010265
+URL: https://github.com/openwrt/luci
+Maintainer: OpenWrt LuCI community
+Architecture: all
+Installed-Size: 30720
+Description:  LuCI support for autoupgrade
