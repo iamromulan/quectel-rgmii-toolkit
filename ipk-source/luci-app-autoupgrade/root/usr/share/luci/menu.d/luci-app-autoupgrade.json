@@ -1,0 +1,14 @@
+{
+	"admin/system/autoupgrade": {
+		"title": "Software Auto Upgrade",
+		"order": 31,
+		"action": {
+			"type": "view",
+			"path": "autoupgrade/overview"
+		},
+		"depends": {
+			"acl": ["luci-app-autoupgrade"],
+			"uci": {"autoupgrade": true}
+		}
+	}
+}

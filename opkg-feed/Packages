@@ -13,6 +13,21 @@ Description: Atinout is a program that will execute AT commands in sequence and
 License: GPLv2
 
 
+Package: autoupgrade
+Version: 0.5.2-r1
+Depends: libc
+License: GPL-2.0-only
+Section: utils
+Architecture: all
+Installed-Size: 20480
+Filename: autoupgrade_0.5.2-r1_all.ipk
+Size: 3416
+SHA256sum: db647a36ed4a164a30d052cb1c620a9cbbf19e3d749c3fa7ec75e6f4433091c9
+Description:  Automatically upgrade a user-defined list of packages on a schedule.
+ Configurable via UCI. Each package is upgraded individually with full
+ logging of successes, warnings, and failures.
+
+
 Package: libucode20230711
 Version: 2024.07.22~b610860d-r3
 Architecture: aarch64_cortex-a53
@@ -71,6 +86,20 @@ Filename: luci-app-atinout-mod_1.3.4-20250119_all.ipk
 Source: package/luci-app-atinout-mod
 Description: Web UI for atinout
 License: GPLv3
+
+
+Package: luci-app-autoupgrade
+Version: 0.5.2-r1
+Depends: libc, luci-base, autoupgrade
+License: Apache-2.0
+Section: luci
+URL: https://github.com/openwrt/luci
+Architecture: all
+Installed-Size: 30720
+Filename: luci-app-autoupgrade_0.5.2-r1_all.ipk
+Size: 5029
+SHA256sum: 78a3e3e84a6cbd48488fbc9adc67e4d6dd2cc4c3b9387eb583e901d5d168f588
+Description:  LuCI support for autoupgrade
 
 
 Package: luci-app-go-wireguard

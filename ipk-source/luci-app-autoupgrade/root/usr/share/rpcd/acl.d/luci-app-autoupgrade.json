@@ -1,0 +1,20 @@
+{
+	"luci-app-autoupgrade": {
+		"description": "Grant access to LuCI app autoupgrade",
+		"read": {
+			"uci": ["autoupgrade"],
+			"file": {
+				"/var/log/autoupgrade.log": ["read"],
+				"/usr/libexec/autoupgrade-list": ["exec"]
+			}
+		},
+		"write": {
+			"uci": ["autoupgrade"],
+			"file": {
+				"/usr/bin/autoupgrade-clearlog": ["exec"],
+				"/usr/bin/autoupgrade": ["exec"],
+				"/etc/init.d/autoupgrade": ["exec"]
+			}
+		}
+	}
+}
