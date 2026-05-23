@@ -21,18 +21,28 @@ start() {
         echo "ASPM policy set to: $(cat /sys/module/pcie_aspm/parameters/policy)"
     fi
 
-    # Fallback: per-device ASPM disable for RTL8125 if global policy doesn't stick
-    # Uncomment if the above doesn't work
-    # if [ -d /sys/bus/pci/devices/0000:01:00.0/link ]; then
-    #     echo "Disabling ASPM L1 substates on RTL8125 PCIe NIC..."
-    #     echo 0 > /sys/bus/pci/devices/0000:01:00.0/link/l1_aspm
-    #     echo 0 > /sys/bus/pci/devices/0000:01:00.0/link/l1_1_aspm
-    #     echo 0 > /sys/bus/pci/devices/0000:01:00.0/link/l1_2_aspm
-    #     echo 0 > /sys/bus/pci/devices/0000:01:00.0/link/l1_1_pcipm
-    #     echo 0 > /sys/bus/pci/devices/0000:01:00.0/link/l1_2_pcipm
-    #     echo 0 > /sys/bus/pci/devices/0000:01:00.0/link/clkpm
-    #     echo "ASPM L1 substates disabled."
-    # fi
+    # Autosleep disable — platform ships with autosleep=mem, held awake
+    # only by wakelocks. Disable entirely for mains-powered CPE.
+    if [ -f /sys/power/autosleep ]; then
+        CURRENT_AUTOSLEEP=$(cat /sys/power/autosleep)
+        if [ "$CURRENT_AUTOSLEEP" != "off" ]; then
+            echo off > /sys/power/autosleep
+            echo "Autosleep disabled (was: $CURRENT_AUTOSLEEP)"
+        else
+            echo "Autosleep already disabled"
+        fi
+    fi
+
+    # EEE disable — r8125 driver enables EEE by default, causing link
+    # flaps at 2.5G. ethtool --set-eee fails (driver validation bug).
+    # Write directly to RTL8125B OCP PHY register to clear EEE advertisement.
+    if [ -c /dev/mem ]; then
+        echo "Disabling EEE via RTL8125B OCP PHY register..."
+        devmem 0x482000B8 32 0xD2E80000
+        echo "EEE advertisement cleared"
+    else
+        echo "WARNING: /dev/mem not available, cannot disable EEE"
+    fi
 
     echo "sdxpinn-patch service complete - $(date)"
 }
