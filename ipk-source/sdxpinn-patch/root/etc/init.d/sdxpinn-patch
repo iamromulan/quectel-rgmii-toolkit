@@ -33,17 +33,6 @@ start() {
         fi
     fi
 
-    # EEE disable — r8125 driver enables EEE by default, causing link
-    # flaps at 2.5G. ethtool --set-eee fails (driver validation bug).
-    # Write directly to RTL8125B OCP PHY register to clear EEE advertisement.
-    if [ -c /dev/mem ]; then
-        echo "Disabling EEE via RTL8125B OCP PHY register..."
-        devmem 0x482000B8 32 0xD2E80000
-        echo "EEE advertisement cleared"
-    else
-        echo "WARNING: /dev/mem not available, cannot disable EEE"
-    fi
-
     echo "sdxpinn-patch service complete - $(date)"
 }
 

@@ -1,8 +1,0 @@
-#!/bin/sh
-# Re-disable EEE after interface restart (ndo_open re-enables it)
-[ "$ACTION" = "ifup" ] && [ "$DEVICE" = "eth0" ] && {
-    if [ -c /dev/mem ]; then
-        devmem 0x482000B8 32 0xD2E80000
-        logger -t sdxpinn-patch "EEE disabled on $DEVICE (iface $INTERFACE ifup)"
-    fi
-}
