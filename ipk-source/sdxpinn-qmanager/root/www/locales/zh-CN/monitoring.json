@@ -1,0 +1,822 @@
+{
+  "shared": {
+    "os_linux": "Linux",
+    "os_macos": "macOS",
+    "os_windows": "Windows",
+    "os_ios": "iOS",
+    "os_android": "Android",
+    "os_freebsd": "FreeBSD",
+    "os_unknown": "—",
+    "unknown": "未知"
+  },
+  "network_events": {
+    "title": "网络事件",
+    "description": "查看近期的连接、信号和配置事件。",
+    "card_title": "网络事件",
+    "card_description": "设备轮询器记录的近期网络事件。",
+    "tab_all": "全部",
+    "tab_band_changes": "频段变更",
+    "tab_network_mode": "网络模式",
+    "tab_data_connection": "数据连接",
+    "sort_label": "排序方式",
+    "sort_newest": "最新优先",
+    "sort_oldest": "最早优先",
+    "sort_type": "事件类型",
+    "limit_label": "最大事件数",
+    "limit_all": "全部事件",
+    "limit_10": "10 条事件",
+    "limit_25": "25 条事件",
+    "empty_all": "未找到网络事件。",
+    "empty_band_changes": "未找到频段变更事件。",
+    "empty_network_mode": "未找到网络模式事件。",
+    "empty_data_connection": "未找到数据连接事件。",
+    "auto_refresh_paused": "自动刷新已暂停 — 显示截至 {{time}} 的事件。",
+    "failed_to_load": "加载网络事件失败：{{error}}",
+    "auto_refresh_label": "自动刷新",
+    "refresh_button": "刷新",
+    "table_header_event_type": "事件类型",
+    "table_header_message": "消息",
+    "table_header_time": "日期和时间",
+    "showing_count_one": "显示 {{shown}} / {{total}} 条事件",
+    "showing_count_other": "显示 {{shown}} / {{total}} 条事件",
+    "last_updated": "上次更新：{{time}}",
+    "aria_refresh": "刷新网络事件"
+  },
+  "alerts": {
+    "activity": {
+      "cause": {
+        "planned": "计划内",
+        "unexpected": "意外",
+        "watchdog": "看门狗"
+      },
+      "channel": {
+        "email": "Email",
+        "sms": "SMS"
+      },
+      "day": {
+        "today": "今天",
+        "undated": "没有记录时间",
+        "yesterday": "昨天"
+      },
+      "description": "已发送的提醒和重启，最新的在前。",
+      "empty": {
+        "description": "一旦渠道发送提醒，就会显示在这里；重启也会连同原因自动记录。",
+        "title": "尚未发生任何事情"
+      },
+      "error": {
+        "title": "无法加载活动记录",
+        "description": "设备没有响应。请稍后重试。",
+        "retry": "重试"
+      },
+      "event": {
+        "reboot": "调制解调器已重启"
+      },
+      "notice": {
+        "stale": "显示我们最后成功读取到的活动记录。"
+      },
+      "sr": {
+        "failed": "提醒发送失败",
+        "reboot": "重启已记录",
+        "sent": "提醒已发送"
+      },
+      "time": {
+        "days_one": "{{count}} 天前",
+        "days_other": "{{count}} 天前",
+        "hours_one": "{{count}} 小时前",
+        "hours_other": "{{count}} 小时前",
+        "just_now": "刚刚",
+        "minutes_one": "{{count}} 分钟前",
+        "minutes_other": "{{count}} 分钟前",
+        "unknown": "未知"
+      },
+      "title": "活动记录",
+      "transcript_label": "提醒与重启记录",
+      "trigger": {
+        "test": "测试提醒"
+      }
+    },
+    "channels": {
+      "description": "设置每种渠道如何联系到你。",
+      "email": {
+        "address_error": "请输入有效的邮箱地址。",
+        "mailer_install": "安装 msmtp",
+        "mailer_installing": "正在安装…",
+        "mailer_missing": "尚未安装 msmtp 邮件程序，因此暂时无法发送邮件提醒。SMS 仍可正常保存。",
+        "mailer_recheck": "重新检查",
+        "password_hide": "隐藏应用专用密码",
+        "password_hint": "在你的 Google 账号中为此设备生成一个应用专用密码。",
+        "password_keep": "留空以保留已保存的密码",
+        "password_label": "Gmail 应用专用密码",
+        "password_link": "打开 Google 应用专用密码",
+        "password_missing": "需要应用专用密码才能发送邮件提醒。",
+        "password_placeholder": "xxxx xxxx xxxx xxxx",
+        "password_show": "显示应用专用密码",
+        "recipient_hint": "提醒的送达地址。",
+        "recipient_label": "收件人邮箱",
+        "recipient_missing": "需要填写收件人地址。",
+        "sender_hint": "发送提醒所使用的 Gmail 账号。",
+        "sender_label": "发件人邮箱",
+        "sender_missing": "需要填写发件人地址。",
+        "test": "发送测试 Email",
+        "title": "邮件提醒",
+        "sub": "连接恢复后通过 Gmail 发送。"
+      },
+      "empty": {
+        "description": "此设备未返回任何提醒渠道，因此暂时没有可配置的内容。",
+        "title": "未上报任何渠道"
+      },
+      "loading": "正在加载提醒渠道",
+      "name": {
+        "email": "Email",
+        "sms": "SMS"
+      },
+      "rail_label": "提醒渠道",
+      "save": {
+        "action": "保存设置",
+        "blocked": "请修正高亮的字段",
+        "blocked_in": "修正 {{channels}} 中的错误",
+        "clean": "所有更改已保存",
+        "discard": "放弃",
+        "failed": "设置未能保存。",
+        "succeeded": "提醒设置已保存",
+        "errors": {}
+      },
+      "secret_saved": "已保存",
+      "sms": {
+        "phone_error": "请输入包含国家/地区代码的号码，例如 +14155551234。",
+        "phone_hint": "请包含国家/地区代码，并以加号开头。",
+        "phone_label": "收件人手机号码",
+        "phone_missing": "需要填写收件人手机号码。",
+        "test": "发送测试 SMS",
+        "title": "短信提醒",
+        "sub": "断网期间也能送达。"
+      },
+      "status": {
+        "incomplete": "需要设置",
+        "needs_fixing": "存在未保存的错误",
+        "off": "已关闭",
+        "ready": "已就绪",
+        "unused": "未路由任何事件"
+      },
+      "test": {
+        "blocked_busy": "另一项测试仍在进行中。",
+        "blocked_dirty": "请先保存更改。测试将基于已保存的设置运行。",
+        "blocked_incomplete": "请先完成此渠道的设置并保存，才能发送测试。",
+        "blocked_mailer": "安装 msmtp 邮件程序才能发送测试邮件。",
+        "blocked_off": "请先开启此渠道并保存，才能发送测试。",
+        "failed": "测试未能发送。",
+        "sending": "发送中…",
+        "succeeded": "测试 {{channel}} 已发送",
+        "errors": {
+          "send_failed_sms": "测试短信未发送，请检查信号、SIM 卡余额和号码。",
+          "send_failed_email": "测试邮件未发送，请检查邮件地址、应用专用密码和网络连接。"
+        }
+      },
+      "threshold_error": "请输入 1 到 60 之间的整数分钟。",
+      "threshold_hint": "较短的断网只记录，不发送。",
+      "threshold_label": "提醒前等待时间",
+      "threshold_unit": "分钟",
+      "title": "渠道",
+      "sends_for": "发送事件",
+      "error": {
+        "title": "无法加载渠道",
+        "description": "设备没有响应。请稍后重试。",
+        "retry": "重试"
+      }
+    },
+    "coverage": {
+      "description": "按已保存的设置，哪些提醒会送达。",
+      "emptyDesc": "此设备未上报任何提醒能力，因此这里没有可开启的内容。",
+      "emptyTitle": "没有可路由的内容",
+      "errorDesc": "设备没有应答，因此无法显示将会触发的内容。",
+      "errorRetry": "重试",
+      "errorTitle": "无法加载覆盖范围",
+      "event": {
+        "connection_lost": {
+          "name": "连接中断"
+        },
+        "connection_restored": {
+          "name": "连接恢复"
+        },
+        "reboot": {
+          "name": "调制解调器已重启"
+        }
+      },
+      "loading": "正在加载覆盖范围",
+      "reason": {
+        "email_needs_internet": "需要网络",
+        "not_supported": "此渠道无法发送该事件"
+      },
+      "staleNotice": "显示我们上一次从设备读取到的设置。",
+      "title": "覆盖范围",
+      "verdict": {
+        "all": "全部覆盖",
+        "outage": "断网未覆盖",
+        "partial": "已覆盖 {{covered}}/{{total}}",
+        "none": "不会发送任何提醒"
+      },
+      "needsSetup": "{{channel}} 需要设置",
+      "notSent": "不发送"
+    },
+    "page": {
+      "description": "连接中断、恢复或调制解调器重启时，通知对象是谁。",
+      "refresh": "刷新",
+      "title": "提醒",
+      "unreadable": "设备没有应答。"
+    }
+  },
+  "watchdog": {
+    "page": {
+      "title": "看门狗",
+      "description": "监控互联网链路，在中断时按恢复阶梯逐步处理。",
+      "refresh": "刷新",
+      "unreadableTitle": "无法读取看门狗设置",
+      "unreadable": "调制解调器没有响应。",
+      "retry": "重试"
+    },
+    "band": {
+      "checks": "失败检测",
+      "recoveries": "恢复",
+      "reboots": "重启",
+      "absent": "未上报",
+      "checksCaption": "开始恢复前",
+      "cooldownCaption": "{{seconds}} 秒后重新检测",
+      "recoveriesLast": "第 {{tier}} 步，{{ago}}",
+      "recoveriesNone": "尚无记录",
+      "rebootsCaption": "最近一小时",
+      "rebootsOff": "重启步骤已关闭",
+      "aria": "看门狗状态",
+      "cooldownStep": "第 {{tier}} 步已执行，{{seconds}} 秒后重新检测。"
+    },
+    "phase": {
+      "off": {
+        "label": "已关闭",
+        "blurb": "看门狗未监控连接。"
+      },
+      "unknown": {
+        "label": "未知",
+        "blurb": "调制解调器没有响应，因此无法确定看门狗目前的状态。"
+      },
+      "starting": {
+        "label": "启动中",
+        "blurb": "服务刚刚启用，尚未上报状态。"
+      },
+      "not_running": {
+        "label": "未上报",
+        "blurb": "已启用，但看门狗已停止上报。"
+      },
+      "auto_disabled": {
+        "label": "已自动关闭",
+        "blurb": "已达到重启次数上限。待链路稳定后再重新开启。"
+      },
+      "monitor": {
+        "label": "监控中",
+        "blurb": "连接状况良好，正在监控是否发生断网。"
+      },
+      "suspect": {
+        "label": "检测中",
+        "blurb": "刚刚有一次连接检测失败，正在确认后再采取行动。"
+      },
+      "recovery": {
+        "label": "恢复中",
+        "blurb": "正在依次执行恢复步骤，以恢复连接。"
+      },
+      "cooldown": {
+        "label": "冷却中",
+        "blurb": "正在等待上一步恢复操作生效，然后再重新检测。"
+      },
+      "locked": {
+        "label": "已暂停",
+        "blurb": "有维护操作正在进行，看门狗暂时不会采取行动。"
+      },
+      "radio_off": {
+        "blurb": "无线电已关闭，看门狗暂时不会采取行动。"
+      },
+      "disabled": {
+        "label": "已禁用",
+        "blurb": "服务正在运行，但功能已关闭。"
+      },
+      "ssr_hold": {
+        "label": "等待中",
+        "blurb": "基带正在自行重启，恢复操作会等待其恢复。"
+      }
+    },
+    "master": {
+      "aria": "启用连接看门狗"
+    },
+    "ladder": {
+      "title": "恢复阶梯",
+      "description": "按顺序尝试，从最温和的方式开始。",
+      "aria": "恢复阶梯",
+      "status": {
+        "blocked": "需要插槽",
+        "done": "已尝试",
+        "running": "正在运行"
+      },
+      "tier1": {
+        "name": "重新注册到网络",
+        "consequence": "链路会中断几秒钟。"
+      },
+      "tier2": {
+        "name": "重启无线电",
+        "consequence": "锁定基站时跳过。"
+      },
+      "tier3": {
+        "name": "切换到备用 SIM 卡",
+        "consequence": "将使用备用卡运行，直到您切回。",
+        "slotLabel": "备用 SIM 卡插槽",
+        "slot": "插槽 {{slot}}"
+      },
+      "tier4": {
+        "name": "重启设备",
+        "consequence": "离线约一分钟。",
+        "capLabel": "每小时最大重启次数",
+        "capLead": "最多",
+        "capUnit": "次/小时"
+      },
+      "tierAria": "启用此恢复步骤：{{name}}",
+      "failback": {
+        "name": "切回主 SIM 卡",
+        "consequence": "定期重试主卡，每次尝试都会短暂断网。",
+        "lead": "每",
+        "unit": "分钟",
+        "intervalLabel": "主 SIM 卡复查间隔"
+      }
+    },
+    "detection": {
+      "title": "检测",
+      "description": "静默链路多久后会被判定为断网。",
+      "probe": {
+        "label": "探测间隔",
+        "short": "{{seconds}}秒"
+      },
+      "threshold": {
+        "label": "断网判定",
+        "unit": "次探测失败"
+      },
+      "cooldown": {
+        "label": "步骤间隔",
+        "unit": "秒"
+      },
+      "timeline": {
+        "eyebrow": "链路中断时",
+        "declaredStep": "判定断网，执行第 {{tier}} 步",
+        "declaredReboot": "判定断网，执行第 4 步：重启",
+        "step": "第 {{tier}} 步",
+        "reboot": "第 4 步：重启",
+        "about": "约 {{time}}",
+        "seconds": "{{s}} 秒",
+        "minutes": "{{m}} 分钟",
+        "minutesSeconds": "{{m}} 分 {{s}} 秒",
+        "off": "看门狗已关闭，不会执行任何步骤。",
+        "none": "没有启用任何步骤，不会执行任何操作。",
+        "invalid": "输入有效的检测数值即可预览时间线。",
+        "stopped": "第 3 步没有插槽，恢复流程将止步于此。"
+      },
+      "quality": {
+        "label": "质量触发",
+        "unit": "次",
+        "caption": "延迟超过 {{ms}} ms 或丢包超过 {{pct}}%",
+        "link": "阈值"
+      },
+      "ssr": {
+        "label": "基带重启等待",
+        "unit": "秒",
+        "caption": "先等待模块自行重启完成"
+      }
+    },
+    "activity": {
+      "title": "恢复活动",
+      "description": "看门狗执行过的操作，最新优先。",
+      "tier4Reboot": "看门狗重启了调制解调器",
+      "type": {
+        "recovery": "恢复",
+        "failover": "SIM 卡故障转移"
+      },
+      "day": {
+        "today": "今天",
+        "yesterday": "昨天"
+      },
+      "time": {
+        "just_now": "刚刚",
+        "minutes_one": "{{count}} 分钟前",
+        "minutes_other": "{{count}} 分钟前",
+        "hours_one": "{{count}} 小时前",
+        "hours_other": "{{count}} 小时前",
+        "days_one": "{{count}} 天前",
+        "days_other": "{{count}} 天前"
+      },
+      "empty": {
+        "title": "尚无恢复活动",
+        "description": "当看门狗处理断网时，恢复步骤和 SIM 卡切换会显示在这里。"
+      },
+      "error": {
+        "title": "无法加载恢复活动",
+        "retry": "重试"
+      },
+      "allEvents": "全部事件"
+    },
+    "save": {
+      "discard": "放弃",
+      "action": "保存",
+      "clean": "所有更改已保存",
+      "blockedIn": "保存前请检查 {{fields}}",
+      "toastOk": "看门狗设置已保存",
+      "toastFail": "无法保存看门狗设置",
+      "confirmReboot": {
+        "title": "允许看门狗重启调制解调器？",
+        "body": "保存后，当所有更温和的步骤都失败时，看门狗可以自行重启调制解调器。此页面会消失约一分钟，等待调制解调器恢复。",
+        "cap": "每小时最多重启 {{cap}} 次。达到上限后，看门狗会自行关闭，直到您重新开启。",
+        "cancel": "取消",
+        "action": "允许重启"
+      }
+    },
+    "errors": {
+      "failThreshold": "必须介于 1 到 20 之间",
+      "probeInterval": "必须介于 1 到 60 秒之间",
+      "cooldown": "必须介于 10 到 300 秒之间",
+      "maxReboots": "必须介于 1 到 10 之间",
+      "backupSim": "选择备用 SIM 卡插槽以启用故障转移",
+      "qualityConsecutive": "必须在 1 到 60 之间",
+      "ssrGrace": "必须在 10 到 120 秒之间",
+      "recheckInterval": "必须在 5 到 1440 分钟之间"
+    },
+    "failover": {
+      "title": "正在使用备用 SIM 卡",
+      "body": "已切换到插槽 {{current}}，{{since}}。原始 SIM 卡位于插槽 {{original}}。",
+      "recently": "最近",
+      "revert": "恢复原始 SIM 卡",
+      "reverting": "正在恢复…",
+      "confirmTitle": "恢复原始 SIM 卡？",
+      "confirmBody": "这将切换回 SIM 卡插槽 {{original}}。调制解调器重新连接期间，网络会短暂中断。",
+      "cancel": "取消",
+      "confirm": "恢复 SIM 卡",
+      "requested": "已请求恢复 SIM 卡。看门狗将很快处理。",
+      "failed": "无法请求恢复 SIM 卡"
+    },
+    "strip": {
+      "title": "探测",
+      "noReply": "无响应",
+      "reply": "{{ms}} 毫秒",
+      "tipAgo": "{{time}}前",
+      "ago": "{{minutes}} 分钟前",
+      "now": "现在",
+      "empty": "调制解调器没有探测数据",
+      "aria": "{{total}} 次探测，{{missed}} 次无响应"
+    },
+    "sim_swap_title": "检测到新 SIM 卡",
+    "sim_swap_with_profile": "配置文件 <strong>{{profile_name}}</strong> 匹配此 SIM。",
+    "sim_swap_no_profile": "未找到匹配的配置文件。",
+    "sim_swap_apply_button": "应用配置文件",
+    "sim_swap_dismiss_button": "关闭",
+    "sim_swap_dismiss_aria": "关闭 SIM 更换通知"
+  },
+  "netbird": {
+    "actions": {
+      "cancel": "取消",
+      "retry": "重试"
+    },
+    "page": {
+      "title": "NetBird VPN",
+      "description": "您的网状 VPN：本调制解调器在网络中的状态，以及网络中的其他设备。",
+      "refresh": "刷新",
+      "stale": "显示的是最近一次成功读取的状态。{{message}}",
+      "unreadableTitle": "无法读取 NetBird 状态",
+      "unreadable": "设备没有响应。"
+    },
+    "mutex": {
+      "title": "已安装其他 VPN",
+      "description": "同一时间只能安装一个 VPN。请先在 <link>Tailscale 页面</link>卸载 {{other_vpn}}。"
+    },
+    "status": {
+      "aria": "NetBird 状态",
+      "connected": "已连接",
+      "disconnected": "已断开",
+      "serviceStopped": "服务已停止",
+      "notInstalled": "未安装",
+      "unknown": "未知"
+    },
+    "band": {
+      "dash": "—",
+      "connectionEyebrow": "连接",
+      "version": "版本 {{version}}",
+      "versionUnknown": "版本未知",
+      "deviceEyebrow": "本设备",
+      "deviceUnknown": "暂无 NetBird 地址",
+      "controlEyebrow": "控制平面",
+      "controlIssue": "需要处理",
+      "controlIdle": "连接后可用",
+      "controlOk": "管理与信号服务器",
+      "controlDetail": "管理服务器：{{management}}，信号服务器：{{signal}}",
+      "peersEyebrow": "在线节点",
+      "peersTotal_one": "网络中有 {{count}} 个节点",
+      "peersTotal_other": "网络中有 {{count}} 个节点",
+      "noPeers": "暂无节点"
+    },
+    "connection": {
+      "title": "连接",
+      "description": "本调制解调器是否加入 NetBird 网络，以及加入后的行为。",
+      "version": "v{{version}}",
+      "connect": "连接",
+      "connecting": "连接中…",
+      "disconnect": "断开",
+      "disconnecting": "断开中…",
+      "startService": "启动服务",
+      "starting": "启动中…",
+      "stopService": "停止服务",
+      "stopping": "停止中…",
+      "bootTitle": "开机自动启动",
+      "bootDescription": "调制解调器重启后自动启用 NetBird。",
+      "on": "开启",
+      "off": "关闭",
+      "setupKeyLabel": "设置密钥",
+      "setupKeyPlaceholder": "输入设置密钥（可选）",
+      "setupKeyHelp": "粘贴 NetBird 控制台中的设置密钥；若本调制解调器已注册，可留空。"
+    },
+    "device": {
+      "title": "本设备",
+      "description": "调制解调器在 NetBird 网络中的标识。",
+      "fqdn": "FQDN",
+      "netbirdIp": "NetBird IP",
+      "interface": "接口",
+      "management": "管理服务器",
+      "signal": "信号服务器",
+      "emptyTitle": "未接入网络",
+      "emptyDescription": "连接 NetBird 后，此处会显示本调制解调器的地址、名称和链路状态。"
+    },
+    "peers": {
+      "title": "网络节点",
+      "description": "您的 NetBird 网络中的其他设备，及其是否可达。",
+      "dash": "—",
+      "unnamed": "未命名设备",
+      "colDevice": "设备",
+      "colAddress": "地址",
+      "colConnection": "路径",
+      "colStatus": "状态",
+      "colLastSeen": "上次在线",
+      "online": "在线",
+      "offline": "离线",
+      "p2p": "P2P",
+      "relayed": "中继",
+      "countOnline": "{{total}} 个中 {{online}} 个在线",
+      "errorTitle": "无法加载节点",
+      "emptyTitle": "没有其他设备",
+      "emptyDescription": "尚无其他设备加入此网络。在 NetBird 控制台添加设备后，会显示在这里。",
+      "offlineTitle": "未连接",
+      "offlineDescription": "连接 NetBird 后即可查看网络中的其他设备。",
+      "connectedCount_one": "{{count}} 个节点已连接",
+      "connectedCount_other": "{{count}} 个节点已连接",
+      "noDetail": "当前 NetBird 版本不提供逐节点详情。更新 NetBird 后即可查看。"
+    },
+    "install": {
+      "title": "NetBird",
+      "description": "一种网状 VPN，无需开放端口即可随时随地访问本调制解调器。",
+      "conditionTitle": "未安装 NetBird",
+      "conditionDescription": "安装时会通过当前会话所用的蜂窝链路下载 NetBird 软件包，因此会消耗流量，且安装期间连接会变慢。",
+      "install": "安装 NetBird",
+      "installing": "安装中…",
+      "checkAgain": "重新检测",
+      "done": "NetBird 已安装。",
+      "failed": "安装未完成。",
+      "manualLabel": "或在命令行中安装",
+      "copyCommand": "复制安装命令",
+      "manualCommand": "opkg update && opkg install netbird"
+    },
+    "danger": {
+      "uninstall": "卸载",
+      "removing": "移除中…",
+      "dialogTitle": "卸载 NetBird？",
+      "dialogDescription": "将从本调制解调器移除 NetBird 软件包、防火墙规则及所有连接状态。之后重启可清理残留。",
+      "rebootTitle": "建议重启",
+      "rebootDescription": "NetBird 已移除。重启可清理残留的防火墙规则和其他文件。是否立即重启？",
+      "rebootLater": "稍后重启",
+      "rebootNow": "立即重启",
+      "rebooting": "重启中…"
+    },
+    "toast": {
+      "bootEnabled": "NetBird 将在开机时启动",
+      "bootDisabled": "NetBird 不会在开机时启动",
+      "bootFailed": "无法更改开机启动设置",
+      "connected": "正在连接 NetBird",
+      "connectFailed": "无法连接 NetBird",
+      "disconnected": "NetBird 已断开",
+      "disconnectFailed": "无法断开 NetBird",
+      "serviceStarted": "NetBird 服务已启动",
+      "serviceStartFailed": "无法启动 NetBird 服务",
+      "serviceStopped": "NetBird 服务已停止",
+      "serviceStopFailed": "无法停止 NetBird 服务",
+      "uninstalled": "NetBird 已卸载",
+      "uninstallFailed": "无法卸载 NetBird",
+      "installed": "NetBird 已安装",
+      "installFailed": "NetBird 安装未完成",
+      "copied": "安装命令已复制",
+      "copyFailed": "无法复制命令"
+    },
+    "errors": {
+      "fetch_failed": "无法加载 NetBird 状态"
+    }
+  },
+  "connection_quality": {
+    "page": {
+      "title": "连接质量",
+      "description": "调制解调器 ping 的目标，以及把慢速连接记为事件的阈值。"
+    },
+    "targets": {
+      "title": "探测目标",
+      "description": "按顺序 ping，直到有目标响应，用来判断互联网是否连通。",
+      "restore": "恢复默认值",
+      "save": "保存探测目标",
+      "leg": {
+        "ipv4": "IPv4 目标",
+        "ipv6": "IPv6 备用目标"
+      },
+      "error": {
+        "title": "无法读取探测目标",
+        "body": "已保存的目标仍在使用。",
+        "retry": "重试"
+      },
+      "toast": {
+        "saved": "探测目标已保存。",
+        "failed": "无法保存探测目标。"
+      },
+      "validation": {
+        "empty": "请输入一个目标。",
+        "too_long": "最多 {{max}} 个字符。",
+        "spaces": "不允许包含空格。",
+        "disallowed": "包含不允许使用的字符。",
+        "ipv4_invalid": "请输入 IPv4 地址或主机名。",
+        "ipv6_invalid": "不是有效的 IPv6 地址。",
+        "ipv6_colon": "IPv6 地址应包含冒号。"
+      },
+      "verdict": {
+        "ipv4": "IPv4 在响应",
+        "ipv6": "IPv6 在响应",
+        "none": "无响应",
+        "unknown": "未上报"
+      },
+      "group": {
+        "sensitivity": "灵敏度",
+        "ipv4": "IPv4",
+        "ipv6": "IPv6 备用"
+      },
+      "fallback_hint": "仅当 IPv4 目标无响应时才会 ping，因此纯 IPv6 连接不会被误判为断网。",
+      "fallback_hint_label": "关于 IPv6 备用",
+      "interval": {
+        "label": "探测间隔",
+        "value": "每 {{seconds}} 秒",
+        "override": "每 {{seconds}} 秒（由看门狗设定）"
+      },
+      "failed": "保存失败",
+      "profile": {
+        "sensitive": "灵敏",
+        "regular": "常规",
+        "relaxed": "宽松",
+        "quiet": "安静"
+      }
+    },
+    "thresholds": {
+      "title": "质量阈值",
+      "description": "何时把缓慢或丢包的连接记录为网络事件。",
+      "latency": {
+        "title": "时延"
+      },
+      "loss": {
+        "title": "丢包率"
+      },
+      "preset": {
+        "standard": "标准",
+        "tolerant": "宽松",
+        "very_tolerant": "非常宽松",
+        "custom": "自定义"
+      },
+      "save": "保存阈值",
+      "error": {
+        "title": "无法读取质量阈值",
+        "body": "已保存的阈值仍在使用。",
+        "retry": "重试"
+      },
+      "toast": {
+        "saved": "质量阈值已保存。",
+        "failed": "无法保存质量阈值。"
+      },
+      "row": {
+        "flags": "触发条件",
+        "now": "当前",
+        "limit": "阈值"
+      },
+      "flags": {
+        "latency_one": "{{count}} 个样本超过 {{ms}} 毫秒",
+        "latency_other": "{{count}} 个样本超过 {{ms}} 毫秒",
+        "loss_one": "{{count}} 个样本达到 {{pct}}% 或以上",
+        "loss_other": "{{count}} 个样本达到 {{pct}}% 或以上",
+        "pending": "请输入阈值"
+      },
+      "now": {
+        "latency": "{{ms}} 毫秒",
+        "loss": "{{pct}}%",
+        "no_reply": "无回复",
+        "collecting": "正在收集",
+        "over_latency": "超出 {{ms}} 毫秒阈值",
+        "over_loss": "超出 {{pct}}% 阈值"
+      },
+      "default_chip": "内置默认值",
+      "failed": "保存失败",
+      "unit": {
+        "latency": "毫秒",
+        "loss": "%"
+      },
+      "validation": {
+        "range": "请输入 {{min}} 到 {{max}} 之间的整数。"
+      }
+    }
+  },
+  "prometheus": {
+    "page": {
+      "title": "Prometheus",
+      "description": "让 Prometheus 服务器采集此调制解调器的信号与运行状态数据。"
+    },
+    "card": {
+      "title": "Prometheus 指标",
+      "description": "抓取需要下方的令牌；设备标识符绝不会包含在内。"
+    },
+    "endpoint": {
+      "label": "指标端点",
+      "consequence_off": "Prometheus 无法读取此调制解调器。",
+      "consequence_on": "Prometheus 凭令牌可读取信号、运营商和运行状态数据。"
+    },
+    "freshness": {
+      "label": "抓取时效",
+      "hint_label": "关于抓取时效",
+      "hint": "仅在 Prometheus 至少每分钟抓取一次时生效。最后一次抓取两分钟后恢复正常轮询。",
+      "options": {
+        "adaptive": "自适应",
+        "balanced": "均衡",
+        "realtime": "实时"
+      },
+      "consequence": {
+        "adaptive": "抓取不会改变调制解调器的读取频率。",
+        "balanced": "Prometheus 抓取期间，调制解调器不会降到最慢的轮询频率。",
+        "realtime": "Prometheus 抓取期间，每 2 秒读取一次调制解调器，与打开仪表盘时相同。"
+      }
+    },
+    "status": {
+      "label": "抓取状态",
+      "endpoint_off": "端点已关闭"
+    },
+    "facts": {
+      "no_scrapes": "尚无抓取记录",
+      "last_scrape_seconds_one": "上次抓取在 {{count}} 秒前",
+      "last_scrape_seconds_other": "上次抓取在 {{count}} 秒前",
+      "last_scrape_minutes_one": "上次抓取在 {{count}} 分钟前",
+      "last_scrape_minutes_other": "上次抓取在 {{count}} 分钟前",
+      "last_scrape_hours_one": "上次抓取在 {{count}} 小时前",
+      "last_scrape_hours_other": "上次抓取在 {{count}} 小时前",
+      "holding": "保持较快轮询",
+      "adaptive_off": "自适应轮询已关闭，因此数据始终是实时的"
+    },
+    "token": {
+      "label": "Bearer 令牌",
+      "consequence": "将其粘贴到 Prometheus 中作为抓取凭据。",
+      "show": "显示令牌",
+      "hide": "隐藏令牌",
+      "copy": "复制",
+      "regenerate": "重新生成"
+    },
+    "regenerate_dialog": {
+      "title": "生成新令牌？",
+      "description": "在您把新令牌粘贴到 Prometheus 配置之前，它无法抓取。",
+      "cancel": "取消",
+      "confirm": "生成令牌"
+    },
+    "config": {
+      "label": "抓取配置",
+      "consequence": "将此 job 添加到您的 Prometheus 配置中。",
+      "hint_label": "关于抓取配置",
+      "hint": "调制解调器的证书为自签名，因此跳过验证。通过 Tailscale 时，也可以使用普通 http。",
+      "copy": "复制配置",
+      "copied": "已复制",
+      "wrap": "自动换行",
+      "empty_title": "暂无抓取配置",
+      "empty_description": "开启端点并保存后即可获得。"
+    },
+    "foot": {
+      "save": "保存",
+      "discard": "放弃",
+      "token_on_save": "保存时会创建令牌。"
+    },
+    "toast": {
+      "saved": "Prometheus 设置已保存。",
+      "save_failed": "无法保存 Prometheus 设置。",
+      "regenerated": "已生成新令牌。",
+      "regenerate_failed": "无法生成新令牌。",
+      "token_copied": "令牌已复制。",
+      "config_copied": "抓取配置已复制。",
+      "copy_failed": "无法复制到剪贴板。"
+    },
+    "error": {
+      "title": "无法加载 Prometheus 设置",
+      "description": "调制解调器没有响应。请检查连接后重试。",
+      "retry": "重试"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+#!/bin/sh /etc/rc.common
+# =============================================================================
+# qmanager_sms_forward — Init Script for SMS Forwarding Daemon (procd)
+# =============================================================================
+# Manages the SMS forwarding daemon lifecycle independently from the core
+# qmanager services. Starts ONLY when the user has enabled forwarding via UCI
+# (quecmanager.sms_forwarding.enabled=1) so it is gated, never force-on.
+#
+# Uses procd for automatic process tracking, respawn, and clean lifecycle.
+#
+# Usage:
+#   /etc/init.d/qmanager_sms_forward start|stop|restart|enable|disable
+#
+# Install location: /etc/init.d/qmanager_sms_forward
+# =============================================================================
+
+START=99
+STOP=10
+USE_PROCD=1
+
+start_service() {
+    # Guard: check UCI enabled flag — forwarding is opt-in.
+    local enabled
+    enabled=$(uci -q get quecmanager.sms_forwarding.enabled 2>/dev/null)
+    [ "$enabled" = "1" ] || return 0
+
+    # Read log level from config.
+    local log_level
+    log_level=$(cat /etc/qmanager/log_level 2>/dev/null || echo "INFO")
+
+    procd_open_instance "sms_forward"
+    procd_set_param command /usr/bin/qmanager_sms_forward
+    procd_set_param env QLOG_LEVEL="$log_level"
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_set_param respawn 3600 5 5
+    procd_close_instance
+}
+
+stop_service() {
+    # Clean up daemon state (tmpfs; clears on reboot anyway, but be explicit so
+    # a disable-then-enable re-seeds the inbox baseline cleanly).
+    rm -f /var/run/qmanager/sms_forward.pid /var/run/qmanager/sms_forward_seen
+    # pre-B5.13 paths (upgrade from an older build)
+    rm -f /tmp/qmanager_sms_forward.pid
+    rm -f /tmp/qmanager_sms_forward_reload
+    rm -f /tmp/qmanager_sms_forward_seen
+    rm -f /tmp/qmanager_sms_forward_failures.json
+    rm -f /tmp/qmanager_sms_forward_failures.json.tmp
+}
+
+service_triggers() {
+    procd_add_reload_trigger "quecmanager"
+}

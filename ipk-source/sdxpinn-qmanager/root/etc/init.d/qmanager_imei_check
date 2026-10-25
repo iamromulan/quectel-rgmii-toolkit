@@ -1,0 +1,50 @@
+#!/bin/sh /etc/rc.common
+# =============================================================================
+# qmanager_imei_check — Init Script for IMEI Rejection Check Daemon
+# =============================================================================
+# Launches the one-shot IMEI rejection check daemon at boot.
+# Only runs if the check-pending flag exists AND backup config is enabled.
+#
+# The daemon sleeps 20s for modem readiness, queries AT+QNETRC? for reject
+# causes, and switches to the backup IMEI if rejection is detected (cause 5).
+#
+# Non-procd: runs once and exits. No automatic respawn needed.
+#
+# Usage:
+#   /etc/init.d/qmanager_imei_check start|enable|disable
+#
+# Install location: /etc/init.d/qmanager_imei_check
+# =============================================================================
+
+START=99
+STOP=10
+
+DAEMON="/usr/bin/qmanager_imei_check"
+CHECK_PENDING="/etc/qmanager/imei_check_pending"
+BACKUP_CONFIG="/etc/qmanager/imei_backup.json"
+
+start() {
+    # Guard: daemon script exists and is executable
+    [ -x "$DAEMON" ] || return 1
+
+    # Guard: check-pending flag must exist
+    [ -f "$CHECK_PENDING" ] || return 0
+
+    # Guard: backup config must exist and be enabled
+    if [ -f "$BACKUP_CONFIG" ]; then
+        local enabled
+        enabled=$(jq -r '(.enabled) | if . == null then "false" else tostring end' "$BACKUP_CONFIG" 2>/dev/null)
+        [ "$enabled" = "true" ] || return 0
+    else
+        return 0
+    fi
+
+    # Spawn daemon (double-fork to detach from init process group)
+    ( "$DAEMON" </dev/null >/dev/null 2>&1 & )
+    logger -t qmanager_imei_check "IMEI rejection check daemon started"
+}
+
+stop() {
+    # One-shot daemon — no persistent process to stop
+    :
+}

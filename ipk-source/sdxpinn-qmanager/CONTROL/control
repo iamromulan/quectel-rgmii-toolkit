@@ -1,0 +1,11 @@
+Package: sdxpinn-qmanager
+Version: 0.1.35
+Depends: sdxpinn-patch (>= 3.0), jq
+Conflicts: sdxpinn-quecmanager, sdxpinn-quecmanager-beta, sms-tool, socat-at-bridge, socat, websocat
+Replaces: sdxpinn-quecmanager, sdxpinn-quecmanager-beta, sms-tool, socat-at-bridge, socat, websocat
+Source: github.com/dr-dolomite/QManager
+Section: utils
+Architecture: sdxpinn
+Installed-Size: 13176620
+Maintainer: Russel Yasol dr-dolomite@github.com Cameron Thompson iamromulan@github.com
+Description: A modern web UI for Quectel RM551E modems that runs alongside LuCI

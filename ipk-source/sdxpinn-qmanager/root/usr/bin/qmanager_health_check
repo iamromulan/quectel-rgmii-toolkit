@@ -1,0 +1,1191 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_health_check — System Health Check runner (read-only diagnostics)
+# =============================================================================
+# Usage:
+#   qmanager_health_check <job_id>   run the catalog, build a support bundle
+#   qmanager_health_check --clear    delete previous run artifacts (JSON out)
+#
+# Spawned detached by system/health-check/run.sh (uhttpd runs CGIs as root).
+# Read-only toward user state: no UCI writes, no AT set-commands, no service
+# restarts, no SMS inbox reads (reading marks unread SMS as read). The poller
+# keeps running: the AT broker queues our requests behind its own.
+#
+# Status:  /tmp/qmanager_health_check.json   (read-modify-write under STATUS_LOCK)
+# Tests:   /tmp/qmanager_health_check_<job>/tests/<id>.txt
+# Bundle:  /tmp/qmanager_health_check_<job>.tar.gz
+# =============================================================================
+
+STATUS_FILE="/tmp/qmanager_health_check.json"
+STATUS_LOCK="/tmp/qmanager_health_check.lock"
+RUN_LOCK="/tmp/qmanager_health_check.run.lock"
+LOG_FILE="/tmp/qmanager_health_check.log"
+QCMD="/usr/bin/qcmd"
+QSMS="/usr/bin/qsms"
+QCMD_TIMEOUT=28
+CONF_DIR="/etc/qmanager"
+
+export PATH="/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+
+# B4.1: root-safe /tmp helpers (root-owned job dir). Missing lib: the job fails closed.
+[ -f /usr/lib/qmanager/safe_tmp.sh ] && . /usr/lib/qmanager/safe_tmp.sh
+
+_is_running_pid() {
+    case "$1" in ''|*[!0-9]*) return 1 ;; esac
+    [ "$1" -gt 0 ] || return 1
+    kill -0 "$1" 2>/dev/null
+}
+
+# --- Clear mode --------------------------------------------------------------
+if [ "$1" = "--clear" ]; then
+    if [ -f "$STATUS_FILE" ]; then
+        _st=$(jq -r '.status // ""' "$STATUS_FILE" 2>/dev/null)
+        _pid=$(jq -r '.pid // 0' "$STATUS_FILE" 2>/dev/null)
+        if [ "$_st" = "running" ] && _is_running_pid "$_pid"; then
+            echo '{"success":false,"error":"job_running","detail":"a diagnostic job is currently running"}'
+            exit 1
+        fi
+    fi
+    rm -f "$STATUS_FILE" "$STATUS_FILE.tmp" "$STATUS_LOCK" "$LOG_FILE" 2>/dev/null
+    rm -rf /tmp/qmanager_health_check_* 2>/dev/null
+    echo '{"success":true,"cleared":true}'
+    exit 0
+fi
+
+JOB_ID="$1"
+case "$JOB_ID" in
+    [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;;
+    *) echo "ERROR: invalid or missing job_id" >&2; exit 2 ;;
+esac
+
+# Single instance. fd 8 stays open in this shell only; every test and the
+# bundle build run with 8>&- so an orphaned child can never keep the lock.
+exec 8>"$RUN_LOCK"
+if ! flock -n -x 8; then
+    echo "ERROR: another health check is running" >&2
+    exit 3
+fi
+
+JOB_DIR="/tmp/qmanager_health_check_${JOB_ID}"
+TESTS_DIR="${JOB_DIR}/tests"
+TARBALL="/tmp/qmanager_health_check_${JOB_ID}.tar.gz"
+_FINALIZED=0
+
+# --- Helpers -----------------------------------------------------------------
+
+# Milliseconds since boot from /proc/uptime (BusyBox date has no %N).
+_now_ms() {
+    local up
+    local rest
+    local s
+    local f
+    read -r up rest < /proc/uptime
+    s=${up%%.*}
+    f=${up#*.}
+    [ "$f" = "$up" ] && f=0
+    f=${f#0}
+    [ -n "$f" ] || f=0
+    echo $(( s * 1000 + f * 10 ))
+}
+
+_uptime_s() {
+    local up
+    local rest
+    read -r up rest < /proc/uptime
+    echo "${up%%.*}"
+}
+
+_with_status_lock() {
+    # BusyBox flock has no -w; every holder is one short jq rewrite.
+    ( flock -x 7 || exit 1; "$@" ) 7>"$STATUS_LOCK"
+}
+
+_atomic_write() {
+    local tmp="${STATUS_FILE}.tmp"
+    cat > "$tmp" && [ -s "$tmp" ] && mv "$tmp" "$STATUS_FILE"
+}
+
+_mark_running_locked() {
+    jq --arg id "$1" '.tests = ((.tests // []) | map(if .id == $id then .status = "running" else . end))' \
+        "$STATUS_FILE" | _atomic_write
+}
+
+_emit_result_locked() {
+    jq --arg id "$1" --arg status "$2" --argjson dur "$3" --arg detail "$4" '
+        .tests = ((.tests // []) | map(if .id == $id
+            then . + {status:$status, duration_ms:$dur, detail:$detail}
+            else . end))
+        | (.tests | length) as $n
+        | .summary = ((.tests // []) | reduce .[] as $t (
+                {pass:0, fail:0, warn:0, skip:0};
+                if   $t.status == "pass" then .pass += 1
+                elif $t.status == "fail" then .fail += 1
+                elif $t.status == "warn" then .warn += 1
+                elif $t.status == "skip" then .skip += 1
+                else . end)
+            | .total = $n)
+    ' "$STATUS_FILE" | _atomic_write
+}
+
+_finalize_locked() {
+    jq --arg s "$1" --arg e "$2" --argjson fin "$3" --argjson sz "$4" --arg path "$TARBALL" '
+        .status = $s
+        | .finished_at = $fin
+        | .tarball_path = (if $sz > 0 then $path else null end)
+        | .tarball_size = (if $sz > 0 then $sz else null end)
+        | .error = (if $e == "" then null else $e end)
+    ' "$STATUS_FILE" | _atomic_write
+}
+
+_finalize() {
+    local size=0
+    local fin
+    fin=$(date +%s)
+    if [ -f "$TARBALL" ]; then
+        size=$(wc -c < "$TARBALL" 2>/dev/null | tr -d ' ')
+        case "$size" in ''|*[!0-9]*) size=0 ;; esac
+    fi
+    _with_status_lock _finalize_locked "$1" "$2" "$fin" "$size"
+    _FINALIZED=1
+}
+
+_on_signal() {
+    trap - INT TERM EXIT
+    if [ "$_FINALIZED" != "1" ]; then
+        _finalize "error" "runner terminated by signal $1"
+    fi
+    exit 1
+}
+
+_on_exit() {
+    if [ "$_FINALIZED" != "1" ] && [ -f "$STATUS_FILE" ]; then
+        _finalize "error" "runner exited unexpectedly"
+    fi
+}
+
+# Run a qcmd call bounded, with every lock fd closed so neither `timeout` nor
+# qcmd can inherit (and hold) one. Output: stdout+stderr, CR stripped.
+_qcmd() {
+    timeout "$QCMD_TIMEOUT" "$QCMD" "$1" </dev/null 2>&1 7>&- 8>&- 9>&- | tr -d '\r'
+}
+
+# 0 when the output is a broker contention/scan answer (warn, not fail).
+_qcmd_busy() {
+    case "$1" in
+        *modem_busy*|*scan_in_progress*|*modem_not_ready*) return 0 ;;
+    esac
+    return 1
+}
+
+_qcmd_ok() {
+    printf '%s\n' "$1" | grep -qx 'OK'
+}
+
+# First payload line of a raw qcmd answer (no echo, no OK, no blanks).
+_qcmd_payload() {
+    printf '%s\n' "$1" | sed -e '/^AT/d' -e '/^OK$/d' -e '/^[[:space:]]*$/d' | sed -n '1p'
+}
+
+_qcmd_err_detail() {
+    local out="$1"
+    local code
+    code=$(printf '%s\n' "$out" | sed -n 's/^ERROR: \([a-z_]*\).*/\1/p' | sed -n '1p')
+    if [ -n "$code" ]; then
+        echo "$code"
+    elif [ -z "$out" ]; then
+        echo "no response within ${QCMD_TIMEOUT}s"
+    else
+        printf '%s\n' "$out" | sed -e '/^AT/d' -e '/^[[:space:]]*$/d' | sed -n '1p' | cut -c1-80
+    fi
+}
+
+_mask_imei() {
+    sed -e 's/\([0-9]\{9\}\)[0-9]\{6\}/\1xxxxxx/g'
+}
+
+_uci() {
+    uci -q get "quecmanager.$1" 2>/dev/null
+}
+
+_dpi_wanted() {
+    [ "$(_uci video_optimizer.enabled)" = "1" ] || [ "$(_uci traffic_masquerade.enabled)" = "1" ]
+}
+
+_email_enabled() {
+    [ -f "$CONF_DIR/email_alerts.json" ] || return 1
+    [ "$(jq -r '.enabled | if . == null then "false" else tostring end' "$CONF_DIR/email_alerts.json" 2>/dev/null)" = "true" ]
+}
+
+_tower_failover_wanted() {
+    local f="$CONF_DIR/tower_lock.json"
+    [ -f "$f" ] || return 1
+    [ "$(jq -r '(.failover.enabled == true) and ((.lte.enabled == true) or (.nr_sa.enabled == true))' "$f" 2>/dev/null)" = "true" ]
+}
+
+# --- Test catalog ------------------------------------------------------------
+# id|category|label|function   (ids are frontend translation keys: keep stable)
+
+PING_TARGET=$(_uci ping_profile.target_ipv4)
+case "$PING_TARGET" in
+    ''|*[!0-9.]*) PING_TARGET="8.8.8.8" ;;
+esac
+
+_catalog() {
+    cat <<EOF
+bin.atd|binaries|qmanager_atd AT broker binary|t_bin_atd
+bin.qcmd|binaries|qcmd links to qmanager_atd|t_bin_qcmd
+bin.qsms|binaries|qsms links to qmanager_atd|t_bin_qsms
+bin.jq|binaries|jq|t_bin_jq
+bin.curl|binaries|curl|t_bin_curl
+bin.openssl|binaries|openssl|t_bin_openssl
+bin.nft|binaries|nft|t_bin_nft
+bin.ethtool|binaries|ethtool|t_bin_ethtool
+bin.msmtp|binaries|msmtp (email alerts)|t_bin_msmtp
+bin.nfqws|binaries|nfqws (Traffic Engine)|t_bin_nfqws
+bin.tailscale|binaries|tailscale (optional)|t_bin_tailscale
+perm.smd11|permissions|/dev/smd11 AT channel|t_perm_smd11
+perm.atd_socket|permissions|AT broker socket is root-only|t_perm_atd_socket
+perm.tmp_writable|permissions|/tmp writable|t_perm_tmp_writable
+perm.var_lock|permissions|/var/lock writable|t_perm_var_lock
+perm.overlay_space|permissions|Overlay free space|t_perm_overlay_space
+perm.tmp_space|permissions|/tmp free space|t_perm_tmp_space
+at.echo|at_transport|AT echo|t_at_echo
+at.cgmi|at_transport|AT+CGMI manufacturer|t_at_cgmi
+at.cgmm|at_transport|AT+CGMM model|t_at_cgmm
+at.cgsn|at_transport|AT+CGSN IMEI|t_at_cgsn
+at.cfun|at_transport|AT+CFUN? radio state|t_at_cfun
+at.concurrent|at_transport|Concurrent calls serialize|t_at_concurrent
+at.long_flag|at_transport|No stale long-command flag|t_at_long_flag
+sms.cpin|sms|SIM ready (AT+CPIN?)|t_sms_cpin
+sms.cpms|sms|SMS storage answers (AT+CPMS?)|t_sms_cpms
+sms.lock|sms|Modem lock acquirable|t_sms_lock
+svc.ping|services|qmanager ping daemon|t_svc_ping
+svc.poller|services|qmanager poller|t_svc_poller
+svc.atd|services|qmanager_atd broker|t_svc_atd
+svc.uhttpd|services|uhttpd web server|t_svc_uhttpd
+svc.watchcat|services|Connection watchdog|t_svc_watchcat
+svc.tower_failover|services|Tower failover daemon|t_svc_tower_failover
+svc.dpi|services|Traffic Engine (nfqws)|t_svc_dpi
+svc.sms_forward|services|SMS forwarding daemon|t_svc_sms_forward
+svc.tailscale|services|Tailscale (optional)|t_svc_tailscale
+net.wan_ip|network|Mobile data interface has IPv4|t_net_wan_ip
+net.ping|network|Ping reaches ${PING_TARGET}|t_net_ping
+net.dns|network|DNS resolves|t_net_dns
+net.reachable|network|Ping daemon reports reachable|t_net_reachable
+net.uhttpd_listen|network|Web server listening|t_net_uhttpd_listen
+net.fw4|network|fw4 firewall table loaded|t_net_fw4
+net.dpi_chain|network|Traffic Engine nft chain|t_net_dpi_chain
+cfg.uci|configuration|UCI quecmanager config parses|t_cfg_uci
+cfg.qmanager_dir|configuration|/etc/qmanager present|t_cfg_qmanager_dir
+cfg.json|configuration|Config JSON files valid|t_cfg_json
+cfg.poller_fresh|configuration|Poller cache fresh|t_cfg_poller_fresh
+cfg.ping_fresh|configuration|Ping cache fresh|t_cfg_ping_fresh
+cfg.version|configuration|QManager version recorded|t_cfg_version
+EOF
+}
+
+_catalog_json() {
+    _catalog | jq -R -s '
+        split("\n") | map(select(length > 0) | split("|")
+            | {id: .[0], category: .[1], label: .[2], status: "pending", duration_ms: 0, detail: ""})'
+}
+
+# --- Test functions ----------------------------------------------------------
+# Each prints "<status>|<detail>" on stdout and appends evidence to $OUT.
+
+# _bin_check <path> [version-args...]  — empty args = presence only.
+_bin_check() {
+    local path="$1"
+    shift
+    local v
+    local rc
+    if [ ! -e "$path" ]; then
+        echo "$path: not found" >> "$OUT"
+        return 1
+    fi
+    if [ ! -x "$path" ]; then
+        echo "$path: present but not executable" >> "$OUT"
+        echo "fail|present but not executable"
+        return 0
+    fi
+    ls -l "$path" >> "$OUT" 2>&1
+    if [ "$#" -eq 0 ]; then
+        echo "pass|present"
+        return 0
+    fi
+    v=$(timeout 3 "$path" "$@" </dev/null 2>&1)
+    rc=$?
+    v=$(printf '%s\n' "$v" | sed -n '1p' | cut -c1-80)
+    echo "version probe rc=$rc: $v" >> "$OUT"
+    case "$rc" in
+        124|143) echo "warn|present, version probe timed out" ;;
+        126|127) echo "fail|present but cannot execute (rc=$rc)" ;;
+        *) echo "pass|${v:-present}" ;;
+    esac
+    return 0
+}
+
+_bin_required() {
+    _bin_check "$@" || echo "fail|missing"
+}
+
+t_bin_atd()      { _bin_required /usr/bin/qmanager_atd; }
+t_bin_jq()       { _bin_required /usr/bin/jq --version; }
+t_bin_curl()     { _bin_required /usr/bin/curl --version; }
+t_bin_openssl()  { _bin_required /usr/bin/openssl version; }
+t_bin_nft()      { _bin_required /usr/sbin/nft --version; }
+t_bin_ethtool()  { _bin_required /usr/sbin/ethtool --version; }
+
+# $1 = a multicall client link that must point at qmanager_atd (qcmd, qsms).
+_bin_atd_link() {
+    local link="$1"
+    local target
+    if [ -L "$link" ]; then
+        target=$(readlink "$link")
+        echo "$link -> $target" >> "$OUT"
+        case "$target" in
+            qmanager_atd|/usr/bin/qmanager_atd)
+                if [ -x /usr/bin/qmanager_atd ]; then echo "pass|-> qmanager_atd"
+                else echo "fail|link target qmanager_atd missing"; fi ;;
+            *) echo "fail|links to $target, expected qmanager_atd" ;;
+        esac
+    elif [ -e "$link" ]; then
+        ls -l "$link" >> "$OUT" 2>&1
+        echo "fail|regular file, not a link to qmanager_atd"
+    else
+        echo "$link: not found" >> "$OUT"
+        echo "fail|missing"
+    fi
+}
+
+t_bin_qcmd() { _bin_atd_link "$QCMD"; }
+t_bin_qsms() { _bin_atd_link "$QSMS"; }
+
+t_bin_msmtp() {
+    local en="no"
+    _email_enabled && en="yes"
+    echo "email alerts enabled: $en" >> "$OUT"
+    if _bin_check /usr/bin/msmtp --version; then return 0; fi
+    if [ "$en" = "yes" ]; then echo "fail|missing but email alerts are enabled"
+    else echo "skip|email alerts not enabled"; fi
+}
+
+t_bin_nfqws() {
+    local en="no"
+    _dpi_wanted && en="yes"
+    echo "traffic engine enabled: $en" >> "$OUT"
+    if _bin_check /usr/bin/nfqws --version; then return 0; fi
+    if [ "$en" = "yes" ]; then echo "fail|missing but Traffic Engine is enabled"
+    else echo "skip|Traffic Engine not enabled"; fi
+}
+
+t_bin_tailscale() {
+    if _bin_check /usr/bin/tailscale version; then return 0; fi
+    echo "skip|not installed"
+}
+
+t_perm_smd11() {
+    local info
+    if [ ! -e /dev/smd11 ]; then
+        echo "/dev/smd11 missing" >> "$OUT"
+        echo "fail|/dev/smd11 missing"
+        return
+    fi
+    info=$(stat -c '%a %U:%G' /dev/smd11 2>/dev/null)
+    ls -l /dev/smd11 >> "$OUT" 2>&1
+    if [ -c /dev/smd11 ]; then echo "pass|char device, mode $info"
+    else echo "fail|not a character device ($info)"; fi
+}
+
+t_perm_atd_socket() {
+    local s=/var/run/qmanager_atd.sock
+    local mode
+    local owner
+    if [ ! -S "$s" ]; then
+        ls -l "$s" >> "$OUT" 2>&1
+        echo "fail|socket missing (broker not listening)"
+        return
+    fi
+    mode=$(stat -c '%a' "$s" 2>/dev/null)
+    owner=$(stat -c '%U' "$s" 2>/dev/null)
+    ls -l "$s" >> "$OUT" 2>&1
+    if [ "$owner" != "root" ]; then
+        echo "warn|owned by $owner, expected root"
+        return
+    fi
+    case "$mode" in
+        600|400|700) echo "pass|mode $mode root" ;;
+        *) echo "warn|mode $mode is broader than 600" ;;
+    esac
+}
+
+_dir_writable() {
+    local d="$1"
+    local p="$d/.qm_health_probe.$$"
+    if ( : > "$p" ) 2>>"$OUT" && [ -f "$p" ]; then
+        rm -f "$p"
+        echo "created and removed $p" >> "$OUT"
+        echo "pass|writable"
+    else
+        rm -f "$p" 2>/dev/null
+        echo "fail|$d not writable"
+    fi
+}
+
+t_perm_tmp_writable() { _dir_writable /tmp; }
+t_perm_var_lock()     { _dir_writable /var/lock; }
+
+# _df_kb <mount> -> "<total_kb> <avail_kb>" (survives BusyBox's wrapped rows)
+_df_kb() {
+    df -k "$1" 2>/dev/null | awk 'NR > 1 && NF >= 5 { t = $(NF-4); a = $(NF-2) } END { if (t != "") print t, a }'
+}
+
+t_perm_overlay_space() {
+    local r
+    local total
+    local avail
+    local pct
+    df -h / >> "$OUT" 2>&1
+    r=$(_df_kb /)
+    total=${r% *}
+    avail=${r#* }
+    case "$total$avail" in ''|*[!0-9]*) echo "warn|could not read free space"; return ;; esac
+    [ "$total" -gt 0 ] || { echo "warn|could not read free space"; return; }
+    pct=$(( avail * 100 / total ))
+    if [ "$avail" -lt 4096 ]; then echo "fail|$(( avail / 1024 )) MB free ($pct%)"
+    elif [ "$avail" -lt 16384 ] || [ "$pct" -lt 10 ]; then echo "warn|$(( avail / 1024 )) MB free ($pct%)"
+    else echo "pass|$(( avail / 1024 )) MB free ($pct%)"; fi
+}
+
+t_perm_tmp_space() {
+    local r
+    local avail
+    df -h /tmp >> "$OUT" 2>&1
+    r=$(_df_kb /tmp)
+    avail=${r#* }
+    case "$avail" in ''|*[!0-9]*) echo "warn|could not read free space"; return ;; esac
+    if [ "$avail" -lt 8192 ]; then echo "fail|$(( avail / 1024 )) MB free"
+    elif [ "$avail" -lt 32768 ]; then echo "warn|$(( avail / 1024 )) MB free"
+    else echo "pass|$(( avail / 1024 )) MB free"; fi
+}
+
+# _at_simple <command> <pass-detail-mode>  mode: ok | payload
+_at_simple() {
+    local out
+    local p
+    out=$(_qcmd "$1")
+    printf '%s\n' "$out" >> "$OUT"
+    if _qcmd_ok "$out"; then
+        if [ "$2" = "payload" ]; then
+            p=$(_qcmd_payload "$out" | cut -c1-60)
+            echo "pass|${p:-OK}"
+        else
+            echo "pass|OK"
+        fi
+    elif _qcmd_busy "$out"; then
+        echo "warn|$(_qcmd_err_detail "$out")"
+    else
+        echo "fail|$(_qcmd_err_detail "$out")"
+    fi
+}
+
+t_at_echo() { _at_simple "AT" ok; }
+t_at_cgmi() { _at_simple "AT+CGMI" payload; }
+t_at_cgmm() { _at_simple "AT+CGMM" payload; }
+
+t_at_cgsn() {
+    local out
+    local imei
+    out=$(_qcmd "AT+CGSN" | _mask_imei)
+    printf '%s\n' "$out" >> "$OUT"
+    if _qcmd_ok "$out"; then
+        imei=$(_qcmd_payload "$out" | tr -d ' ')
+        case "$imei" in
+            [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]xxxxxx) echo "pass|$imei" ;;
+            *) echo "warn|unexpected IMEI format" ;;
+        esac
+    elif _qcmd_busy "$out"; then
+        echo "warn|$(_qcmd_err_detail "$out")"
+    else
+        echo "fail|$(_qcmd_err_detail "$out")"
+    fi
+}
+
+t_at_cfun() {
+    local out
+    local v
+    out=$(_qcmd "AT+CFUN?")
+    printf '%s\n' "$out" >> "$OUT"
+    if _qcmd_busy "$out"; then echo "warn|$(_qcmd_err_detail "$out")"; return; fi
+    v=$(printf '%s\n' "$out" | sed -n 's/^+CFUN:[[:space:]]*\([0-9]*\).*/\1/p' | sed -n '1p')
+    case "$v" in
+        1) echo "pass|CFUN=1 (full functionality)" ;;
+        0) echo "warn|CFUN=0 (minimum functionality)" ;;
+        4) echo "warn|CFUN=4 (radio off)" ;;
+        '') echo "fail|$(_qcmd_err_detail "$out")" ;;
+        *) echo "warn|CFUN=$v" ;;
+    esac
+}
+
+t_at_concurrent() {
+    local f1="$JOB_DIR/.conc1"
+    local f2="$JOB_DIR/.conc2"
+    local p1
+    local p2
+    local o1
+    local o2
+    local s1
+    local s2
+    _qcmd "AT" > "$f1" &
+    p1=$!
+    _qcmd "AT" > "$f2" &
+    p2=$!
+    wait "$p1"
+    wait "$p2"
+    o1=$(cat "$f1" 2>/dev/null)
+    o2=$(cat "$f2" 2>/dev/null)
+    rm -f "$f1" "$f2"
+    { echo "--- call 1"; printf '%s\n' "$o1"; echo "--- call 2"; printf '%s\n' "$o2"; } >> "$OUT"
+    s1=other
+    s2=other
+    _qcmd_ok "$o1" && s1=ok
+    _qcmd_ok "$o2" && s2=ok
+    [ "$s1" = "other" ] && _qcmd_busy "$o1" && s1=busy
+    [ "$s2" = "other" ] && _qcmd_busy "$o2" && s2=busy
+    case "$s1/$s2" in
+        ok/ok) echo "pass|both calls answered OK" ;;
+        ok/busy|busy/ok) echo "pass|one OK, one rejected busy" ;;
+        busy/busy) echo "warn|both calls rejected busy" ;;
+        *) echo "fail|call 1: $(_qcmd_err_detail "$o1"); call 2: $(_qcmd_err_detail "$o2")" ;;
+    esac
+}
+
+t_at_long_flag() {
+    local f=/tmp/qmanager_long_running
+    local age
+    if [ ! -e "$f" ]; then
+        echo "$f absent" >> "$OUT"
+        echo "pass|no long command running"
+        return
+    fi
+    ls -l "$f" >> "$OUT" 2>&1
+    age=$(( $(date +%s) - $(stat -c %Y "$f" 2>/dev/null || date +%s) ))
+    [ "$age" -lt 0 ] && age=0
+    echo "age=${age}s" >> "$OUT"
+    if [ "$age" -lt 600 ]; then echo "warn|scan in progress (${age}s)"
+    else echo "fail|flag present for $(( age / 60 )) min (stale, AT calls will be rejected)"; fi
+}
+
+t_sms_cpin() {
+    local out
+    local v
+    out=$(_qcmd "AT+CPIN?")
+    printf '%s\n' "$out" >> "$OUT"
+    if _qcmd_busy "$out"; then echo "warn|$(_qcmd_err_detail "$out")"; return; fi
+    v=$(printf '%s\n' "$out" | sed -n 's/^+CPIN:[[:space:]]*//p' | sed -n '1p')
+    case "$v" in
+        READY) echo "pass|READY"; return ;;
+        "SIM PIN"*|"SIM PUK"*) echo "warn|$v required"; return ;;
+        ?*) echo "fail|$v"; return ;;
+    esac
+    case "$(printf '%s\n' "$out" | sed -n 's/^+CME ERROR:[[:space:]]*\([0-9]*\).*/\1/p' | sed -n '1p')" in
+        10) echo "fail|SIM not inserted (CME ERROR 10)" ;;
+        13) echo "fail|SIM failure (CME ERROR 13)" ;;
+        14) echo "warn|SIM busy (CME ERROR 14)" ;;
+        *) echo "fail|$(_qcmd_err_detail "$out")" ;;
+    esac
+}
+
+t_sms_cpms() {
+    local out
+    local v
+    out=$(_qcmd "AT+CPMS?")
+    printf '%s\n' "$out" >> "$OUT"
+    if _qcmd_busy "$out"; then echo "warn|$(_qcmd_err_detail "$out")"; return; fi
+    v=$(printf '%s\n' "$out" | sed -n 's/^+CPMS:[[:space:]]*"\([A-Z]*\)",\([0-9]*\),\([0-9]*\).*/\1 \2\/\3/p' | sed -n '1p')
+    if [ -n "$v" ]; then echo "pass|$v"
+    else echo "fail|$(_qcmd_err_detail "$out")"; fi
+}
+
+t_sms_lock() {
+    local l=/var/lock/qmanager.lock
+    if [ ! -e "$l" ]; then
+        echo "$l absent (created on first AT call)" >> "$OUT"
+        echo "warn|lock file absent"
+        return
+    fi
+    # Non-blocking tries only: never queue for the modem lock ahead of the
+    # broker (BusyBox flock has no -w anyway).
+    local i=0
+    while [ "$i" -lt 5 ]; do
+        if flock -n -x "$l" true 7>&- 8>&- 9>&- 2>>"$OUT"; then
+            echo "acquired and released $l (attempt $(( i + 1 )))" >> "$OUT"
+            echo "pass|acquired and released"
+            return
+        fi
+        i=$(( i + 1 ))
+        sleep 1
+    done
+    echo "busy on 5 non-blocking attempts" >> "$OUT"
+    echo "warn|lock busy on 5 attempts over 5s"
+}
+
+SVC_JSON=""
+_svc_load() {
+    [ -n "$SVC_JSON" ] && return 0
+    SVC_JSON=$(timeout 10 ubus call service list '{}' 2>/dev/null)
+    [ -n "$SVC_JSON" ] || SVC_JSON='{}'
+}
+
+# _svc_check <service> <instance> -> pass/fail with pid + enabled flag
+_svc_check() {
+    local svc="$1"
+    local inst="$2"
+    local row
+    local running
+    local pid
+    local en="no"
+    _svc_load
+    [ -x "/etc/init.d/$svc" ] && "/etc/init.d/$svc" enabled 2>/dev/null && en="yes"
+    row=$(printf '%s' "$SVC_JSON" | jq -c --arg s "$svc" --arg i "$inst" \
+        '(.[$s].instances // {})[$i] // null | if . == null then null else {running: (.running == true), pid: (.pid // 0)} end' 2>/dev/null)
+    echo "service=$svc instance=$inst init_enabled=$en state=$row" >> "$OUT"
+    if [ ! -x "/etc/init.d/$svc" ]; then
+        echo "fail|init script missing"
+        return
+    fi
+    if [ -z "$row" ] || [ "$row" = "null" ]; then
+        echo "fail|not running (init enabled: $en)"
+        return
+    fi
+    running=$(printf '%s' "$row" | jq -r '.running')
+    pid=$(printf '%s' "$row" | jq -r '.pid')
+    if [ "$running" = "true" ]; then echo "pass|running, pid $pid (init enabled: $en)"
+    else echo "fail|instance stopped (init enabled: $en)"; fi
+}
+
+t_svc_ping()   { _svc_check qmanager ping; }
+t_svc_poller() { _svc_check qmanager poller; }
+t_svc_atd()    { _svc_check qmanager_atd broker; }
+t_svc_uhttpd() { _svc_check uhttpd instance1; }
+
+t_svc_watchcat() {
+    if [ "$(_uci watchcat.enabled)" != "1" ]; then
+        echo "watchcat.enabled=$(_uci watchcat.enabled)" >> "$OUT"
+        echo "skip|watchdog disabled"
+        return
+    fi
+    _svc_check qmanager_watchcat watchcat
+}
+
+t_svc_tower_failover() {
+    local pid
+    if ! _tower_failover_wanted; then
+        echo "tower lock failover not enabled (or no active lock)" >> "$OUT"
+        echo "skip|failover not enabled"
+        return
+    fi
+    pid=$(tr -d ' \n\r' < /tmp/qmanager_tower_failover.pid 2>/dev/null)
+    echo "pid_file=$pid" >> "$OUT"
+    if [ -f /tmp/qmanager_tower_failover ]; then
+        echo "activation flag present" >> "$OUT"
+    fi
+    if _is_running_pid "$pid"; then
+        echo "pass|running, pid $pid"
+    elif [ -f /tmp/qmanager_tower_failover ]; then
+        echo "warn|failover already triggered, daemon exited"
+    else
+        echo "fail|enabled but not running"
+    fi
+}
+
+t_svc_dpi() {
+    if ! _dpi_wanted; then
+        echo "video_optimizer.enabled=$(_uci video_optimizer.enabled) traffic_masquerade.enabled=$(_uci traffic_masquerade.enabled)" >> "$OUT"
+        echo "skip|Traffic Engine not enabled"
+        return
+    fi
+    _svc_check qmanager_dpi nfqws
+}
+
+t_svc_sms_forward() {
+    if [ "$(_uci sms_forwarding.enabled)" != "1" ]; then
+        echo "sms_forwarding.enabled=$(_uci sms_forwarding.enabled)" >> "$OUT"
+        echo "skip|SMS forwarding disabled"
+        return
+    fi
+    _svc_check qmanager_sms_forward sms_forward
+}
+
+t_svc_tailscale() {
+    if [ ! -x /usr/bin/tailscale ] || [ ! -x /etc/init.d/tailscale ]; then
+        echo "tailscale not installed" >> "$OUT"
+        echo "skip|not installed"
+        return
+    fi
+    _svc_check tailscale instance1
+}
+
+t_net_wan_ip() {
+    local out
+    local ip
+    out=$(ip -o -4 addr show 2>>"$OUT" | grep 'rmnet_data')
+    printf '%s\n' "$out" >> "$OUT"
+    ip=$(printf '%s\n' "$out" | awk '$4 != "" { print $2 " " $4; exit }')
+    if [ -n "$ip" ]; then echo "pass|$ip"
+    else echo "fail|no rmnet_data interface has an IPv4 address"; fi
+}
+
+t_net_ping() {
+    local out
+    local rc
+    out=$(timeout 10 ping -c 2 -W 2 "$PING_TARGET" 2>&1)
+    rc=$?
+    printf '%s\n' "$out" >> "$OUT"
+    if [ "$rc" -eq 0 ]; then
+        echo "pass|$(printf '%s\n' "$out" | grep 'packets transmitted' | sed -n '1p')"
+    else
+        echo "fail|no reply from $PING_TARGET"
+    fi
+}
+
+t_net_dns() {
+    local host="example.com"
+    local out
+    local rc
+    out=$(timeout 5 nslookup "$host" 2>&1)
+    rc=$?
+    printf '%s\n' "$out" >> "$OUT"
+    case "$rc" in
+        124|143) echo "fail|lookup of $host timed out (5s)"; return ;;
+    esac
+    # The first Address line is the server's own; answers follow a Name: line.
+    if [ "$rc" -eq 0 ] && printf '%s\n' "$out" | sed -n '/^Name:/,$p' | grep -q '^Address'; then
+        echo "pass|$host resolved"
+    else
+        echo "fail|could not resolve $host"
+    fi
+}
+
+t_net_reachable() {
+    local f=/tmp/qmanager_ping.json
+    local r
+    local fam
+    if [ ! -f "$f" ]; then
+        echo "$f missing" >> "$OUT"
+        echo "fail|ping cache missing"
+        return
+    fi
+    jq -c '{reachable, last_family, streak_fail, streak_success, profile, targets}' "$f" >> "$OUT" 2>&1
+    r=$(jq -r '.reachable | if . == null then "null" else tostring end' "$f" 2>/dev/null)
+    fam=$(jq -r '.last_family // "none"' "$f" 2>/dev/null)
+    case "$r" in
+        true) echo "pass|reachable (via $fam)" ;;
+        false) echo "warn|ping daemon reports internet unreachable" ;;
+        *) echo "warn|reachability unknown" ;;
+    esac
+}
+
+# Ports are user-configurable (qmanager_web_port), so read them from uhttpd.
+t_net_uhttpd_listen() {
+    local out
+    local hp
+    local sp
+    local hok="no"
+    local sok="no"
+    local want_https="no"
+    hp=$(uci -q get uhttpd.main.listen_http 2>/dev/null | awk '{n=split($1,a,":"); print a[n]}')
+    sp=$(uci -q get uhttpd.main.listen_https 2>/dev/null | awk '{n=split($1,a,":"); print a[n]}')
+    [ -n "$hp" ] || hp=80
+    [ -n "$sp" ] && want_https="yes"
+    [ -n "$sp" ] || sp=443
+    out=$(netstat -ltn 2>/dev/null)
+    printf '%s\n' "$out" | grep -E "[:.]($hp|$sp)[[:space:]]" >> "$OUT"
+    printf '%s\n' "$out" | grep -qE "[:.]$hp[[:space:]]" && hok="yes"
+    printf '%s\n' "$out" | grep -qE "[:.]$sp[[:space:]]" && sok="yes"
+    echo "http_port=$hp listening=$hok https_port=$sp listening=$sok https_configured=$want_https" >> "$OUT"
+    if [ "$hok" != "yes" ]; then echo "fail|not listening on port $hp"
+    elif [ "$want_https" = "yes" ] && [ "$sok" != "yes" ]; then echo "warn|HTTPS configured but port $sp not listening"
+    elif [ "$sok" = "yes" ]; then echo "pass|listening on $hp and $sp"
+    else echo "pass|listening on $hp"; fi
+}
+
+t_net_fw4() {
+    local n
+    if timeout 10 nft list table inet fw4 > "$JOB_DIR/.fw4" 2>>"$OUT"; then
+        n=$(grep -c '^[[:space:]]*chain ' "$JOB_DIR/.fw4")
+        echo "inet fw4 loaded, $n chains" >> "$OUT"
+        rm -f "$JOB_DIR/.fw4"
+        echo "pass|loaded ($n chains)"
+    else
+        rm -f "$JOB_DIR/.fw4"
+        timeout 5 nft list tables >> "$OUT" 2>&1
+        echo "fail|table inet fw4 not loaded"
+    fi
+}
+
+t_net_dpi_chain() {
+    if ! _dpi_wanted; then
+        echo "skip|Traffic Engine not enabled"
+        return
+    fi
+    if timeout 10 nft list chain inet fw4 mangle_postrouting_qmanager_dpi >> "$OUT" 2>&1; then
+        echo "pass|chain present"
+    else
+        echo "fail|enabled but chain mangle_postrouting_qmanager_dpi missing"
+    fi
+}
+
+t_cfg_uci() {
+    local n
+    if uci -q show quecmanager > "$JOB_DIR/.uci" 2>>"$OUT"; then
+        n=$(wc -l < "$JOB_DIR/.uci" | tr -d ' ')
+        rm -f "$JOB_DIR/.uci"
+        echo "uci show quecmanager: $n lines (content not recorded here)" >> "$OUT"
+        echo "pass|$n options"
+    else
+        rm -f "$JOB_DIR/.uci"
+        echo "fail|uci could not parse /etc/config/quecmanager"
+    fi
+}
+
+t_cfg_qmanager_dir() {
+    if [ -d "$CONF_DIR" ]; then
+        ls -la "$CONF_DIR" >> "$OUT" 2>&1
+        echo "pass|present"
+    else
+        echo "fail|$CONF_DIR missing"
+    fi
+}
+
+t_cfg_json() {
+    local f
+    local name
+    local n=0
+    local bad=""
+    for f in "$CONF_DIR"/*.json; do
+        [ -f "$f" ] || continue
+        n=$(( n + 1 ))
+        name=$(basename "$f")
+        # Session/cookie file names can carry a token: never print them.
+        case "$name" in *sess*|*cookie*|*token*) name="(session file)" ;; esac
+        if jq -e . "$f" >/dev/null 2>&1; then
+            echo "valid:   $name" >> "$OUT"
+        else
+            echo "INVALID: $name" >> "$OUT"
+            bad="$bad $name"
+        fi
+    done
+    if [ "$n" -eq 0 ]; then echo "warn|no JSON config files found"
+    elif [ -n "$bad" ]; then echo "fail|invalid:$bad"
+    else echo "pass|$n files valid"; fi
+}
+
+# _cache_age <file> -> age in seconds, monotonic .mono preferred, mtime fallback
+_cache_age() {
+    local f="$1"
+    local m
+    local now
+    m=$(jq -r '.mono | if type == "number" then floor | tostring else "" end' "$f" 2>/dev/null)
+    now=$(_uptime_s)
+    case "$m" in
+        ''|0|*[!0-9]*)
+            echo $(( $(date +%s) - $(stat -c %Y "$f" 2>/dev/null || date +%s) )) ;;
+        *)
+            if [ "$m" -le "$now" ]; then echo $(( now - m ))
+            else echo $(( $(date +%s) - $(stat -c %Y "$f" 2>/dev/null || date +%s) )); fi ;;
+    esac
+}
+
+t_cfg_poller_fresh() {
+    local f=/tmp/qmanager_status.json
+    local age
+    local tier
+    if [ ! -f "$f" ]; then echo "$f missing" >> "$OUT"; echo "fail|poller cache missing"; return; fi
+    age=$(_cache_age "$f")
+    tier=$(jq -r '.device.poller_tier // "unknown"' "$f" 2>/dev/null)
+    echo "age=${age}s tier=$tier" >> "$OUT"
+    # write_cache runs every 2 s base cycle in every tier (adaptive polling)
+    if [ "$age" -lt 30 ]; then echo "pass|${age}s old (tier $tier)"
+    elif [ "$age" -lt 180 ]; then echo "warn|${age}s old (tier $tier)"
+    else echo "fail|${age}s old, poller may be stalled"; fi
+}
+
+t_cfg_ping_fresh() {
+    local f=/tmp/qmanager_ping.json
+    local age
+    local iv
+    local lim
+    if [ ! -f "$f" ]; then echo "$f missing" >> "$OUT"; echo "fail|ping cache missing"; return; fi
+    age=$(_cache_age "$f")
+    iv=$(jq -r '.interval_sec // 5 | floor | tostring' "$f" 2>/dev/null)
+    case "$iv" in ''|*[!0-9]*) iv=5 ;; esac
+    # Same window conn_state.sh uses to call the cache stale: max(3*interval, 15)
+    lim=$(( iv * 3 ))
+    [ "$lim" -lt 15 ] && lim=15
+    echo "age=${age}s interval=${iv}s stale_after=${lim}s" >> "$OUT"
+    if [ "$age" -le "$lim" ]; then echo "pass|${age}s old (interval ${iv}s)"
+    elif [ "$age" -lt 180 ]; then echo "warn|${age}s old (interval ${iv}s)"
+    else echo "fail|${age}s old, ping daemon may be stalled"; fi
+}
+
+t_cfg_version() {
+    local v
+    if [ ! -f "$CONF_DIR/VERSION" ]; then echo "fail|VERSION file missing"; return; fi
+    v=$(sed -n '1p' "$CONF_DIR/VERSION" | tr -d '\r' | cut -c1-60)
+    echo "VERSION=$v" >> "$OUT"
+    if [ -n "$v" ]; then echo "pass|$v"
+    else echo "fail|VERSION file empty"; fi
+}
+
+# --- Test driver -------------------------------------------------------------
+
+_run_test() {
+    local id="$1"
+    local fn="$2"
+    local start
+    local end
+    local result
+    local st
+    local detail
+    OUT="${TESTS_DIR}/${id}.txt"
+    : > "$OUT"
+    _with_status_lock _mark_running_locked "$id"
+    start=$(_now_ms)
+    result=$("$fn" </dev/null 2>>"$OUT" 8>&- | tail -n 1)
+    end=$(_now_ms)
+    st="${result%%|*}"
+    detail="${result#*|}"
+    case "$st" in
+        pass|fail|warn|skip) ;;
+        *) st="fail"; detail="test produced no result" ;;
+    esac
+    _with_status_lock _emit_result_locked "$id" "$st" "$(( end - start ))" "$detail"
+}
+
+# --- Bundle ------------------------------------------------------------------
+
+_build_report_txt() {
+    local started
+    started=$(jq -r '.started_at // 0' "$STATUS_FILE")
+    {
+        echo "QManager System Health Check"
+        echo "============================"
+        echo "Job ID:    $JOB_ID"
+        echo "Started:   $(date -u -d "@$started" +'%Y-%m-%dT%H:%M:%SZ' 2>/dev/null)"
+        echo "Host:      $(uname -n)"
+        echo "Kernel:    $(uname -srm)"
+        echo "QManager:  $(sed -n '1p' "$CONF_DIR/VERSION" 2>/dev/null)"
+        echo
+        jq -r '.summary | "Pass: \(.pass)  Fail: \(.fail)  Warn: \(.warn)  Skip: \(.skip)  Total: \(.total)"' "$STATUS_FILE"
+        echo
+        jq -r '.tests | group_by(.category)[] |
+            "[\(.[0].category)]\n" +
+            (map("  \(.status | ascii_upcase | .[0:4])  \(.id)  \(.label): \(.detail) (\(.duration_ms) ms)") | join("\n")) + "\n"' \
+            "$STATUS_FILE"
+    } > "$1"
+}
+
+_build_report_json() {
+    local stage="$1"
+    local f
+    local id
+    local outs="$stage/.outputs.ndjson"
+    : > "$outs"
+    for f in "$stage"/tests/*.txt; do
+        [ -f "$f" ] || continue
+        id=$(basename "$f" .txt)
+        head -c 4096 "$f" | jq -R -s -c --arg id "$id" '{id: $id, output: .}' >> "$outs"
+    done
+    jq --slurpfile o "$outs" '. + {test_outputs: $o}' "$STATUS_FILE" > "$stage/report.json"
+    rm -f "$outs"
+}
+
+_collect_system_info() {
+    {
+        echo "# uname -a"; uname -a
+        echo; echo "# VERSION"; cat "$CONF_DIR/VERSION" 2>/dev/null
+        echo; echo "# /etc/openwrt_release"; cat /etc/openwrt_release 2>/dev/null
+        echo; echo "# uptime"; uptime
+        echo; echo "# free"; free
+        echo; echo "# df -h"; df -h
+        echo; echo "# ip addr"; ip addr
+        echo; echo "# ip route"; ip route
+        echo; echo "# ip -6 route"; ip -6 route
+        echo; echo "# nft list tables"; timeout 10 nft list tables
+    } > "$1" 2>&1
+}
+
+_collect_services() {
+    _svc_load
+    printf '%s' "$SVC_JSON" | jq '
+        with_entries(select((.key | startswith("qmanager")) or .key == "uhttpd"
+            or .key == "tailscale" or .key == "dropbear"))
+        | map_values({instances: ((.instances // {}) | map_values({running, pid, command, respawn}))})
+    ' > "$1" 2>/dev/null || echo '{}' > "$1"
+}
+
+_collect_logs() {
+    local d="$1"
+    mkdir -p "$d"
+    [ -f /tmp/qmanager.log ] && tail -n 300 /tmp/qmanager.log > "$d/qmanager.log" 2>/dev/null
+    timeout 10 logread 2>/dev/null | tail -n 300 > "$d/logread.txt"
+    timeout 10 dmesg 2>/dev/null | tail -n 200 > "$d/dmesg.txt"
+    [ -f "$CONF_DIR/crash.log" ] && tail -n 100 "$CONF_DIR/crash.log" > "$d/crash.log" 2>/dev/null
+}
+
+_collect_configs() {
+    local d="$1"
+    local f
+    mkdir -p "$d"
+    uci export quecmanager > "$d/uci-quecmanager.txt" 2>/dev/null
+    # Compact so every JSON key/value pair is on one line for redaction.
+    for f in email_alerts.json sms_alerts.json alert_routing.json; do
+        [ -f "$CONF_DIR/$f" ] || continue
+        jq -c . "$CONF_DIR/$f" > "$d/$f" 2>/dev/null || echo '"invalid JSON (not copied)"' > "$d/$f"
+    done
+}
+
+# Literal values known to be personal (phone numbers), digits and + only.
+_personal_values() {
+    {
+        [ -f "$CONF_DIR/sms_alerts.json" ] && jq -r '.recipient_phone // empty | tostring' "$CONF_DIR/sms_alerts.json" 2>/dev/null
+        _uci sms_forwarding.target_phone
+        [ -f /tmp/qmanager_status.json ] && jq -r '.. | objects | (.phone_number?, .msisdn?) // empty | tostring' /tmp/qmanager_status.json 2>/dev/null
+    } | while read -r v; do
+        case "$v" in
+            ''|*[!0-9+]*) continue ;;
+        esac
+        [ "${#v}" -ge 5 ] && printf '%s\n' "$v"
+    done | sort -u
+}
+
+_redact_tree() {
+    local dir="$1"
+    local f
+    local v
+    local sedf="$JOB_DIR/.redact.sed"
+    find "$dir" -type f \( -name 'auth.json' -o -name '*session*' -o -name 'tailscaled.state' \
+        -o -name 'msmtprc' -o -name '*cookie*' \) -exec rm -f {} \; 2>/dev/null
+    : > "$sedf"
+    _personal_values | while read -r v; do
+        printf 's/%s/REDACTED/g\n' "$(printf '%s' "$v" | sed 's/+/\\+/g')" >> "$sedf"
+    done
+    find "$dir" -type f | while read -r f; do
+        [ -s "$sedf" ] && sed -i -f "$sedf" "$f" 2>/dev/null
+        sed -i -E \
+            -e 's/(^|[^0-9])([0-9]{6})[0-9]{13,14}([^0-9]|$)/\1\2xxxxxxxxxxxxxx\3/g' \
+            -e 's/(^|[^0-9])([0-9]{6})[0-9]{13,14}([^0-9]|$)/\1\2xxxxxxxxxxxxxx\3/g' \
+            -e 's/(^|[^0-9])([0-9]{9})[0-9]{6}([^0-9]|$)/\1\2xxxxxx\3/g' \
+            -e 's/(^|[^0-9])([0-9]{9})[0-9]{6}([^0-9]|$)/\1\2xxxxxx\3/g' \
+            -e 's/("[A-Za-z0-9_]*([Pp]ass|[Ss]ecret|[Tt]oken|[Kk]ey|[Aa]uth|[Pp]hone|[Rr]ecipient|[Ss]ender|[Uu]ser|[Ee]mail|[Mm]sisdn|[Cc]ookie)[A-Za-z0-9_]*"[[:space:]]*:[[:space:]]*)"[^"]*"/\1"REDACTED"/g' \
+            -e 's/("[A-Za-z0-9_]*([Pp]hone|[Rr]ecipient|[Mm]sisdn|[Ee]mail)[A-Za-z0-9_]*"[[:space:]]*:[[:space:]]*)\+?[0-9]+/\1"REDACTED"/g' \
+            -e 's/("[A-Za-z0-9_]*([Pp]hone|[Rr]ecipient|[Mm]sisdn|[Ee]mail)[A-Za-z0-9_]*"[[:space:]]*:[[:space:]]*)\[[^]]*\]/\1["REDACTED"]/g' \
+            -e "s/^([[:space:]]*(option|list)[[:space:]]+[A-Za-z0-9_]*(pass|secret|token|key|auth|phone|recipient|sender|user|email|number)[A-Za-z0-9_]*[[:space:]]+).*/\1'REDACTED'/" \
+            -e 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/REDACTED@email/g' \
+            -e 's/\+[0-9]{7,15}/+REDACTED/g' \
+            -e 's/tskey-[A-Za-z0-9_-]+/tskey-REDACTED/g' \
+            -e 's/(Set-Cookie|Cookie|Authorization):.*/\1: REDACTED/I' \
+            -e 's/(qm_session|session|token)=[A-Za-z0-9._-]+/\1=REDACTED/g' \
+            "$f" 2>/dev/null
+    done
+    rm -f "$sedf"
+}
+
+_build_bundle() {
+    local stage="$JOB_DIR/bundle"
+    rm -rf "$stage"
+    mkdir -p "$stage/tests" "$stage/logs" "$stage/config" || return 1
+    cp "$TESTS_DIR"/*.txt "$stage/tests/" 2>/dev/null
+    _collect_system_info "$stage/system-info.txt"
+    _collect_services "$stage/services.json"
+    _collect_logs "$stage/logs"
+    _collect_configs "$stage/config"
+    [ -f /tmp/qmanager_status.json ] && jq -c . /tmp/qmanager_status.json > "$stage/poller-cache.json" 2>/dev/null
+    [ -f /tmp/qmanager_ping.json ] && jq -c . /tmp/qmanager_ping.json > "$stage/ping-cache.json" 2>/dev/null
+    _build_report_txt "$stage/report.txt"
+    _redact_tree "$stage"
+    _build_report_json "$stage"
+    _redact_tree "$stage"
+    rm -f "$JOB_DIR/bundle.tar.gz.tmp"
+    if tar -czf "$JOB_DIR/bundle.tar.gz.tmp" -C "$JOB_DIR" bundle && [ -s "$JOB_DIR/bundle.tar.gz.tmp" ]; then
+        # B4.1: built inside the root dir, renamed over any planted file
+        # 0600 first: if a dir is planted between rm and mv, mv lands the
+        # bundle inside it, and it must not be readable there.
+        chmod 600 "$JOB_DIR/bundle.tar.gz.tmp"
+        rm -rf "$TARBALL"
+        mv "$JOB_DIR/bundle.tar.gz.tmp" "$TARBALL"
+        rm -rf "$stage"
+        return 0
+    fi
+    rm -f "$JOB_DIR/bundle.tar.gz.tmp"
+    rm -rf "$stage"
+    return 1
+}
+
+# Older runs: anything past 60 min goes; after a good bundle, only ours stays.
+_cleanup_stale() {
+    find /tmp -maxdepth 1 -name 'qmanager_health_check_*' -mmin +60 -exec rm -rf {} \; 2>/dev/null
+}
+
+_cleanup_others() {
+    local p
+    for p in /tmp/qmanager_health_check_*; do
+        [ -e "$p" ] || continue
+        case "$p" in
+            "$JOB_DIR"|"$TARBALL") ;;
+            *) rm -rf "$p" ;;
+        esac
+    done
+}
+
+# --- Main --------------------------------------------------------------------
+
+trap '_on_signal TERM' TERM
+trap '_on_signal INT' INT
+trap '_on_exit' EXIT
+
+# B4.1: job dir must be root-owned; a /tmp dir another user made first is not trusted
+if ! type qm_root_dir >/dev/null 2>&1 || ! qm_root_dir "$JOB_DIR" 0700; then
+    echo "ERROR: cannot create root-owned $JOB_DIR" >&2
+    exit 1
+fi
+mkdir -p "$TESTS_DIR" || { echo "ERROR: cannot create $TESTS_DIR" >&2; exit 1; }
+
+CATALOG_JSON=$(_catalog_json)
+STARTED=$(date +%s)
+jq -n --arg job_id "$JOB_ID" --argjson started "$STARTED" --argjson pid "$$" \
+      --argjson tests "$CATALOG_JSON" '
+    {
+        success: true,
+        job_id: $job_id,
+        status: "running",
+        started_at: $started,
+        finished_at: null,
+        pid: $pid,
+        summary: {pass: 0, fail: 0, warn: 0, skip: 0, total: ($tests | length)},
+        tests: $tests,
+        tarball_path: null,
+        tarball_size: null,
+        error: null
+    }' | _with_status_lock _atomic_write
+
+_cleanup_stale
+echo "health check $JOB_ID started (pid $$)"
+
+_catalog > "$JOB_DIR/.catalog"
+while IFS='|' read -r _id _cat _label _fn; do
+    [ -n "$_id" ] || continue
+    _run_test "$_id" "$_fn"
+done < "$JOB_DIR/.catalog"
+rm -f "$JOB_DIR/.catalog"
+
+if _build_bundle 8>&- 2>>"$JOB_DIR/build.log"; then
+    _cleanup_others
+    _finalize "complete" ""
+else
+    _finalize "complete_no_bundle" "support bundle could not be built"
+fi
+
+echo "health check $JOB_ID finished"
+exit 0

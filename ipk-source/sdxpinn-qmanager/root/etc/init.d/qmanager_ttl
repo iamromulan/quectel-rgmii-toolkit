@@ -1,0 +1,41 @@
+#!/bin/sh /etc/rc.common
+# =============================================================================
+# qmanager_ttl — Init Script for TTL/HL Settings Persistence
+# =============================================================================
+# Re-applies TTL/HL iptables rules at boot by sourcing the persistent
+# firewall rules file written by the TTL/HL CGI endpoint or Custom SIM
+# Profile apply script.
+#
+# Non-procd: runs once at boot and exits. No interface dependency —
+# iptables mangle POSTROUTING rules on rmnet+ work independently of
+# interface state.
+#
+# The rules file is written by:
+#   - /www/cgi-bin/quecmanager/network/ttl.sh (standalone UI)
+#   - /www/cgi-bin/quecmanager/cellular/apn.sh (MNO preset apply)
+#   - /usr/bin/qmanager_profile_apply (Custom SIM Profile apply)
+#
+# Usage:
+#   /etc/init.d/qmanager_ttl start|enable|disable
+#
+# Install location: /etc/init.d/qmanager_ttl
+# =============================================================================
+
+START=99
+STOP=10
+
+TTL_FILE="/etc/firewall.user.ttl"
+
+start() {
+    [ -f "$TTL_FILE" ] || return 0
+
+    # Brief delay for iptables modules to load
+    sleep 5
+
+    . "$TTL_FILE"
+    logger -t qmanager_ttl "Applied TTL/HL settings from $TTL_FILE"
+}
+
+stop() {
+    :
+}

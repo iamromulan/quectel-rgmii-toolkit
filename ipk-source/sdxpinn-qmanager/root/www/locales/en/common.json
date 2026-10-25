@@ -1,0 +1,713 @@
+{
+  "actions": {
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved!",
+    "save_settings": "Save Settings",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "apply": "Apply",
+    "close": "Close",
+    "retry": "Retry",
+    "reboot": "Reboot",
+    "log_out": "Log out",
+    "reboot_device": "Reboot Device",
+    "reconnect_modem": "Reconnect Modem",
+    "change_display_name": "Change Display Name",
+    "change_password": "Change Password",
+    "toggle_theme": "Toggle Theme",
+    "discard": "Discard"
+  },
+  "motion": {
+    "label": "Animations",
+    "system": "System",
+    "full": "Full",
+    "reduced": "Reduced"
+  },
+  "account": {
+    "photo_invalid": "Please select an image file.",
+    "photo_updated": "Profile photo updated.",
+    "change_photo_aria": "Change profile photo",
+    "name_placeholder": "Your name",
+    "name_saved": "Display name updated.",
+    "name_save_failed": "Failed to update display name.",
+    "reconnect_description": "This will disconnect the modem for a few seconds, then reconnect it automatically.",
+    "disconnecting_description": "Disconnecting modem from network…",
+    "reconnecting_description": "Reconnecting modem to network…",
+    "reconnect_action": "Reconnect",
+    "reconnect_complete": "Modem reconnect complete.",
+    "reconnect_failed": "Failed to reconnect modem.",
+    "reboot_description": "The device will restart and all network connections will drop until it comes back online.",
+    "reboot_sent": "Reboot command sent. You will be logged out shortly…",
+    "reboot_now": "Reboot Now"
+  },
+  "state": {
+    "loading": "Loading…",
+    "saving": "Saving…",
+    "applying": "Applying…",
+    "disconnecting": "Disconnecting…",
+    "reconnecting": "Reconnecting…",
+    "installing": "Installing…",
+    "removing": "Removing…",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "on": "On",
+    "off": "Off"
+  },
+  "connection": {
+    "reconnecting": "Lost contact with the device. Reconnecting…"
+  },
+  "time": {
+    "just_now": "Just now",
+    "now": "Now",
+    "unknown": "Unknown",
+    "minutes_ago_one": "{{count}}m ago",
+    "minutes_ago_other": "{{count}}m ago",
+    "hours_ago_one": "{{count}}h ago",
+    "hours_ago_other": "{{count}}h ago",
+    "days_ago_one": "{{count}}d ago",
+    "days_ago_other": "{{count}}d ago"
+  },
+  "language": {
+    "label": "Language",
+    "switch_aria": "Switch language"
+  },
+  "login": {
+    "brand_label": "QManager operator console",
+    "welcome": "Welcome to QManager",
+    "password_label": "Password",
+    "submit": "Sign in",
+    "signing_in": "Signing in…",
+    "locked_countdown": "Locked ({{seconds}})",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "session_expired": "The device was unreachable for too long. Sign in again to continue.",
+    "session_expired_title": "Session ended",
+    "signing_in_to": "Signing in to {{hostname}}",
+    "signing_in_as": "Sign in as {{hostname}}",
+    "recovery": {
+      "toggle": "Can't sign in?",
+      "intro": "If you've lost the admin password, you have two recovery paths:",
+      "option_reset_command": "Open an SSH session to the device and run {{command}} to set a new admin password. (Requires SSH access to be enabled.)",
+      "option_backup": "If you saved a .qmbackup file, re-flash the device firmware and restore from it."
+    },
+    "attempts_left_one": "Incorrect password. {{count}} attempt left.",
+    "attempts_left_other": "Incorrect password. {{count}} attempts left.",
+    "invalid_password": "Incorrect password.",
+    "locked_body": "Locked for {{seconds}} to protect the device.",
+    "locked_title": "Too many attempts",
+    "lockout_seconds": "{{seconds}}s",
+    "sign_in_to_label": "Sign in to"
+  },
+  "overview": {
+    "title": "Modem Overview",
+    "tagline": "Live modem status",
+    "login_button": "Sign in",
+    "header": {
+      "carrier": "Carrier",
+      "network": "Network",
+      "bands": "Bandwidth"
+    },
+    "status": {
+      "overall": "Overall",
+      "connectivity": "Internet",
+      "temperature": "Temperature"
+    },
+    "actions": {
+      "login": "Sign in to manage",
+      "luci": "LuCI",
+      "luci_aria": "Open LuCI advanced interface",
+      "theme_toggle_aria": "Toggle theme",
+      "theme_light": "Light",
+      "theme_dark": "Dark",
+      "theme_system": "System"
+    },
+    "field": {
+      "carrier": "Carrier",
+      "aggregation": "Bands",
+      "uptime": "Uptime",
+      "temperature": "Temp",
+      "temp_warn": "Running hot",
+      "temp_danger": "Overheating",
+      "empty": "—"
+    },
+    "aggregation": {
+      "band_with_bw": "{{band}} ({{bandwidth}} MHz)",
+      "band_only": "{{band}}",
+      "pci_label": "PCI"
+    },
+    "bands": {
+      "toggle_multi_band": "Active bands",
+      "toggle_single_band": "Single carrier",
+      "section": "Bands",
+      "count_one": "{{count}} active",
+      "count_other": "{{count}} active",
+      "bandwidth": "{{bandwidth}} MHz",
+      "rsrp_unit": "{{rsrp}} dBm",
+      "section_count_one": "Carrier",
+      "section_count_other": "Carriers"
+    },
+    "metrics": {
+      "rsrp": "RSRP",
+      "rsrq": "RSRQ",
+      "sinr": "SINR",
+      "rsrp_value": "{{rsrp}} dBm",
+      "rsrq_value": "{{rsrq}} dB",
+      "sinr_value": "{{sinr}} dB",
+      "toggle_aria": "Switch band signal metric"
+    },
+    "signal": {
+      "dual": "{{rsrp}} dBm · {{sinr}} dB SINR",
+      "rsrp_only": "{{rsrp}} dBm",
+      "sinr_only": "{{sinr}} dB SINR",
+      "none": "—"
+    },
+    "quality": {
+      "overall_label": "Overall",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "poor": "Poor",
+      "none": "No signal",
+      "bad": "Very weak"
+    },
+    "connection": {
+      "connected": "Connected",
+      "searching": "Searching",
+      "limited": "Limited",
+      "inactive": "Inactive",
+      "error": "Error",
+      "disconnected": "Disconnected",
+      "unknown": "Unknown",
+      "modem_unreachable": "Offline"
+    },
+    "stale_indicator": "Data may be outdated",
+    "redirecting_setup": "Redirecting to first-time setup…",
+    "loading_status": "Loading modem status…",
+    "empty": {
+      "title": "Modem status unavailable",
+      "subtitle": "The modem has not reported in for a minute. It may be rebooting — the reading resumes on its own.",
+      "fetch_error": "Couldn't reach the device.",
+      "retry": "Try again"
+    },
+    "uptime": {
+      "days": "{{days}}d {{hours}}h",
+      "hours": "{{hours}}h {{minutes}}m",
+      "minutes": "{{minutes}}m"
+    },
+    "copyright": "© {{year}} QManager",
+    "stale": {
+      "banner": "Readings are <age>{{age}}</age> old. The device may be busy."
+    },
+    "footer": {
+      "updated_ago": "updated {{age}} ago",
+      "retrying": "retrying every {{seconds}}s",
+      "signin_works": "signing in still works"
+    },
+    "loading_chip": "Reading",
+    "unreachable": {
+      "banner": "The modem isn't responding right now. It may be busy or restarting."
+    }
+  },
+  "networkEvents": {
+    "page": {
+      "title": "Network Events",
+      "description": "Changes to the radio and the connection, newest first."
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "updates_aria": "Updates",
+      "live": "Live",
+      "paused": "Paused"
+    },
+    "now": {
+      "title": "Right Now",
+      "description": "What is still standing, and what keeps repeating.",
+      "ongoing_one": "{{count}} problem ongoing",
+      "ongoing_other": "{{count}} problems ongoing",
+      "oldest_started": "The oldest started {{age}}",
+      "clear": "Nothing ongoing",
+      "last_problem": "Last problem {{age}}",
+      "no_problems": "No problems recorded",
+      "no_events": "No events recorded yet",
+      "repeating": "Repeating",
+      "repeat_meta_one": "{{count}} change in {{span}}",
+      "repeat_meta_other": "{{count}} changes in {{span}}",
+      "nothing_repeating": "Nothing is repeating."
+    },
+    "activity": {
+      "title": "Activity",
+      "window_last_one": "Last {{count}} event, over {{span}}.",
+      "window_last_other": "Last {{count}} events, over {{span}}.",
+      "window_all_one": "{{count}} event since the modem started.",
+      "window_all_other": "All {{count}} events since the modem started.",
+      "window_empty": "No events since the modem started.",
+      "chart_aria": "Events over time",
+      "column_one": "{{from}} to {{to}}: {{count}} event",
+      "column_other": "{{from}} to {{to}}: {{count}} events",
+      "now": "Now",
+      "problems": "Problems",
+      "recoveries": "Recoveries",
+      "routine": "Routine"
+    },
+    "span": {
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "hours_one": "{{count}} hour",
+      "hours_other": "{{count}} hours"
+    },
+    "log": {
+      "title": "Event Log",
+      "description_loading": "Loading events.",
+      "description_unreadable": "No counts to show while the log cannot be read.",
+      "description": "Repeats are grouped; open one to see each event.",
+      "scroll_aria": "Events"
+    },
+    "run": {
+      "title": "{{label}} kept changing",
+      "meta_one": "{{count}} event in {{span}}",
+      "meta_other": "{{count}} events in {{span}}",
+      "show": "Show {{count}}",
+      "hide": "Hide"
+    },
+    "filters": {
+      "all": "All",
+      "radio": "Radio",
+      "connectivity": "Connectivity",
+      "mode": "Mode"
+    },
+    "sort": {
+      "label": "Sort by",
+      "newest": "Newest first",
+      "oldest": "Oldest first"
+    },
+    "row": {
+      "ongoing": "Ongoing"
+    },
+    "day": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "empty": {
+      "title": "No events yet",
+      "description": "The log starts over when the modem restarts. Events appear here as they happen.",
+      "filtered_title": "Nothing in this view",
+      "filtered_description": "No events of this kind are in the log right now."
+    },
+    "error": {
+      "title": "Could not load events",
+      "description": "{{message}}",
+      "retry": "Try again"
+    },
+    "notice": {
+      "stale": "Showing the last events we managed to read. {{message}}"
+    }
+  },
+  "aboutDevice": {
+    "page": {
+      "title": "About Device",
+      "description": "Device identity, addresses, and the software running on it."
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "refreshing": "Refreshing…",
+      "retry": "Retry"
+    },
+    "band": {
+      "label": "Identity",
+      "not_responding": "Not responding",
+      "unreachable": {
+        "title": "The device did not answer",
+        "detail": "{{reason}} from {{endpoint}}. Nothing below was read.",
+        "no_reason": "No response"
+      }
+    },
+    "tiles": {
+      "model": {
+        "eyebrow": "Model"
+      },
+      "firmware": {
+        "eyebrow": "Modem firmware",
+        "caption": "Built {{date}}"
+      },
+      "host": {
+        "eyebrow": "Host system",
+        "caption": "Linux {{kernel}}"
+      },
+      "internet": {
+        "eyebrow": "Internet",
+        "reachable": "Reachable",
+        "not_reachable": "Not reachable",
+        "not_measured": "Not measured",
+        "caption_reachable": "{{family}} answering",
+        "caption_reachable_latency": "{{family}} answering ({{latency}} ms)",
+        "caption_reachable_plain": "Ping probe answering",
+        "caption_unreachable": "No answer from the ping probe",
+        "caption_unknown": "Nothing is probing"
+      }
+    },
+    "modem": {
+      "title": "Modem",
+      "description": "Hardware identity and the 3GPP release each radio implements."
+    },
+    "addresses": {
+      "title": "Addresses",
+      "description": "Where this device sits on the LAN and on the carrier network.",
+      "provenance": "Public addresses are resolved through {{probe}}. An em dash means the device reports none."
+    },
+    "groups": {
+      "three_gpp": "3GPP release",
+      "local": "Local",
+      "wwan": "WWAN",
+      "public": "Public"
+    },
+    "rows": {
+      "manufacturer": "Manufacturer",
+      "model": "Model",
+      "firmware": "Firmware",
+      "openwrt_version": "OpenWrt version",
+      "build_date": "Build date",
+      "imei": "IMEI",
+      "lte": "LTE",
+      "nr5g": "NR5G",
+      "device_ip": "Device IP",
+      "lan_subnet": "LAN subnet",
+      "ipv4": "IPv4",
+      "ipv6": "IPv6"
+    },
+    "empty": {
+      "title": "Nothing read",
+      "modem": "These figures come from the device, and the device did not answer.",
+      "addresses": "Addresses are read from the same request."
+    },
+    "qmanager": {
+      "title": "About QManager",
+      "note": "Hey there! Rus here. QManager is the latest iteration of QuecManager, built with a newer and more reliable approach compared to its predecessor — while still combining technical settings for advanced users with a simplified UI for those just getting started. Special thanks to iamromulan, clndwhr, and Wutang Clan!",
+      "copyright": "© {{year}} QManager. All rights reserved.",
+      "repository": "GitHub repository",
+      "release_notes": "Release notes",
+      "credits": "Credits",
+      "support": "Support the project"
+    },
+    "credits": {
+      "title": "Credits",
+      "description": "QManager leans on a few outside services and open data. Thank you to everyone behind them.",
+      "roles": {
+        "apn": "Carrier APN presets",
+        "logos": "Brand logos for SMS senders and monitored sites",
+        "icons": "Website icons when no logo is found"
+      }
+    },
+    "errors": {
+      "fetch_failed": "Could not read the device information"
+    }
+  },
+  "support": {
+    "page": {
+      "title": "Support",
+      "description": "Report a bug, ask the community, or reach the maintainer."
+    },
+    "help": {
+      "title": "Get Help",
+      "description": "Four routes, in the order most people need them.",
+      "bug": {
+        "label": "Report a bug"
+      },
+      "community": {
+        "label": "Ask the community"
+      },
+      "email": {
+        "label": "Email the maintainer"
+      },
+      "release_notes": {
+        "label": "Read the release notes",
+        "dest": "Installed: {{version}}"
+      }
+    },
+    "community": {
+      "title": "Community",
+      "description": "Users share configurations, troubleshoot together, and talk cellular networking. Scan or open the invite.",
+      "open_invite": "Open the invite",
+      "qr_alt": "QR code for the QManager Discord server invite"
+    },
+    "opens_new_tab": "opens in a new tab"
+  },
+  "donate": {
+    "dialog": {
+      "title": "Support the project",
+      "description": "Keep QManager going.",
+      "body": "Hi, I’m Rus. QManager is a side project I maintain for free. If you’ve found it useful, a small tip means a lot and keeps me going.",
+      "thanks": "Thanks for being awesome. 💙"
+    },
+    "links": {
+      "group_label": "Donation channels",
+      "opens_new_tab": "opens in a new tab"
+    },
+    "band": {
+      "title": "Support the Project",
+      "body": "QManager is a side project, maintained for free. If it has been useful on your setup, a tip keeps it going — and there is no paywall coming either way."
+    }
+  },
+  "tailscale": {
+    "actions": {
+      "cancel": "Cancel",
+      "retry": "Try again"
+    },
+    "page": {
+      "title": "Tailscale VPN",
+      "description": "Your mesh VPN: what this modem is doing on the tailnet, and who else is on it.",
+      "refresh": "Refresh",
+      "stale": "Showing the last status we managed to read. {{message}}",
+      "unreadableTitle": "Could not read Tailscale status",
+      "unreadable": "The device did not answer."
+    },
+    "status": {
+      "aria": "Tailscale status",
+      "running": "Connected",
+      "needsLogin": "Needs login",
+      "disconnected": "Disconnected",
+      "serviceStopped": "Service stopped",
+      "notInstalled": "Not installed",
+      "unknown": "Unknown"
+    },
+    "band": {
+      "dash": "—",
+      "connectionEyebrow": "Connection",
+      "version": "Version {{version}}",
+      "versionUnknown": "Version unknown",
+      "deviceEyebrow": "This device",
+      "deviceUnknown": "No tailnet address yet",
+      "tailnetEyebrow": "Tailnet",
+      "magicDnsOn": "MagicDNS is on",
+      "magicDnsOff": "MagicDNS is off",
+      "peersEyebrow": "Peers online",
+      "exitNodes_one": "{{count}} exit node",
+      "exitNodes_other": "{{count}} exit nodes",
+      "noExitNode": "No exit node"
+    },
+    "connection": {
+      "title": "Connection",
+      "description": "Whether this modem joins the tailnet, and how it behaves once it does.",
+      "version": "v{{version}}",
+      "connect": "Connect",
+      "connecting": "Connecting…",
+      "disconnect": "Disconnect",
+      "disconnecting": "Disconnecting…",
+      "startService": "Start service",
+      "starting": "Starting…",
+      "stopService": "Stop service",
+      "stopping": "Stopping…",
+      "logout": "Log out",
+      "logoutDialogTitle": "Log out of Tailscale?",
+      "logoutDialogDescription": "This removes the modem from your tailnet. You will need to sign in again before it can reconnect.",
+      "authTitle": "Sign in to finish connecting",
+      "authDescription": "Open the login page and authenticate with your Tailscale account. The modem joins the tailnet as soon as you approve it.",
+      "openLogin": "Open login page",
+      "authWaiting": "Waiting for you to sign in",
+      "bootTitle": "Start on boot",
+      "bootDescription": "Bring Tailscale up automatically after the modem restarts.",
+      "on": "On",
+      "off": "Off",
+      "exitNodeTitle": "Advertise as exit node",
+      "exitNodeDescription": "Lets other devices route their internet traffic through this modem. You approve it in the Tailscale admin console.",
+      "exitNodeLocked": "Connect to Tailscale to change this.",
+      "sshTitle": "Tailscale SSH",
+      "sshDescription": "Let tailnet members open an SSH session to this modem, subject to your admin-panel ACLs.",
+      "sshLocked": "Connect to Tailscale to change this.",
+      "sshDialogTitle": "Turn on Tailscale SSH?",
+      "sshDialogDescription": "Tailnet members will be able to SSH into this modem based on your Tailscale admin-panel ACLs. Review that policy first, so only the people you intend can reach the device.",
+      "sshConfirm": "Turn on SSH",
+      "updateAvailable": "Update available ({{version}})",
+      "update": "Update",
+      "updating": "Updating…",
+      "updateDialogTitle": "Update Tailscale to {{version}}?",
+      "updateDialogDescription": "The tunnel reconnects for a few seconds while the new version starts.",
+      "updateLogTitle": "Update Log",
+      "communityBuild": "Community build",
+      "netFixesTitle": "Network fixes",
+      "netFixesDescription": "Lets your tailnet devices reach this modem and its LAN."
+    },
+    "device": {
+      "title": "This Device",
+      "description": "How the modem identifies itself on the tailnet.",
+      "hostname": "Hostname",
+      "ipv4": "IPv4",
+      "ipv6": "IPv6",
+      "dnsName": "DNS name",
+      "tailnet": "Tailnet",
+      "magicDns": "MagicDNS",
+      "relay": "DERP relay",
+      "version": "Version",
+      "emptyTitle": "Not on the tailnet",
+      "emptyDescription": "Connect Tailscale and this modem's address, DNS name and relay appear here."
+    },
+    "peers": {
+      "title": "Network Peers",
+      "description": "The other devices on your tailnet, and whether they are reachable.",
+      "dash": "—",
+      "unnamed": "Unnamed device",
+      "exitNode": "Exit node",
+      "colDevice": "Device",
+      "colAddress": "Address",
+      "colOs": "OS",
+      "colStatus": "Status",
+      "colLastSeen": "Last seen",
+      "online": "Online",
+      "offline": "Offline",
+      "seenNow": "Now",
+      "seenUnknown": "Unknown",
+      "seenJustNow": "Just now",
+      "seenMinutes": "{{n}} min ago",
+      "seenHours": "{{n}} h ago",
+      "seenDays": "{{n}} d ago",
+      "countOnline": "{{online}} of {{total}} online",
+      "countExitNodes_one": "{{count}} exit node",
+      "countExitNodes_other": "{{count}} exit nodes",
+      "errorTitle": "Could not load peers",
+      "emptyTitle": "No other devices",
+      "emptyDescription": "Nothing else has joined this tailnet yet. Add a device from the Tailscale admin console and it shows up here.",
+      "offlineTitle": "Not connected",
+      "offlineDescription": "Connect Tailscale to see the other devices on your tailnet."
+    },
+    "install": {
+      "title": "Tailscale",
+      "description": "Installs the official build from Tailscale, a mesh VPN for reaching this modem from anywhere without opening a port.",
+      "conditionTitle": "Tailscale is not installed",
+      "conditionDescription": "Installing downloads the Tailscale packages over the same cellular link this session is running on, so it uses your data allowance and the connection will be slower while it runs.",
+      "install": "Install Tailscale",
+      "installing": "Installing…",
+      "checkAgain": "Check again",
+      "done": "Tailscale installed.",
+      "failed": "The install did not finish.",
+      "logTitle": "Install Log",
+      "logWaiting": "Waiting for output…"
+    },
+    "danger": {
+      "uninstall": "Uninstall",
+      "removing": "Removing…",
+      "dialogTitle": "Uninstall Tailscale?",
+      "dialogDescription": "This removes the Tailscale packages, its firewall rules, and all connection state from this modem. A reboot afterwards clears anything left behind.",
+      "rebootTitle": "Reboot recommended",
+      "rebootDescription": "Tailscale has been removed. Rebooting clears the leftover firewall rules and other artifacts. Reboot now?",
+      "rebootLater": "Reboot later",
+      "rebootNow": "Reboot now",
+      "rebooting": "Rebooting…"
+    },
+    "toast": {
+      "bootEnabled": "Tailscale will start on boot",
+      "bootDisabled": "Tailscale will not start on boot",
+      "bootFailed": "Could not change the boot setting",
+      "connected": "Connecting to Tailscale",
+      "connectFailed": "Could not start the connection",
+      "disconnected": "Tailscale disconnected",
+      "disconnectFailed": "Could not disconnect",
+      "loggedOut": "Logged out of Tailscale",
+      "logoutFailed": "Could not log out",
+      "serviceStarted": "Tailscale service started",
+      "serviceStartFailed": "Could not start the Tailscale service",
+      "serviceStopped": "Tailscale service stopped",
+      "serviceStopFailed": "Could not stop the Tailscale service",
+      "uninstalled": "Tailscale uninstalled",
+      "uninstallFailed": "Could not uninstall Tailscale",
+      "exitNodeEnabled": "Advertising as an exit node",
+      "exitNodeDisabled": "No longer advertising as an exit node",
+      "exitNodeFailed": "Could not change exit node advertising",
+      "sshEnabled": "Tailscale SSH is on",
+      "sshEnableFailed": "Could not turn on Tailscale SSH",
+      "sshDisabled": "Tailscale SSH is off",
+      "sshDisableFailed": "Could not turn off Tailscale SSH",
+      "installed": "Tailscale installed",
+      "installFailed": "The Tailscale install did not finish",
+      "updated": "Tailscale updated to {{version}}",
+      "updateFailed": "Tailscale could not be updated",
+      "netFixesOn": "Network fixes are on",
+      "netFixesOff": "Network fixes are off",
+      "netFixesFailed": "Could not change network fixes"
+    },
+    "mutex": {
+      "title": "Another VPN is installed",
+      "description": "Only one VPN can be installed at a time. Uninstall {{other_vpn}} from the <link>NetBird page</link> first."
+    },
+    "legacy": {
+      "title": "Older community build",
+      "description": "This modem runs the older community build of Tailscale. Uninstall it and install again to switch to the official build."
+    }
+  },
+  "pending_reboot": {
+    "title": "Reboot to finish your changes",
+    "reboot_now": "Reboot now",
+    "rebooting": "Rebooting…",
+    "dismiss": "Dismiss",
+    "reboot_failed_toast": "Couldn't start the reboot. Try again.",
+    "description": {
+      "config_restore": "An IMEI change or SIM profile from the restore takes effect after the next reboot.",
+      "verizon_revert": "Reverting the Verizon profile finishes after the next reboot.",
+      "imei": "The new IMEI takes effect after the next reboot.",
+      "netbird": "NetBird is removed. A reboot clears its leftover firewall rules.",
+      "mbn": "The new carrier profile takes effect after the modem restarts.",
+      "ipa_offload": "The Hardware Offload change takes effect after the next reboot.",
+      "package_install": "QManager was updated. A reboot finishes the update.",
+      "default": "Some changes take effect after the next reboot."
+    },
+    "dismiss_dialog": {
+      "title": "Dismiss the reboot reminder?",
+      "description": "Changes that need a reboot stay inactive until the modem restarts. Dismiss only if you have already rebooted.",
+      "keep": "Keep reminder",
+      "confirm": "Dismiss"
+    }
+  },
+  "reboot_page": {
+    "phase": {
+      "shutting_down": "Shutting down…",
+      "restarting": "Restarting services…",
+      "almost_ready": "Almost ready…",
+      "overtime": "Taking longer than usual…"
+    },
+    "subtitle": {
+      "normal": "Your device will be back online shortly",
+      "overtime": "The device is still restarting"
+    },
+    "timer_aria_one": "{{count}} second remaining",
+    "timer_aria_other": "{{count}} seconds remaining",
+    "timer_overtime_aria": "Reconnecting, taking longer than usual",
+    "seconds_unit": "sec",
+    "escape": "Device may need manual attention. Go to login"
+  },
+  "change_password": {
+    "title": "Change Password",
+    "description": "You will be logged out after changing your password.",
+    "current_label": "Current Password",
+    "new_label": "New Password",
+    "confirm_label": "Confirm New Password",
+    "match": "Passwords match",
+    "mismatch": "Passwords don’t match",
+    "error_weak": "New password must be at least 5 characters.",
+    "error_weak_strong": "New password must be at least 5 characters and include uppercase, lowercase, and a number.",
+    "error_mismatch": "New passwords do not match.",
+    "failed_toast": "Couldn't change the password. Try again.",
+    "cancel": "Cancel",
+    "submit": "Change Password",
+    "submitting": "Changing…"
+  },
+  "password_rules": {
+    "requirements_label": "Password requirements",
+    "rule": {
+      "length": "At least 5 characters",
+      "uppercase": "Uppercase letter",
+      "lowercase": "Lowercase letter",
+      "number": "Number"
+    },
+    "met": "(met)",
+    "not_met": "(not met)",
+    "strong_label": "Use strong password",
+    "strong_hint_label": "About strong passwords",
+    "strong_hint": "Requires uppercase, lowercase, and numeric characters."
+  },
+  "not_found": {
+    "scene_label": "A campfire crackling under a starry night sky",
+    "title": "You seem to be lost, adventurer",
+    "description": "Want to go back to making your connections better?",
+    "home": "Back to Dashboard",
+    "footer": "QManager"
+  }
+}

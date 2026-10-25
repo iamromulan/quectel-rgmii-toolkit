@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none" role="img" aria-labelledby="qm-mark-title">
+  <title id="qm-mark-title">QManager</title>
+
+  <!--
+    QManager mark - "Tonal Q"
+    Material 3 construction: 2 shapes, 2 tones, 1 hue. No gradient, no shadow, no filter,
+    no media query. A static file that renders identically everywhere.
+
+    GEOMETRY  48 x 48 grid, centred on (24, 24). Bounds are exactly the ring, 2 -> 46,
+              so the mark is optically centred in any square slot without nudging.
+
+      ring    centreline r 18.5, weight 7   (outer 22 / inner 15)
+      tail    45deg ray from dead centre to r 23.5, weight 7, round cap
+              (cap tip reaches r 27, i.e. 5 past the ring's outer edge)
+      notch   the tail's own path stroked at 14 = weight + 2x3.5, masked out of the
+              ring, leaving a uniform 3.5 channel - half the stroke weight - on both
+              sides. This is the Material Symbols intersection rule.
+
+    WHY THE RAY STARTS AT THE CENTRE, NOT INSIDE THE COUNTER
+      A ring plus a detached 45deg round-capped bar is the universal magnifying-glass
+      glyph, and it read as "search" at every size under 48px. A magnifier's handle
+      never reaches the lens centre; a Q's tail does. Anchoring the ray at the centre
+      is what makes this a letterform instead of a search icon. It also carries the
+      product idea: the signal originates at the device, and QManager runs on the
+      device it manages.
+
+    COLOUR    Two tones of one blue, tonal separation 1.82:1.
+
+                ring  oklch(0.623 0.214 259.815)   DESIGN.md: mark-ring
+                tail  oklch(0.488 0.243 264.376)   DESIGN.md: primary-light, "Signal Blue"
+
+              These are the SOURCE PAIR for the whole design system, not consumers of it.
+              DESIGN.md > Colors > Source color derives the palette from this file: the
+              tail is light-mode `primary` used literally, and the ring's hue drives the
+              dark-mode `primary-container` and the active-nav tone. Changing either tone
+              here is a system-wide change, not an asset tweak.
+
+              Token names appear WITHOUT their CSS leading dashes on purpose: a literal
+              double hyphen is illegal inside an XML comment, and it makes this file fail
+              to render when it is loaded as an image element (inline HTML parsing is
+              lenient enough to hide the breakage, so it only shows up once wired).
+
+              Deliberately NOT theme-responsive. prefers-color-scheme resolves against the
+              OS when this file is loaded as an image element, not against next-themes, so
+              a manual theme override would have mismatched. Measured instead, against the
+              surfaces in DESIGN.md (3:1 is the WCAG graphical-object floor; 1.4.11 exempts
+              brand marks from it, so these are information, not a gate):
+
+                                              ring   tail
+                surface-light                 3.76   6.83
+                background-light              3.52   6.39
+                surface-container-light       3.27   5.93
+                surface-container-high-light  2.95   5.35
+                background-dark               5.21   2.87
+                surface-dark                  4.65   2.56
+                surface-container-dark        4.10   2.26
+                surface-container-high-dark   3.48   1.92
+
+              The ring carries the silhouette and holds up across the range. The tail goes
+              quiet on dark containers, lowest on surface-container-high-dark, where the
+              ring is what keeps the mark legible. If the mark is ever placed on that
+              surface at a small size, check it there first.
+
+              Hex presentation attributes are the fallback for engines without oklch()
+              (pre-Chrome 111 / Safari 15.4 / Firefox 113). The inline style wins wherever
+              oklch parses; where it does not, the declaration is dropped and the hex holds.
+  -->
+
+  <defs>
+    <!-- Luminance mask: white keeps, black cuts. These are alpha values, not colour tokens. -->
+    <mask id="qm-notch" maskUnits="userSpaceOnUse" x="0" y="0" width="48" height="48">
+      <rect width="48" height="48" fill="white" />
+      <path d="M24 24 L40.617 40.617" stroke="black" stroke-width="14" stroke-linecap="round" />
+    </mask>
+  </defs>
+
+  <!-- Ring: the signal field -->
+  <circle cx="24" cy="24" r="18.5" stroke="#2b7fff" style="stroke:oklch(0.623 0.214 259.815)"
+          stroke-width="7" mask="url(#qm-notch)" />
+
+  <!-- Tail: the Q, and the ray leaving the device at the centre -->
+  <path d="M24 24 L40.617 40.617" stroke="#1447e6" style="stroke:oklch(0.488 0.243 264.376)"
+        stroke-width="7" stroke-linecap="round" />
+</svg>

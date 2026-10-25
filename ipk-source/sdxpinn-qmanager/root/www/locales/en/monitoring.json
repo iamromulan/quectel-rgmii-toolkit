@@ -1,0 +1,822 @@
+{
+  "shared": {
+    "os_linux": "Linux",
+    "os_macos": "macOS",
+    "os_windows": "Windows",
+    "os_ios": "iOS",
+    "os_android": "Android",
+    "os_freebsd": "FreeBSD",
+    "os_unknown": "—",
+    "unknown": "Unknown"
+  },
+  "network_events": {
+    "title": "Network Events",
+    "description": "Browse recent connection, signal, and configuration events.",
+    "card_title": "Network Events",
+    "card_description": "Recent network events captured by the device poller.",
+    "tab_all": "All",
+    "tab_band_changes": "Band Changes",
+    "tab_network_mode": "Network Mode",
+    "tab_data_connection": "Data Connection",
+    "sort_label": "Sort by",
+    "sort_newest": "Newest first",
+    "sort_oldest": "Oldest first",
+    "sort_type": "Event type",
+    "limit_label": "Max Events",
+    "limit_all": "All Events",
+    "limit_10": "10 Events",
+    "limit_25": "25 Events",
+    "empty_all": "No network events found.",
+    "empty_band_changes": "No band change events found.",
+    "empty_network_mode": "No network mode events found.",
+    "empty_data_connection": "No data connection events found.",
+    "auto_refresh_paused": "Auto-refresh paused — displaying events as of {{time}}.",
+    "failed_to_load": "Failed to load network events: {{error}}",
+    "auto_refresh_label": "Auto-refresh",
+    "refresh_button": "Refresh",
+    "table_header_event_type": "Event Type",
+    "table_header_message": "Message",
+    "table_header_time": "Date & Time",
+    "showing_count_one": "Showing {{shown}} of {{total}} event",
+    "showing_count_other": "Showing {{shown}} of {{total}} events",
+    "last_updated": "Last updated: {{time}}",
+    "aria_refresh": "Refresh network events"
+  },
+  "alerts": {
+    "coverage": {
+      "title": "Coverage",
+      "description": "What reaches you, as saved.",
+      "loading": "Loading coverage",
+      "event": {
+        "connection_lost": {
+          "name": "Connection lost"
+        },
+        "connection_restored": {
+          "name": "Connection restored"
+        },
+        "reboot": {
+          "name": "Modem rebooted"
+        }
+      },
+      "reason": {
+        "email_needs_internet": "Needs the internet",
+        "not_supported": "This channel cannot send this event"
+      },
+      "staleNotice": "Showing the settings we last read from the device.",
+      "errorTitle": "Could not load coverage",
+      "errorDesc": "The device did not answer, so we cannot show what will fire.",
+      "errorRetry": "Try again",
+      "emptyTitle": "Nothing can be routed",
+      "emptyDesc": "The device did not report any alert capabilities, so there is nothing to switch on here.",
+      "verdict": {
+        "all": "All covered",
+        "outage": "Outage not covered",
+        "partial": "{{covered}} of {{total}} covered",
+        "none": "Nothing will be sent"
+      },
+      "needsSetup": "{{channel}} needs setup",
+      "notSent": "Not sent"
+    },
+    "channels": {
+      "title": "Channels",
+      "description": "Set up how each one reaches you.",
+      "rail_label": "Alert channel",
+      "loading": "Loading alert channels",
+      "secret_saved": "Saved",
+      "name": {
+        "sms": "SMS",
+        "email": "Email"
+      },
+      "status": {
+        "ready": "Ready",
+        "incomplete": "Needs setup",
+        "unused": "No events routed",
+        "off": "Off",
+        "needs_fixing": "Has unsaved errors"
+      },
+      "sms": {
+        "phone_label": "Recipient phone",
+        "phone_hint": "Include the country code with a leading plus.",
+        "phone_error": "Enter a number with its country code, like +14155551234.",
+        "phone_missing": "A recipient phone number is required.",
+        "test": "Send a test SMS",
+        "title": "SMS Alerts",
+        "sub": "Arrives even during an outage."
+      },
+      "email": {
+        "sender_label": "Sender email",
+        "sender_hint": "The Gmail account that sends the alert.",
+        "sender_missing": "A sender address is required.",
+        "recipient_label": "Recipient email",
+        "recipient_hint": "Where alerts are delivered.",
+        "recipient_missing": "A recipient address is required.",
+        "address_error": "Enter a valid email address.",
+        "password_label": "Gmail app password",
+        "password_hint": "Generate an app password for this device in your Google Account.",
+        "password_link": "Open Google app passwords",
+        "password_placeholder": "xxxx xxxx xxxx xxxx",
+        "password_keep": "Leave blank to keep the saved password",
+        "password_missing": "An app password is required to send email.",
+        "password_show": "Show app password",
+        "password_hide": "Hide app password",
+        "mailer_missing": "The msmtp mailer is not installed, so email cannot be sent yet. SMS still saves.",
+        "mailer_install": "Install msmtp",
+        "mailer_installing": "Installing",
+        "mailer_recheck": "Check again",
+        "test": "Send a test email",
+        "title": "Email Alerts",
+        "sub": "Sent through Gmail once the link is back."
+      },
+      "threshold_label": "Wait before alerting",
+      "threshold_hint": "Shorter outages are logged, not sent.",
+      "threshold_error": "Enter a whole number of minutes from 1 to 60.",
+      "threshold_unit": "min",
+      "test": {
+        "sending": "Sending",
+        "succeeded": "Test {{channel}} sent",
+        "failed": "The test could not be sent.",
+        "blocked_off": "Turn this channel on, then save, to send a test.",
+        "blocked_incomplete": "Finish setting this channel up, then save, to send a test.",
+        "blocked_mailer": "Install the msmtp mailer to send a test email.",
+        "blocked_dirty": "Save your changes first. A test runs against the saved settings.",
+        "blocked_busy": "Another test is still running.",
+        "errors": {
+          "send_failed_sms": "The test SMS was not sent, so check the signal, SIM credit and number.",
+          "send_failed_email": "The test email was not sent, so check the addresses, app password and connection."
+        }
+      },
+      "save": {
+        "clean": "All changes saved",
+        "blocked": "Fix the highlighted fields",
+        "blocked_in": "Fix the errors in {{channels}}",
+        "discard": "Discard",
+        "action": "Save settings",
+        "succeeded": "Alert settings saved",
+        "failed": "The settings could not be saved.",
+        "errors": {}
+      },
+      "empty": {
+        "title": "No channels reported",
+        "description": "This device did not return any alert channels, so there is nothing to configure yet."
+      },
+      "sends_for": "Sends for",
+      "error": {
+        "title": "Channels could not be loaded",
+        "description": "The device did not answer. Try again in a moment.",
+        "retry": "Try again"
+      }
+    },
+    "activity": {
+      "title": "Activity",
+      "description": "Alerts sent and reboots, newest first.",
+      "event": {
+        "reboot": "Modem rebooted"
+      },
+      "cause": {
+        "unexpected": "Unexpected",
+        "watchdog": "Watchdog",
+        "planned": "Planned"
+      },
+      "channel": {
+        "sms": "SMS",
+        "email": "Email"
+      },
+      "sr": {
+        "sent": "Alert sent",
+        "failed": "Alert failed",
+        "reboot": "Reboot recorded"
+      },
+      "day": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "undated": "No recorded time"
+      },
+      "time": {
+        "just_now": "Just now",
+        "unknown": "Unknown",
+        "minutes_one": "{{count}}m ago",
+        "minutes_other": "{{count}}m ago",
+        "hours_one": "{{count}}h ago",
+        "hours_other": "{{count}}h ago",
+        "days_one": "{{count}}d ago",
+        "days_other": "{{count}}d ago"
+      },
+      "empty": {
+        "title": "Nothing has happened yet",
+        "description": "Alerts appear here once a channel sends one, and reboots are recorded automatically with their cause."
+      },
+      "error": {
+        "title": "Could not load activity",
+        "description": "The device did not answer. Try again in a moment.",
+        "retry": "Try again"
+      },
+      "notice": {
+        "stale": "Showing the last activity we managed to read."
+      },
+      "transcript_label": "Alert and reboot history",
+      "trigger": {
+        "test": "Test alert"
+      }
+    },
+    "page": {
+      "title": "Alerts",
+      "description": "Who gets told when the connection drops, comes back, or the modem restarts.",
+      "refresh": "Refresh",
+      "unreadable": "The device did not answer."
+    }
+  },
+  "watchdog": {
+    "page": {
+      "title": "Watchdog",
+      "description": "Watches the internet link and climbs a recovery ladder when it goes down.",
+      "refresh": "Refresh",
+      "unreadableTitle": "Could not read the watchdog settings",
+      "unreadable": "The modem did not answer.",
+      "retry": "Try again"
+    },
+    "band": {
+      "checks": "Failed checks",
+      "recoveries": "Recoveries",
+      "reboots": "Reboots",
+      "absent": "Not reported",
+      "checksCaption": "Before recovery starts",
+      "cooldownCaption": "Rechecking in {{seconds}}s",
+      "recoveriesLast": "Step {{tier}}, {{ago}}",
+      "recoveriesNone": "None yet",
+      "rebootsCaption": "In the last hour",
+      "rebootsOff": "Reboot step is off",
+      "aria": "Watchdog status",
+      "cooldownStep": "Step {{tier}} ran. Rechecking in {{seconds}}s."
+    },
+    "phase": {
+      "off": {
+        "label": "Off",
+        "blurb": "The watchdog is not watching the connection."
+      },
+      "unknown": {
+        "label": "Unknown",
+        "blurb": "The modem is not answering, so we cannot say what the watchdog is doing."
+      },
+      "starting": {
+        "label": "Starting",
+        "blurb": "The service was just enabled and has not reported yet."
+      },
+      "not_running": {
+        "label": "Not reporting",
+        "blurb": "Enabled, but the watchdog has stopped reporting."
+      },
+      "auto_disabled": {
+        "label": "Turned itself off",
+        "blurb": "It reached the reboot limit. Turn it back on once the link is stable."
+      },
+      "monitor": {
+        "label": "Monitoring",
+        "blurb": "The connection is healthy. Watching for outages."
+      },
+      "suspect": {
+        "label": "Checking",
+        "blurb": "A connectivity check just failed. Confirming before acting."
+      },
+      "recovery": {
+        "label": "Recovering",
+        "blurb": "Working through the recovery ladder to restore the connection."
+      },
+      "cooldown": {
+        "label": "Cooling down",
+        "blurb": "Waiting for the last recovery step to settle before rechecking."
+      },
+      "locked": {
+        "label": "Paused",
+        "blurb": "Maintenance is in progress, so the watchdog is holding off."
+      },
+      "radio_off": {
+        "blurb": "The radio is off, so the watchdog is holding off."
+      },
+      "disabled": {
+        "label": "Disabled",
+        "blurb": "The service is running but switched off."
+      },
+      "ssr_hold": {
+        "label": "Holding",
+        "blurb": "The baseband is restarting on its own. Recovery waits for it to come back."
+      }
+    },
+    "master": {
+      "aria": "Enable the connection watchdog"
+    },
+    "ladder": {
+      "title": "Recovery Ladder",
+      "description": "Tried in order, gentlest first.",
+      "aria": "Recovery ladder",
+      "status": {
+        "blocked": "Needs a slot",
+        "done": "Tried",
+        "running": "Running now"
+      },
+      "tier1": {
+        "name": "Re-register to the network",
+        "consequence": "The link drops for a few seconds."
+      },
+      "tier2": {
+        "name": "Restart the radio",
+        "consequence": "Skipped while a tower lock is active."
+      },
+      "tier3": {
+        "name": "Switch to the backup SIM",
+        "consequence": "Rides on the backup until you revert.",
+        "slotLabel": "Backup SIM slot",
+        "slot": "Slot {{slot}}"
+      },
+      "tier4": {
+        "name": "Reboot the device",
+        "consequence": "Offline for about a minute.",
+        "capLabel": "Maximum reboots per hour",
+        "capLead": "Up to",
+        "capUnit": "per hour"
+      },
+      "tierAria": "Arm this recovery step: {{name}}",
+      "failback": {
+        "name": "Switch back to the primary SIM",
+        "consequence": "Retries the primary; the link drops briefly each try.",
+        "lead": "Every",
+        "unit": "min",
+        "intervalLabel": "Primary SIM recheck interval"
+      }
+    },
+    "detection": {
+      "title": "Detection",
+      "description": "How quickly a quiet link counts as an outage.",
+      "probe": {
+        "label": "Probe every",
+        "short": "{{seconds}}s"
+      },
+      "threshold": {
+        "label": "Down after",
+        "unit": "failed probes"
+      },
+      "cooldown": {
+        "label": "Wait between steps",
+        "unit": "s"
+      },
+      "timeline": {
+        "eyebrow": "If the link drops",
+        "declaredStep": "Outage declared, step {{tier}}",
+        "declaredReboot": "Outage declared, step 4, reboot",
+        "step": "Step {{tier}}",
+        "reboot": "Step 4, reboot",
+        "about": "about {{time}}",
+        "seconds": "{{s}} s",
+        "minutes": "{{m}} min",
+        "minutesSeconds": "{{m}} min {{s}} s",
+        "off": "The watchdog is off, so nothing runs.",
+        "none": "No steps are armed, so nothing runs.",
+        "invalid": "Enter valid detection values to preview the timeline.",
+        "stopped": "Step 3 has no slot, so the ladder stops there."
+      },
+      "quality": {
+        "label": "Quality trigger",
+        "unit": "checks",
+        "caption": "Over {{ms}} ms or {{pct}}% loss",
+        "link": "Thresholds"
+      },
+      "ssr": {
+        "label": "Baseband restart hold",
+        "unit": "s",
+        "caption": "Lets a modem self-restart finish first"
+      }
+    },
+    "activity": {
+      "title": "Recovery Activity",
+      "description": "What the watchdog has done, newest first.",
+      "tier4Reboot": "The watchdog restarted the modem",
+      "type": {
+        "recovery": "Recovery",
+        "failover": "SIM failover"
+      },
+      "day": {
+        "today": "Today",
+        "yesterday": "Yesterday"
+      },
+      "time": {
+        "just_now": "Just now",
+        "minutes_one": "{{count}}m ago",
+        "minutes_other": "{{count}}m ago",
+        "hours_one": "{{count}}h ago",
+        "hours_other": "{{count}}h ago",
+        "days_one": "{{count}}d ago",
+        "days_other": "{{count}}d ago"
+      },
+      "empty": {
+        "title": "No recovery activity yet",
+        "description": "Recovery steps and SIM failovers appear here when the watchdog acts on an outage."
+      },
+      "error": {
+        "title": "Could not load recovery activity",
+        "retry": "Try again"
+      },
+      "allEvents": "All events"
+    },
+    "save": {
+      "discard": "Discard",
+      "action": "Save",
+      "clean": "All changes saved",
+      "blockedIn": "Check {{fields}} before saving",
+      "toastOk": "Watchdog settings saved",
+      "toastFail": "Could not save the watchdog settings",
+      "confirmReboot": {
+        "title": "Let the watchdog reboot the modem?",
+        "body": "Saving this lets the watchdog restart the modem on its own when every gentler step has failed. This page goes away for about a minute while the modem comes back.",
+        "cap": "Reboots are capped at {{cap}} per hour. At the cap the watchdog switches itself off until you turn it back on.",
+        "cancel": "Cancel",
+        "action": "Allow reboots"
+      }
+    },
+    "errors": {
+      "failThreshold": "Must be between 1 and 20",
+      "probeInterval": "Must be between 1 and 60 seconds",
+      "cooldown": "Must be between 10 and 300 seconds",
+      "maxReboots": "Must be between 1 and 10",
+      "backupSim": "Choose a backup SIM slot to enable failover",
+      "qualityConsecutive": "Must be between 1 and 60",
+      "ssrGrace": "Must be between 10 and 120 seconds",
+      "recheckInterval": "Must be between 5 and 1440 minutes"
+    },
+    "failover": {
+      "title": "Running on the backup SIM",
+      "body": "Switched to slot {{current}} {{since}}. The original SIM is in slot {{original}}.",
+      "recently": "recently",
+      "revert": "Revert to the original SIM",
+      "reverting": "Reverting…",
+      "confirmTitle": "Revert to the original SIM?",
+      "confirmBody": "This switches back to SIM slot {{original}}. Your internet will briefly disconnect while the modem reconnects.",
+      "cancel": "Cancel",
+      "confirm": "Revert SIM",
+      "requested": "SIM revert requested. The watchdog will process it shortly.",
+      "failed": "Could not request the SIM revert"
+    },
+    "strip": {
+      "title": "Probes",
+      "noReply": "No reply",
+      "reply": "{{ms}} ms",
+      "tipAgo": "{{time}} ago",
+      "ago": "{{minutes}} min ago",
+      "now": "Now",
+      "empty": "No probe data from the modem",
+      "aria": "{{total}} probes, {{missed}} without a reply"
+    },
+    "sim_swap_title": "New SIM card detected",
+    "sim_swap_with_profile": "Profile <strong>{{profile_name}}</strong> matches this SIM.",
+    "sim_swap_no_profile": "No matching profile found.",
+    "sim_swap_apply_button": "Apply Profile",
+    "sim_swap_dismiss_button": "Dismiss",
+    "sim_swap_dismiss_aria": "Dismiss SIM swap notification"
+  },
+  "netbird": {
+    "actions": {
+      "cancel": "Cancel",
+      "retry": "Try again"
+    },
+    "page": {
+      "title": "NetBird VPN",
+      "description": "Your mesh VPN: what this modem is doing on the network, and who else is on it.",
+      "refresh": "Refresh",
+      "stale": "Showing the last status we managed to read. {{message}}",
+      "unreadableTitle": "Could not read NetBird status",
+      "unreadable": "The device did not answer."
+    },
+    "mutex": {
+      "title": "Another VPN is installed",
+      "description": "Only one VPN can be installed at a time. Uninstall {{other_vpn}} from the <link>Tailscale page</link> first."
+    },
+    "status": {
+      "aria": "NetBird status",
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "serviceStopped": "Service stopped",
+      "notInstalled": "Not installed",
+      "unknown": "Unknown"
+    },
+    "band": {
+      "dash": "—",
+      "connectionEyebrow": "Connection",
+      "version": "Version {{version}}",
+      "versionUnknown": "Version unknown",
+      "deviceEyebrow": "This device",
+      "deviceUnknown": "No NetBird address yet",
+      "controlEyebrow": "Control plane",
+      "controlIssue": "Needs attention",
+      "controlIdle": "Available once connected",
+      "controlOk": "Management and signal",
+      "controlDetail": "Management: {{management}}, signal: {{signal}}",
+      "peersEyebrow": "Peers online",
+      "peersTotal_one": "{{count}} peer on your network",
+      "peersTotal_other": "{{count}} peers on your network",
+      "noPeers": "No peers yet"
+    },
+    "connection": {
+      "title": "Connection",
+      "description": "Whether this modem joins the NetBird network, and how it behaves once it does.",
+      "version": "v{{version}}",
+      "connect": "Connect",
+      "connecting": "Connecting…",
+      "disconnect": "Disconnect",
+      "disconnecting": "Disconnecting…",
+      "startService": "Start service",
+      "starting": "Starting…",
+      "stopService": "Stop service",
+      "stopping": "Stopping…",
+      "bootTitle": "Start on boot",
+      "bootDescription": "Bring NetBird up automatically after the modem restarts.",
+      "on": "On",
+      "off": "Off",
+      "setupKeyLabel": "Setup key",
+      "setupKeyPlaceholder": "Enter setup key (optional)",
+      "setupKeyHelp": "Paste a setup key from your NetBird dashboard, or leave it empty if this modem is already registered."
+    },
+    "device": {
+      "title": "This Device",
+      "description": "How the modem identifies itself on the NetBird network.",
+      "fqdn": "FQDN",
+      "netbirdIp": "NetBird IP",
+      "interface": "Interface",
+      "management": "Management",
+      "signal": "Signal",
+      "emptyTitle": "Not on the network",
+      "emptyDescription": "Connect NetBird and this modem's address, name and link health appear here."
+    },
+    "peers": {
+      "title": "Network Peers",
+      "description": "The other devices on your NetBird network, and whether they are reachable.",
+      "dash": "—",
+      "unnamed": "Unnamed device",
+      "colDevice": "Device",
+      "colAddress": "Address",
+      "colConnection": "Path",
+      "colStatus": "Status",
+      "colLastSeen": "Last seen",
+      "online": "Online",
+      "offline": "Offline",
+      "p2p": "P2P",
+      "relayed": "Relayed",
+      "countOnline": "{{online}} of {{total}} online",
+      "errorTitle": "Could not load peers",
+      "emptyTitle": "No other devices",
+      "emptyDescription": "Nothing else has joined this network yet. Add a device from your NetBird dashboard and it shows up here.",
+      "offlineTitle": "Not connected",
+      "offlineDescription": "Connect NetBird to see the other devices on your network.",
+      "connectedCount_one": "{{count}} peer connected",
+      "connectedCount_other": "{{count}} peers connected",
+      "noDetail": "This NetBird version does not list per-peer details. Update NetBird to see them."
+    },
+    "install": {
+      "title": "NetBird",
+      "description": "A mesh VPN for reaching this modem from anywhere, without opening a port.",
+      "conditionTitle": "NetBird is not installed",
+      "conditionDescription": "Installing downloads the NetBird package over the same cellular link this session is running on, so it uses your data allowance and the connection will be slower while it runs.",
+      "install": "Install NetBird",
+      "installing": "Installing…",
+      "checkAgain": "Check again",
+      "done": "NetBird installed.",
+      "failed": "The install did not finish.",
+      "manualLabel": "Or install from a shell",
+      "copyCommand": "Copy the install command",
+      "manualCommand": "opkg update && opkg install netbird"
+    },
+    "danger": {
+      "uninstall": "Uninstall",
+      "removing": "Removing…",
+      "dialogTitle": "Uninstall NetBird?",
+      "dialogDescription": "This removes the NetBird package, its firewall rules, and all connection state from this modem. A reboot afterwards clears anything left behind.",
+      "rebootTitle": "Reboot recommended",
+      "rebootDescription": "NetBird has been removed. Rebooting clears the leftover firewall rules and other artifacts. Reboot now?",
+      "rebootLater": "Reboot later",
+      "rebootNow": "Reboot now",
+      "rebooting": "Rebooting…"
+    },
+    "toast": {
+      "bootEnabled": "NetBird will start on boot",
+      "bootDisabled": "NetBird will not start on boot",
+      "bootFailed": "Could not change the boot setting",
+      "connected": "Connecting to NetBird",
+      "connectFailed": "Could not connect to NetBird",
+      "disconnected": "NetBird disconnected",
+      "disconnectFailed": "Could not disconnect NetBird",
+      "serviceStarted": "NetBird service started",
+      "serviceStartFailed": "Could not start the NetBird service",
+      "serviceStopped": "NetBird service stopped",
+      "serviceStopFailed": "Could not stop the NetBird service",
+      "uninstalled": "NetBird uninstalled",
+      "uninstallFailed": "Could not uninstall NetBird",
+      "installed": "NetBird installed",
+      "installFailed": "The NetBird install did not finish",
+      "copied": "Install command copied",
+      "copyFailed": "Could not copy the command"
+    },
+    "errors": {
+      "fetch_failed": "Could not load NetBird status"
+    }
+  },
+  "connection_quality": {
+    "page": {
+      "title": "Connection Quality",
+      "description": "The endpoints the modem pings and the limits that turn a slow link into an event."
+    },
+    "targets": {
+      "title": "Probe Targets",
+      "description": "Pinged in order until one answers, to tell whether the internet is up.",
+      "restore": "Restore defaults",
+      "save": "Save Probe Targets",
+      "leg": {
+        "ipv4": "IPv4 target",
+        "ipv6": "IPv6 fallback target"
+      },
+      "error": {
+        "title": "Can't read the probe targets",
+        "body": "The saved targets are still in use.",
+        "retry": "Retry"
+      },
+      "toast": {
+        "saved": "Probe targets saved.",
+        "failed": "Couldn't save the probe targets."
+      },
+      "validation": {
+        "empty": "Enter a target.",
+        "too_long": "Use {{max}} characters or fewer.",
+        "spaces": "Spaces are not allowed.",
+        "disallowed": "Contains characters that are not allowed.",
+        "ipv4_invalid": "Enter an IPv4 address or hostname.",
+        "ipv6_invalid": "Not a valid IPv6 address.",
+        "ipv6_colon": "An IPv6 address contains a colon."
+      },
+      "verdict": {
+        "ipv4": "IPv4 answering",
+        "ipv6": "IPv6 answering",
+        "none": "No answer",
+        "unknown": "Not reporting"
+      },
+      "group": {
+        "sensitivity": "Sensitivity",
+        "ipv4": "IPv4",
+        "ipv6": "IPv6 fallback"
+      },
+      "fallback_hint": "Pinged only when the IPv4 target doesn't answer, so an IPv6-only connection isn't read as an outage.",
+      "fallback_hint_label": "About the IPv6 fallback",
+      "interval": {
+        "label": "Probe interval",
+        "value": "Every {{seconds}} s",
+        "override": "Every {{seconds}} s (set by Watchdog)"
+      },
+      "failed": "Couldn't save",
+      "profile": {
+        "sensitive": "Sensitive",
+        "regular": "Regular",
+        "relaxed": "Relaxed",
+        "quiet": "Quiet"
+      }
+    },
+    "thresholds": {
+      "title": "Quality Thresholds",
+      "description": "When a slow or lossy link is logged as a network event.",
+      "latency": {
+        "title": "Latency"
+      },
+      "loss": {
+        "title": "Packet Loss"
+      },
+      "preset": {
+        "standard": "Standard",
+        "tolerant": "Tolerant",
+        "very_tolerant": "Very tolerant",
+        "custom": "Custom"
+      },
+      "save": "Save Thresholds",
+      "error": {
+        "title": "Can't read the quality thresholds",
+        "body": "The saved limits are still in use.",
+        "retry": "Retry"
+      },
+      "toast": {
+        "saved": "Quality thresholds saved.",
+        "failed": "Couldn't save the quality thresholds."
+      },
+      "row": {
+        "flags": "Flags after",
+        "now": "Right now",
+        "limit": "Limit"
+      },
+      "flags": {
+        "latency_one": "{{count}} sample over {{ms}} ms",
+        "latency_other": "{{count}} samples over {{ms}} ms",
+        "loss_one": "{{count}} sample at {{pct}}% or more",
+        "loss_other": "{{count}} samples at {{pct}}% or more",
+        "pending": "Enter a limit"
+      },
+      "now": {
+        "latency": "{{ms}} ms",
+        "loss": "{{pct}}%",
+        "no_reply": "No reply",
+        "collecting": "Collecting",
+        "over_latency": "Over the {{ms}} ms limit",
+        "over_loss": "Over the {{pct}}% limit"
+      },
+      "default_chip": "Built-in defaults",
+      "failed": "Couldn't save",
+      "unit": {
+        "latency": "ms",
+        "loss": "%"
+      },
+      "validation": {
+        "range": "Enter a whole number from {{min}} to {{max}}."
+      }
+    }
+  },
+  "prometheus": {
+    "page": {
+      "title": "Prometheus",
+      "description": "Let a Prometheus server collect this modem's signal and health readings."
+    },
+    "card": {
+      "title": "Prometheus Metrics",
+      "description": "Scraping needs the token below; device identifiers are never included."
+    },
+    "endpoint": {
+      "label": "Metrics endpoint",
+      "consequence_off": "Prometheus can't read this modem.",
+      "consequence_on": "Prometheus can read signal, carrier and health readings with the token."
+    },
+    "freshness": {
+      "label": "Scrape freshness",
+      "hint_label": "About scrape freshness",
+      "hint": "Applies only while Prometheus scrapes at least once a minute. Normal polling resumes two minutes after the last scrape.",
+      "options": {
+        "adaptive": "Adaptive",
+        "balanced": "Balanced",
+        "realtime": "Real-time"
+      },
+      "consequence": {
+        "adaptive": "Scrapes don't change how often the modem is read.",
+        "balanced": "The modem never drops to its slowest polling while Prometheus scrapes.",
+        "realtime": "The modem is read every 2 seconds while Prometheus scrapes, like an open dashboard."
+      }
+    },
+    "status": {
+      "label": "Scrape status",
+      "endpoint_off": "Endpoint off"
+    },
+    "facts": {
+      "no_scrapes": "No scrapes yet",
+      "last_scrape_seconds_one": "Last scrape {{count}} s ago",
+      "last_scrape_seconds_other": "Last scrape {{count}} s ago",
+      "last_scrape_minutes_one": "Last scrape {{count}} min ago",
+      "last_scrape_minutes_other": "Last scrape {{count}} min ago",
+      "last_scrape_hours_one": "Last scrape {{count}} h ago",
+      "last_scrape_hours_other": "Last scrape {{count}} h ago",
+      "holding": "Holding faster polling",
+      "adaptive_off": "Adaptive polling is off, so readings are always live"
+    },
+    "token": {
+      "label": "Bearer token",
+      "consequence": "Paste it into Prometheus as the scrape credential.",
+      "show": "Show token",
+      "hide": "Hide token",
+      "copy": "Copy",
+      "regenerate": "Regenerate"
+    },
+    "regenerate_dialog": {
+      "title": "Generate a new token?",
+      "description": "Prometheus can't scrape until you paste the new token into its config.",
+      "cancel": "Cancel",
+      "confirm": "Generate token"
+    },
+    "config": {
+      "label": "Scrape Config",
+      "consequence": "Add this job to your Prometheus configuration.",
+      "hint_label": "About the scrape config",
+      "hint": "The modem's certificate is self-signed, so verification is skipped. Over Tailscale, plain http works too.",
+      "copy": "Copy config",
+      "copied": "Copied",
+      "wrap": "Wrap lines",
+      "empty_title": "No scrape config yet",
+      "empty_description": "Turn on the endpoint and save to get one."
+    },
+    "foot": {
+      "save": "Save",
+      "discard": "Discard",
+      "token_on_save": "A token is created when you save."
+    },
+    "toast": {
+      "saved": "Prometheus settings saved.",
+      "save_failed": "Couldn't save Prometheus settings.",
+      "regenerated": "New token generated.",
+      "regenerate_failed": "Couldn't generate a new token.",
+      "token_copied": "Token copied.",
+      "config_copied": "Scrape config copied.",
+      "copy_failed": "Couldn't copy to the clipboard."
+    },
+    "error": {
+      "title": "Couldn't load Prometheus settings",
+      "description": "The modem didn't answer. Check the connection and try again.",
+      "retry": "Retry"
+    }
+  }
+}

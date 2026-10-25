@@ -1,0 +1,54 @@
+# YouTube / Google Video
+googlevideo.com
+youtube.com
+ytimg.com
+yt3.ggpht.com
+
+# Netflix
+netflix.com
+nflxvideo.net
+nflxso.net
+nflxext.com
+
+# Twitch
+twitchcdn.net
+twitch.tv
+jtvnw.net
+
+# Meta Video
+video.fbcdn.net
+
+# Disney+
+disneyplus.com
+disney-plus.net
+bamgrid.com
+dssott.com
+
+# Hulu
+hulu.com
+hulustream.com
+
+# HBO Max / Max
+max.com
+hbomax.com
+
+# Amazon Prime Video
+primevideo.com
+aiv-cdn.net
+pv-cdn.net
+
+# Apple TV+
+play-edge.itunes.apple.com
+hls-svod.itunes.apple.com
+
+# TikTok
+tiktokcdn.com
+tiktokv.com
+tiktokcdn-us.com
+
+# Paramount+
+cbsi.com
+cbsivideo.com
+
+# Peacock
+peacocktv.com

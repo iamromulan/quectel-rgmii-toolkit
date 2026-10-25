@@ -1,0 +1,137 @@
+#!/bin/sh /etc/rc.common
+# =============================================================================
+# qmanager_tower_failover — Init Script for Tower Lock Failover Daemon
+# =============================================================================
+# Manages the tower lock failover daemon lifecycle. Non-procd: no automatic
+# respawn, because the daemon intentionally exits after triggering failover
+# or when locks are removed.
+#
+# All spawn/kill paths (CGI, cron, boot) converge through this script.
+# The library functions tower_spawn_failover_watcher() and
+# tower_kill_failover_watcher() call start/stop here.
+#
+# Usage:
+#   /etc/init.d/qmanager_tower_failover start|stop|enable|disable
+#
+# Install location: /etc/init.d/qmanager_tower_failover
+# =============================================================================
+
+START=99
+STOP=10
+
+DAEMON="/usr/bin/qmanager_tower_failover"
+PID_FILE="/tmp/qmanager_tower_failover.pid"
+ACTIVATED_FLAG="/tmp/qmanager_tower_failover"
+CONFIG="/etc/qmanager/tower_lock.json"
+
+is_daemon_pid_running() {
+    local pid="$1"
+
+    [ -n "$pid" ] || return 1
+    case "$pid" in
+        *[!0-9]*) return 1 ;;
+    esac
+
+    kill -0 "$pid" 2>/dev/null || return 1
+
+    local cmdline
+    cmdline=$(tr '\000' ' ' < "/proc/$pid/cmdline" 2>/dev/null)
+    case "$cmdline" in
+        *"$DAEMON"*) return 0 ;;
+    esac
+
+    return 1
+}
+
+start() {
+    # Guard: already running?
+    if [ -f "$PID_FILE" ]; then
+        local pid
+        pid=$(cat "$PID_FILE" 2>/dev/null | tr -d ' \n\r')
+        if is_daemon_pid_running "$pid"; then
+            return 0
+        fi
+        # Stale PID file
+        rm -f "$PID_FILE"
+    fi
+
+    # Guard: daemon script exists and is executable?
+    [ -x "$DAEMON" ] || return 1
+
+    # Guard: config has failover enabled + active lock?
+    if [ -f "$CONFIG" ]; then
+        local fo lte nr
+        fo=$(jq -r '.failover.enabled // false' "$CONFIG" 2>/dev/null)
+        lte=$(jq -r '.lte.enabled // false' "$CONFIG" 2>/dev/null)
+        nr=$(jq -r '.nr_sa.enabled // false' "$CONFIG" 2>/dev/null)
+        if [ "$fo" != "true" ]; then
+            return 0
+        fi
+        if [ "$lte" != "true" ] && [ "$nr" != "true" ]; then
+            return 0
+        fi
+    else
+        return 0
+    fi
+
+    # Clear previous activation flag
+    rm -f "$ACTIVATED_FLAG"
+
+    # Spawn daemon (double-fork to detach from any parent process group)
+    ( "$DAEMON" </dev/null >/dev/null 2>&1 & )
+    logger -t qmanager_tower_failover "Failover daemon started"
+}
+
+# BusyBox `sleep` does not accept fractional seconds on all builds — use
+# `usleep` when available, fall back to integer sleep otherwise.
+sleep_fractional() {
+    local frac="$1"
+    if command -v usleep >/dev/null 2>&1; then
+        # Convert "0.1" to microseconds (100000)
+        case "$frac" in
+            0.1) usleep 100000 ;;
+            *)   usleep 100000 ;;
+        esac
+    else
+        sleep 1
+    fi
+}
+
+stop() {
+    local pid=""
+    if [ -f "$PID_FILE" ]; then
+        pid=$(cat "$PID_FILE" 2>/dev/null | tr -d ' \n\r')
+    fi
+
+    if [ -n "$pid" ] && is_daemon_pid_running "$pid"; then
+        # Graceful SIGTERM first
+        kill "$pid" 2>/dev/null
+
+        # Wait up to 2s (20 * 0.1s) for the daemon to exit
+        local i=0
+        while [ "$i" -lt 20 ]; do
+            is_daemon_pid_running "$pid" || break
+            sleep_fractional 0.1
+            i=$(( i + 1 ))
+        done
+
+        # Still alive? Escalate to SIGKILL and give it one more tick.
+        if is_daemon_pid_running "$pid"; then
+            logger -t qmanager_tower_failover "Failover daemon did not exit on SIGTERM (PID=$pid) — sending SIGKILL"
+            kill -9 "$pid" 2>/dev/null
+            sleep_fractional 0.1
+        fi
+
+        if is_daemon_pid_running "$pid"; then
+            logger -t qmanager_tower_failover "Failover daemon still alive after SIGKILL (PID=$pid)"
+        else
+            logger -t qmanager_tower_failover "Failover daemon stopped (PID=$pid)"
+        fi
+    fi
+
+    # Always clear PID file + activation flag — PID was either stale,
+    # already dead, or just killed.
+    rm -f "$PID_FILE"
+    rm -f "$ACTIVATED_FLAG"
+    return 0
+}

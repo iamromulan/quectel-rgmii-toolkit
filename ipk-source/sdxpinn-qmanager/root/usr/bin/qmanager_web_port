@@ -1,0 +1,115 @@
+#!/bin/sh
+# qmanager_web_port — show or change the port QManager is served on.
+# Run via SSH as root. QManager shares the web server with LuCI, so both move.
+#
+#   qmanager_web_port                  show configured and listening ports
+#   qmanager_web_port set HTTP HTTPS   e.g. qmanager_web_port set 8080 8443
+#   qmanager_web_port reset            back to 80 / 443
+#   qmanager_web_port apply            apply after editing UCI by hand:
+#       uci set quecmanager.web.http_port=8080
+#       uci set quecmanager.web.https_port=8443
+#       uci commit quecmanager && qmanager_web_port apply
+#
+# If the web server does not come up on the new ports, the old ones are put
+# back automatically. Exit status: 0 on success, 1 on failure, 2 on usage.
+
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+    qlog_init "web_port"
+fi
+if [ ! -f /usr/lib/qmanager/web_port.sh ]; then
+    echo "QManager web port library is missing (/usr/lib/qmanager/web_port.sh)." >&2
+    exit 1
+fi
+. /usr/lib/qmanager/web_port.sh
+
+usage() {
+    sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+_yesno() { "$@" && echo "yes" || echo "no"; }
+
+show() {
+    _h=$(wp_conf_http)
+    _s=$(wp_conf_https)
+    printf 'HTTP port:  %s (listening: %s)\n' "$_h" "$(_yesno wp_listening "$_h")"
+    printf 'HTTPS port: %s (listening: %s)\n' "$_s" "$(_yesno wp_listening "$_s")"
+}
+
+# say_error <code> — one plain sentence per wp_validate / wp_apply code.
+say_error() {
+    case "$1" in
+        invalid_port)  echo "Ports must be whole numbers from 1 to 65535." >&2 ;;
+        ports_equal)   echo "HTTP and HTTPS need different ports." >&2 ;;
+        port_in_use:*) echo "Port ${1#port_in_use:} is already used by another service." >&2 ;;
+        busy)          echo "Another port change is still running. Try again shortly." >&2 ;;
+        *)             echo "Could not change the port ($1)." >&2 ;;
+    esac
+}
+
+# run_apply — apply and translate the status line for a person at a shell.
+run_apply() {
+    _r=$(wp_apply)
+    _rc=$?
+    set -- $_r
+    case "$1" in
+        applied)
+            echo "QManager now listens on HTTP $2 and HTTPS $3."
+            [ "$2" = "80" ] || echo "Open it at http://<modem-ip>:$2/"
+            ;;
+        unchanged)
+            echo "Already on HTTP $2 and HTTPS $3. Nothing to do."
+            ;;
+        rolled_back)
+            echo "The web server did not start on the new ports. Kept HTTP $2 and HTTPS $3." >&2
+            ;;
+        failed)
+            say_error "$2"
+            ;;
+        *)
+            echo "Could not change the port." >&2
+            _rc=1
+            ;;
+    esac
+    return "$_rc"
+}
+
+# set_ports <http> <https> — validate first so a bad value never reaches UCI.
+set_ports() {
+    _err=$(wp_validate "$1" "$2")
+    if [ -n "$_err" ]; then
+        say_error "$_err"
+        return 1
+    fi
+    wp_save_conf "$1" "$2" || { echo "Could not save the setting." >&2; return 1; }
+    run_apply
+}
+
+case "$1" in
+    ""|show|status)
+        show
+        ;;
+    set)
+        if [ $# -ne 3 ]; then
+            usage >&2
+            exit 2
+        fi
+        set_ports "$2" "$3"
+        exit $?
+        ;;
+    reset)
+        set_ports "$WP_DEFAULT_HTTP" "$WP_DEFAULT_HTTPS"
+        exit $?
+        ;;
+    apply)
+        run_apply
+        exit $?
+        ;;
+    -h|--help|help)
+        usage
+        ;;
+    *)
+        usage >&2
+        exit 2
+        ;;
+esac

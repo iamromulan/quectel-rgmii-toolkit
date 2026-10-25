@@ -1,0 +1,8 @@
+1:"$Sreact.fragment"
+2:I[233585,["/_next/static/chunks/95c519030870da09.js","/_next/static/chunks/25e84359f43464c5.js"],"ViewportBoundary"]
+4:I[233585,["/_next/static/chunks/95c519030870da09.js","/_next/static/chunks/25e84359f43464c5.js"],"MetadataBoundary"]
+5:"$Sreact.suspense"
+7:I[754535,["/_next/static/chunks/95c519030870da09.js","/_next/static/chunks/25e84359f43464c5.js"],"IconMark"]
+0:{"buildId":"SwikxuOiAXxFL-ZOZ6F54","rsc":["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$L2",null,{"children":"$@3"}],["$","div",null,{"hidden":true,"children":["$","$L4",null,{"children":["$","$5",null,{"name":"Next.Metadata","children":"$@6"}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"loading":null,"isPartial":false}
+3:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+6:[["$","title","0",{"children":"QManager"}],["$","meta","1",{"name":"description","content":"QManager is a modern web-based GUI for managing Quectel modems — from APN and band locking to advanced diagnostics and cellular device management."}],["$","link","2",{"rel":"icon","href":"/favicon.ico?favicon.e6080e8f.ico","sizes":"32x32","type":"image/x-icon"}],["$","$L7","3",{}]]

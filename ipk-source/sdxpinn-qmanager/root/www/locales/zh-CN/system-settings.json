@@ -1,0 +1,1333 @@
+{
+  "page": {
+    "title": "系统设置",
+    "description": "本设备如何计时、何时重启，以及它记住了哪些 SIM 卡。",
+    "refresh": "刷新"
+  },
+  "device_access": {
+    "page": {
+      "title": "设备访问",
+      "description": "用于访问此调制解调器的密码和端口。"
+    }
+  },
+  "hardware": {
+    "page": {
+      "title": "硬件",
+      "description": "Ethernet 流量和已连接的主机如何访问调制解调器的硬件。"
+    }
+  },
+  "diagnostics": {
+    "card_title": "调试报告",
+    "card_description": "此调制解调器的快照，便于排查问题时分享。",
+    "body": "生成调制解调器当前状态的纯文本快照（无线状态、网络配置和近期日志）并下载到您的设备。在您选择分享该文件之前，不会有任何数据离开调制解调器。",
+    "button_capture": "下载调试报告",
+    "button_capturing": "正在生成…",
+    "toast_success": "调试报告已下载",
+    "toast_failed": "无法生成诊断报告，请重试。"
+  },
+  "ipa_offload": {
+    "card_title": "硬件卸载",
+    "card_description": "通过调制解调器的 IPA 硬件路径处理数据包。",
+    "enable_label": "硬件卸载",
+    "cpu_warning": "如果出现随机的 Ethernet 断线，请将其关闭，使流量改由 CPU 处理。",
+    "unavailable_hint": "此调制解调器的固件没有可更改的硬件卸载路径。",
+    "pending_reboot_badge": "待重启",
+    "toast_enabled": "硬件卸载已启用。重启后生效。",
+    "toast_disabled": "硬件卸载已禁用。重启后生效。",
+    "toast_failed": "无法更新硬件卸载。",
+    "reboot_note": "重启后生效。",
+    "unavailable_title": "此调制解调器不支持",
+    "error_title": "无法读取硬件卸载",
+    "error_description": "设置未能加载，请稍后重试。",
+    "path_eyebrow": "数据包路径",
+    "path_hint_label": "硬件卸载的工作方式",
+    "path_hint": "IPA 是调制解调器内置的数据包引擎。开启卸载后，Ethernet 流量由硬件处理，不经过 CPU；关闭后，每个数据包都由 CPU 处理。",
+    "path_preview": "预览",
+    "path_ethernet": "Ethernet",
+    "path_hardware": "硬件",
+    "path_cpu": "CPU",
+    "path_cellular": "蜂窝网络",
+    "path_aria_hardware": "Ethernet 流量通过硬件路径进入蜂窝网络。",
+    "path_aria_cpu": "Ethernet 流量通过 CPU 进入蜂窝网络。"
+  },
+  "host_at": {
+    "card_title": "主机 AT 端口",
+    "card_description": "通过 USB 或 PCIe 连接的计算机的 AT 访问权限。",
+    "access_label": "主机访问",
+    "consequence_usb": "关闭期间，已连接的计算机无法发送 AT 命令。",
+    "consequence_pcie": "关闭期间，安装此调制解调器的主机无法发送 AT 命令。",
+    "unavailable": "此固件没有主机 AT 端口。",
+    "discard": "放弃",
+    "toast_on": "已开启主机 AT 端口。",
+    "toast_off": "已关闭主机 AT 端口。",
+    "toast_failed": "无法更新主机 AT 端口。",
+    "unavailable_title": "此调制解调器不支持",
+    "error_title": "无法读取主机 AT 端口",
+    "error_description": "设置未能加载，请稍后重试。",
+    "path_eyebrow": "访问路径",
+    "path_hint_label": "主机 AT 访问的工作方式",
+    "path_hint": "QManager 始终通过自己的内部链路连接调制解调器。主机访问只决定通过 USB 或 PCIe 连接的计算机能否同样发送 AT 命令。",
+    "path_preview": "预览",
+    "path_computer": "计算机",
+    "path_qmanager": "QManager",
+    "path_port_usb": "USB 端口",
+    "path_port_pcie": "PCIe 端口",
+    "path_internal": "内置",
+    "path_modem": "调制解调器",
+    "path_aria_open": "已连接的计算机和 QManager 都可以向调制解调器发送 AT 命令。",
+    "path_aria_closed": "只有 QManager 可以向调制解调器发送 AT 命令；计算机的端口已关闭。"
+  },
+  "config_backup": {
+    "page_title": "配置备份",
+    "page_description": "保存设置的加密副本，或将备份恢复到此调制解调器。",
+    "reboot_now_button": "立即重启",
+    "reboot_failed_toast": "无法启动重启，请重试。",
+    "sections": {
+      "network_mode_apn": "网络模式和 APN",
+      "bands": "首选 LTE 和 5G 频段",
+      "tower_lock": "基站锁定",
+      "ttl_hl": "TTL 和跳数限制",
+      "imei": "IMEI",
+      "profiles": "自定义 SIM 配置",
+      "watchdog": "连接看门狗",
+      "quality_thresholds": "连接质量阈值",
+      "sites": "延迟监控站点",
+      "sms_alerts": "短信提醒",
+      "alert_routing": "提醒路由",
+      "sms_storage": "短信存储位置",
+      "metrics": "Prometheus 指标"
+    },
+    "create": {
+      "card_title": "创建备份",
+      "card_description": "选择要包含的内容，然后用口令加密文件。",
+      "group_connection": "连接",
+      "group_monitoring": "监控与提醒",
+      "group_encryption": "加密",
+      "profile_overlap_hint": "已通过自定义 SIM 配置包含",
+      "profile_uncheck_hint": "取消勾选网络模式、TTL 和 IMEI 以包含配置",
+      "passphrase_label": "口令",
+      "passphrase_too_short": "至少使用 {{min}} 个字符。",
+      "warning": "没有口令，备份无法打开，也无法找回。",
+      "passphrase_show_aria": "显示口令",
+      "passphrase_hide_aria": "隐藏口令",
+      "confirm_label": "确认口令",
+      "confirm_match": "口令一致",
+      "confirm_mismatch": "口令不一致",
+      "stage_collecting": "正在收集设置…",
+      "stage_encrypting": "正在加密…",
+      "stage_downloading": "正在下载…",
+      "selected_count_one": "已选 {{count}} 项",
+      "selected_count_other": "已选 {{count}} 项",
+      "button_default": "下载备份",
+      "toast_success": "备份已下载。",
+      "toast_failed": "无法创建备份。"
+    },
+    "restore": {
+      "card_title": "从文件恢复",
+      "card_description": "用备份中保存的值替换其包含的设置。",
+      "idle_title": "未打开备份",
+      "idle_description": "选择由 QManager 生成的 .qmbackup 文件。",
+      "reading_title": "正在读取文件…",
+      "upload_button": "选择文件",
+      "button_choose_another": "选择其他文件",
+      "read_failed": "无法读取此文件。",
+      "receipt_model": "来源设备",
+      "receipt_created": "创建时间",
+      "passphrase_label": "口令",
+      "passphrase_consequence": "创建此备份时设置的口令。",
+      "password_incorrect": "口令不正确，请检查后重试。",
+      "button_unlock": "解锁",
+      "model_warning": "来自 {{from}}，正在恢复到 {{to}}。此调制解调器不支持的部分将被跳过。",
+      "model_unknown": "未知型号",
+      "overwrite_label": "将替换当前设置",
+      "button_apply": "恢复",
+      "toast_success": "备份已恢复。",
+      "toast_partial_one": "恢复完成，但有 {{count}} 项失败。",
+      "toast_partial_other": "恢复完成，但有 {{count}} 项失败。",
+      "toast_cancelled_one": "恢复在 {{count}} 项后停止。",
+      "toast_cancelled_other": "恢复在 {{count}} 项后停止。",
+      "toast_failed": "无法开始恢复。",
+      "reboot_dialog_title": "重启以完成恢复？",
+      "reboot_dialog_description": "IMEI 更改或 SIM 配置在重启后生效。此页面将约有一分钟无法使用。",
+      "reboot_later_button": "稍后"
+    },
+    "pipeline": {
+      "title": "正在恢复备份",
+      "description": "来自 {{model}}",
+      "preparing": "正在开始…",
+      "done_headline": "备份已恢复",
+      "partial_headline": "已恢复，部分跳过",
+      "failed_headline": "恢复失败",
+      "done_sub_one": "已恢复 {{count}} 项。",
+      "done_sub_other": "已恢复 {{count}} 项。",
+      "partial_sub": "已恢复 {{restored}} / {{total}} 项。",
+      "cancelled_sub": "已在其余部分之前停止。",
+      "failed_sub": "未做任何更改。",
+      "step_progress": "第 {{current}} / {{total}} 步",
+      "detail_incompatible": "不支持",
+      "detail_sim_mismatch": "SIM 不同",
+      "detail_unchanged": "未更改",
+      "detail_retrying": "重试中（{{n}}/3）",
+      "detail_failed": "失败",
+      "state_done": "已恢复",
+      "state_running": "恢复中",
+      "state_retrying": "重试中",
+      "state_failed": "失败",
+      "state_skipped": "已跳过",
+      "state_pending": "等待中",
+      "progress_aria": "恢复进度",
+      "ledger_aria": "各部分",
+      "reboot_notice": "部分更改在重启后生效，由你决定何时重启。",
+      "failed_hint": "失败的部分保持当前值，请在各自页面检查。",
+      "close": "完成",
+      "stop": "停止"
+    }
+  },
+  "software_update": {
+    "page": {
+      "title": "软件更新",
+      "description": "QManager 会检查 GitHub 上是否有更新的版本，并直接在调制解调器上安装。安装会替换应用并重启设备，因此您正在阅读本页的会话会中断，随后自动恢复。",
+      "description_managed": "QManager 以软件包形式安装，因此其更新来自软件包管理器。"
+    },
+    "actions": {
+      "check": "检查更新",
+      "checking": "检查中…",
+      "check_again": "重新检查",
+      "download": "下载 {{version}}",
+      "downloading": "下载中…",
+      "install": "安装 {{version}}",
+      "installing": "安装中…",
+      "try_again": "再试一次",
+      "retry": "重试",
+      "read_full_notes": "阅读完整发行说明",
+      "rebooting": "重启中…",
+      "verifying": "校验中…",
+      "retry_download": "重新下载",
+      "reboot_now": "立即重启"
+    },
+    "band": {
+      "head": "更新状态",
+      "chip_offline": "离线",
+      "chip_managed": "软件包安装",
+      "chip_in_progress": "进行中",
+      "installed": {
+        "eyebrow": "已安装",
+        "caption_stable": "稳定版通道",
+        "caption_prerelease": "预发布通道",
+        "caption_interrupted": "安装可能不完整",
+        "caption_package": "以软件包形式安装"
+      },
+      "latest": {
+        "eyebrow": "最新版本",
+        "caption_checked": "上次检查 {{ago}}",
+        "caption_downloading": "正在下载 {{size}}…",
+        "caption_verified": "已下载并校验",
+        "caption_installing": "第 {{step}} 步，共 4 步——请勿断电",
+        "caption_failed": "无法连接 GitHub",
+        "caption_never": "从未检查",
+        "value_none_label": "无版本信息",
+        "caption_downloading_plain": "正在下载安装包…",
+        "caption_verifying": "正在校验安装包…",
+        "caption_failed_download": "下载未能完成",
+        "caption_failed_install": "安装未能完成",
+        "eyebrow_managed": "更新",
+        "value_managed": "软件包管理器",
+        "caption_managed": "不在此页面检查"
+      },
+      "auto": {
+        "eyebrow": "自动更新",
+        "value_on": "开启",
+        "value_off": "关闭",
+        "caption_on": "每天在随机时间检查一次",
+        "caption_off": "仅手动更新",
+        "caption_managed": "软件包安装不支持此功能"
+      },
+      "chip_failed": "失败"
+    },
+    "card": {
+      "loading": {
+        "title": "正在检查更新",
+        "description": "正在从 GitHub 读取版本列表。"
+      },
+      "unreachable": {
+        "title": "更新服务不可用",
+        "description": "QManager 无法访问本调制解调器上的更新接口，因此无法说明已安装的版本或可用的版本。"
+      },
+      "check_failed": {
+        "title": "更新检查失败",
+        "description": "本调制解调器上的版本未被改动。QManager 只是这次没能读取到版本列表。"
+      },
+      "download_failed": {
+        "title": "下载没有完成",
+        "description": "没有任何文件被替换。本调制解调器上原有的版本未被改动，因此可以放心重新下载。"
+      },
+      "install_failed": {
+        "title": "安装没有完成",
+        "description": "调制解调器上的文件可能是混杂的。重新安装可让它回到一个确定的版本。"
+      },
+      "up_to_date": {
+        "title": "您已是最新版本",
+        "description": "没有可安装的内容。下面四个步骤就是有更新时会执行的操作。"
+      },
+      "available": {
+        "title": "有可用更新",
+        "description": "下载并安装需要几分钟，最后会重启设备。整个过程如下。"
+      },
+      "downloading": {
+        "title": "正在下载更新",
+        "description": "正在从 GitHub 获取安装包。目前尚未替换任何文件，调制解调器仍在正常工作。"
+      },
+      "verifying": {
+        "title": "正在校验下载内容",
+        "description": "QManager 正在用 SHA-256 校验安装包，之后才会替换任何文件。"
+      },
+      "staged": {
+        "title": "准备安装",
+        "description": "安装包已下载并校验通过。安装将替换 QManager 并重启调制解调器。"
+      },
+      "installing": {
+        "title": "正在安装更新",
+        "description": "正在替换应用及其服务。请勿给调制解调器断电。"
+      },
+      "rebooting": {
+        "title": "正在重启调制解调器",
+        "description": "安装已完成。调制解调器正在重启，本会话会中断，直到它恢复。"
+      },
+      "chip": {
+        "loading": "检查中",
+        "unreachable": "无法访问",
+        "check_failed": "检查失败",
+        "download_failed": "下载失败",
+        "install_failed": "安装失败",
+        "up_to_date": "已是最新",
+        "available": "有可用更新",
+        "downloading": "下载中",
+        "verifying": "校验中",
+        "staged": "准备就绪",
+        "installing": "安装中",
+        "rebooting": "重启中"
+      }
+    },
+    "delta": {
+      "installed": "已安装",
+      "available": "可用",
+      "channel_stable": "稳定版",
+      "channel_prerelease": "预发布版"
+    },
+    "steps": {
+      "aria_label": "更新步骤",
+      "download": {
+        "label": "下载",
+        "detail": "从 GitHub 获取发布安装包"
+      },
+      "verify": {
+        "label": "校验",
+        "detail": "用 SHA-256 校验安装包"
+      },
+      "install": {
+        "label": "安装",
+        "detail": "替换应用及其服务"
+      },
+      "reboot": {
+        "label": "重启",
+        "detail": "调制解调器会重启。您的会话将中断。"
+      },
+      "state": {
+        "done": "已完成",
+        "active": "进行中"
+      }
+    },
+    "notice": {
+      "rest": "安装会重启调制解调器，本会话以及经由它的所有连接都会中断约一分钟。",
+      "staged": "安装会替换 QManager 并重启调制解调器。本会话会中断，随后自动恢复。",
+      "running": "请勿给调制解调器断电。",
+      "failed_check": "QManager 未能读取版本列表。本调制解调器上的版本未被改动，这只是一次读取失败，并非损失。",
+      "failed_download": "下载没有完成，因此没有安装任何内容。设备上原有的版本未被改动。",
+      "versions": "这里的每个选项都会重启调制解调器，而较旧的版本可能会撤销较新版本引入的设置。",
+      "failed_install": "安装没有完成，因此调制解调器上的文件可能是混杂的。重新安装可让它回到一个确定的版本。",
+      "stalled": "安装程序已两分钟没有进展。若仍无响应，请重启调制解调器以完成或撤销本次安装。"
+    },
+    "notes": {
+      "title": "更新内容",
+      "description": "随 {{version}} 一同发布的发行说明。",
+      "empty_title": "没有发行说明",
+      "empty_description": "GitHub 未返回此版本的更新日志，因此这里没有可显示的内容。",
+      "dialog_title": "{{version}} 的发行说明",
+      "region_label": "发行说明"
+    },
+    "preferences": {
+      "title": "更新偏好设置",
+      "description": "本调制解调器如何决定何时自我更新。",
+      "auto": {
+        "label": "自动更新",
+        "description": "每天在随机时间检查一次，并安装找到的更新。调制解调器会重启以完成安装。",
+        "error": "无法保存自动更新设置"
+      },
+      "prerelease": {
+        "label": "包含预发布版本",
+        "description": "提供在 GitHub 上标记为预发布的版本。它们发布得更早，但测试也更少。",
+        "error": "无法保存预发布版本设置"
+      }
+    },
+    "versions": {
+      "title": "版本管理",
+      "description": "安装、重新安装或回退到任意已发布的版本。",
+      "select_label": "选择要安装的版本",
+      "select_placeholder": "选择版本",
+      "install": "安装",
+      "current": "当前",
+      "no_binary": "无安装包",
+      "dialog": {
+        "title_install": "安装 {{version}}？",
+        "title_reinstall": "重新安装 {{version}}？",
+        "description_install": "这会用 {{version}} 替换当前的 {{current}}。完成后调制解调器会重启。",
+        "description_reinstall": "这会在调制解调器上已有的副本之上重新安装 {{version}}，以进行修复。完成后调制解调器会重启。",
+        "size": "下载大小：{{size}}。",
+        "warning": "安装过程中请勿给调制解调器断电。",
+        "cancel": "取消",
+        "confirm_install": "立即安装",
+        "confirm_reinstall": "立即重新安装"
+      },
+      "empty_title": "没有可选择的版本",
+      "empty_description": "GitHub 未返回任何带有可安装包的版本，因此这里没有可安装或可回退的目标。"
+    },
+    "banner": {
+      "title": "上次更新未能完成",
+      "description": "{{pending}} 的待处理标记在重启后仍然存在，而当前运行的是 {{version}}，因此已安装的文件可能是混杂的。重新安装 {{pending}} 可让本调制解调器回到一个确定的版本。",
+      "action": "完成安装",
+      "description_unknown": "在运行 {{version}} 期间有一次安装没有完成，因此已安装的文件可能是混杂的。重新安装可让本调制解调器回到一个确定的版本。"
+    },
+    "states": {
+      "loading": {
+        "status": "正在检查更新",
+        "notes": "正在加载发行说明"
+      },
+      "unreachable": {
+        "title": "无法访问更新服务",
+        "description": "QManager 无法访问本调制解调器上的更新接口。已安装的版本未被改动，这只是一次读取失败，并非损失。"
+      }
+    },
+    "managed": {
+      "title": "通过软件包管理器更新",
+      "description": "像其他软件包一样，在 LuCI 的软件页面中升级 QManager。",
+      "package": {
+        "label": "软件包",
+        "description": "它在软件包列表中的名称。"
+      }
+    },
+    "time": {
+      "just_now": "刚刚",
+      "minutes": "{{value}} 分钟前",
+      "minutes_one": "一分钟前",
+      "hours": "{{value}} 小时前",
+      "hours_one": "一小时前",
+      "days": "{{value}} 天前",
+      "days_one": "一天前"
+    },
+    "toast": {
+      "prerelease_on": "已启用预发布更新",
+      "prerelease_off": "已关闭预发布更新",
+      "auto_on": "已启用自动更新",
+      "auto_off": "已关闭自动更新",
+      "save_failed": "无法保存该偏好设置"
+    },
+    "stall_dialog": {
+      "title": "现在重启调制解调器？",
+      "description": "安装似乎已卡住。重启会中断安装并断开当前会话，调制解调器会自动恢复。",
+      "cancel": "继续等待",
+      "confirm": "立即重启"
+    }
+  },
+  "at_terminal": {
+    "page": {
+      "title": "AT 终端",
+      "description": "直接向调制解调器发送 AT 命令，并原样读取它返回的回复。会让射频停止工作的命令会先等待您确认，还有少数命令会被直接拒绝。"
+    },
+    "card": {
+      "title": "控制台",
+      "description": "回复以原始形式显示，就是调制解调器自己的措辞。最近 100 条命令会保存在本浏览器中，直到您清除为止。"
+    },
+    "actions": {
+      "clear": "清除",
+      "export": "导出"
+    },
+    "game": {
+      "playing": "正在玩 Signal Storm"
+    },
+    "empty": {
+      "title": "尚未发送任何命令",
+      "description": "在下方提示符处输入 AT 命令，或者打开“命令”从现成的命令中挑选一条。"
+    },
+    "transcript": {
+      "label": "命令记录",
+      "copy": "复制这条命令及其回复",
+      "copied": "已复制",
+      "status": {
+        "success": "成功",
+        "error": "失败",
+        "blocked": "已拦截"
+      }
+    },
+    "hint": {
+      "key": "Tab",
+      "label": "按 Tab 键，用历史记录补全这条命令；按 Shift+Tab 离开输入框。"
+    },
+    "gate": {
+      "title": "此命令可能切断您的连接",
+      "confirm": "仍然发送",
+      "cancel": "取消"
+    },
+    "rules": {
+      "not_at": "此处只能发送 AT 命令。请以 AT 开头，例如 AT+CSQ。",
+      "qscanfreq": "此处拒绝执行频率扫描。扫描期间射频会停止工作数分钟，而且全程没有任何显示——请改用“小区扫描”页面，它会报告进度并且可以中止。",
+      "qscan": "此处拒绝执行网络扫描。扫描期间射频会停止工作数分钟，而且全程没有任何显示——请改用“小区扫描”页面，它会报告进度并且可以中止。",
+      "resetfactory": "此处拒绝执行恢复出厂设置。它会一次性清空调制解调器的所有设置，包括 QManager 连接设备所需的那些，并且本页面无法撤销。",
+      "reboot": "此命令会重启调制解调器。经由它的所有连接都会中断，包括本页面，正在进行的操作也会丢失——大约需要一分钟才能恢复，而且时钟会回到 1970 年 1 月，直到网络重新校时。",
+      "radio_off": "此命令会关闭调制解调器的射频。如果您是通过调制解调器自身的连接（包括 Tailscale）打开本页面的，那么在从设备端重新开启射频之前，您将失去这个页面。"
+    },
+    "input": {
+      "label": "AT 命令",
+      "placeholder": "AT+COPS?",
+      "send": "发送"
+    },
+    "responses": {
+      "failed": "命令执行失败，调制解调器没有给出原因。",
+      "unexpected": "这条命令未能发送。请查看“系统日志”了解后端的报告。",
+      "unreachable": "无法连接到调制解调器上的 QManager 后端。请确认设备仍可访问，然后重新发送。",
+      "game": "正在启动 Signal Storm…"
+    },
+    "commands": {
+      "trigger": "命令",
+      "search_placeholder": "搜索命令",
+      "empty": "没有命令符合该搜索条件。",
+      "count_one": "{{count}} 条命令",
+      "count_other": "{{count}} 条命令",
+      "manage": "管理命令",
+      "groups": {
+        "modem": "调制解调器",
+        "network": "网络模式",
+        "sim": "SIM 卡插槽",
+        "apn": "APN",
+        "bands": "频段",
+        "passthrough": "IP 透传",
+        "custom": "自定义"
+      },
+      "presets": {
+        "reboot": "重启调制解调器",
+        "disconnect": "关闭射频",
+        "connect": "开启射频",
+        "signal_info": "信号信息（服务小区）",
+        "ca_info": "载波聚合信息",
+        "imei_show": "显示 IMEI",
+        "mode_show": "显示网络模式",
+        "mode_auto": "将网络模式设为自动",
+        "mode_nr_lte": "将网络模式设为 5G NR 和 LTE",
+        "mode_nr": "将网络模式设为仅 5G NR",
+        "mode_lte": "将网络模式设为仅 LTE",
+        "nr5g_disable_status": "显示 SA 与 NSA 的启用情况",
+        "nr5g_enable_both": "同时启用 SA 和 NSA",
+        "nr5g_disable_sa": "仅禁用 SA",
+        "nr5g_disable_nsa": "仅禁用 NSA",
+        "sim_slot_get": "显示当前 SIM 卡插槽",
+        "sim_slot_1": "切换到 SIM 卡插槽 1",
+        "sim_slot_2": "切换到 SIM 卡插槽 2",
+        "apn_list": "显示 APN 列表",
+        "apn_nrbroadband": "将 APN 设为 NRBROADBAND",
+        "bands_nr_sa": "显示已启用的 5G NR SA 频段",
+        "bands_nr_nsa": "显示已启用的 5G NR NSA 频段",
+        "bands_lte": "显示已启用的 LTE 频段",
+        "ippt_addresses": "显示已分配的 IP 地址",
+        "ippt_enable": "启用 IP 透传",
+        "ippt_disable": "禁用 IP 透传"
+      },
+      "errors": {
+        "required": "名称和命令都必须填写。",
+        "must_start_at": "命令必须以 AT 开头。",
+        "duplicate_command": "该命令已在列表中。",
+        "duplicate_label": "另一条命令已经使用了这个名称。"
+      },
+      "manage_dialog": {
+        "title": "管理自定义命令",
+        "description": "您在这里添加的命令会保存在本浏览器中，并显示在列表的“自定义”分组下。",
+        "empty": "您还没有添加任何自定义命令。",
+        "label_field": "命令名称",
+        "label_placeholder": "命令名称",
+        "command_field": "AT 命令",
+        "command_placeholder": "AT+…",
+        "add": "添加",
+        "delete": "删除 {{label}}"
+      }
+    }
+  },
+  "languages": {
+    "page": {
+      "title": "语言",
+      "description": "选择 QManager 界面所使用的语言，并安装为本设备发布的社区翻译包。"
+    },
+    "actions": {
+      "refresh": "刷新",
+      "refreshing": "正在刷新…",
+      "refresh_aria": "刷新已安装的语言和社区目录",
+      "check_again": "重新检查",
+      "install": "安装",
+      "update": "更新",
+      "cancel": "取消",
+      "install_aria": "安装 {{language}}",
+      "update_aria": "更新 {{language}}",
+      "cancel_aria": "取消 {{language}} 的安装",
+      "remove_aria": "移除 {{language}} 语言包",
+      "copy_command": "复制手动安装命令"
+    },
+    "band": {
+      "head": "本设备上",
+      "display": {
+        "eyebrow": "显示语言",
+        "caption_built_in": "内置，{{code}}",
+        "caption_downloaded": "已下载，{{code}}",
+        "caption_unknown": "不在本设备的目录中"
+      },
+      "ready": {
+        "eyebrow": "可以使用",
+        "caption_built_in_one": "{{count}} 种内置",
+        "caption_built_in_other": "{{count}} 种内置",
+        "caption_with_downloaded_one": "{{builtIn}} 种内置，{{count}} 种已下载",
+        "caption_with_downloaded_other": "{{builtIn}} 种内置，{{count}} 种已下载",
+        "caption_unknown": "无法读取列表"
+      },
+      "catalog": {
+        "eyebrow": "社区目录",
+        "value_unreachable": "无法访问",
+        "caption_unreachable": "无法连接 GitHub",
+        "caption_none": "尚未发布任何语言包",
+        "caption_available": "可以安装",
+        "caption_updates_one": "有可用更新",
+        "caption_updates_other": "有 {{count}} 项可用更新"
+      }
+    },
+    "display": {
+      "title": "显示语言",
+      "description": "选择 QManager 界面所使用的语言。更改会立即生效，且仅作用于本设备。",
+      "group_aria": "显示语言",
+      "built_in": "内置",
+      "version": "v{{version}}"
+    },
+    "remove": {
+      "title": "移除 {{language}}？",
+      "description": "此操作会从本设备删除已下载的 {{language}} 语言包。您随时可以重新安装。",
+      "description_active": "{{language}} 正是您当前正在阅读的语言。移除它会让 QManager 切换回英语。",
+      "cancel": "保留",
+      "confirm": "移除",
+      "removing": "正在移除…"
+    },
+    "community": {
+      "title": "社区语言包",
+      "description": "由社区为 QManager 发布的翻译包。安装其中一个后，它会加入上方的列表。",
+      "list_aria": "社区语言包",
+      "completeness": "已翻译 {{pct}}%",
+      "size": {
+        "kb": "{{value}} KB",
+        "mb": "{{value}} MB"
+      },
+      "contributors_one": "{{count}} 位译者",
+      "contributors_other": "{{count}} 位译者",
+      "contributors_none": "社区",
+      "incompatible": "需要更新版本的 QManager"
+    },
+    "install": {
+      "percent": "{{pct}}%",
+      "progress_aria": "正在安装 {{language}}"
+    },
+    "steps": {
+      "pending": "排队中",
+      "downloading": "正在下载",
+      "verifying": "正在校验",
+      "extracting": "正在解压",
+      "validating": "正在验证",
+      "installing": "正在安装",
+      "cancelling": "正在取消",
+      "working": "处理中"
+    },
+    "failure": {
+      "manual": "设备上没有任何内容被改动。您可以通过 SSH 手动安装此语言包："
+    },
+    "states": {
+      "unreachable": {
+        "title": "无法访问语言包目录",
+        "description": "设备无法从 GitHub 加载社区语言包列表。您已安装的语言未受影响 — 这只是一次失败的读取，调制解调器上没有任何改动。"
+      },
+      "none": {
+        "title": "还没有社区语言包",
+        "description": "还没有人为 QManager 发布可下载的翻译包。上方的语言内置于固件中，始终可用。"
+      }
+    },
+    "loading": {
+      "status": "正在加载语言"
+    },
+    "toast": {
+      "switched": "已切换到 {{language}}",
+      "switch_failed": "无法加载 {{language}} 语言包",
+      "switch_failed_detail": "可能需要重新安装它。",
+      "installing": "正在安装 {{language}}…",
+      "installed": "{{language}} 已安装",
+      "install_failed": "无法安装 {{language}}",
+      "install_failed_generic": "语言包安装失败",
+      "use_now": "立即使用",
+      "install_cancelled": "安装已取消",
+      "removed": "{{language}} 已移除",
+      "removed_active": "{{language}} 已移除，已切换回英语",
+      "remove_failed": "无法移除 {{language}}",
+      "copied": "安装命令已复制",
+      "copy_failed": "无法复制安装命令"
+    },
+    "errors": {
+      "generic": "无法安装该语言包。"
+    }
+  },
+  "signal_storm": {
+    "hud": {
+      "score": "得分",
+      "best": "最佳",
+      "wave": "波次"
+    },
+    "power_ups": {
+      "rapid_fire": "⚡ 快速射击",
+      "spread": "◈ 散射",
+      "shield": "◉ 护盾"
+    },
+    "pause": {
+      "title": "已暂停",
+      "resume_hint": "按 P 继续"
+    },
+    "game_over": {
+      "title": "游戏结束",
+      "score_label": "得分",
+      "new_high_score": "★ 新纪录 ★",
+      "best_prefix": "最佳：",
+      "controls_hint": "Enter 重试  •  Esc 退出"
+    },
+    "boss_defeated": "BOSS 已击败",
+    "muted": "已静音",
+    "boss_names": {
+      "tier_1": "信号干扰者",
+      "tier_2": "频率阻塞者",
+      "tier_3": "频段封锁者",
+      "tier_4": "网络毁灭者",
+      "tier_5": "核心腐化者"
+    },
+    "boss_subtitles": {
+      "tier_1": "正在干扰您的连接",
+      "tier_2": "正在阻塞所有频率",
+      "tier_3": "正在封锁每个频段",
+      "tier_4": "正在毁灭您的网络",
+      "tier_5": "正在腐化核心"
+    }
+  },
+  "known_sims": {
+    "section": "已跟踪的 SIM 卡",
+    "rows": {
+      "count": {
+        "consequence": "QManager 会记住已识别过的 SIM 卡，仅在插入全新 SIM 卡时才提醒您。清除会忘记除当前插入之外的所有 SIM 卡。",
+        "label": "已记住的 SIM 卡"
+      }
+    },
+    "states": {
+      "empty_title": "尚未记录任何 SIM 卡",
+      "empty_description": "QManager 会在 SIM 卡首次插入时记录它。插入一张 SIM 卡即可开始。",
+      "error_title": "无法读取已跟踪的 SIM 卡",
+      "error_description": "设备未响应。没有任何记录被删除，这只是读取失败，数量仍保存在调制解调器上。"
+    },
+    "clear_button": "清除",
+    "clear_dialog_title": "清除已知 SIM 卡？",
+    "clear_dialog_description": "这将忘记 QManager 识别过的所有 SIM 卡，但保留当前插入的这张——因此您正在使用的 SIM 卡不会被标记为新卡。之前用过的 SIM 卡在下次插入时会再次提醒。",
+    "clear_dialog_confirm": "清除",
+    "clear_dialog_clearing": "正在清除…",
+    "toast_cleared": "已清除已知 SIM 卡",
+    "toast_clear_failed": "清除已知 SIM 卡失败"
+  },
+  "health_check": {
+    "page": {
+      "title": "系统健康检查",
+      "description": "检查本设备上的每个 QManager 子系统（从 AT 代理到服务和防火墙），然后下载一份脱敏诊断包分享给支持团队。"
+    },
+    "actions": {
+      "run": "运行诊断",
+      "running": "运行中…",
+      "download": "下载诊断包",
+      "downloading": "下载中…",
+      "clear": "清除",
+      "clearing": "正在清除…",
+      "retry": "重试"
+    },
+    "clear_dialog": {
+      "title": "清除诊断结果？",
+      "description": "这将删除上一次运行的结果、每项测试的输出文件，以及设备上的可下载诊断包。页面将恢复为空状态。",
+      "cancel": "取消",
+      "confirm": "清除结果"
+    },
+    "band": {
+      "head": "上次诊断",
+      "unreachable": "设备没有应答",
+      "stale": "显示上次读取的结果",
+      "result": {
+        "eyebrow": "结果",
+        "unreachable": "无法连接",
+        "none": "未运行",
+        "running": "{{done}} / {{total}}",
+        "failed_one": "{{count}} 项失败",
+        "failed_other": "{{count}} 项失败",
+        "warned_one": "{{count}} 项警告",
+        "warned_other": "{{count}} 项警告",
+        "passed": "全部通过",
+        "errored": "运行失败",
+        "caption_errored": "运行提前中止",
+        "caption_unreachable": "设备未响应",
+        "caption_none": "尚未检查",
+        "caption_running": "开始于 {{when}}",
+        "caption_finished": "完成于 {{when}}",
+        "caption_warnings_one": "完成于 {{when}}（{{count}} 项警告）",
+        "caption_warnings_other": "完成于 {{when}}（{{count}} 项警告）"
+      },
+      "checks": {
+        "eyebrow": "检查项",
+        "value": "{{passed}} / {{total}} 项通过",
+        "caption_one": "{{count}} 个子系统",
+        "caption_other": "{{count}} 个子系统",
+        "caption_skipped_one": "{{subsystems}}（{{count}} 项已跳过）",
+        "caption_skipped_other": "{{subsystems}}（{{count}} 项已跳过）",
+        "caption_none": "尚未测量任何内容"
+      },
+      "bundle": {
+        "eyebrow": "诊断包",
+        "value_ready": "已就绪",
+        "value_building": "生成中…",
+        "caption_ready": "可以下载",
+        "caption_building": "运行结束后生成",
+        "caption_absent": "运行后生成",
+        "caption_unavailable": "本次运行未生成打包文件"
+      }
+    },
+    "status": {
+      "pass": "通过",
+      "fail": "失败",
+      "warn": "警告",
+      "skip": "已跳过",
+      "running": "运行中",
+      "pending": "待处理"
+    },
+    "attention": {
+      "title": "需要关注",
+      "description": "上一次运行中失败或发出警告的所有检查项。从这里开始处理。"
+    },
+    "all_checks": {
+      "title": "全部检查项",
+      "description": "诊断运行的每一项探测，按所属子系统分组。"
+    },
+    "tally": {
+      "failed_one": "{{count}} 项失败",
+      "failed_other": "{{count}} 项失败",
+      "warnings_one": "{{count}} 项警告",
+      "warnings_other": "{{count}} 项警告",
+      "passed_one": "{{count}} 项通过",
+      "passed_other": "{{count}} 项通过"
+    },
+    "states": {
+      "empty": {
+        "title": "尚未运行过诊断",
+        "description": "QManager 会探测本设备上的每个子系统，并将结果打包成一份可发送给支持团队的脱敏诊断包。",
+        "checks_one": "{{count}} 项检查",
+        "checks_other": "{{count}} 项检查"
+      },
+      "running": {
+        "title": "目前还没有失败项",
+        "description": "诊断仍在逐项检查中。任何失败或发出警告的项目都会显示在这里。"
+      },
+      "incomplete": {
+        "title": "本次诊断没有完成",
+        "description": "运行程序在所有检查项报告结果之前就已停止，未执行到的检查项没有任何结果。这里的内容并不代表本设备状态正常——请重新运行诊断。"
+      },
+      "all_clear": {
+        "title_one": "全部 {{count}} 项检查通过",
+        "title_other": "全部 {{count}} 项检查通过",
+        "description": "没有失败项，也没有发出警告。每个子系统都如预期般作出了应答。"
+      },
+      "all_clear_skipped": {
+        "title_one": "已运行的 {{count}} 项检查全部通过",
+        "title_other": "已运行的 {{count}} 项检查全部通过",
+        "description_one": "没有失败项，也没有发出警告。有 {{count}} 项检查被跳过，本次运行无法说明它的状态。",
+        "description_other": "没有失败项，也没有发出警告。有 {{count}} 项检查被跳过，本次运行无法说明它们的状态。"
+      },
+      "error": {
+        "title": "无法读取诊断结果",
+        "description": "QManager 向设备请求上一次健康检查的运行结果，但没有得到应答。"
+      }
+    },
+    "notice": {
+      "run_error": "诊断运行期间，运行程序报告了一个问题。"
+    },
+    "loading": {
+      "status": "正在加载诊断结果",
+      "output": "加载中…"
+    },
+    "output": {
+      "show": "显示 {{label}} 的捕获输出",
+      "hide": "隐藏 {{label}} 的捕获输出",
+      "truncated": "仅显示捕获输出的最后 4 KB。",
+      "empty": "（未捕获到输出）",
+      "failed": "加载输出失败：{{error}}"
+    },
+    "time": {
+      "just_now": "刚刚",
+      "seconds": "{{count}} 秒前",
+      "minutes": "{{count}} 分钟前",
+      "hours": "{{count}} 小时前",
+      "days": "{{count}} 天前"
+    },
+    "toast": {
+      "run_failed": "无法启动诊断",
+      "cleared": "诊断结果已清除",
+      "clear_failed": "无法清除结果",
+      "download_failed": "无法下载诊断包"
+    },
+    "category": {
+      "binaries": {
+        "label": "二进制文件与版本",
+        "description": "必需工具和 AT 代理程序"
+      },
+      "permissions": {
+        "label": "文件系统与权限",
+        "description": "设备节点、代理套接字、可写路径和剩余空间"
+      },
+      "at_transport": {
+        "label": "AT 传输",
+        "description": "经由 qcmd 和 qmanager_atd 代理的往返测试"
+      },
+      "sms": {
+        "label": "SIM 与短信",
+        "description": "SIM 就绪状态、短信存储和共享调制解调器锁"
+      },
+      "services": {
+        "label": "服务",
+        "description": "QManager 守护进程和 Web 服务器的 procd 实例"
+      },
+      "network": {
+        "label": "网络",
+        "description": "移动数据地址、连通性、DNS、Web 服务器和防火墙"
+      },
+      "configuration": {
+        "label": "配置",
+        "description": "UCI 与 JSON 配置、缓存新鲜度和已安装版本"
+      }
+    },
+    "tests": {
+      "bin": {
+        "atd": "qmanager_atd AT 代理程序",
+        "qcmd": "qcmd 链接到 qmanager_atd",
+        "qsms": "qsms 链接到 qmanager_atd",
+        "jq": "jq",
+        "curl": "curl",
+        "openssl": "openssl",
+        "nft": "nft",
+        "ethtool": "ethtool",
+        "msmtp": "msmtp（邮件告警）",
+        "nfqws": "nfqws（流量引擎）",
+        "tailscale": "tailscale（可选）"
+      },
+      "perm": {
+        "smd11": "/dev/smd11 AT 通道",
+        "atd_socket": "AT 代理套接字仅限 root",
+        "tmp_writable": "/tmp 可写",
+        "var_lock": "/var/lock 可写",
+        "overlay_space": "Overlay 剩余空间",
+        "tmp_space": "/tmp 剩余空间"
+      },
+      "at": {
+        "echo": "AT 回显",
+        "cgmi": "AT+CGMI 制造商",
+        "cgmm": "AT+CGMM 型号",
+        "cgsn": "AT+CGSN IMEI",
+        "cfun": "AT+CFUN? 射频状态",
+        "concurrent": "并发调用按序执行",
+        "long_flag": "无残留的长命令标志"
+      },
+      "sms": {
+        "cpin": "SIM 就绪（AT+CPIN?）",
+        "cpms": "短信存储有响应（AT+CPMS?）",
+        "lock": "可获取调制解调器锁"
+      },
+      "svc": {
+        "ping": "qmanager ping 守护进程",
+        "poller": "qmanager 轮询器",
+        "atd": "qmanager_atd 代理",
+        "uhttpd": "uhttpd Web 服务器",
+        "watchcat": "连接看门狗",
+        "tower_failover": "基站故障转移守护进程",
+        "dpi": "流量引擎（nfqws）",
+        "sms_forward": "短信转发守护进程",
+        "tailscale": "Tailscale（可选）"
+      },
+      "net": {
+        "wan_ip": "移动数据接口有 IPv4",
+        "ping": "Ping 可达探测目标",
+        "dns": "DNS 可解析",
+        "reachable": "Ping 守护进程报告可达",
+        "uhttpd_listen": "Web 服务器正在监听",
+        "fw4": "fw4 防火墙表已加载",
+        "dpi_chain": "流量引擎 nft 链"
+      },
+      "cfg": {
+        "uci": "UCI quecmanager 配置可解析",
+        "qmanager_dir": "/etc/qmanager 存在",
+        "json": "配置 JSON 文件有效",
+        "poller_fresh": "轮询器缓存新鲜",
+        "ping_fresh": "Ping 缓存新鲜",
+        "version": "已记录 QManager 版本"
+      }
+    }
+  },
+  "adaptive_polling": {
+    "page_title": "自适应轮询",
+    "page_description": "无人打开 QManager 时，减少查询调制解调器的频率。",
+    "card_title": "自适应轮询",
+    "card_description": "页面打开时状态按全速刷新，之后逐步放慢。",
+    "tier": {
+      "active": "全速",
+      "idle": "空闲（降速）",
+      "deep": "深度空闲（最低）"
+    },
+    "tier_aria": "当前轮询：{{tier}}",
+    "enabled": {
+      "label": "空闲时降速",
+      "on": "宽限期过后轮询降速。",
+      "off": "状态始终按全速刷新。",
+      "hint_label": "哪些功能保持运行",
+      "hint": "提醒和连接看门狗在任何速率下都正常工作，仅状态刷新会放慢。"
+    },
+    "fields": {
+      "active_grace": {
+        "label": "宽限期",
+        "consequence": "最后一个页面关闭后，仍按全速运行这么久（{{min}} 至 {{max}} 秒）。"
+      },
+      "idle_interval": {
+        "label": "空闲间隔",
+        "consequence": "空闲时两次刷新的间隔（{{min}} 至 {{max}} 秒）。"
+      },
+      "idle_threshold": {
+        "label": "进入深度空闲前",
+        "consequence": "刷新进一步放慢前的空闲时间（{{min}} 至 {{max}} 秒）。"
+      },
+      "deep_idle_interval": {
+        "label": "深度空闲间隔",
+        "consequence": "深度空闲时两次刷新的间隔（{{min}} 至 {{max}} 秒）。"
+      }
+    },
+    "unit_seconds": "秒",
+    "error_title": "无法加载自适应轮询",
+    "error_description": "设置未能加载，请稍后重试。",
+    "save_failed_status": "未保存",
+    "default_status": "默认时间",
+    "toast_saved": "自适应轮询已保存。",
+    "toast_failed": "无法保存自适应轮询。"
+  },
+  "logs": {
+    "page": {
+      "title": "系统日志",
+      "description": "QManager 将日志保存在调制解调器的内存中，因此每次重启后都会清空，也不会磨损闪存。在这里筛选日志，查看各个组件的运行情况。",
+      "refresh": "刷新",
+      "clear": "清除日志",
+      "copy": "复制"
+    },
+    "band": {
+      "head": "日志健康",
+      "severity": {
+        "eyebrow": "严重程度",
+        "errors_one": "{{count}} 个错误",
+        "errors_other": "{{count}} 个错误",
+        "warnings_one": "{{count}} 个警告",
+        "warnings_other": "{{count}} 个警告",
+        "clean": "无异常",
+        "caption_unread": "尚无读取结果",
+        "caption_errors_one": "在已读取的 {{lines}} 行中有 {{count}} 条警告",
+        "caption_errors_other": "在已读取的 {{lines}} 行中有 {{count}} 条警告",
+        "caption_warnings_one": "已读取的 {{count}} 行中没有错误",
+        "caption_warnings_other": "已读取的 {{count}} 行中没有错误",
+        "caption_clean_one": "已读取的 {{count}} 行中没有警告",
+        "caption_clean_other": "已读取的 {{count}} 行中没有警告"
+      },
+      "feed": {
+        "eyebrow": "日志流",
+        "live": "实时",
+        "paused": "已暂停",
+        "stopped": "已停止",
+        "caption_unread": "等待首次读取",
+        "caption_live": "已刷新于 {{age}}，每 10 秒一次",
+        "caption_paused": "自动刷新已暂停，上次读取于 {{age}}",
+        "caption_stopped": "上次读取失败，{{age}}"
+      },
+      "file": {
+        "eyebrow": "日志文件",
+        "size": "{{size}} KB",
+        "caption_one": "{{count}} 行，{{rotated}} 份已归档",
+        "caption_other": "{{count}} 行，{{rotated}} 份已归档",
+        "caption_unread": "未上报大小"
+      }
+    },
+    "card": {
+      "title": "日志内容",
+      "description": "正在显示 {{shown}} 行。当前日志共有 {{held}} 行。",
+      "description_loading": "正在读取日志…",
+      "description_unreadable": "QManager 无法读取日志。"
+    },
+    "rail": {
+      "label": "按级别筛选",
+      "all": "全部",
+      "DEBUG": "Debug",
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error"
+    },
+    "filters": {
+      "search_label": "搜索日志",
+      "search_placeholder": "搜索消息",
+      "component_label": "按组件筛选",
+      "component_all": "所有组件",
+      "lines_label": "读取行数",
+      "lines_option": "{{lines}} 行",
+      "archived": "包含已归档日志"
+    },
+    "day": {
+      "today": "今天",
+      "yesterday": "昨天",
+      "unknown": "日期未知"
+    },
+    "time": {
+      "now": "刚刚",
+      "seconds": "{{value}} 秒前",
+      "minutes": "{{value}} 分钟前",
+      "hours": "{{value}} 小时前",
+      "days": "{{value}} 天前"
+    },
+    "severity": {
+      "DEBUG": "调试",
+      "INFO": "信息",
+      "WARN": "警告",
+      "ERROR": "错误"
+    },
+    "notice": {
+      "stale": "QManager 在刷新时失去了联系。这些是它上次从设备读取到的行。"
+    },
+    "empty": {
+      "title": "日志为空",
+      "description": "QManager 将日志保存在内存中，并在每次重启时清空，因此自本设备上次启动以来还没有写入任何内容。"
+    },
+    "empty_filtered": {
+      "title": "没有匹配这些筛选条件的内容",
+      "description": "日志中有内容，但没有一条符合您选择的级别、组件或搜索条件。",
+      "action": "清除筛选条件"
+    },
+    "error": {
+      "title": "无法读取日志",
+      "description": "QManager 无法连接到本设备上的日志读取程序。日志本身并未受到影响，这只是读取失败，并非日志丢失。",
+      "retry": "重试"
+    },
+    "clear_dialog": {
+      "title": "清除系统日志？",
+      "description": "此操作将清空当前日志，并删除两个归档文件。已写入的内容将永久消失，新日志会立即开始写入。",
+      "cancel": "取消",
+      "confirm": "清除日志",
+      "clearing": "正在清除…"
+    },
+    "toast": {
+      "cleared": "系统日志已清除",
+      "clear_failed": "无法清除系统日志",
+      "refresh_failed": "无法读取系统日志",
+      "copied": "日志已复制到剪贴板",
+      "copy_failed": "无法复制日志"
+    }
+  },
+  "band": {
+    "head": "当前生效",
+    "unreachable": "无法连接",
+    "clock": {
+      "eyebrow": "时区",
+      "caption_unread": "无法读取时区",
+      "caption_saved": "用于日志和计划任务"
+    },
+    "reboot": {
+      "eyebrow": "下次重启",
+      "off": "已关闭",
+      "day_separator": "、",
+      "caption_repeats": "重复：{{days}}",
+      "caption_off": "未设置自动重启",
+      "caption_no_day": "已启用，但未选择任何日期",
+      "caption_unread": "无法读取计划",
+      "never": "从不"
+    },
+    "sims": {
+      "eyebrow": "已跟踪的 SIM 卡",
+      "caption_none": "尚未记录任何内容",
+      "caption_known": "仅新 SIM 卡会触发提醒",
+      "caption_unread": "无法读取数量"
+    },
+    "stale": "上次确认的读数"
+  },
+  "preferences": {
+    "section": "时间与单位",
+    "card": {
+      "title": "设备与单位",
+      "description": "本调制解调器如何计时、读数所用的单位，以及它记住的 SIM 卡。",
+      "save": "保存偏好设置"
+    },
+    "rows": {
+      "unsaved": "未保存",
+      "timezone": {
+        "label": "时区",
+        "consequence": "本调制解调器没有电池时钟。每一条日志、每一个事件和每一项计划都以此为基准。",
+        "placeholder": "选择时区",
+        "search": "搜索时区…",
+        "empty": "没有匹配的时区。"
+      },
+      "temperature": {
+        "label": "温度",
+        "consequence": "适用于 QManager 中的所有温度读数。",
+        "celsius": "摄氏度（°C）",
+        "fahrenheit": "华氏度（°F）"
+      },
+      "distance": {
+        "label": "距离",
+        "consequence": "适用于小区扫描和天线页面上的基站距离。",
+        "km": "千米（km）",
+        "miles": "英里（mi）"
+      }
+    },
+    "states": {
+      "error_title": "无法读取您的偏好设置",
+      "error_body": "QManager 无法读取本设备的偏好设置。没有任何设置被更改——已保存的时区和单位仍在调制解调器上生效。",
+      "error_body_detail": "QManager 无法读取本设备的偏好设置。没有任何设置被更改——已保存的时区和单位仍在调制解调器上生效。设备返回：{{detail}}",
+      "stale": "调制解调器未响应最近一次请求。此处显示的是它最后确认的状态。"
+    },
+    "toast": {
+      "saved": "偏好设置已保存",
+      "failed": "无法保存偏好设置"
+    }
+  },
+  "reboot": {
+    "card": {
+      "title": "计划重启",
+      "description": "按每周计划自动重启调制解调器。"
+    },
+    "rows": {
+      "enabled": {
+        "label": "自动重启",
+        "armed": "已启用",
+        "off": "已关闭",
+        "consequence": "调制解调器将按此计划重启。您的会话会中断约九十秒，随后自动恢复。",
+        "no_day": "永不触发"
+      },
+      "time": {
+        "label": "时间",
+        "consequence": "使用设备本地时间，而非浏览器时间。"
+      },
+      "days": {
+        "label": "重复于",
+        "consequence": "未选择任何日期时，该计划永远不会触发。",
+        "rail": "每周重启日"
+      },
+      "clock": {
+        "label": "调制解调器时间",
+        "consequence": "计划任务所依据的日期和时间，使用“设备与单位”中设置的时区。",
+        "unsynced": "尚未设置",
+        "unsynced_consequence": "调制解调器尚未从网络获取时间，在此之前计划重启不会执行。"
+      }
+    },
+    "days": {
+      "sun": "周日",
+      "mon": "周一",
+      "tue": "周二",
+      "wed": "周三",
+      "thu": "周四",
+      "fri": "周五",
+      "sat": "周六"
+    },
+    "states": {
+      "error": {
+        "title": "无法读取计划",
+        "description": "QManager 无法加载此设备的计划。已保存的内容仍在调制解调器上生效，这只是读取失败，并未取消。"
+      },
+      "stale": "QManager 在刷新时失去了联系。这些是它上次从设备读取到的值。",
+      "autosave": "自动保存",
+      "saving": "保存中…"
+    },
+    "toast": {
+      "enabled": "已启用定时重启",
+      "disabled": "已关闭定时重启",
+      "saved": "重启计划已保存",
+      "save_failed": "保存重启计划失败",
+      "update_failed": "更新重启计划失败",
+      "unsaved": "重启计划的更改未保存——您在保存完成前离开了页面。"
+    }
+  },
+  "passwords": {
+    "card": {
+      "title": "密码",
+      "description": "修改您登录 QManager 所用的密码，或 SSH 的 root 密码。每一项都需要先输入其当前密码。"
+    },
+    "tabs": {
+      "aria": "要修改的密码",
+      "web": "网页密码",
+      "ssh": "SSH 密码"
+    },
+    "web": {
+      "label": "当前网页密码",
+      "consequence": "您登录 QManager 所用的密码。",
+      "dialog_title": "修改网页密码",
+      "dialog_description": "修改后您将退出登录。"
+    },
+    "ssh": {
+      "label": "当前 SSH 密码",
+      "consequence": "通过 SSH 登录本调制解调器的 root 密码。",
+      "dialog_title": "修改 SSH 密码",
+      "dialog_description": "立即生效，已建立的 SSH 会话不会中断。",
+      "toast_saved": "SSH 密码已更新。"
+    },
+    "continue": "继续",
+    "toggle": {
+      "show": "显示密码",
+      "hide": "隐藏密码"
+    },
+    "dialog": {
+      "new_label": "新密码",
+      "confirm_label": "确认新密码",
+      "match": "两次密码一致",
+      "mismatch": "两次密码不一致",
+      "cancel": "取消",
+      "save": "保存密码"
+    },
+    "errors": {
+      "too_short": "密码至少需要 5 个字符。",
+      "weak": "密码至少需要 5 个字符，且包含大写字母、小写字母和数字。",
+      "verify_failed": "无法验证密码，请重试。",
+      "change_failed": "无法修改密码，请重试。"
+    }
+  },
+  "web_port": {
+    "card_title": "网页端口",
+    "card_description": "本界面监听的端口，LuCI 随之一起变更。",
+    "http_label": "HTTP 端口",
+    "http_consequence": "本界面和 LuCI 使用的明文端口。",
+    "https_label": "HTTPS 端口",
+    "https_consequence": "本界面和 LuCI 使用的加密端口。",
+    "pending": "应用后将在 {{origin}} 打开。",
+    "moving": "正在切换到 {{origin}}…",
+    "invalid": "请输入 1 到 65535 之间的整数。",
+    "same": "HTTP 和 HTTPS 需要使用不同的端口。",
+    "discard": "放弃",
+    "confirm_title": "更改网页端口？",
+    "confirm_description": "QManager 将在新端口上重启，本页面会跳转到 {{origin}}。如果新端口无法启动，将自动恢复旧端口。",
+    "confirm_action": "更改端口",
+    "toast_failed": "无法更改网页端口。",
+    "toast_unchanged": "网页端口已保存。",
+    "toast_unreachable": "新端口没有响应，QManager 仍使用旧端口。",
+    "error_title": "无法读取网页端口",
+    "error_description": "端口未能加载，请稍后重试。"
+  }
+}

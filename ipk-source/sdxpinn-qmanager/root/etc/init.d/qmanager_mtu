@@ -1,0 +1,42 @@
+#!/bin/sh /etc/rc.common
+# =============================================================================
+# qmanager_mtu — Init Script for MTU Settings Persistence
+# =============================================================================
+# Spawns the qmanager_mtu_apply daemon at boot, which waits for the rmnet_data
+# interface to come up and then re-applies the custom MTU from the persistent
+# rules file written by the MTU CGI endpoint.
+#
+# Non-procd: spawns a one-shot background daemon (double-fork) and exits.
+# The daemon handles the wait loop so rc.d is not blocked.
+#
+# MTU is interface-specific kernel state (cleared on reboot), so we must
+# wait for rmnet_data0 to appear before applying. The modem typically
+# connects 20-60s after boot.
+#
+# Usage:
+#   /etc/init.d/qmanager_mtu start|enable|disable
+#
+# Install location: /etc/init.d/qmanager_mtu
+# =============================================================================
+
+START=99
+STOP=10
+
+DAEMON="/usr/bin/qmanager_mtu_apply"
+MTU_FILE="/etc/firewall.user.mtu"
+
+start() {
+    # Guard: only run if a custom MTU is configured
+    [ -f "$MTU_FILE" ] || return 0
+
+    # Guard: daemon must exist and be executable
+    [ -x "$DAEMON" ] || return 1
+
+    # Spawn daemon (double-fork to detach from init process group)
+    ( "$DAEMON" </dev/null >/dev/null 2>&1 & )
+    logger -t qmanager_mtu "MTU apply daemon started"
+}
+
+stop() {
+    :
+}

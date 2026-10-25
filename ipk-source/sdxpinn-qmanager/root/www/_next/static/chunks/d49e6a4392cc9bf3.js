@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,777558,e=>{"use strict";var t=e.i(222348),u=e.i(858061);function o(){let e=(0,u.useRouter)();return(0,t.useEffect)(()=>{e.replace("/monitoring/events")},[e]),null}e.s(["default",()=>o])}]);

@@ -1,0 +1,167 @@
+#!/bin/sh
+# qmanager_dpi_install — Download and install nfqws binary from zapret releases
+# Spawned by CGI, writes progress to /tmp/qmanager_dpi_install.json
+#
+# Approach: Download the upstream zapret release tarball (openwrt-embedded),
+# extract only the nfqws binary for the detected architecture, install to
+# /usr/bin/nfqws, and verify it works. Skips the full zapret package to avoid
+# opkg dependency issues on custom firmware.
+#
+# The release is pinned by tag AND sha256: nfqws runs as root, so a moved
+# "latest" or a tampered asset must never install. To bump, take the asset's
+# digest from the GitHub release (and re-hash the download to confirm it).
+
+. /usr/lib/qmanager/qlog.sh
+[ -f /usr/lib/qmanager/safe_tmp.sh ] && . /usr/lib/qmanager/safe_tmp.sh
+
+qlog_init "dpi_install"
+
+RESULT_FILE="/tmp/qmanager_dpi_install.json"
+# B5.11: same root-only path the video_optimizer.sh CGI guards on
+PID_FILE="/var/run/qmanager/dpi_install.pid"
+INSTALL_DIR="/usr/bin"
+NFQWS_BIN="$INSTALL_DIR/nfqws"
+# B4.1: root-owned work dir under /var/run (the binary is extracted and installed as root)
+TMP_DIR="/var/run/qmanager/dpi_download"
+ZAPRET_TAG="v72.13"
+ZAPRET_SHA256="b2a9f454523264899e0e7ba19c662e59e29fb20ebb354aa3631cd76885f4c2e6"
+ZAPRET_URL="https://github.com/bol-van/zapret/releases/download/${ZAPRET_TAG}/zapret-${ZAPRET_TAG}-openwrt-embedded.tar.gz"
+
+# Write PID for singleton check (fail closed without the safe_tmp helpers)
+if ! command -v qm_atomic_write >/dev/null 2>&1 || ! qm_run_dir >/dev/null; then
+    printf '{"success":false,"status":"error","message":"Cannot prepare the install state directory","detail":""}' \
+        > "$RESULT_FILE"
+    exit 1
+fi
+printf '%s\n' "$$" | qm_atomic_write "$PID_FILE"
+
+cleanup() {
+    rm -rf "$TMP_DIR"
+    rm -f "$PID_FILE"
+}
+trap cleanup EXIT INT TERM
+
+# Write status to result file
+write_result() {
+    local status="$1" message="$2" detail="$3"
+    printf '{"success":%s,"status":"%s","message":"%s","detail":"%s"}' \
+        "$([ "$status" = "complete" ] && echo 'true' || echo 'false')" \
+        "$status" "$message" "$detail" > "$RESULT_FILE"
+}
+
+# Detect device architecture
+detect_arch() {
+    local machine
+    machine=$(uname -m 2>/dev/null)
+    case "$machine" in
+        aarch64)   echo "linux-arm64" ;;
+        armv7l)    echo "linux-arm" ;;
+        x86_64)    echo "linux-x86_64" ;;
+        mips)      echo "linux-mips" ;;
+        mipsel)    echo "linux-mipsel" ;;
+        *)
+            qlog_error "Unsupported architecture: $machine"
+            return 1
+            ;;
+    esac
+}
+
+# --- Main ---
+
+qlog_info "Starting nfqws installation"
+write_result "running" "Detecting architecture..." ""
+
+# Step 1: Detect architecture
+arch=$(detect_arch)
+if [ -z "$arch" ]; then
+    write_result "error" "Unsupported architecture" "$(uname -m)"
+    exit 1
+fi
+qlog_info "Detected architecture: $arch"
+write_result "running" "Architecture: $arch" "Preparing download..."
+
+# Step 2: Download the pinned openwrt-embedded tarball (smaller, binaries only)
+if ! type qm_root_dir >/dev/null 2>&1 || ! qm_run_dir >/dev/null || ! qm_root_dir "$TMP_DIR" 0700; then
+    qlog_error "Cannot create root-owned work dir $TMP_DIR"
+    write_result "error" "Download failed" "Could not prepare work directory"
+    exit 1
+fi
+tarball="$TMP_DIR/zapret.tar.gz"
+
+qlog_info "Downloading zapret $ZAPRET_TAG: $ZAPRET_URL"
+write_result "running" "Downloading zapret $ZAPRET_TAG..." ""
+
+if ! curl -fsSL --proto =https --proto-redir =https -H "User-Agent: QManager" \
+        -o "$tarball" "$ZAPRET_URL" 2>/dev/null; then
+    write_result "error" "Download failed" "Could not download zapret $ZAPRET_TAG"
+    exit 1
+fi
+
+# Verify download is not empty
+if [ ! -s "$tarball" ]; then
+    write_result "error" "Download failed" "Downloaded file is empty"
+    exit 1
+fi
+
+qlog_info "Downloaded tarball ($(wc -c < "$tarball") bytes)"
+
+# Step 3: Verify the pinned sha256 before tar touches the archive (fail closed)
+write_result "running" "Verifying download..." ""
+if ! command -v sha256sum >/dev/null 2>&1; then
+    qlog_error "sha256sum not available, refusing to install unverified nfqws"
+    write_result "error" "Verification failed" "Cannot verify the download on this device"
+    exit 1
+fi
+actual_sha=$(sha256sum "$tarball" 2>/dev/null | awk '{ print $1 }')
+if [ "$actual_sha" != "$ZAPRET_SHA256" ]; then
+    qlog_error "SHA-256 mismatch for zapret $ZAPRET_TAG: expected=$ZAPRET_SHA256 actual=${actual_sha:-none}"
+    write_result "error" "Verification failed" "Download does not match the expected checksum"
+    exit 1
+fi
+qlog_info "SHA-256 verified (zapret $ZAPRET_TAG)"
+
+write_result "running" "Extracting nfqws binary..." ""
+
+# Step 4: Extract only the nfqws binary for our architecture
+# The tarball structure is: zapret-vXX/binaries/<arch>/nfqws
+nfqws_path=$(tar tzf "$tarball" 2>/dev/null | grep "binaries/$arch/nfqws$" | head -1)
+
+if [ -z "$nfqws_path" ]; then
+    write_result "error" "Binary not found in archive" "No nfqws for $arch in tarball"
+    exit 1
+fi
+
+if ! tar xzf "$tarball" -C "$TMP_DIR" "$nfqws_path" 2>/dev/null; then
+    write_result "error" "Extraction failed" "Could not extract $nfqws_path"
+    exit 1
+fi
+
+extracted="$TMP_DIR/$nfqws_path"
+if [ ! -f "$extracted" ]; then
+    write_result "error" "Extraction failed" "File not found after extraction"
+    exit 1
+fi
+
+qlog_info "Extracted nfqws binary ($(wc -c < "$extracted") bytes)"
+write_result "running" "Installing nfqws..." ""
+
+# Step 5: Verify the extracted binary runs BEFORE it replaces anything, so a
+# bad download never costs the user a working nfqws.
+chmod 755 "$extracted"
+nfqws_version=$("$extracted" --version 2>&1 | head -1)
+if [ -z "$nfqws_version" ]; then
+    write_result "error" "Binary verification failed" "nfqws does not run on this device"
+    exit 1
+fi
+
+# Step 6: Install via temp + sync + rename (crash-safe, and works while a
+# running nfqws holds the old inode, where cp fails with ETXTBSY)
+if ! qm_durable_write "$NFQWS_BIN" 0755 < "$extracted"; then
+    write_result "error" "Install failed" "Could not save the binary"
+    exit 1
+fi
+
+qlog_info "nfqws installed successfully: $nfqws_version"
+write_result "complete" "nfqws installed successfully" "$ZAPRET_TAG"
+
+exit 0

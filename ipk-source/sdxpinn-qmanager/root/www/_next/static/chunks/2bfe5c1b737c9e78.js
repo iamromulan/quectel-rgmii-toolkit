@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,45379,t=>{"use strict";var e=t.i(222348),o=t.i(858061);function u(){let t=(0,o.useRouter)();return(0,e.useEffect)(()=>{t.replace("/monitoring/connection-quality")},[t]),null}t.s(["default",()=>u])}]);

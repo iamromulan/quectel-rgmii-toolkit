@@ -1,0 +1,36 @@
+{
+  "reboot": "重启",
+  "disconnect": "断开连接",
+  "connect": "连接",
+  "signal_info": "信号信息",
+  "ca_info": "载波聚合信息",
+  "get_sim_slot": "获取当前 SIM 卡槽",
+  "switch_sim_slot_1": "切换到 SIM 卡槽 1",
+  "switch_sim_slot_2": "切换到 SIM 卡槽 2",
+  "get_apn_list": "获取当前 APN 列表",
+  "set_apn_nrbroadband": "将 APN 设为 NRBROADBAND",
+  "show_imei": "显示当前 IMEI",
+  "show_network_mode": "显示当前网络模式",
+  "set_network_mode_auto": "将网络模式设为 AUTO",
+  "set_network_mode_5g_lte": "将网络模式设为 仅 5G NR/4G LTE",
+  "set_network_mode_5g_only": "将网络模式设为 仅 5G NR",
+  "set_network_mode_lte_only": "将网络模式设为 仅 4G LTE",
+  "check_sa_nsa_status": "检查 SA/NSA 禁用状态",
+  "enable_sa_nsa": "启用 SA 与 NSA",
+  "disable_sa_only": "仅禁用 SA",
+  "disable_nsa_only": "仅禁用 NSA",
+  "get_5g_sa_bands": "获取已启用的 5G NR SA 频段",
+  "get_5g_nsa_bands": "获取已启用的 5G NR NSA 频段",
+  "get_4g_lte_bands": "获取已启用的 4G LTE 频段",
+  "view_ip_addresses": "查看已分配的 IP 地址",
+  "enable_ippt": "启用 IPPT（MAC 直通）",
+  "disable_ippt": "禁用 IPPT",
+  "blocked": {
+    "qscanfreq": "请使用\u201c小区扫描\u201d页面进行频率扫描。",
+    "qscan": "请使用\u201c小区扫描\u201d页面进行网络扫描。",
+    "factory_reset": "不允许从终端执行出厂重置。"
+  },
+  "warnings": {
+    "disable_radio": "这将关闭调制解调器射频。如通过 Tailscale 连接，可能会丢失对此界面的访问。"
+  }
+}

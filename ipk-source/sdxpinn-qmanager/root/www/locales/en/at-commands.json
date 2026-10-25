@@ -1,0 +1,36 @@
+{
+  "reboot": "Reboot",
+  "disconnect": "Disconnect",
+  "connect": "Connect",
+  "signal_info": "Signal Info",
+  "ca_info": "CA Info",
+  "get_sim_slot": "Get current SIM Slot",
+  "switch_sim_slot_1": "Switch to SIM Slot 1",
+  "switch_sim_slot_2": "Switch to SIM Slot 2",
+  "get_apn_list": "Get current APN List",
+  "set_apn_nrbroadband": "Set APN to NRBROADBAND",
+  "show_imei": "Show Current IMEI",
+  "show_network_mode": "Show Current Network Mode",
+  "set_network_mode_auto": "Set Network Mode to AUTO",
+  "set_network_mode_5g_lte": "Set Network Mode to 5G NR/4G LTE Only",
+  "set_network_mode_5g_only": "Set Network Mode to 5G NR Only",
+  "set_network_mode_lte_only": "Set Network Mode to 4G LTE Only",
+  "check_sa_nsa_status": "Check SA/NSA disable status",
+  "enable_sa_nsa": "Enable Both SA and NSA",
+  "disable_sa_only": "Disable SA Only",
+  "disable_nsa_only": "Disable NSA Only",
+  "get_5g_sa_bands": "Get Enabled 5G NR SA Bands",
+  "get_5g_nsa_bands": "Get Enabled 5G NR NSA Bands",
+  "get_4g_lte_bands": "Get Enabled 4G LTE Bands",
+  "view_ip_addresses": "View assigned IP addresses",
+  "enable_ippt": "Enable IPPT (MAC passthrough)",
+  "disable_ippt": "Disable IPPT",
+  "blocked": {
+    "qscanfreq": "Use the Cell Scanner page for frequency scanning.",
+    "qscan": "Use the Cell Scanner page for network scanning.",
+    "factory_reset": "Factory reset is not allowed from the terminal."
+  },
+  "warnings": {
+    "disable_radio": "This will disable the modem radio. If connected via Tailscale, you may lose access to this UI."
+  }
+}

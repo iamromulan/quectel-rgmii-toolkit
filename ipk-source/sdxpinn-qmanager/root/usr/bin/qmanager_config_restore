@@ -1,0 +1,250 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_config_restore — Detached Configuration Restore Worker
+# =============================================================================
+# Spawned by apply.sh via double-fork. Reads the input JSON from
+# /tmp/qmanager_config_restore_input.json and applies each section in canonical
+# order. Writes progress to /tmp/qmanager_config_restore.json after every
+# state transition. Honors /tmp/qmanager_config_restore.cancel sentinel.
+#
+# Usage: qmanager_config_restore <job_id>
+# =============================================================================
+
+# Guarded with -f: BusyBox ash exits when `.` cannot find its file.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init() { :; }; qlog_info() { :; }; qlog_warn() { :; }; qlog_error() { :; }
+fi
+qlog_init "cfg_restore"
+
+EVENTS_FILE="/tmp/qmanager_events.json"
+MAX_EVENTS=50
+if [ -f /usr/lib/qmanager/events.sh ]; then
+    . /usr/lib/qmanager/events.sh
+else
+    append_event() { :; }
+fi
+[ -f /usr/lib/qmanager/safe_tmp.sh ] && . /usr/lib/qmanager/safe_tmp.sh
+if [ -f /usr/lib/qmanager/config_backup_sections.sh ]; then
+    . /usr/lib/qmanager/config_backup_sections.sh
+else
+    qlog_error "config_backup_sections.sh missing; cannot run"
+    exit 1
+fi
+
+JOB_ID="${1:-$(date +%s)}"
+INPUT_FILE="/tmp/qmanager_config_restore_input.json"
+STATE_FILE="/tmp/qmanager_config_restore.json"
+PID_FILE="/var/run/qmanager_config_restore.pid"
+CANCEL_FILE="/tmp/qmanager_config_restore.cancel"
+WATCHCAT_LOCK="/tmp/qmanager_watchcat.lock"
+WATCHCAT_LOCK_OWNED=0
+
+# --- Singleton ---
+if [ -f "$PID_FILE" ]; then
+    existing=$(cat "$PID_FILE" 2>/dev/null)
+    if [ -n "$existing" ] && kill -0 "$existing" 2>/dev/null; then
+        qlog_warn "Another restore already running (PID $existing)"
+        exit 1
+    fi
+fi
+echo "$$" > "$PID_FILE"
+
+# Suppress watchcat recovery while we apply sections — prevents Tier 4
+# reboot from interrupting a multi-section restore.
+if [ ! -f "$WATCHCAT_LOCK" ]; then
+    touch "$WATCHCAT_LOCK" && WATCHCAT_LOCK_OWNED=1
+fi
+
+# Clear any stale reboot hint from a previous run
+rm -f /tmp/qmanager_config_restore.reboot_required
+
+cleanup() {
+    rm -f "$PID_FILE" "$CANCEL_FILE" "$INPUT_FILE"
+    [ "$WATCHCAT_LOCK_OWNED" = "1" ] && rm -f "$WATCHCAT_LOCK"
+}
+trap cleanup EXIT INT TERM
+
+# --- Validate input ---
+# B4.1: the payload drives root config writes; only a root-owned file is trusted
+if ! type qm_trusted_file >/dev/null 2>&1 || ! qm_trusted_file "$INPUT_FILE"; then
+    qlog_error "Input file not found: $INPUT_FILE"
+    exit 1
+fi
+
+# --- Build initial state with all sections pending ---
+STARTED_AT=$(date +%s)
+
+# Determine which sections are present in payload, in apply order
+present=""
+for k in $CFG_BACKUP_APPLY_ORDER; do
+    if jq -e ".sections.\"$k\"" "$INPUT_FILE" >/dev/null 2>&1; then
+        present="$present $k"
+    fi
+done
+
+state_write() {
+    local status="$1"
+    local sections_json="$2"
+    local summary_json="$3"
+    local completed_at="${4:-null}"
+    local reboot_required="false"
+    [ -f /tmp/qmanager_config_restore.reboot_required ] && reboot_required="true"
+    jq -n \
+        --arg job "$JOB_ID" \
+        --arg status "$status" \
+        --argjson started "$STARTED_AT" \
+        --argjson completed "$completed_at" \
+        --argjson sections "$sections_json" \
+        --argjson summary "$summary_json" \
+        --argjson reboot "$reboot_required" \
+        '{job_id:$job, status:$status, started_at:$started, completed_at:$completed,
+          sections:$sections, summary:$summary, reboot_required:$reboot}' > "$STATE_FILE"
+}
+
+# Build initial sections array (all pending)
+sections_arr="["
+sep=""
+for k in $present; do
+    sections_arr="${sections_arr}${sep}{\"key\":\"$k\",\"status\":\"pending\",\"attempts\":0}"
+    sep=","
+done
+sections_arr="${sections_arr}]"
+
+state_write "running" "$sections_arr" 'null'
+
+append_event "config_restore_started" "Configuration restore started ($(echo $present | wc -w) sections)" "info"
+
+# --- Section label lookup for event messages ---
+section_label() {
+    case "$1" in
+        sms_alerts)       echo "SMS Alerts" ;;
+        alert_routing)    echo "Alert Routing" ;;
+        sms_storage)      echo "SMS Storage" ;;
+        quality_thresholds) echo "Connection Quality" ;;
+        sites)            echo "Sites Monitor" ;;
+        watchdog)         echo "Watchdog/Watchcat" ;;
+        metrics)          echo "Prometheus Metrics" ;;
+        network_mode_apn) echo "Network Mode and APN" ;;
+        bands)            echo "LTE/5G Bands" ;;
+        tower_lock)       echo "Tower Lock" ;;
+        ttl_hl)           echo "TTL/HL" ;;
+        imei)             echo "IMEI" ;;
+        profiles)         echo "Custom SIM Profiles" ;;
+        *)                echo "$1" ;;
+    esac
+}
+
+# --- Update one section's status in the sections array ---
+update_section() {
+    local key="$1" status="$2" attempts="$3" message="$4"
+    sections_arr=$(echo "$sections_arr" | jq -c \
+        --arg k "$key" --arg s "$status" --argjson a "$attempts" --arg m "$message" \
+        'map(if .key == $k then . + {status:$s, attempts:$a, message:$m} else . end)')
+}
+
+# --- Retry wrapper ---
+# 1 initial attempt + 3 retries = 4 total attempts
+# Delays between attempts: 1s before retry 1, 2s before retry 2, 4s before retry 3
+apply_one() {
+    local key="$1"
+    local attempt=0 rc
+    local max_attempts=4
+    # Delay in seconds before attempt N+1 (0-indexed by attempt number after the first)
+    # delay[0] unused, delay[1]=1s, delay[2]=2s, delay[3]=4s
+    local delays="0 1 2 4"
+
+    while [ "$attempt" -lt "$max_attempts" ]; do
+        if [ -f "$CANCEL_FILE" ]; then
+            qlog_warn "Cancel requested, aborting before $key"
+            return 10
+        fi
+        attempt=$((attempt+1))
+        local stat
+        if [ "$attempt" -eq 1 ]; then
+            stat="running"
+        else
+            stat="retrying:$((attempt-1))"
+        fi
+        update_section "$key" "$stat" "$attempt" ""
+        state_write "running" "$sections_arr" 'null'
+
+        jq -c ".sections.\"$key\"" "$INPUT_FILE" | cfg_backup_apply "$key"
+        rc=$?
+        case "$rc" in
+            0) return 0 ;;
+            2) return 2 ;;  # unsupported, no retry
+            3) return 3 ;;  # profiles sim mismatch, no retry
+        esac
+        # Retry: sleep delays[attempt] before the next loop iteration
+        if [ "$attempt" -lt "$max_attempts" ]; then
+            sleep "$(echo "$delays" | awk -v i=$((attempt+1)) '{print $i}')"
+        fi
+    done
+    return 1
+}
+
+# --- Main loop ---
+success_count=0
+failed_count=0
+skipped_count=0
+
+for key in $present; do
+    label=$(section_label "$key")
+    apply_one "$key"
+    rc=$?
+    case "$rc" in
+        0)
+            update_section "$key" "success" "1" ""
+            success_count=$((success_count+1))
+            append_event "config_restore_section_success" "Restored: $label" "info"
+            ;;
+        2)
+            update_section "$key" "skipped:incompatible" "1" "Not supported on this modem model"
+            skipped_count=$((skipped_count+1))
+            append_event "config_restore_section_skipped" "Skipped: $label (incompatible)" "warning"
+            ;;
+        3)
+            update_section "$key" "skipped:sim_mismatch" "1" "Stored SIM ICCID does not match current SIM"
+            skipped_count=$((skipped_count+1))
+            append_event "config_restore_section_skipped" "Skipped: $label (SIM mismatch)" "warning"
+            ;;
+        10)
+            # cancel
+            break
+            ;;
+        *)
+            update_section "$key" "failed" "4" "3 retries exhausted"
+            failed_count=$((failed_count+1))
+            append_event "config_restore_section_failed" "Failed to restore: $label (3 retries exhausted)" "error"
+            ;;
+    esac
+    state_write "running" "$sections_arr" 'null'
+done
+
+# Flush every restored file to flash before reporting done: the UI offers a
+# reboot right after, and UBIFS holds writes for up to 30 s.
+sync
+
+# --- Final state ---
+COMPLETED_AT=$(date +%s)
+summary=$(jq -n --argjson s "$success_count" --argjson f "$failed_count" --argjson k "$skipped_count" \
+    '{success: $s, failed: $f, skipped: $k}')
+
+if [ -f "$CANCEL_FILE" ]; then
+    final_status="cancelled"
+else
+    final_status="done"
+fi
+
+state_write "$final_status" "$sections_arr" "$summary" "$COMPLETED_AT"
+
+sev="info"
+[ "$failed_count" -gt 0 ] && sev="warning"
+append_event "config_restore_completed" \
+    "Configuration restore complete ($success_count success, $failed_count failed, $skipped_count skipped)" \
+    "$sev"
+
+qlog_info "Restore done: success=$success_count failed=$failed_count skipped=$skipped_count"
+exit 0

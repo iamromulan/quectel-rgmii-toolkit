@@ -1,0 +1,234 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_logread.sh — QManager Log Viewer & Debug Utility
+# =============================================================================
+# A convenience tool for reading, filtering, and tailing QManager logs
+# from an SSH session.
+#
+# Usage:
+#   qmanager_logread                  — Show last 50 lines
+#   qmanager_logread -f               — Follow (tail -f) live output
+#   qmanager_logread -n 100           — Show last N lines
+#   qmanager_logread -l ERROR         — Filter by level (DEBUG|INFO|WARN|ERROR)
+#   qmanager_logread -c poller        — Filter by component
+#   qmanager_logread -s "AT_CMD"      — Search for string
+#   qmanager_logread -a               — Show ALL logs (including rotated files)
+#   qmanager_logread --clear          — Clear all log files
+#   qmanager_logread --status         — Show log file sizes and line counts
+#
+# Combines with standard tools:
+#   qmanager_logread -l ERROR | head -20
+#   qmanager_logread -f -c qcmd
+#
+# Install location: /usr/bin/qmanager_logread
+# =============================================================================
+
+LOG_FILE="/tmp/qmanager.log"
+MAX_ROTATED=2
+
+# Defaults
+MODE="tail"
+NUM_LINES=50
+FILTER_LEVEL=""
+FILTER_COMPONENT=""
+SEARCH_STRING=""
+SHOW_ALL=0
+
+# --- Usage -------------------------------------------------------------------
+usage() {
+    cat << 'EOF'
+QManager Log Viewer
+
+Usage: qmanager_logread [OPTIONS]
+
+Options:
+  -f            Follow log output in real-time (tail -f)
+  -n NUM        Show last NUM lines (default: 50)
+  -l LEVEL      Filter by log level: DEBUG, INFO, WARN, ERROR
+  -c COMPONENT  Filter by component: qcmd, poller, cgi_fetch, cgi_terminal
+  -s STRING     Search for string in logs
+  -a            Include rotated log files
+  --clear       Clear all log files
+  --status      Show log file statistics
+  -h, --help    Show this help
+
+Examples:
+  qmanager_logread                   Show last 50 lines
+  qmanager_logread -f                Follow live output
+  qmanager_logread -f -c qcmd        Follow only qcmd messages
+  qmanager_logread -l ERROR          Show only errors
+  qmanager_logread -l WARN -n 100    Last 100 warnings
+  qmanager_logread -s "LOCK"         Search for lock-related events
+  qmanager_logread -a -l ERROR       All errors including rotated logs
+EOF
+    exit 0
+}
+
+# --- Status ------------------------------------------------------------------
+show_status() {
+    echo "=== QManager Log Status ==="
+    echo ""
+
+    if [ -f "$LOG_FILE" ]; then
+        local size lines
+        size=$(wc -c < "$LOG_FILE" 2>/dev/null)
+        lines=$(wc -l < "$LOG_FILE" 2>/dev/null)
+        local size_kb=$((size / 1024))
+        echo "  ${LOG_FILE}: ${size_kb}KB, ${lines} lines"
+
+        # Show first and last timestamp
+        local first_ts last_ts
+        first_ts=$(head -1 "$LOG_FILE" 2>/dev/null | sed 's/\].*/]/')
+        last_ts=$(tail -1 "$LOG_FILE" 2>/dev/null | sed 's/\].*/]/')
+        echo "    First entry: $first_ts"
+        echo "    Last entry:  $last_ts"
+    else
+        echo "  ${LOG_FILE}: (not found)"
+    fi
+
+    # Check rotated files
+    local i=1
+    while [ "$i" -le "$MAX_ROTATED" ]; do
+        local rotated="${LOG_FILE}.${i}"
+        if [ -f "$rotated" ]; then
+            local size lines
+            size=$(wc -c < "$rotated" 2>/dev/null)
+            lines=$(wc -l < "$rotated" 2>/dev/null)
+            local size_kb=$((size / 1024))
+            echo "  ${rotated}: ${size_kb}KB, ${lines} lines"
+        fi
+        i=$((i + 1))
+    done
+
+    echo ""
+
+    # Level breakdown (current file only)
+    if [ -f "$LOG_FILE" ]; then
+        echo "--- Level Distribution ---"
+        echo "  DEBUG: $(grep -c ' DEBUG ' "$LOG_FILE" 2>/dev/null)"
+        echo "  INFO:  $(grep -c ' INFO  ' "$LOG_FILE" 2>/dev/null)"
+        echo "  WARN:  $(grep -c ' WARN  ' "$LOG_FILE" 2>/dev/null)"
+        echo "  ERROR: $(grep -c ' ERROR ' "$LOG_FILE" 2>/dev/null)"
+
+        echo ""
+        echo "--- Component Distribution ---"
+        # Extract unique component names from [component:pid] field
+        grep -o '\[[^:]*:' "$LOG_FILE" 2>/dev/null | \
+            sed 's/\[//;s/:$//' | sort | uniq -c | sort -rn | \
+            while read count comp; do
+                echo "  ${comp}: ${count}"
+            done
+    fi
+
+    echo ""
+    exit 0
+}
+
+# --- Clear -------------------------------------------------------------------
+clear_logs() {
+    echo "Clearing QManager logs..."
+
+    if [ -f "$LOG_FILE" ]; then
+        : > "$LOG_FILE"
+        echo "  Cleared: $LOG_FILE"
+    fi
+
+    local i=1
+    while [ "$i" -le "$MAX_ROTATED" ]; do
+        local rotated="${LOG_FILE}.${i}"
+        if [ -f "$rotated" ]; then
+            rm -f "$rotated"
+            echo "  Removed: $rotated"
+        fi
+        i=$((i + 1))
+    done
+
+    echo "Done."
+    exit 0
+}
+
+# --- Parse Arguments ---------------------------------------------------------
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -f)          MODE="follow"; shift ;;
+        -n)          NUM_LINES="$2"; shift 2 ;;
+        -l)          FILTER_LEVEL="$2"; shift 2 ;;
+        -c)          FILTER_COMPONENT="$2"; shift 2 ;;
+        -s)          SEARCH_STRING="$2"; shift 2 ;;
+        -a)          SHOW_ALL=1; shift ;;
+        --clear)     clear_logs ;;
+        --status)    show_status ;;
+        -h|--help)   usage ;;
+        *)           echo "Unknown option: $1"; usage ;;
+    esac
+done
+
+# --- Build filter pipeline ---------------------------------------------------
+build_filter() {
+    local filter="cat"
+
+    if [ -n "$FILTER_LEVEL" ]; then
+        case "$FILTER_LEVEL" in
+            DEBUG) filter="$filter" ;;
+            INFO)  filter="$filter | grep -v ' DEBUG '" ;;
+            WARN)  filter="$filter | grep -E '(WARN |ERROR)'" ;;
+            ERROR) filter="$filter | grep ' ERROR '" ;;
+        esac
+    fi
+
+    if [ -n "$FILTER_COMPONENT" ]; then
+        filter="$filter | grep '\\[${FILTER_COMPONENT}:'"
+    fi
+
+    if [ -n "$SEARCH_STRING" ]; then
+        filter="$filter | grep -i '${SEARCH_STRING}'"
+    fi
+
+    echo "$filter"
+}
+
+# --- Gather log sources ------------------------------------------------------
+get_log_sources() {
+    if [ "$SHOW_ALL" = "1" ]; then
+        # Rotated files first (oldest first), then current
+        local i=$MAX_ROTATED
+        while [ "$i" -ge 1 ]; do
+            [ -f "${LOG_FILE}.${i}" ] && echo "${LOG_FILE}.${i}"
+            i=$((i - 1))
+        done
+    fi
+    [ -f "$LOG_FILE" ] && echo "$LOG_FILE"
+}
+
+# --- Execute -----------------------------------------------------------------
+if [ ! -f "$LOG_FILE" ]; then
+    echo "No log file found at ${LOG_FILE}"
+    echo "The QManager poller may not have started yet."
+    exit 1
+fi
+
+FILTER=$(build_filter)
+
+if [ "$MODE" = "follow" ]; then
+    # Follow mode — tail -f with optional filtering
+    echo "--- Following ${LOG_FILE} (Ctrl+C to stop) ---"
+    if [ "$FILTER" = "cat" ]; then
+        tail -f "$LOG_FILE"
+    else
+        tail -f "$LOG_FILE" | eval "$FILTER"
+    fi
+else
+    # Tail mode — show last N lines
+    SOURCES=$(get_log_sources)
+
+    if [ -z "$SOURCES" ]; then
+        echo "No log files found."
+        exit 1
+    fi
+
+    if [ "$FILTER" = "cat" ]; then
+        cat $SOURCES | tail -n "$NUM_LINES"
+    else
+        cat $SOURCES | eval "$FILTER" | tail -n "$NUM_LINES"
+    fi
+fi

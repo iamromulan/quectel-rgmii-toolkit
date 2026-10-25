@@ -1,0 +1,581 @@
+{
+  "shared": {
+    "status_active": "Active",
+    "status_inactive": "Inactive",
+    "status_not_installed": "Not Installed",
+    "validation_domain_required": "Domain is required",
+    "validation_domain_invalid_format": "Invalid domain format",
+    "validation_domain_needs_dot": "Must contain at least one dot",
+    "validation_domain_too_long": "Domain too long (max 253 chars)",
+    "validation_domain_duplicate": "Domain already in list"
+  },
+  "traffic_engine": {
+    "page_title": "Traffic Engine",
+    "page_description": "One DPI engine, two modes. Bypass carrier video throttling, or make HTTPS traffic look like a whitelisted service. Only one mode runs at a time.",
+    "mode_video": "Video Optimizer",
+    "mode_masquerade": "Masquerade",
+    "aria_mode_selector": "Engine mode",
+    "state_starting": "Starting",
+    "state_stopping": "Stopping",
+    "state_switching": "Switching",
+    "hero_rate_unit": "pkt/s",
+    "tile_uptime": "Uptime",
+    "toast_video_enabled": "Video Optimizer is now protecting video",
+    "toast_video_disabled": "Video Optimizer turned off",
+    "toast_masquerade_enabled": "Masquerade is now active",
+    "toast_masquerade_disabled": "Masquerade turned off",
+    "error_load_failed": "The modem did not answer. Check the connection and try again.",
+    "onboarding_title": "Install the Traffic Engine",
+    "onboarding_description": "One install unlocks both Video Optimizer and Masquerade.",
+    "onboarding_zapret_attribution": "Downloaded automatically from the <link>zapret</link> project.",
+    "onboarding_install": "Install Engine",
+    "onboarding_installing": "Installing",
+    "onboarding_check_again": "Check Again",
+    "advanced_remove_button": "Remove",
+    "advanced_removing": "Removing",
+    "advanced_dialog_title": "Remove the engine binary?",
+    "advanced_dialog_desc": "Both modes share this engine, so removing it turns off Video Optimizer and Masquerade until you reinstall it.",
+    "advanced_toast_success": "Engine binary removed",
+    "advanced_toast_error": "Failed to remove the engine binary",
+    "video_tagline": "Counters carrier throttling of video so it buffers less.",
+    "masquerade_tagline": "Disguises HTTPS under one whitelisted domain so the carrier can't single it out to throttle.",
+    "bypass_label": "Bypass Hotspot",
+    "bypass_helper_external": "Set elsewhere to TTL {{ttl}} / HL {{hl}} (TTL page or a SIM profile). Manage it there.",
+    "bypass_toast_enabled": "Hotspot bypass is on",
+    "bypass_toast_disabled": "Hotspot bypass is off",
+    "bypass_toast_error": "Could not change hotspot bypass",
+    "kernel_module_hint": "Install the kmod-nft-queue package on the modem, then reload this page.",
+    "aria_kernel_module_hint": "How to add packet-queue support",
+    "stat_empty": "—",
+    "toast_applied": "Traffic Engine settings applied",
+    "error_load_title": "Could not read the Traffic Engine",
+    "refresh": "Refresh",
+    "kernel_banner_desc": "This firmware lacks the packet-queue support the engine needs, so neither mode can be turned on.",
+    "aria_bypass_hint": "About Bypass Hotspot",
+    "bypass_hint": "Carriers spot tethered devices by the hop count their packets arrive with. Pinning every packet to 64 makes devices behind the modem look like the modem itself.",
+    "back": "Back",
+    "pkg_available": "Available",
+    "pkg_missing": "Missing",
+    "package_title": "Engine Package",
+    "engine_title": "Engine",
+    "package_desc": "The packet engine both modes share, and what it needs from the firmware.",
+    "engine_desc": "Pick a mode and watch the packets the engine handles.",
+    "pkg_queue": "Packet queue support",
+    "pkg_engine": "Engine",
+    "pkg_installed": "Installed",
+    "pkg_source": "Source",
+    "pkg_source_value": "zapret project",
+    "pkg_status_busy": "Turn the engine off before removing it.",
+    "pkg_status_idle": "You can reinstall it from this page.",
+    "advanced_dialog_confirm": "Remove Engine",
+    "label_mode": "Mode",
+    "mode_off": "Off",
+    "mode_reason_kernel": "This firmware lacks packet queue support, so no mode can run.",
+    "metric_packets": "Packets handled",
+    "metric_package": "Package",
+    "aria_open_package": "Show engine package details",
+    "pkg_queue_missing": "Queue missing",
+    "live_legend": "Packets handled (last 60 s)",
+    "strip_sni": "SNI: {{domain}}",
+    "strip_fragment": "1 B",
+    "strip_rest": "Rest of handshake",
+    "strip_decoy": "Decoy",
+    "strip_real": "Real handshake",
+    "strip_aria_video_one": "The start of the handshake goes out as {{count}} one-byte piece, so the carrier never reads the hostname whole.",
+    "strip_aria_video_other": "The start of the handshake goes out as {{count}} one-byte pieces, so the carrier never reads the hostname whole.",
+    "strip_aria_masquerade": "Two decoy handshakes naming {{domain}} go out before the real one, so the carrier reads the disguise.",
+    "strip_eyebrow": "What the carrier sees",
+    "strip_preview": "Preview",
+    "strip_axis_first": "Sent first",
+    "strip_axis_last": "Sent last",
+    "hosts_add": "Add",
+    "hosts_empty_title": "No hostnames yet",
+    "hosts_empty_desc": "Add a video CDN domain above, or restore the defaults.",
+    "hosts_group_custom": "Custom",
+    "saving": "Saving",
+    "foot_invalid": "Fix the domain to apply.",
+    "foot_restart": "Applying restarts the engine briefly.",
+    "foot_switch_to_apply": "Takes effect when you switch the engine to {{mode}}.",
+    "foot_on_enable": "Takes effect when you turn on {{mode}}.",
+    "apply_blocked_other": "{{mode}} is running. Switch modes to apply this.",
+    "applying": "Applying",
+    "state_applying": "Applying",
+    "check_passed": "Passed",
+    "check_not_detected": "Not detected",
+    "check_failed": "Failed",
+    "check_injection_confirmed_one": "Fake SNI injection confirmed ({{count}} packet processed)",
+    "check_injection_confirmed_other": "Fake SNI injection confirmed ({{count}} packets processed)",
+    "acts_on_domains_one": "{{count}} hostname",
+    "acts_on_domains_other": "{{count}} hostnames",
+    "hosts_title": "Hostnames",
+    "hosts_desc": "The video CDN domains Video Optimizer works on.",
+    "hosts_not_used": "Not in use",
+    "aria_video_how": "How Video Optimizer works",
+    "video_how": "Carrier DPI reads the hostname in each handshake to spot video. Video Optimizer sends the start of the handshake in one-byte pieces, so the hostname never arrives whole and the video is not flagged.",
+    "metric_carrier_reads": "Carrier reads",
+    "carrier_reads_none": "No hostname",
+    "metric_acts_on": "Acts on",
+    "aria_edit_hostnames": "Edit hostnames",
+    "aria_strength_lower": "Lower strength",
+    "aria_strength_raise": "Raise strength",
+    "check_blocked": "Turn on {{mode}} to run this check.",
+    "aria_masquerade_how": "How Masquerade works",
+    "masquerade_how": "Before each real handshake, Masquerade sends two decoys naming the disguise domain. The carrier reads the decoy and treats the connection as that service.",
+    "acts_on_all": "All HTTPS traffic",
+    "chart_aria_idle": "No packets handled in the last 60 seconds",
+    "chart_empty": "Turn on a mode to see packets",
+    "chart_x_start": "60 s ago",
+    "chart_x_end": "Now",
+    "toast_install_success": "Traffic Engine installed",
+    "toast_install_error": "Could not install the Traffic Engine",
+    "kernel_banner_title": "Packet queue support is missing",
+    "chart_aria": "Packets handled per second over the last 60 seconds, peaking at {{max}}"
+  },
+  "ethernet": {
+    "page": {
+      "title": "Ethernet Status",
+      "description": "Monitor the ethernet link, limit its speed and set the LAN gateway.",
+      "refresh": "Refresh"
+    },
+    "strip": {
+      "label": "Ethernet port",
+      "unresponsive": "Not responding",
+      "unavailable_title": "Couldn't read the ethernet port",
+      "unavailable_body": "Retrying every 10 seconds. Nothing has been changed.",
+      "absent_title": "No ethernet controller",
+      "absent_body": "This device has no ethernet port, so there is nothing to report or configure."
+    },
+    "tiles": {
+      "link": {
+        "label": "Link state",
+        "value_up": "Connected",
+        "value_down": "Disconnected",
+        "value_unknown": "Unknown",
+        "caption_up": "Cable connected to the host port",
+        "caption_down": "No cable detected on the host port",
+        "caption_unknown": "Waiting for link state"
+      },
+      "speed": {
+        "label": "Negotiated rate",
+        "caption": "Negotiated with the peer",
+        "caption_ceiling": "Of {{ceiling}} the port supports",
+        "caption_down": "Needs an active link"
+      },
+      "duplex": {
+        "label": "Duplex",
+        "caption": "Transmit and receive at once",
+        "caption_down": "Needs an active link",
+        "value_full": "Full",
+        "value_half": "Half"
+      },
+      "negotiation": {
+        "label": "Negotiation",
+        "value_auto": "Automatic",
+        "value_forced": "Forced",
+        "value_unknown": "Unknown",
+        "caption_auto": "No speed limit set",
+        "caption_limited": "Limited to {{speed}}"
+      }
+    },
+    "settings": {
+      "title": "Ethernet Port",
+      "description": "Set the port's link speed and how the modem powers its ethernet controller.",
+      "row_label": "Speed limit",
+      "placeholder": "Select speed",
+      "option_auto": "Auto (max)",
+      "option_10": "10 Mbps",
+      "option_100": "100 Mbps",
+      "option_1000": "1 Gbps",
+      "option_2500": "2.5 Gbps",
+      "consequence": "Applying drops the link for a few seconds while the port renegotiates. You are on that link.",
+      "consequence_applying": "The link is down while the port renegotiates. This page confirms the new speed itself.",
+      "consequence_unresponsive": "The modem stopped answering, so this control is held until the next successful read.",
+      "consequence_unread": "The modem hasn't answered yet, so there is nothing to change until the first read lands.",
+      "consequence_absent": "There is no ethernet port to configure on this device.",
+      "toast_success": "Link speed updated",
+      "toast_error": "Failed to set link speed",
+      "toast_confirm_error": "Couldn't confirm the new speed. Check the link.",
+      "apply": "Apply changes",
+      "aspm_label": "PCIe power saving",
+      "aspm_hint_aria": "About PCIe power saving",
+      "aspm_hint": "Active State Power Management (ASPM) lets the PCIe link to the ethernet controller doze between packets. Performance keeps it awake.",
+      "aspm_consequence": "Power saving modes can cause dropouts and added latency on the ethernet port. Applying does not drop the link.",
+      "aspm_placeholder": "Select policy",
+      "aspm_option_performance": "Performance (recommended)",
+      "aspm_option_default": "Kernel default",
+      "aspm_option_powersave": "Power saving",
+      "aspm_option_powersupersave": "Max power saving",
+      "toast_aspm_success": "PCIe power saving updated"
+    }
+  },
+  "lan_config": {
+    "card_title": "LAN Address",
+    "card_description": "Set the router's LAN IP address (the gateway your devices use) and the size of the local network.",
+    "label_gateway": "Gateway IP Address",
+    "help_gateway": "The router's own address on the LAN. Devices use it as their default gateway.",
+    "label_subnet": "Subnet Mask",
+    "help_subnet": "Choose the size of the LAN network as a CIDR prefix.",
+    "action_apply": "Apply Changes",
+    "confirm_title": "Change LAN address?",
+    "confirm_body": "The LAN will switch to {{address}} (netmask {{netmask}}). This rebinds the network and your current connection will drop.",
+    "confirm_reconnect": "After applying, the network rebinds and your connection drops briefly. A router or device using DHCP will reconnect automatically within a few seconds; one with a static IP must be moved to the new subnet manually. You'll then browse to the new address to continue.",
+    "confirm_action": "Apply & Reconnect",
+    "applied_title": "LAN address is changing",
+    "applied_body": "The device is moving to {{address}}. Your connection will drop for about {{seconds}} seconds — reconnect your LAN or Ethernet cable, then open the new address:",
+    "applied_body_auto": "The device is moving to {{address}}. A router set to DHCP should reconnect on its own within about {{seconds}} seconds and pick up the new gateway. If it doesn't, reconnect your cable, then open the new address:",
+    "reconnecting_title": "Reconnecting to the new address…",
+    "reconnecting_auto_note": "This page will open the new address automatically.",
+    "reconnecting_opening": "Opening the new address…",
+    "toast_error_save": "Failed to apply LAN settings",
+    "error_invalid_ipaddr": "Enter a valid unicast IPv4 address (e.g. 192.168.1.1).",
+    "error_invalid_host_in_subnet": "This is the network or broadcast address for the chosen subnet. Pick a usable host address.",
+    "error_invalid_prefix": "Choose a subnet prefix between /16 and /30.",
+    "errors": {
+      "fetch_failed": "Failed to load LAN settings",
+      "save_failed": "Failed to save LAN settings",
+      "parse_failed": "Failed to read the save response"
+    }
+  },
+  "dns": {
+    "page_title": "Custom DNS",
+    "page_description": "Override carrier-assigned DNS servers with your preferred resolvers for all devices on the local network.",
+    "provider_custom": "Custom",
+    "placeholder_primary_dns": "e.g. 8.8.8.8",
+    "placeholder_secondary_dns": "e.g. 1.1.1.1",
+    "placeholder_tertiary_dns": "e.g. 8.8.4.4",
+    "placeholder_primary_dns6": "e.g. 2606:4700:4700::1111",
+    "placeholder_secondary_dns6": "e.g. 2606:4700:4700::1001",
+    "error_at_least_one": "Enter at least one DNS server address",
+    "error_invalid_ipv6": "Enter a valid IPv6 address (e.g. 2606:4700:4700::1111).",
+    "toast_success_enabled": "Custom DNS applied successfully",
+    "toast_success_disabled": "Reverted to carrier DNS",
+    "toast_error_apply": "Could not apply the DNS settings",
+    "error_load_title": "Could not read DNS settings",
+    "error_load_desc": "The modem did not answer. Check the connection and try again.",
+    "errors": {
+      "fetch_failed": "Could not load DNS settings",
+      "apply_failed": "Could not apply the DNS settings"
+    },
+    "error_invalid_ipv4": "Enter a valid IPv4 address (e.g. 9.9.9.9).",
+    "blocked_invalid": "Fix the highlighted address first.",
+    "cards": {
+      "resolver": {
+        "title": "Resolver",
+        "description": "Which DNS servers the devices on your network are given."
+      },
+      "ipv4": {
+        "title": "IPv4 Servers",
+        "description": "Up to three, tried in order."
+      },
+      "ipv6": {
+        "title": "IPv6 Servers",
+        "description": "Up to two, for devices that use IPv6."
+      }
+    },
+    "rows": {
+      "mode": {
+        "label": "Custom DNS",
+        "consequence_on": "Devices on your network use the servers below.",
+        "consequence_off": "Devices use the servers your carrier assigns."
+      },
+      "provider": {
+        "label": "Provider",
+        "consequence": "Fills both server lists. Editing an address makes it Custom."
+      },
+      "primary": "Primary",
+      "secondary": "Secondary",
+      "tertiary": "Tertiary"
+    }
+  },
+  "ttl_mtu": {
+    "page_title": "TTL & MTU",
+    "page_description": "Rewrite the hop count and packet size the modem puts on the cellular interface.",
+    "refresh": "Refresh",
+    "strip": {
+      "label": "In force now",
+      "chip_custom": "Custom",
+      "chip_default": "Carrier defaults",
+      "retry": "Retry",
+      "unavailable_title": "Couldn't read TTL or MTU",
+      "unavailable_body": "The modem didn't answer. Nothing on it has been changed.",
+      "idle_title": "No overrides in force",
+      "idle_body": "The modem is using the carrier's TTL and MTU exactly as negotiated. Turn one on below to change that."
+    },
+    "tiles": {
+      "shared": {
+        "caption_pending": "Still reading",
+        "caption_unread": "The modem didn't answer"
+      },
+      "ttl": {
+        "label": "TTL (IPv4)",
+        "caption_active": "Rewritten on every packet",
+        "caption_idle": "Not rewritten"
+      },
+      "hl": {
+        "label": "Hop limit (IPv6)",
+        "caption_active": "Rewritten on every packet",
+        "caption_idle": "Not rewritten"
+      },
+      "mtu": {
+        "label": "MTU",
+        "unit": "bytes",
+        "caption_active": "Carrier default is {{carrier}}",
+        "caption_idle": "Carrier-negotiated"
+      }
+    },
+    "banner": {
+      "title": "TTL and hop limit come from the {{profile}} profile",
+      "body": "Activating that profile writes both values, so this card is held to stop the two writers fighting. Change them in the profile, or activate a profile that leaves TTL unset."
+    },
+    "cards": {
+      "ttl": {
+        "title": "TTL & Hop Limit",
+        "description": "Applied to outbound packets on the cellular interface."
+      },
+      "mtu": {
+        "title": "Maximum Transmission Unit",
+        "description": "The largest packet the cellular interface will send without fragmenting."
+      }
+    },
+    "rows": {
+      "shared": {
+        "consequence_off": "Turn the rewrite on to set a value.",
+        "consequence_unread": "The modem hasn't answered, so there is nothing to change yet."
+      },
+      "rewrite": {
+        "label": "Rewrite the hop count",
+        "consequence": "Off means the modem forwards whatever hop count the client sent. Some carriers count hops to detect tethering."
+      },
+      "ttl_value": {
+        "label": "TTL value",
+        "consequence": "{{min}}–{{max}}. A device one hop behind the modem usually wants 64."
+      },
+      "hl_value": {
+        "label": "Hop limit value",
+        "consequence": "The IPv6 equivalent. Set both unless you know the client is single-stack."
+      },
+      "mtu_toggle": {
+        "label": "Override the MTU",
+        "consequence": "Off restores the carrier-negotiated value on the cellular interface."
+      },
+      "mtu_value": {
+        "label": "MTU value",
+        "consequence": "{{min}}–{{max}}. Below roughly 1400 can break path-MTU discovery on sites that drop ICMP.",
+        "consequence_off": "Turn the override on to set a value."
+      }
+    },
+    "values": {
+      "on": "On",
+      "off": "Off"
+    },
+    "errors": {
+      "value_range": "TTL and hop limit must each be between {{min}} and {{max}}.",
+      "no_value": "Enter a TTL or a hop limit before applying.",
+      "mtu_range": "MTU must be between {{min}} and {{max}}."
+    },
+    "toast_ttl_applied": "Applied (TTL {{ttl}}, hop limit {{hl}}).",
+    "toast_ttl_cleared": "The modem is back on the carrier's own hop count.",
+    "toast_ttl_error": "Couldn't apply the TTL and hop limit.",
+    "toast_mtu_applied": "MTU set to {{mtu}}.",
+    "toast_mtu_cleared": "MTU is back to the carrier-negotiated value.",
+    "toast_mtu_error": "Couldn't apply the MTU."
+  },
+  "ippt": {
+    "page": {
+      "title": "IP Passthrough & USB",
+      "description": "Hand the modem's public IP straight to one connected device instead of routing for the whole LAN."
+    },
+    "header": {
+      "refresh": "Refresh"
+    },
+    "status": {
+      "label": "Last applied",
+      "mode_title": {
+        "disabled": "Router Mode",
+        "eth": "Ethernet Passthrough",
+        "usb": "USB Passthrough"
+      },
+      "blurb": {
+        "disabled": "Modem routes for the LAN",
+        "eth": "Set to hand the WAN IP to the Ethernet device",
+        "usb": "Set to hand the WAN IP to the USB device"
+      },
+      "gateway_off": "LAN gateway not served"
+    },
+    "card": {
+      "description": "Applying writes every setting and reboots the modem.",
+      "network_description": "Applied together with Passthrough, in one reboot.",
+      "apply": "Apply and reboot",
+      "mac_label": "Target MAC address",
+      "mac_placeholder": "XX:XX:XX:XX:XX:XX"
+    },
+    "groups": {
+      "passthrough": "Passthrough",
+      "network": "Network"
+    },
+    "rows": {
+      "mode": {
+        "label": "Mode",
+        "description": "Route the whole LAN, or pass the public IP to one device."
+      },
+      "target": {
+        "label": "Target device",
+        "pick_mode": "Pick a mode first.",
+        "description": "The device that receives the public IP."
+      },
+      "nat": {
+        "label": "NAT",
+        "description": "With NAT suits almost every setup."
+      },
+      "usb": {
+        "label": "USB connection",
+        "description": "The protocol used when the modem connects over USB."
+      },
+      "dns": {
+        "label": "DNS proxy",
+        "description": "On, the modem answers DHCP DNS for the target device."
+      }
+    },
+    "options": {
+      "mode_disabled": "Router",
+      "mode_eth": "Ethernet",
+      "mode_usb": "USB",
+      "target_automatic": "Automatic",
+      "target_device": "From LAN",
+      "target_manual": "By MAC",
+      "nat_on": "With NAT",
+      "nat_off": "Without NAT",
+      "dns_off": "Off",
+      "dns_on": "On"
+    },
+    "mode_note": {
+      "rest": "Ethernet or USB hands the WAN IP to one device, and the modem stops answering at its LAN gateway. Keep Tailscale or another way in.",
+      "to_passthrough": "Applying reboots the modem and this tab loses it. Afterwards the LAN gateway stops answering, so keep Tailscale or another way in."
+    },
+    "dialog": {
+      "title": "Apply and reboot now?",
+      "body": "The settings are written and the modem reboots immediately. This page hands off to the reboot countdown and signs you out.",
+      "body_gateway": "Once passthrough is active the modem stops answering at its LAN gateway address. Make sure you have Tailscale, the passthrough device itself, or a serial console to get back in.",
+      "body_persist": "The setting persists across further reboots.",
+      "cancel": "Cancel",
+      "confirm": "Apply and reboot"
+    },
+    "toast_apply_error": "Couldn't apply the IP Passthrough settings",
+    "errors": {
+      "read_title": "Couldn't read the passthrough configuration",
+      "read_body": "Nothing has been changed. Try again, or check that the modem is answering.",
+      "retry": "Retry",
+      "card_unread": "The modem hasn't answered yet, so there is nothing to change until the first read lands.",
+      "mac_invalid": "Enter a full MAC address, six pairs of hex digits.",
+      "no_changes": "Nothing has changed yet.",
+      "device_unpicked": "Pick a connected device first."
+    },
+    "device": {
+      "label": "Target device from connected list",
+      "placeholder": "Select a device",
+      "scanning": "Scanning for connected devices…",
+      "error": "Couldn't load connected devices.",
+      "empty": "No connected devices found. Connect the device to the modem, then rescan.",
+      "retry": "Retry",
+      "rescan": "Rescan",
+      "rescan_label": "Rescan connected devices",
+      "enter_manually": "Enter manually",
+      "unknown": "Unknown device"
+    },
+    "locked_by_verizon": {
+      "title": "IP Passthrough is managed by your Verizon profile",
+      "body": "Active profile: \"{{name}}\". To change these settings, deactivate the profile from Custom Profiles.",
+      "cta": "Open Custom Profiles",
+      "blocked": "Your Verizon profile manages IP Passthrough."
+    }
+  },
+  "masquerade": {
+    "page_title": "Traffic Masquerade",
+    "page_description": "Make all HTTPS traffic appear as a whitelisted service to carrier DPI",
+    "card_title": "Traffic Masquerade",
+    "card_description": "Make HTTPS traffic appear as a whitelisted service to carrier DPI.",
+    "error_load_failed": "Failed to load settings.",
+    "label_enable": "Enable Traffic Masquerade",
+    "label_domain": "Masquerade Domain",
+    "placeholder_domain": "speedtest.net",
+    "helper_domain": "The domain that appears in the fake TLS handshake sent to the carrier.",
+    "help_domain": "Carriers read the SNI — the server name sent unencrypted in every TLS handshake — to decide what to throttle. Masquerade rewrites it to this domain so your traffic looks like that service.",
+    "aria_domain_info": "More information about the masquerade domain",
+    "test_hint": "A pass means your HTTPS handshakes are carrying the spoofed name, so the carrier sees this domain instead of the real one.",
+    "aria_test_hint": "What a passing injection test means",
+    "toast_success_enabled": "Traffic Masquerade enabled",
+    "toast_success_disabled": "Traffic Masquerade disabled",
+    "toast_error_apply": "Failed to save settings",
+    "test_title": "Test Injection",
+    "test_description": "Confirm fake SNI packets are being injected into HTTPS traffic",
+    "state_testing": "Testing",
+    "button_run_test": "Run Test",
+    "errors": {
+      "load_failed": "Failed to load settings",
+      "save_failed": "Failed to save settings",
+      "uninstall_failed": "Failed to uninstall",
+      "test_failed": "Test failed"
+    }
+  },
+  "video_optimizer": {
+    "page_title": "Video Optimizer",
+    "page_description": "Bypass carrier video throttling using DPI evasion on targeted video CDN hostnames",
+    "card_title": "Video Optimizer",
+    "card_description": "Bypass carrier video throttling on cellular connections using DPI evasion.",
+    "error_load_failed": "Failed to load settings.",
+    "label_enable": "Enable Video Optimizer",
+    "label_desync_repeats": "Desync Strength",
+    "help_desync_repeats": "Number of times the DPI-evading packet is sent for each matched flow. Higher values improve reliability when packets are lost or reordered, but increase CPU use and upstream bandwidth. Default 1 works for most users.",
+    "helper_desync_repeats": "Higher values resist stricter DPI but add a little overhead. 1 suits most networks.",
+    "verify_hint": "A pass means the engine is intercepting traffic to your hostlisted domains and applying DPI evasion.",
+    "aria_verify_hint": "What a passing verification means",
+    "aria_desync_repeats_info": "More information about Desync Strength",
+    "toast_success_enabled": "Video Optimizer enabled",
+    "toast_success_disabled": "Video Optimizer disabled",
+    "toast_error_apply": "Failed to save settings",
+    "verify_title": "Verify Service",
+    "verify_description": "Confirm DPI evasion is intercepting traffic for hostlisted domains",
+    "state_verifying": "Verifying",
+    "button_verify_service": "Verify Service",
+    "hostlist_card_title": "CDN Hostname List",
+    "hostlist_card_description": "The video CDN domains Video Optimizer works on.",
+    "hostlist_error_load_failed": "Failed to load hostname list.",
+    "aria_sort_az": "Sort alphabetically",
+    "aria_sort_za": "Sort Z to A",
+    "aria_sort_clear": "Clear sort",
+    "aria_menu_options": "Hostlist options",
+    "menu_export": "Export list",
+    "menu_import": "Import list",
+    "placeholder_new_domain": "e.g. cdn.example.com",
+    "aria_new_domain": "New domain",
+    "aria_add_domain": "Add domain",
+    "empty_state_no_domains": "No domains configured",
+    "aria_custom_domain_badge": "Custom domain",
+    "aria_remove_domain": "Remove {{domain}}",
+    "toast_save_success": "Hostname list saved",
+    "toast_save_error": "Failed to save hostname list",
+    "toast_restore_success": "Default hostnames restored",
+    "toast_restore_error": "Failed to restore defaults",
+    "toast_export_success_one": "Exported {{count}} domain",
+    "toast_export_success_other": "Exported {{count}} domains",
+    "toast_import_no_new": "No new domains to import — all already in list",
+    "toast_import_success_one": "Imported {{count}} new domain",
+    "toast_import_success_other": "Imported {{count}} new domains",
+    "button_restore_defaults": "Restore Defaults",
+    "state_restoring": "Restoring",
+    "dialog_restore_title": "Restore Default Hostnames?",
+    "dialog_restore_desc": "This will replace the current list with the factory default CDN hostnames. Any custom domains you added will be removed.",
+    "dialog_action_restore": "Restore Defaults",
+    "errors": {
+      "load_failed": "Failed to load settings",
+      "save_failed": "Failed to save settings",
+      "uninstall_failed": "Failed to uninstall",
+      "verify_start_failed": "Failed to start verification",
+      "install_start_failed": "Failed to start installation",
+      "install_starting": "Starting installation…",
+      "hostlist_load_failed": "Failed to load hostname list",
+      "hostlist_save_failed": "Failed to save hostname list",
+      "hostlist_restore_failed": "Failed to restore defaults"
+    }
+  }
+}

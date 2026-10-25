@@ -1,0 +1,37 @@
+#!/bin/sh /etc/rc.common
+# =============================================================================
+# qmanager_sms_storage — Init Script for SMS Storage Routing Daemon
+# =============================================================================
+# Launches the one-shot SMS storage routing daemon at boot. The daemon waits
+# for modem readiness, then points AT+CPMS at the user's chosen storage
+# (/etc/qmanager/sms_storage: ME by default, or SM). Without this the RM551E
+# keeps its boot default (SIM) whatever the user chose.
+#
+# Non-procd: runs once and exits. No automatic respawn needed.
+#
+# Does NOT reboot or call CFUN.
+#
+# Usage:
+#   /etc/init.d/qmanager_sms_storage start|enable|disable
+#
+# Install location: /etc/init.d/qmanager_sms_storage
+# =============================================================================
+
+START=99
+STOP=10
+
+DAEMON="/usr/bin/qmanager_sms_storage"
+
+start() {
+    # Guard: daemon script exists and is executable
+    [ -x "$DAEMON" ] || return 1
+
+    # Spawn daemon (double-fork to detach from init process group)
+    ( "$DAEMON" </dev/null >/dev/null 2>&1 & )
+    logger -t qmanager_sms_storage "SMS storage routing daemon started"
+}
+
+stop() {
+    # One-shot daemon — no persistent process to stop
+    :
+}

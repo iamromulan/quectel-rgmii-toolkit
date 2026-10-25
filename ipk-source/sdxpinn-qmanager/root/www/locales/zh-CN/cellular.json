@@ -1,0 +1,2504 @@
+{
+  "radio_info": {
+    "common": {
+      "not_available": "—",
+      "value_unavailable": "未上报"
+    },
+    "page": {
+      "title": "蜂窝与射频信息",
+      "description": "调制解调器当前上报的全部无线链路信息：身份标识、使用中的频谱，以及各载波的信号质量。"
+    },
+    "alert": {
+      "modem_unreachable": "无法连接调制解调器 — 显示的是最后收到的数值。"
+    },
+    "header": {
+      "cadence": "每隔几秒更新一次",
+      "refresh": "立即刷新",
+      "copy": "复制诊断信息",
+      "copied": "已复制",
+      "copy_success": "诊断信息已复制到剪贴板",
+      "copy_error": "无法复制到剪贴板。请改为手动选择这些数值。"
+    },
+    "network_type": {
+      "nsa": "5G NR + LTE",
+      "sa": "5G NR SA",
+      "lte": "LTE",
+      "unknown": "未上报"
+    },
+    "tiles": {
+      "network": {
+        "label": "网络类型",
+        "mark_5g": "5G",
+        "mark_4g": "4G",
+        "caption_nsa": "非独立组网，锚定在 LTE 上",
+        "caption_sa": "独立组网 5G 核心网",
+        "caption_lte": "未接入 5G 分支",
+        "caption_unknown": "调制解调器未上报接入技术"
+      },
+      "bandwidth": {
+        "label": "使用中的带宽",
+        "unit": "MHz",
+        "caption_unavailable": "调制解调器未上报",
+        "caption_single": "单载波",
+        "caption_breakdown": "{{parts}} MHz"
+      },
+      "carriers": {
+        "label": "载波聚合",
+        "value_one": "{{count}} 个载波",
+        "value_other": "{{count}} 个载波",
+        "caption": "LTE {{lte}}    NR {{nr}}",
+        "caption_none": "未上报任何载波"
+      },
+      "mimo": {
+        "label": "活动 MIMO",
+        "caption_link": "各天线详情",
+        "caption_unavailable": "调制解调器未上报"
+      }
+    },
+    "states": {
+      "loading_sr": "正在加载射频信息",
+      "retry": "重试",
+      "no_sim": {
+        "title": "未检测到 SIM 卡",
+        "description": "调制解调器检测不到 SIM 卡，因此没有可上报的无线链路。请检查 SIM 卡是否已插入生效的卡槽。"
+      },
+      "no_service": {
+        "title": "无服务",
+        "description": "SIM 卡已插入，但调制解调器尚未注册到任何网络。在成功附着之前，信号指标将保持为空。"
+      },
+      "searching": {
+        "title": "正在搜索网络",
+        "description": "调制解调器正在扫描可用的小区。注册成功后即会显示射频详情。"
+      },
+      "unknown": {
+        "title": "未上报射频状态",
+        "description": "调制解调器返回了本页面无法识别的状态。请尝试刷新；若持续出现，可能需要重启轮询服务。"
+      }
+    },
+    "cellular_card": {
+      "title": "连接详情",
+      "description": "由网络在本次附着中上报。"
+    },
+    "groups": {
+      "connection": "连接",
+      "cell_identity": "小区标识",
+      "addressing": "地址分配"
+    },
+    "rows": {
+      "operator": "运营商",
+      "apn": "接入点名称（APN）",
+      "network_type": "网络类型",
+      "carrier_aggregation": "载波聚合",
+      "cell_id": "Cell ID",
+      "enodeb": "eNodeB",
+      "gnodeb": "gNodeB",
+      "sector": "扇区",
+      "tac": "跟踪区码（TAC）",
+      "wan_ipv4": "WAN IPv4",
+      "wan_ipv6": "WAN IPv6",
+      "primary_dns": "主 DNS",
+      "secondary_dns": "备用 DNS",
+      "link_uptime": "连接持续时间",
+      "traffic_family": "当前承载流量",
+      "distance": "到基站的距离"
+    },
+    "actions": {
+      "edit_apn": "编辑"
+    },
+    "ca": {
+      "lte_carriers_one": "LTE（{{count}} 个载波）",
+      "lte_carriers_other": "LTE（{{count}} 个载波）",
+      "nr_carriers_one": "NR（{{count}} 个载波）",
+      "nr_carriers_other": "NR（{{count}} 个载波）",
+      "lte_only": "LTE",
+      "nr_only": "NR",
+      "inactive": "未启用"
+    },
+    "value": {
+      "unknown": "未上报",
+      "not_assigned": "未分配",
+      "family_ipv4": "IPv4",
+      "family_ipv6": "IPv6",
+      "family_none": "无响应",
+      "estimated": "估算",
+      "distance_hint": "根据网络的时间提前量（TA）推算，该值由射频以较粗的步长上报。请将其视为到服务小区的大致范围，而非实测距离。"
+    },
+    "copy": {
+      "aria": "将{{label}}复制到剪贴板",
+      "success": "{{label}}已复制到剪贴板",
+      "error": "无法复制到剪贴板",
+      "copied": "已复制"
+    },
+    "a11y": {
+      "show_full_address": "显示完整未压缩的 {{label}}"
+    },
+    "bands": {
+      "title": "使用中的频谱",
+      "description_one": "{{count}} 个活动载波，下方为其实时信号指标。",
+      "description_other": "{{count}} 个活动载波，均显示各自的实时信号指标。",
+      "cadence": "每隔几秒更新一次",
+      "stale": "读数已暂停",
+      "role": {
+        "pcc": "PCC",
+        "anchor": "ANCHOR",
+        "scc": "SCC {{index}}"
+      },
+      "released": "已释放",
+      "released_note": "该载波已于 {{seconds}} 秒前停止上报。它会在列表中保留一小段时间，以防它重新出现。",
+      "quality": {
+        "excellent": "极佳",
+        "good": "良好",
+        "fair": "一般",
+        "poor": "较差",
+        "bad": "极弱",
+        "none": "无读数"
+      },
+      "metric": {
+        "rsrp": "RSRP",
+        "rsrq": "RSRQ",
+        "sinr": "SINR",
+        "snr": "SNR",
+        "rssi": "RSSI",
+        "rssi_caption": "宽带接收功率",
+        "not_reported": "此载波未上报",
+        "not_reported_short": "未上报"
+      },
+      "detail": {
+        "band_name": "频段名称",
+        "bandwidth": "带宽",
+        "dl_frequency": "下行频率",
+        "ul_frequency": "上行频率",
+        "pci": "PCI",
+        "arfcn": "ARFCN",
+        "earfcn": "EARFCN",
+        "scs": "子载波间隔",
+        "unknown": "未知",
+        "scs_derived": "推算值",
+        "scs_derived_hint": "调制解调器只对服务中的 NR 小区上报子载波间隔。此数值由该频段的双工模式推算得出，并非直接读自射频。",
+        "duplex": "双工模式"
+      },
+      "units": {
+        "mhz": "{{value}} MHz",
+        "khz": "{{value}} kHz"
+      },
+      "low_snr": "该载波的 SNR 为 {{value}} dB，处于较差区间。",
+      "empty": {
+        "title": "未上报任何载波",
+        "description": "调制解调器当前未上报任何聚合载波。在射频搜索、空闲或切换期间，这属于正常现象。"
+      },
+      "scanner": {
+        "body": "想找出调制解调器未使用的载波？小区扫描会遍历射频支持的每一个频段。",
+        "link": "打开小区扫描"
+      },
+      "reference": {
+        "show": "显示频段参考",
+        "hide": "隐藏频段参考"
+      }
+    }
+  },
+  "custom_profiles": {
+    "page": {
+      "title": "自定义 SIM 配置文件",
+      "description": "将 APN、IMEI 和 TTL/HL 设置打包为一键式配置文件。",
+      "new_profile": "新建配置文件",
+      "new_scenario": "新建场景"
+    },
+    "view": {
+      "title": "已保存的配置文件",
+      "description": "管理您的自定义 SIM 配置文件。",
+      "count_one": "已保存 {{count}} 个配置文件",
+      "count_other": "已保存 {{count}} 个配置文件",
+      "subtitle": "在此设备上激活、编辑或移除蜂窝配置文件。",
+      "activating": "正在激活",
+      "scenario_scheduled": "{{scenario}}，按每日计划",
+      "scenario_always_on": "{{scenario}}，始终启用",
+      "delete_description": "此操作将从设备中移除该配置文件。绑定到它的任何计划都将被清除。此操作无法撤销。",
+      "delete_keep": "保留配置文件",
+      "mismatch_note": "已应用到调制解调器中的 SIM 卡，而不是此配置文件绑定的 SIM 卡。下次重启或更换 SIM 卡时将关闭。",
+      "mismatch_confirm": {
+        "title": "将“{{name}}”应用到此 SIM 卡？",
+        "description": "此配置文件绑定到另一张 SIM 卡。其设置将立即应用到调制解调器中的 SIM 卡，并在下次重启或更换 SIM 卡时关闭。",
+        "verizon_note": "Verizon 数据路由规则也会设置到此 SIM 卡上。",
+        "confirm": "应用到此 SIM 卡"
+      },
+      "toast": {
+        "deactivated": "已停用 {{name}}",
+        "deleted": "已删除 {{name}}",
+        "activated": "{{name}} 已激活",
+        "activated_partial": "{{name}} 已激活，部分步骤已跳过",
+        "activate_error": "无法激活配置。"
+      },
+      "delete_title": "删除“{{name}}”？"
+    },
+    "table": {
+      "headers": {
+        "profile": "配置文件",
+        "status": "状态",
+        "last_updated": "最后更新",
+        "actions": ""
+      },
+      "status_badge": {
+        "active": "活动",
+        "inactive": "未激活",
+        "sim_mismatch": "SIM 不匹配"
+      },
+      "pagination": {
+        "total_one": "共 {{count}} 个配置文件",
+        "total_other": "共 {{count}} 个配置文件",
+        "page_info": "第 {{current}} 页，共 {{total}} 页",
+        "previous": "上一页",
+        "next": "下一页"
+      },
+      "empty_row": "暂无配置文件，请创建一个以开始使用。",
+      "actions_menu": {
+        "open_menu": "打开菜单",
+        "edit": "编辑",
+        "activate": "激活",
+        "deactivate": "停用",
+        "delete": "删除"
+      },
+      "delete_confirm": {
+        "title": "删除配置文件",
+        "description": "确定要删除「{{name}}」吗？此操作不可撤销。删除此配置文件不会更改当前调制解调器配置。",
+        "confirm_button": "删除",
+        "deleting": "删除中…"
+      }
+    },
+    "form": {
+      "create_title": "创建自定义 SIM 配置文件",
+      "create_description": "使用特定的 APN、TTL 和 IMEI 设置创建自定义 SIM 配置文件。",
+      "edit_title": "编辑配置文件",
+      "edit_description": "正在编辑「{{name}}」。请更新以下字段。",
+      "load_current_button": "加载当前 SIM",
+      "fields": {
+        "profile_name_label": "配置文件名称",
+        "profile_name_placeholder": "我的 LTE 配置文件",
+        "profile_name_required": "配置文件名称为必填项。",
+        "sim_iccid_required": "SIM ICCID 为必填项。",
+        "sim_iccid_duplicate": "已存在使用此 SIM ICCID 的配置文件。",
+        "apn_name_required": "APN 名称为必填项。",
+        "sim_iccid_label": "SIM ICCID",
+        "sim_iccid_placeholder": "自动从当前 SIM 填充",
+        "mno_label": "移动网络运营商",
+        "mno_placeholder": "选择运营商…",
+        "mno_custom": "自定义",
+        "reuse_apn_label": "APN 配置",
+        "reuse_apn_placeholder": "选择已保存的 APN…",
+        "reuse_apn_custom": "自定义",
+        "use_saved_apn": "使用我已保存的 APN（{{apn}}）",
+        "apn_name_label": "APN 名称",
+        "apn_name_placeholder": "internet",
+        "ip_protocol_label": "IP 协议",
+        "ip_protocol_ipv4": "仅 IPv4",
+        "ip_protocol_ipv6": "仅 IPv6",
+        "ip_protocol_dual": "IPv4 + IPv6 (双栈)",
+        "cid_label": "配置文件槽位 (CID)",
+        "cid_error": "CID 必须为 1–15。",
+        "imei_label": "首选 IMEI",
+        "imei_placeholder": "留空以保留当前 IMEI",
+        "imei_error": "IMEI 必须为 15 位数字。",
+        "ttl_label": "TTL 值",
+        "ttl_error": "TTL 必须为 0–255。",
+        "hl_label": "跳数限制",
+        "hl_error": "HL 必须为 0–255。",
+        "cid_locked_verizon": "Verizon 需要 PDP 上下文 3",
+        "sim_iccid_hint": "留空可将此配置应用于任意 SIM 卡。",
+        "imei_danger": "更改 IMEI 会重写调制解调器标识，并在激活时重启调制解调器。留空以保留当前 IMEI。"
+      },
+      "buttons": {
+        "create_submit": "创建配置文件",
+        "update_submit": "更新配置文件",
+        "reset": "重置",
+        "back": "上一步",
+        "next": "下一步"
+      },
+      "toast": {
+        "create_success": "配置文件创建成功。",
+        "create_error": "创建配置文件失败。",
+        "update_success": "配置文件更新成功。",
+        "update_error": "更新配置文件失败。"
+      },
+      "scenario": {
+        "section_title": "场景",
+        "section_description": "将此配置绑定到连接场景，激活时自动应用。可选择按时段配置不同场景的定时切换。",
+        "default_label": "默认场景",
+        "default_hint": "激活此配置时应用，并用作未被以下计划覆盖的时段的回退场景。",
+        "schedule_toggle_label": "按时段计划",
+        "schedule_toggle_hint": "按每日时间表自动切换场景。",
+        "add_block": "添加时段",
+        "remove_block_aria": "删除时段",
+        "block_label": "时段 {{index}}",
+        "start_label": "开始",
+        "end_label": "结束",
+        "block_scenario_label": "场景",
+        "active_now_line": "当前 → {{scenario}}",
+        "active_now_line_with_next": "当前 → {{scenario}} · 下次切换 {{time}}",
+        "otherwise_label": "其他时间",
+        "entries_cap_hint": "最多 {{max}} 个时段。请先删除一个再添加。",
+        "empty_schedule_hint": "暂无时段 — 效果与直接使用 {{name}} 相同。",
+        "overlap_warning": "此时段与另一个时段重叠。重叠时，列表靠前的时段优先生效。",
+        "schedule_invalid": "请先修正高亮显示的计划时段再保存。",
+        "deleted_scenario": "（已删除的场景）",
+        "block_errors": {
+          "invalid_start": "请输入有效的开始时间（HH:MM）。",
+          "invalid_end": "请输入有效的结束时间（HH:MM）。",
+          "zero_length": "开始时间和结束时间不能相同。",
+          "no_days": "请至少选择一天。"
+        },
+        "summary_line": "{{time}} → {{scenario}}",
+        "time_range": "{{start}}–{{end}}",
+        "move_up_aria": "上移时段",
+        "move_down_aria": "下移时段",
+        "expand_rule_aria": "编辑时段",
+        "overnight_hint": "次日结束",
+        "create_new": "创建新场景"
+      },
+      "loading_current": "正在读取 SIM…",
+      "advanced": {
+        "title": "高级",
+        "summary_imei": "IMEI 覆盖",
+        "summary_ttl": "TTL {{value}}",
+        "summary_hl": "HL {{value}}"
+      },
+      "back_to_list": "返回配置列表",
+      "edit_loading": "正在加载配置…",
+      "steps": {
+        "nav_aria": "配置步骤",
+        "identity_label": "身份与运营商",
+        "identity_short": "身份",
+        "apn_short": "APN",
+        "apn_label": "APN 与连接",
+        "advanced_label": "高级",
+        "advanced_short": "高级",
+        "advanced_desc": "通常无需更改。除非确有需要，请保持默认。",
+        "scenario_label": "连接场景",
+        "scenario_short": "场景",
+        "review_short": "查看",
+        "review_label": "查看",
+        "scenario_desc": "选择激活此配置时应用的场景，并可按一天中的时间安排切换。",
+        "optional": "可选",
+        "step_of": "第 {{current}} 步，共 {{total}} 步",
+        "state_current": "当前步骤",
+        "state_complete": "已完成",
+        "state_error": "存在错误",
+        "state_upcoming": "待进行"
+      },
+      "sections": {
+        "identity_title": "标识",
+        "identity_desc": "为此配置命名并选择对应的运营商。",
+        "apn_title": "APN 与连接",
+        "apn_desc": "调制解调器连接运营商数据网络的方式。",
+        "advanced_title": "高级",
+        "advanced_desc": "很少需要更改。仅在确有必要时修改。"
+      },
+      "summary": {
+        "title": "预览",
+        "desc": "此配置在列表中的显示方式，以及激活时会更改的内容。",
+        "untitled": "未命名配置",
+        "reboot_note": "激活将重启调制解调器以应用 IMEI 更改。"
+      },
+      "discard_dialog": {
+        "title": "放弃更改？",
+        "description": "您有未保存的更改。现在离开将放弃这些更改。",
+        "confirm": "放弃",
+        "keep": "继续编辑"
+      },
+      "add_title": "添加配置文件",
+      "add_description": "向您的设备添加新的蜂窝配置文件。",
+      "edit_description_simple": "更新此蜂窝配置文件，然后保存更改。",
+      "load_from_sim": "从 SIM 加载",
+      "loaded_from_sim": "已从 SIM 加载当前设置",
+      "save_failed": "保存配置文件失败",
+      "profile_added": "已添加配置文件",
+      "profile_updated": "已更新配置文件",
+      "submit_add": "添加配置",
+      "submit_edit": "保存更改",
+      "cancel": "取消",
+      "next": "下一步",
+      "tab_network": "网络",
+      "network_desc": "modem 连接到运营商数据网络的方式。",
+      "identity_load_hint": "为此配置文件命名并选择适用的运营商。",
+      "sim_iccid_placeholder_inline": "自动检测或输入 ICCID",
+      "sim_iccid_hint_inline": "标识此配置文件对应的 SIM 卡。",
+      "mno_hint": "您可以在此处选择预配置的移动网络运营商。",
+      "cid_default_option": "CID 1（默认）",
+      "cid_locked_verizon_inline": "已锁定为 CID 3——Verizon 只在 PDP 上下文 3 上传输数据。",
+      "scenario_desc_inline": "选择此配置文件运行的场景，并可选择在一天中的设定时间切换场景。",
+      "default_scenario_label": "默认场景",
+      "default_scenario_hint": "在没有任何计划时段处于活动状态时运行。",
+      "create_scenario_option": "新建场景",
+      "schedule_inline_label": "基于时间的计划",
+      "schedule_inline_hint": "在最多两个每日时段内切换场景。",
+      "windows_empty": "尚无时段。添加一个以在设定时间切换场景。",
+      "window_label": "时段 {{index}}",
+      "window_remove_aria": "移除时段 {{index}}",
+      "window_from": "从",
+      "window_to": "到",
+      "windows_count": "{{max}} 个时段中的 {{count}} 个",
+      "add_window": "添加时段",
+      "review_desc_add": "检查您的配置文件，然后将其添加到设备。",
+      "review_desc_edit": "检查您的配置文件，然后保存更改。",
+      "review_edit_aria": "编辑",
+      "review": {
+        "section_identity": "身份",
+        "section_network": "网络",
+        "section_scenario": "场景",
+        "profile_name": "配置文件名称",
+        "sim_iccid": "SIM ICCID",
+        "all_sims": "所有 SIM 卡",
+        "operator": "运营商",
+        "apn": "APN",
+        "ip_protocol": "IP 协议",
+        "profile_slot": "配置文件槽位",
+        "cid_value": "CID {{cid}}",
+        "cid_value_default": "CID {{cid}}（默认）",
+        "preferred_imei": "首选 IMEI",
+        "ttl_hl": "TTL / 跳数限制",
+        "default": "默认",
+        "schedule": "计划",
+        "schedule_on_no_windows": "已启用，无时段",
+        "schedule_off": "已关闭",
+        "window_value": "{{scenario}} · {{start}}–{{end}}",
+        "not_set": "未设置"
+      },
+      "verizon_inline": {
+        "dialog_title": "使用 Verizon 数据路由规则？",
+        "dialog_description": "Verizon 只在 PDP 上下文 3 上传输数据，因此此配置文件会将 CID 锁定为 3，并在激活时写入 MPDN 路由规则。之后请勿手动释放该规则——直接释放并重启可能会使 modem 损坏，直至重新刷写固件。要安全撤销它，请将此配置文件切换到其他运营商。",
+        "dialog_cancel": "取消",
+        "dialog_confirm": "使用 Verizon"
+      },
+      "pdp_inline": {
+        "ipv4": "IPv4",
+        "ipv6": "IPv6",
+        "dual": "IPv4 & IPv6"
+      }
+    },
+    "activate_dialog": {
+      "title": "激活配置文件",
+      "description": "将「{{name}}」应用到调制解调器？这将按配置文件中的设置更新 APN、TTL/HL 和 IMEI。未更改的设置将被跳过。",
+      "confirm": "激活"
+    },
+    "deactivate_dialog": {
+      "title": "停用配置文件",
+      "description": "其计划将停止，默认连接场景将恢复，常规 APN 设置也会还原。",
+      "confirm": "停用",
+      "working_title": "正在停用配置文件",
+      "unknown_profile": "无配置文件名称",
+      "confirm_headline": "停止使用此配置文件？",
+      "working_headline": "正在恢复常规设置",
+      "working_sub": "还原 APN 期间，移动连接可能会短暂中断。请勿离开此页面。",
+      "verizon_note": "此 Verizon 配置文件的数据路由规则也会被还原，之后调制解调器需要重启。准备好后，请通过横幅重启。"
+    },
+    "apply_dialog": {
+      "title": "正在应用配置文件",
+      "status_badge": {
+        "applying": "应用中…",
+        "complete": "完成",
+        "partial": "部分完成",
+        "failed": "失败"
+      },
+      "step_labels": {
+        "apn": "APN 配置",
+        "ttl_hl": "TTL / 跳数限制",
+        "imei": "IMEI",
+        "mpdn_rule": "数据路由"
+      },
+      "reboot_notice": "IMEI 更改将在重启后生效。准备好后，可通过横幅重启。",
+      "step_state_unchanged": "无变化",
+      "preparing": "准备中…",
+      "step_progress": "第 {{current}} / {{total}} 步",
+      "complete_headline": "配置已激活",
+      "complete_sub": "所有适用的设置已应用到调制解调器。",
+      "partial_headline": "已激活（部分跳过）",
+      "partial_sub": "部分步骤已跳过。请查看下方详情。",
+      "failed_headline": "激活失败",
+      "failed_sub": "调制解调器未完全重新配置。",
+      "details_label": "步骤",
+      "errors": {
+        "start_failed": "无法开始应用配置文件。",
+        "not_started": "配置文件应用未启动，请重试。"
+      }
+    },
+    "verizon_warning": {
+      "title": "Verizon 需要特殊的数据路由规则",
+      "body_intro": "Verizon 的网络只能通过此调制解调器的非默认通道传输数据。为使数据和短信正常工作，QManager 将在您激活此配置文件时配置自定义数据路径规则。",
+      "body_warning_lead": "重要提示——一旦激活，请勿手动清除或释放此规则。",
+      "body_warning_rest": "否则可能导致调制解调器无法恢复默认路由，直到重新刷写固件。当您切换到其他配置文件时，QManager 会安全地处理清理工作。",
+      "cancel": "取消",
+      "confirm": "我已了解，继续"
+    },
+    "empty_state": {
+      "title": "暂无自定义配置文件",
+      "description": "在此管理您的自定义 SIM 配置文件。",
+      "description_full": "创建配置文件，保存 SIM 的 APN、IMEI 和 TTL 设置，并一步应用。",
+      "refresh": "刷新",
+      "card_title": "自定义 SIM 配置文件",
+      "card_description": "将 APN、IMEI 和 TTL 设置打包，一步应用到调制解调器。",
+      "teaching_headline": "尚无配置文件",
+      "teaching_body": "自定义 SIM 配置文件将 APN 名称、IP 协议、TTL/HL 覆盖和可选 IMEI 打包为一个已保存的预设。激活后一次性应用所有设置，切换运营商或 SIM 卡槽只需数秒。",
+      "cta_new": "新建配置文件",
+      "cta_refresh": "刷新"
+    },
+    "pills": {
+      "ip_v4": "IPv4",
+      "ip_v6": "IPv6",
+      "ip_dual": "IPv4v6",
+      "apn_default": "默认 APN",
+      "cid": "CID {{cid}}",
+      "ttl": "TTL {{value}}",
+      "hl": "HL {{value}}",
+      "imei_override": "IMEI 覆盖",
+      "mpdn_locked": "MPDN 已锁定",
+      "other_sim": "其他 SIM 卡",
+      "apn_prefix": "APN "
+    },
+    "active_card": {
+      "none_title": "无活动配置",
+      "none_description": "调制解调器正在使用当前设置。激活已保存的配置以应用一组设置。",
+      "subtitle": "已应用到调制解调器",
+      "subtitle_with_mno": "已应用 · {{mno}}",
+      "scenario_default": "场景：{{name}}",
+      "scenario_scheduled": "场景：{{name}}（已排程）",
+      "mismatch_note": "此配置是为另一张 SIM 卡创建的，与当前插入的 SIM 卡不同。请为当前 SIM 卡重新激活，或激活匹配的配置。",
+      "verizon_locked_note": "数据路由已锁定到 PDP 上下文 3。此配置激活期间，IP 直通不可用。",
+      "edit_button": "编辑"
+    },
+    "list": {
+      "new_button": "新建",
+      "bound_sim": "绑定到 SIM {{iccid}}",
+      "detail_unavailable": "无法加载此配置的设置。",
+      "only_active_hint": "您唯一的配置正是当前激活的配置。创建另一个即可在不同设置间切换。"
+    },
+    "edit": {
+      "not_found_title": "未找到配置",
+      "not_found_desc": "该配置可能已被删除。返回已保存的配置。"
+    },
+    "card": {
+      "label_iccid": "SIM",
+      "label_updated": "更新时间"
+    },
+    "registry": {
+      "add": "新建配置",
+      "error_title": "无法加载您的配置"
+    },
+    "errors": {
+      "load_failed": "调制解调器未返回已保存的配置，请稍后重试。",
+      "save_failed": "无法保存配置。",
+      "delete_failed": "无法删除配置。",
+      "deactivate_failed": "无法停用配置。"
+    },
+    "hero": {
+      "eyebrow": "当前生效",
+      "iccid": "ICCID {{value}}",
+      "edit": "编辑",
+      "deactivate": "停用",
+      "reapply": "重新应用配置文件",
+      "pending_network": "下次激活时应用",
+      "notice": {
+        "unknown_step": "未知",
+        "applying_title": "正在应用 {{name}}",
+        "applying_body": "第 {{step}} 步，共 {{total}} 步。无线电重新附着期间，连接可能会短暂中断。",
+        "partial_title": "仅部分应用",
+        "partial_body": "{{step}} 步骤未能应用。请重新应用配置文件以再次尝试所有步骤。",
+        "mismatch_title": "插入了不同的 SIM",
+        "mismatch_body": "此配置文件是为另一张 SIM 保存的。在下次重启或更换 SIM 之前，其设置将应用于调制解调器中的 SIM。"
+      },
+      "tiles": {
+        "identity": "身份",
+        "scenario": "生效场景",
+        "scheduled": "已计划",
+        "not_scheduled": "未计划",
+        "radio": "无线电配置",
+        "band_locking": "频段锁定",
+        "bands_auto": "所有频段"
+      },
+      "scenario": {
+        "unknown": "未知场景"
+      },
+      "ribbon": {
+        "title": "今日计划",
+        "edit": "编辑计划",
+        "unknown_scenario": "未知场景",
+        "aria_label": "今日场景计划：{{schedule}}",
+        "aria_segment": "{{name}}，持续到 {{end}}",
+        "aria_join": "，然后",
+        "aria_empty": "今日没有场景计划"
+      },
+      "badge": {
+        "live": "活动",
+        "applying": "应用中",
+        "partial": "部分应用",
+        "mismatch": "SIM 不匹配"
+      }
+    },
+    "hero_empty": {
+      "title": "没有活动的配置文件",
+      "description": "调制解调器将使用常规 APN 设置和默认连接场景。保存配置文件即可将 APN、TTL 和场景计划绑定到某张 SIM。",
+      "description_saved": "当前没有生效的配置。请在下方激活一个已保存的配置文件，以恢复其设置和计划。",
+      "activate_action": "激活配置文件"
+    },
+    "hero_error": {
+      "title": "无法获取配置文件详情",
+      "description": "调制解调器上有一个活动的配置文件，但无法加载其详情。设备上未发生任何更改。",
+      "retry": "重试"
+    }
+  },
+  "scenarios": {
+    "default_balanced_name": "均衡",
+    "default_balanced_description": "自动选择频段",
+    "default_gaming_name": "游戏",
+    "default_gaming_description": "低延迟，SA 优先",
+    "default_streaming_name": "流媒体",
+    "default_streaming_description": "高带宽、稳定连接",
+    "default_gaming_optimization": "低延迟",
+    "default_streaming_optimization": "高吞吐量",
+    "default_custom_optimization": "自定义",
+    "mode_option_auto": "自动",
+    "mode_option_lte": "仅 LTE",
+    "mode_option_nrsa": "仅 5G SA",
+    "mode_option_nrsa_nsa": "5G SA / NSA",
+    "redirect": {
+      "label": "正在打开自定义配置文件…"
+    },
+    "scenario_item": {
+      "active_badge": "活动",
+      "next_at": "下次于 {{time}}",
+      "delete_confirm": {
+        "title": "删除场景",
+        "description": "确定要删除「{{name}}」吗？此操作不可撤销。",
+        "confirm": "删除",
+        "deleting": "删除中…"
+      },
+      "band_lock": "频段锁定"
+    },
+    "add_button": {
+      "label": "新建场景"
+    },
+    "active_config_card": {
+      "configuration": "{{name}} 配置",
+      "config_labels": {
+        "network_mode": "网络模式",
+        "optimization": "优化",
+        "lte_bands": "LTE 频段",
+        "nrsa_bands": "NR5G-SA 频段",
+        "nrsa_nsa_bands": "NR5G-NSA 频段"
+      },
+      "config_values": {
+        "auto": "自动",
+        "lte_only": "仅 LTE",
+        "nrsa_only": "仅 5G SA",
+        "nrsa_nsa": "5G SA / NSA",
+        "bands_auto": "自动"
+      },
+      "activate": "激活",
+      "edit": "编辑",
+      "show_details": "显示详情",
+      "hide_details": "隐藏详情"
+    },
+    "add_dialog": {
+      "title": "新建连接场景",
+      "fields": {
+        "name_label": "场景名称",
+        "name_placeholder": "例如：在家办公",
+        "description_label": "描述",
+        "description_placeholder": "例如：针对视频通话优化",
+        "network_mode_label": "网络模式",
+        "network_mode_aria": "网络模式",
+        "lte_bands_label": "LTE 频段锁定",
+        "lte_bands_placeholder": "例如：1, 3, 7, 28（留空 = 自动）",
+        "sa_bands_label": "NR5G-SA 频段锁定",
+        "sa_bands_placeholder": "例如：41, 78",
+        "nsa_bands_label": "NR5G-NSA 频段锁定",
+        "nsa_bands_placeholder": "例如：41, 78",
+        "preview_placeholder": "自定义配置"
+      },
+      "buttons": {
+        "create": "创建场景"
+      },
+      "toast": {
+        "success": "场景创建成功。"
+      }
+    },
+    "edit_dialog": {
+      "title": "编辑配置",
+      "fields": {
+        "optimization_label": "优化标签",
+        "optimization_placeholder": "例如：低延迟、高吞吐量、自定义"
+      },
+      "buttons": {
+        "save": "保存更改"
+      },
+      "toast": {
+        "success": "场景已更新。"
+      }
+    },
+    "activation_toast": {
+      "success": "已切换到 {{name}} 场景。"
+    },
+    "deletion_toast": {
+      "success": "场景已删除。"
+    },
+    "schedule_lock": {
+      "badge": "已计划",
+      "hint": "关闭此配置的计划以手动选择场景。",
+      "next_change": "下次切换于 {{time}}",
+      "owned_hint": "场景由「{{profile}}」的计划控制。关闭该计划即可手动选择。",
+      "blocked_toast": "连接场景由活动配置的计划控制。请关闭计划以手动更改。"
+    },
+    "list_card": {
+      "title": "场景",
+      "description": "选择一个场景以查看其配置。",
+      "error_title": "无法加载您的场景"
+    },
+    "dialog": {
+      "description": "频段字段留空即由调制解调器自动选择。",
+      "name_required": "请为场景命名。",
+      "icon_label": "图标"
+    },
+    "errors": {
+      "load_failed": "调制解调器未返回您的场景，请稍后重试。",
+      "activate_failed": "无法激活场景。",
+      "save_failed": "无法保存场景。",
+      "delete_failed": "无法删除场景。"
+    },
+    "icons": {
+      "sparkles": "闪光",
+      "gamepad": "游戏",
+      "play": "媒体",
+      "zap": "性能",
+      "globe": "浏览",
+      "rocket": "速度",
+      "video": "视频通话",
+      "download": "下载",
+      "shield": "安全",
+      "plane": "旅行",
+      "moon": "夜间",
+      "briefcase": "工作"
+    }
+  },
+  "sms": {
+    "page": {
+      "title": "短信中心",
+      "description": "查看、管理并从调制解调器发送短信。"
+    },
+    "inbox": {
+      "buttons": {
+        "delete_all": "全部删除"
+      },
+      "delete_single_confirm": {
+        "deleting": "删除中…"
+      },
+      "delete_all_confirm": {
+        "title": "删除所有消息",
+        "description": "所有已存储的消息和会话都将被永久删除，此操作不可撤销。",
+        "confirm": "全部删除",
+        "cancel": "保留消息",
+        "deleting": "正在全部删除…"
+      },
+      "toast": {
+        "delete_all_success": "所有消息已删除"
+      }
+    },
+    "settings": {
+      "title": "短信设置",
+      "description": "选择此调制解调器发送和存储短信的方式。",
+      "smsc": {
+        "title": "运营商号码",
+        "description": "用于转发您发出短信的运营商号码。",
+        "hint_label": "关于运营商号码",
+        "hint": "也称为短信中心 (SMSC)。该号码由运营商设定，仅在短信无法发送时才需要修改。",
+        "placeholder": "例如 +639180000101",
+        "invalid": "请输入 3 至 20 位数字，开头可带 +。",
+        "unreadable": "无法读取当前号码，但仍可设置新号码。",
+        "toast_saved": "运营商号码已保存。",
+        "save_failed": "无法保存运营商号码。"
+      }
+    },
+    "storage": {
+      "card_title": "短信存储位置",
+      "card_description": "新短信的保存位置。已有短信保持原位。",
+      "field_label": "新短信保存到",
+      "option_modem": "调制解调器",
+      "option_sim": "SIM 卡",
+      "hint_label": "关于短信存储",
+      "hint": "调制解调器可存储更多短信。存储在 SIM 卡上的短信会随 SIM 卡转移到其他设备。",
+      "row_modem": "调制解调器",
+      "row_sim": "SIM 卡",
+      "used_of_total": "{{used}} / {{total}}",
+      "unavailable": "不可用",
+      "nearly_full": "即将存满",
+      "full": "已满",
+      "toast_saved": "短信存储位置已保存。",
+      "load_failed": "无法读取短信存储信息。",
+      "save_failed": "无法保存短信存储位置。"
+    },
+    "compose": {
+      "title": "新短信",
+      "description": "撰写并发送短信。",
+      "fields": {
+        "phone_label": "电话号码",
+        "phone_placeholder": "+1234567890",
+        "message_label": "消息",
+        "message_placeholder": "请输入您的消息..."
+      },
+      "buttons": {
+        "send": "发送",
+        "sending": "发送中…"
+      },
+      "toast": {
+        "success": "短信发送成功"
+      },
+      "encoding": {
+        "gsm7": "GSM 7 位",
+        "ucs2": "UCS-2"
+      },
+      "encoding_hint": "出现非 ASCII 字符时，消息将切换为 UCS-2 编码，单条上限为 70 个字符。"
+    },
+    "center": {
+      "search": {
+        "placeholder": "搜索消息",
+        "aria": "搜索消息"
+      },
+      "filters": {
+        "all": "全部",
+        "unread": "未读"
+      },
+      "sort": {
+        "to_oldest": "最早的在前",
+        "to_newest": "最新的在前"
+      },
+      "actions": {
+        "compose": "新消息",
+        "refresh": "刷新",
+        "more": "更多选项",
+        "back": "返回全部消息",
+        "copy_address": "复制发件人地址",
+        "thread_options": "会话选项",
+        "mark_read": "全部标为已读",
+        "delete_thread": "删除会话",
+        "copy_text": "复制文本",
+        "forward": "转发…",
+        "mark_unread": "标为未读",
+        "details": "详情…",
+        "delete_message": "删除"
+      },
+      "header": {
+        "synced": "{{seconds}} 秒前已同步"
+      },
+      "identity": {
+        "matched": "已匹配"
+      },
+      "preview": {
+        "you": "你："
+      },
+      "time": {
+        "today": "今天",
+        "yesterday": "昨天"
+      },
+      "composer": {
+        "placeholder": "短信",
+        "aria": "回复 {{contact}}",
+        "send": "发送消息",
+        "remaining_one": "还可输入 {{count}} 个字符",
+        "remaining_other": "还可输入 {{count}} 个字符",
+        "segments_one": "{{count}} 条短信",
+        "segments_other": "{{count}} 条短信"
+      },
+      "send": {
+        "sending": "发送中…",
+        "sent_at": "{{time}} 已发送",
+        "failed": "发送失败",
+        "retry": "重试",
+        "discard": "放弃"
+      },
+      "code": {
+        "copy": "复制验证码",
+        "copied": "已复制"
+      },
+      "phishing": {
+        "with_logo": "含有链接。发件人名称可能被伪造，{{name}} 未必发送了此消息。",
+        "generic": "含有链接。仅在您预期收到此消息时才打开。"
+      },
+      "delete_thread": {
+        "title": "删除此会话？",
+        "description": "将移除为 {{contact}} 存储的所有消息，此操作不可撤销。",
+        "confirm": "删除会话"
+      },
+      "toast": {
+        "address_copied": "已复制发件人地址",
+        "copy_failed": "无法复制。此连接下浏览器已禁止访问剪贴板。",
+        "thread_deleted": "会话已删除",
+        "thread_delete_failed": "无法删除会话",
+        "thread_marked_read": "已标为已读",
+        "message_copied": "消息已复制",
+        "message_deleted": "消息已删除",
+        "message_delete_failed": "无法删除消息",
+        "message_marked_unread": "已标为未读",
+        "mark_unread_failed": "无法将消息标为未读"
+      },
+      "a11y": {
+        "unread_count_one": "{{count}} 条未读消息",
+        "unread_count_other": "{{count}} 条未读消息"
+      },
+      "states": {
+        "loading_sr": "正在加载会话",
+        "loading_thread_sr": "正在加载会话",
+        "no_selection": {
+          "title": "选择一个会话",
+          "description": "从左侧选择一个会话，或新建消息。"
+        },
+        "empty": {
+          "title": "暂无消息",
+          "description": "收到的消息将显示在这里。",
+          "action": "写消息"
+        },
+        "no_unread": {
+          "title": "没有未读消息",
+          "description": "所有已存储的消息都已在此浏览器中打开过。"
+        },
+        "no_matches": {
+          "title": "无匹配结果",
+          "description": "没有符合搜索条件的会话。可尝试姓名、号码或消息中的某个词。"
+        },
+        "thread_empty": {
+          "title": "这里还没有内容",
+          "description": "此会话没有已存储的消息。发送一条即可开始。"
+        },
+        "missing": {
+          "title": "该会话已不存在",
+          "description": "它已不再存储，可能在生成此链接后被删除。",
+          "action": "返回全部消息"
+        },
+        "error": {
+          "title": "无法加载消息",
+          "description": "您已存储的消息是安全的。请稍后重试。",
+          "retry": "重试"
+        }
+      },
+      "delete_message": {
+        "title": "删除此消息？",
+        "description": "将被永久移除，此操作不可撤销。",
+        "confirm": "删除消息"
+      },
+      "forward": {
+        "title": "转发消息",
+        "description": "将从此调制解调器发送一条新短信，原消息保持不变。",
+        "to_label": "收件人",
+        "prefix": "来自 {{addr}}：",
+        "include_sender": "包含原发件人",
+        "include_sender_hint": "在顶部添加一行“来自 {{addr}}：”",
+        "alpha_disabled": "发件人名称无法接收短信",
+        "submit": "转发"
+      },
+      "details": {
+        "title": "消息详情",
+        "description": "QManager 掌握的此消息的全部信息。",
+        "from": "发件人",
+        "to": "收件人",
+        "sender_type": "发件人类型",
+        "received_at": "接收时间",
+        "sent_at": "发送时间",
+        "length": "长度",
+        "length_value_one": "{{count}} 个字符",
+        "length_value_other": "{{count}} 个字符",
+        "close": "关闭",
+        "kind": {
+          "msisdn": "电话号码",
+          "shortcode": "短号码",
+          "alphanumeric": "发件人名称"
+        }
+      }
+    },
+    "forwarding": {
+      "page": {
+        "title": "转发",
+        "description": "自动将收到的短信重新发送到其他号码。"
+      },
+      "sms": {
+        "card_title": "短信转发",
+        "card_description": "自动将每条收到的短信重新发送到您选择的号码。",
+        "enable_label": "转发收到的短信",
+        "target_label": "转发至",
+        "target_placeholder": "+8613800138000",
+        "target_description": "每条新短信将以“来自 <发件人>：<内容>”的格式重新发送到此号码。",
+        "validation_phone": "请输入有效的电话号码（例如 +8613800138000）。",
+        "toast_save_success": "转发设置已保存。",
+        "error_load": "无法加载转发设置",
+        "target_hint_label": "关于转发的短信",
+        "loading_label": "正在加载转发设置"
+      },
+      "health": {
+        "card_title": "投递与状态",
+        "card_description": "收到的短信是否正在送达您的号码。",
+        "state_active": "运行正常",
+        "state_issue": "投递存在问题",
+        "state_off": "转发已关闭",
+        "state_unconfigured": "未设置转发号码",
+        "state_unconfigured_description": "转发已开启，但尚无转发目标。添加一个号码即可开始转发。",
+        "destination_label": "发送至",
+        "destination_none": "开启转发并保存号码后即可开始转发短信。",
+        "preview_label": "收件人看到",
+        "preview_sample_body": "你好，下午三点还约吗？",
+        "preview_hint_label": "关于此预览",
+        "preview_hint": "“来自”行中的号码是示例发件人。您保存的号码会收到此消息，而不是由它发出。",
+        "test_button": "发送测试",
+        "test_sending": "发送中…",
+        "test_hint": "向您保存的号码发送测试。",
+        "test_disabled_hint": "开启转发并保存号码后即可发送测试。",
+        "toast_test_success": "测试短信已发送到您的转发号码。",
+        "failures_title_one": "有 {{count}} 条短信转发失败",
+        "failures_title_other": "有 {{count}} 条短信转发失败",
+        "failures_description": "新短信仍会继续转发。以下短信在 3 次尝试后仍未成功：",
+        "failures_unknown_sender": "未知发件人",
+        "failures_empty": "没有投递问题。",
+        "clear_button": "清除提醒",
+        "toast_clear_success": "已清除。",
+        "preview_from": "来自 {{sender}}："
+      },
+      "errors": {
+        "load_failed": "调制解调器未返回转发设置，请稍后重试。",
+        "save_failed": "无法保存转发设置。",
+        "test_failed": "无法发送测试短信。",
+        "clear_failed": "无法清除警报。"
+      }
+    },
+    "errors": {
+      "fetch": "加载消息失败",
+      "send": "发送短信失败",
+      "delete_all": "删除全部消息失败"
+    }
+  },
+  "cell_locking": {
+    "band_locking": {
+      "page": {
+        "title": "频段锁定",
+        "description": "限制调制解调器可使用的 LTE 和 NR 频段。"
+      },
+      "settings_card": {
+        "band_failover_label": "频段故障转移",
+        "band_failover_tooltip": "如果锁定的频段在约 5 秒内没有信号，调制解调器将恢复使用所有支持的频段。",
+        "band_failover_info_aria": "频段故障转移说明",
+        "status": {
+          "disabled": "已禁用",
+          "ready": "就绪",
+          "fallback": "回退生效中",
+          "monitoring": "检查中"
+        },
+        "toast": {
+          "failover_enabled": "频段故障转移已启用",
+          "failover_disabled": "频段故障转移已禁用"
+        }
+      },
+      "cards": {
+        "lte": {
+          "title": "LTE 频段锁定",
+          "description": "选择要为您的设备锁定的 LTE 频段。"
+        },
+        "nsa_nr5g": {
+          "title": "NSA 频段锁定",
+          "description": "选择要锁定的 5G NSA 频段（通过 LTE 锚点的 5G）。"
+        },
+        "sa_nr5g": {
+          "title": "SA 频段锁定",
+          "description": "选择要锁定的 5G SA 频段（独立 5G）。"
+        },
+        "nrdc_nr5g": {
+          "title": "NR-DC 频段",
+          "description": "选择要为 NR 双连接锁定的 NR 频段。"
+        }
+      },
+      "card_badges": {
+        "bands_locked": "{{locked}} / {{total}} 个频段",
+        "scenario": "由场景控制",
+        "unrestricted": "全部频段",
+        "unavailable": "无法读取",
+        "unknown": "未报告"
+      },
+      "card_empty": "调制解调器未报告此类别的支持频段。",
+      "card_buttons": {
+        "lock_selected": "锁定所选频段",
+        "select_all": "全选",
+        "deselect_all": "全不选",
+        "swap_view": "切换到 {{target}} 频段",
+        "unlock_all": "全部解锁"
+      },
+      "card_live_region": "正在应用 {{category_label}} 频段锁定…",
+      "card_category_label": {
+        "lte": "LTE",
+        "nsa_nr5g": "NSA",
+        "sa_nr5g": "SA",
+        "nrdc_nr5g": "NR-DC"
+      },
+      "toast": {
+        "locked_success": "{{category_label}} 频段锁定成功",
+        "unlocked_success": "{{category_label}} 频段已解锁",
+        "refresh_error": "无法刷新频段配置"
+      },
+      "scenario_gate_title": "{{scenario}} 场景正在管理您的频段",
+      "scenario_gate_action": "打开场景",
+      "scenario_gate_note": "切换到“均衡”场景即可手动锁定频段。",
+      "read_error_title": "无法读取频段配置",
+      "refresh_blocked_watcher": "请等待故障转移检查完成",
+      "refreshing": "正在读取频段配置…",
+      "actions": {
+        "refresh": "刷新"
+      },
+      "card": {
+        "empty_title": "此处没有频段",
+        "unavailable_note": "当前锁定状态未知，已暂停更改。"
+      },
+      "legend": {
+        "selected": "已选择",
+        "live": "当前已锁定"
+      },
+      "a11y": {
+        "band_live": "{{band}}，已选择并已在调制解调器上锁定",
+        "band_selected": "{{band}}，已选择",
+        "band_unselected": "{{band}}，未选择"
+      },
+      "errors": {
+        "read_failed": "调制解调器未返回频段配置，请稍后重试。",
+        "no_bands": "请至少选择一个频段进行锁定。",
+        "no_supported": "调制解调器尚未报告其支持的频段。",
+        "lock_failed": "无法应用频段锁定。",
+        "failover_failed": "无法更新频段故障转移。"
+      },
+      "status": {
+        "title": "频段状态",
+        "on_air": "当前在用",
+        "on_air_summary_one": "{{count}} 个载波（{{mhz}} MHz）",
+        "on_air_summary_other": "{{count}} 个载波（{{mhz}} MHz）",
+        "on_air_empty_title": "没有在用的载波",
+        "on_air_empty_body": "调制解调器当前未连接到任何小区。",
+        "tile_aria": "{{tech}} 载波，{{role}}",
+        "tech_lte": "LTE",
+        "tech_nr": "5G NR",
+        "mhz": "{{value}} MHz",
+        "earfcn": "EARFCN {{value}}",
+        "pci": "PCI {{value}}",
+        "dbm": "{{value}} dBm",
+        "rsrp": "RSRP",
+        "no_value": "–",
+        "quality": {
+          "excellent": "信号极好",
+          "good": "信号良好",
+          "fair": "信号一般",
+          "poor": "信号较差",
+          "none": "无读数"
+        },
+        "posture": "锁定状态",
+        "subtitle_locked": "{{total}} 个类别中有 {{count}} 个已锁定",
+        "subtitle_unrestricted": "所有类别均使用全部频段",
+        "subtitle_unknown": "调制解调器尚未报告其频段",
+        "subtitle_unavailable": "无法读取频段配置",
+        "ratio": "{{count}} / {{total}} 个频段",
+        "ratio_unavailable": "无法读取",
+        "rail_locked": "已锁定",
+        "rail_unrestricted": "全部频段",
+        "rail_unknown": "未报告",
+        "rail_unavailable": "未知",
+        "rail_aria": "{{category}}：{{ratio}}（{{status}}）",
+        "rail_show_more": "显示 {{categories}}",
+        "rail_show_less": "收起"
+      }
+    },
+    "tower_locking": {
+      "page": {
+        "title": "基站锁定",
+        "description": "按 PCI 和信道将调制解调器固定到特定小区。"
+      },
+      "actions": {
+        "lock": "锁定基站",
+        "unlock": "移除锁定",
+        "clear_fields": "清空字段",
+        "persist_off": "重启后保持",
+        "persist_on": "重启后已保持",
+        "refresh": "刷新",
+        "update": "更新"
+      },
+      "live": {
+        "title": "当前状态",
+        "camped_empty_title": "没有在用的载波",
+        "camped_empty_body": "调制解调器未驻留在任何小区。连上网络后锁定仍会生效。",
+        "absent_nr_title": "没有 5G 载波",
+        "absent_lte_title": "没有 LTE 锚点",
+        "tile_tech_lte": "LTE",
+        "tile_tech_nr": "5G NR",
+        "tile_pci": "PCI",
+        "tile_earfcn": "EARFCN",
+        "tile_arfcn": "ARFCN",
+        "tile_rsrp": "{{value}} dBm",
+        "tile_no_value": "–",
+        "tile_lock": "锁定到频段 {{band}}、PCI {{pci}}",
+        "tile_add": "将频段 {{band}}、PCI {{pci}} 加入锁定",
+        "tile_replace": "改为锁定到频段 {{band}}、PCI {{pci}}",
+        "tile_unlock": "将频段 {{band}}、PCI {{pci}} 从锁定中移除",
+        "tile_blocked_nsa": "5G 锁定需要 SA 模式",
+        "tile_blocked_lte_only": "没有可锁定的 5G 连接",
+        "tile_blocked_slots_full": "三个 LTE 小区已全部设置",
+        "band_channel": "{{band}}（{{channel}}）",
+        "target_pair": "{{channel}}，PCI {{pci}}",
+        "target_serving": "服务中"
+      },
+      "automation": {
+        "title": "锁定自动化",
+        "description": "信号变差时释放锁定，或按计划定时应用。",
+        "failover_label": "信号故障转移",
+        "failover_help_label": "关于信号故障转移",
+        "failover_help": "信号质量持续低于阈值时释放基站锁定，避免差的小区使连接中断。它会同时释放两种无线电，而不只是信号弱的那一个。",
+        "failover_hint": "已设置锁定，但故障转移已关闭。锁定不会自动开启它。",
+        "failover_state_disabled": "已关闭",
+        "failover_state_ready": "就绪",
+        "failover_state_watching": "监控中",
+        "failover_state_released": "已释放（信号弱）",
+        "failover_state_stalled": "未在守护",
+        "failover_state_unknown": "未报告",
+        "threshold_label": "低于此值时释放",
+        "threshold_invalid": "请输入 0 到 100 之间的值",
+        "threshold_unread": "无法读取阈值。",
+        "quality_value": "当前信号质量：{{value}}%",
+        "quality_unknown": "当前信号质量：未报告"
+      },
+      "legs": {
+        "lte": {
+          "title": "LTE 基站",
+          "description": "按信道和 PCI 将 4G 无线电固定到最多三个小区。"
+        },
+        "nr_sa": {
+          "title": "5G NR-SA 基站",
+          "description": "将 5G 独立组网无线电固定到单个小区。"
+        }
+      },
+      "short": {
+        "lte": "LTE",
+        "nr_sa": "5G NR-SA"
+      },
+      "fields": {
+        "earfcn": "信道 (EARFCN)",
+        "arfcn": "信道 (NR-ARFCN)",
+        "pci": "小区 ID (PCI)",
+        "band": "NR 频段",
+        "scs": "子载波间隔",
+        "slot": "小区 {{index}}",
+        "slot_clear": "清除小区 {{index}}",
+        "slot_in_use": "位于小区 {{index}}",
+        "pick_placeholder": "选择一个在用载波",
+        "scs_guess": "已按频段 {{band}} 的默认值填入。若锁定失败，请与您的基站核对。"
+      },
+      "card": {
+        "unread_note": "调制解调器未报告锁定状态。",
+        "unused_lte": "带边框的小区已锁定，但调制解调器未使用。",
+        "unused_nr": "已锁定，但调制解调器未使用此小区。",
+        "input_mode": "输入小区的方式",
+        "mode_type": "手动",
+        "mode_pick": "已检测",
+        "empty_title": "还没有小区目标",
+        "empty_body": "从上方的卡片中选择小区，或输入信道和 PCI。",
+        "gate_nsa_title": "5G NSA 下不可用",
+        "gate_nsa_body": "独立组网锁定需要 SA 模式。调制解调器当前使用锚定于 LTE 小区的 5G。",
+        "gate_lte_title": "没有 5G 连接",
+        "gate_lte_body": "调制解调器仅使用 LTE，没有可固定的 NR 小区。"
+      },
+      "schedule": {
+        "title": "锁定计划",
+        "enable_label": "定时锁定",
+        "status_active": "活动",
+        "status_inactive": "非活动",
+        "start": "开始",
+        "end": "结束",
+        "days": "重复日期",
+        "days_a11y": "星期",
+        "day_selected": "{{day}}，已选择",
+        "day_unselected": "{{day}}，未选择",
+        "day_0": "周日",
+        "day_1": "周一",
+        "day_2": "周二",
+        "day_3": "周三",
+        "day_4": "周四",
+        "day_5": "周五",
+        "day_6": "周六",
+        "no_days": "请至少选择一天。",
+        "toast_enabled": "锁定计划已开启",
+        "toast_disabled": "锁定计划已关闭",
+        "toast_saved": "锁定计划已更新"
+      },
+      "dialog": {
+        "lock_lte_title": "将 LTE 锁定到这些小区？",
+        "lock_lte_body_one": "调制解调器重新接入 {{summary}} 时连接会短暂中断。如果该小区不可达，在移除锁定前您可能会失去服务。",
+        "lock_lte_body_other": "调制解调器重新接入 {{count}} 个小区之一时连接会短暂中断。如果都不可达，在移除锁定前您可能会失去服务。",
+        "lock_nr_title": "将 5G 锁定到此小区？",
+        "lock_nr_body": "调制解调器重新接入 {{summary}} 时连接会短暂中断。如果该小区不可达，在移除锁定前您可能会失去服务。",
+        "unlock_title": "移除 {{leg}} 基站锁定？",
+        "unlock_body": "无线电将恢复自行选择小区。重新接入时连接会短暂中断。"
+      },
+      "toast": {
+        "locked": "{{leg}} 基站锁定已应用",
+        "unlocked": "{{leg}} 基站锁定已移除",
+        "cell_added": "已将小区加入 {{leg}} 锁定",
+        "cell_removed": "已将小区从 {{leg}} 锁定中移除",
+        "cell_exists": "该小区已添加",
+        "incomplete": "您开始设置的每个小区都需要同时填写信道和 PCI，否则会被跳过。",
+        "persist_enabled": "{{leg}} 锁定将在重启后保持",
+        "persist_disabled": "{{leg}} 锁定将在重启后不再保持",
+        "persist_command_failed": "已保存，但调制解调器拒绝了重启后保持锁定。",
+        "failover_enabled": "信号故障转移已开启",
+        "failover_disabled": "信号故障转移已关闭",
+        "threshold_saved": "故障转移阈值已更新",
+        "refresh_error": "无法刷新锁定状态"
+      },
+      "error": {
+        "title": "无法读取基站锁定状态",
+        "retry": "重试"
+      },
+      "errors": {
+        "read_failed": "调制解调器未报告其基站锁定状态。",
+        "lock_failed": "无法应用基站锁定。",
+        "unlock_failed": "无法移除基站锁定。",
+        "in_flight": "另一项基站更改仍在应用中。",
+        "no_cells": "请先至少输入一个信道和 PCI。",
+        "settings_failed": "无法保存基站设置。",
+        "schedule_failed": "无法保存锁定计划。"
+      },
+      "blocked": {
+        "lock_empty_lte": "请输入信道和 PCI，或从上方的卡片中选择小区。",
+        "lock_incomplete_lte": "您开始设置的每个小区都需要同时填写信道和 PCI。",
+        "lock_empty_nr": "请输入信道、PCI、间隔和频段，或从上方的卡片中选择小区。",
+        "lock_incomplete_nr": "锁定此小区前需要填写全部四个字段。",
+        "persist_unread": "调制解调器未报告此设置。",
+        "lock_gated_nsa": "调制解调器处于 5G NSA，没有可锁定的独立组网小区。",
+        "lock_gated_lte_only": "调制解调器没有可锁定的在用 5G 载波。",
+        "threshold_empty": "请输入 0 到 100 之间的百分比。",
+        "refresh_writing": "正在应用基站更改。"
+      },
+      "a11y": {
+        "applying": "正在应用 {{leg}} 基站锁定",
+        "refreshing": "正在刷新基站锁定状态"
+      }
+    }
+  },
+  "frequency_locking": {
+    "a11y": {
+      "add_carrier": "将此载波添加到列表",
+      "remove_entry": "移除此频点"
+    },
+    "actions": {
+      "add": "添加",
+      "apply_lte": "应用 LTE 锁定",
+      "apply_nr": "应用 NR 锁定",
+      "clear_fields": "清空字段",
+      "clear_lte": "清除 LTE 锁定",
+      "clear_nr": "清除 NR 锁定",
+      "refresh": "刷新",
+      "use_current": "使用当前",
+      "use_current_hint": "用调制解调器当前使用的频点填充",
+      "use_current_none": "当前无在网载波"
+    },
+    "bands": {
+      "none": "没有与 {{label}} 匹配的频段",
+      "possible": "可能的频段：",
+      "this_frequency": "此频点",
+      "unsupported_suffix": "不受支持"
+    },
+    "blocked": {
+      "tower_lock_active": "基站锁定正占用此射频。请先解除后再锁定频点。",
+      "tower_lock_unknown": "无法读取基站锁定状态，在调制解调器响应前将拒绝此次锁定。请刷新后重试。"
+    },
+    "card": {
+      "blocked_body": "解除基站锁定后才能编辑此列表。",
+      "count": "{{used}} / {{max}}",
+      "empty_body_nr": "添加上方的 NR 载波，或输入 ARFCN 并选择其间隔。",
+      "empty_title": "列表中没有频点",
+      "scs_warning": "间隔填错看起来仍是有效条目，但调制解调器永远不会使用它。从上方添加载波时，此值会一并复制过来。",
+      "status_applying": "应用中",
+      "unused": "带边框的频点已锁定，但无线电未使用它们。"
+    },
+    "dialog": {
+      "cancel": "取消",
+      "confirm_lock": "锁定频点",
+      "confirm_unlock": "清除锁定",
+      "lock_lte_body": "调制解调器将只使用 {{channels}}，重新注册期间可能会短暂断开连接。",
+      "lock_lte_title": "锁定 LTE 频点？",
+      "lock_nr_body": "调制解调器将只使用 {{channels}}，重新注册期间可能会短暂断开连接。",
+      "lock_nr_title": "锁定 5G NR 频点？",
+      "no_recovery": "频点锁定没有故障转移守护。与频段锁定和基站锁定不同，若这些频点失去覆盖，没有任何机制会自动恢复服务。",
+      "unlock_lte_body": "调制解调器将可自由使用其已启用频段提供的任意频点，并可能短暂断开连接。",
+      "unlock_lte_title": "清除 LTE 锁定？",
+      "unlock_nr_body": "调制解调器将可自由使用其已启用频段提供的任意频点，并可能短暂断开连接。",
+      "unlock_nr_title": "清除 5G NR 锁定？",
+      "unsupported_body": "锁定到调制解调器不支持的频段可能导致其意外重启，而且这里没有任何机制会自动恢复。",
+      "unsupported_confirm": "仍然锁定",
+      "unsupported_matched": "匹配的频段",
+      "unsupported_supported": "支持的频段",
+      "unsupported_title": "这些频点不在你的调制解调器支持的频段内",
+      "unsupported_unknown": "未知"
+    },
+    "error": {
+      "invalid_channel": "频点编号只能是数字。",
+      "load_body": "调制解调器未响应。请刷新后重试。",
+      "load_title": "无法读取锁定状态"
+    },
+    "legs": {
+      "lte": {
+        "description": "最多 2 个 EARFCN。调制解调器只能使用这些频点。",
+        "title": "LTE 频点"
+      },
+      "nr": {
+        "description": "最多 32 个 ARFCN，每个都带有其子载波间隔。",
+        "title": "5G NR 频点"
+      }
+    },
+    "live": {
+      "camped_empty_body": "调制解调器未上报服务小区。仍可手动输入频点。",
+      "camped_empty_title": "未上报载波",
+      "outside_list": "带边框的载波正在使用，但不在你的频点列表中。",
+      "title": "当前状态"
+    },
+    "page": {
+      "description": "将无线电限制在特定频点上。仅限频点，不含 PCI，因此小区仍由调制解调器选择。",
+      "experimental": "实验性功能",
+      "title": "频点锁定"
+    },
+    "progress": {
+      "wait_note": "这需要几秒钟。请勿重启。"
+    },
+    "slots": {
+      "arfcn_placeholder": "NR-ARFCN",
+      "earfcn_placeholder": "EARFCN",
+      "in_list": "在列表中",
+      "on_air": "使用中",
+      "optional": "可选。第二个频点会扩大允许范围。",
+      "scs_label": "间隔",
+      "scs_unit": "{{value}} kHz",
+      "slot": "槽位 {{index}}",
+      "staged_count": "已暂存 {{count}} / {{max}} 个条目。尚未写入调制解调器。"
+    },
+    "toast": {
+      "lte_clear_failed": "无法清除 LTE 频点锁定",
+      "lte_cleared": "已清除 LTE 频点锁定",
+      "lte_lock_failed": "无法应用 LTE 频点锁定",
+      "lte_locked": "已应用 LTE 频点锁定",
+      "no_channels_body": "请至少输入一个频点后再应用。",
+      "no_channels_title": "未输入频点",
+      "nr_clear_failed": "无法清除 5G NR 频点锁定",
+      "nr_cleared": "已清除 5G NR 频点锁定",
+      "nr_lock_failed": "无法应用 5G NR 频点锁定",
+      "nr_locked": "已应用 5G NR 频点锁定"
+    },
+    "verdict": {
+      "blocked_body": "当基站锁定生效时，QManager 不会写入频点锁定。请先解除基站锁定，再使用本页面。",
+      "blocked_title": "基站锁定正在占用无线电",
+      "blocked_unknown_body": "QManager 无法读取基站锁定是否生效。在该读取成功之前，频点锁定的更改将保持阻止状态，因为在基站锁定生效时应用频点锁定可能导致调制解调器崩溃。请刷新后重试。",
+      "blocked_unknown_title": "基站锁定状态未确认",
+      "unknown_body": "调制解调器未响应上次的状态读取。请刷新后重试。",
+      "unknown_title": "尚未上报锁定状态"
+    }
+  },
+  "cell_scanner": {
+    "page": {
+      "title": "小区扫描",
+      "description": "扫描本模块支持的所有频段，找出周边的基站。取出 SIM 卡后结果最完整。"
+    },
+    "run": {
+      "title": "全网络扫描",
+      "link_neighbour_short": "邻区",
+      "progress_label": "预计扫描进度",
+      "ledger": {
+        "col_carrier": "运营商",
+        "col_best": "最佳信号",
+        "your_sim": "你的 SIM",
+        "cells_unit_one": "个小区",
+        "cells_unit_other": "个小区",
+        "dbm_unit": "dBm"
+      },
+      "description": "在模块支持的每个频段上各扫描一遍。",
+      "start": "扫描全部频段",
+      "rerun": "重新扫描",
+      "scanning_action": "扫描中…",
+      "download": "下载 CSV",
+      "link_neighbour": "邻区",
+      "link_blocked": "扫描结束后可用。",
+      "summary_empty": "本次扫描结束时未列出任何小区，因此没有可分析的内容。",
+      "summary_provider_unknown": "未命名运营商",
+      "summary_others_one": "另有 1 家运营商",
+      "summary_others_other": "另有 {{count}} 家运营商",
+      "verdict_all_good_one": "唯一报告了电平的小区结果为良好。扫描是在没有服务小区协助的情况下测量的，因此达到该电平的读数是确实很强的候选。",
+      "verdict_all_good_other": "报告了电平的 {{count}} 个小区全部为良好。扫描是在没有服务小区协助的情况下测量的，因此达到该电平的读数都是确实很强的候选。",
+      "verdict_all_fair_one": "唯一报告了电平的小区处于一般水平。扫描是在没有服务小区协助的情况下测量的，室内扫描通常比仪表板显示的低 10 到 15 dB。",
+      "verdict_all_fair_other": "报告了电平的 {{count}} 个小区全部处于一般水平。扫描是在没有服务小区协助的情况下测量的，室内扫描通常比仪表板显示的低 10 到 15 dB。",
+      "verdict_all_poor_one": "唯一报告了电平的小区结果为较弱。扫描是在没有服务小区协助的情况下测量的，室内扫描通常比仪表板显示的低 10 到 15 dB——因此这与你自己的连接较弱并不是一回事。",
+      "verdict_all_poor_other": "报告了电平的 {{count}} 个小区全部为较弱，因此整张表都位于量程底部。扫描是在没有服务小区协助的情况下测量的，室内扫描通常比仪表板显示的低 10 到 15 dB——因此这与你自己的连接较弱并不是一回事。",
+      "verdict_no_readings": "模块列出了这些小区，但没有报告其中任何一个的信号电平，因此无法对它们评级。",
+      "idle_title": "尚未扫描",
+      "idle_body": "本页打开后还没有扫描过。一次扫描会列出所有频段上范围内的每个基站。",
+      "scanning_title": "正在逐个频段调谐",
+      "scanning_body": "请保持此标签页打开——模块完成后结果会显示在这里。",
+      "complete_title": "扫描完成",
+      "failed_title": "扫描失败",
+      "failed_body": "模块可能正忙或无法访问。请检查连接后重新扫描。"
+    },
+    "results": {
+      "title": "扫描到的小区",
+      "description": "可按信号排序、按运营商筛选，并锁定任意一行。",
+      "filter_placeholder": "按运营商筛选",
+      "columns": "列",
+      "previous": "上一页",
+      "next": "下一页",
+      "count_one": "{{count}} 个小区",
+      "count_other": "{{count}} 个小区",
+      "filtered_one": "{{total}} 个小区中的 {{count}} 个",
+      "filtered_other": "{{total}} 个小区中的 {{count}} 个",
+      "no_match_title": "没有符合该筛选条件的小区",
+      "no_match_body": "清除运营商筛选即可看到本次扫描的全部小区。",
+      "empty_title": "暂无小区",
+      "empty_body": "执行一次扫描，列出范围内每个基站及其频段、频点和信号。",
+      "error_title": "扫描失败",
+      "error_body": "模块可能正忙或无法访问。请检查连接后重新扫描。",
+      "error_retry": "重新扫描",
+      "note_lock": "锁定某一行会立即把模块锁定到该小区，直到你在基站锁定中解除锁定。",
+      "tally_rows_one": "1 行",
+      "tally_rows_other": "{{count}} 行",
+      "tally_good_one": "1 个良好",
+      "tally_good_other": "{{count}} 个良好",
+      "tally_fair_one": "1 个一般",
+      "tally_fair_other": "{{count}} 个一般",
+      "tally_poor_one": "1 个较弱",
+      "tally_poor_other": "{{count}} 个较弱",
+      "tally_none_one": "1 个未评级",
+      "tally_none_other": "{{count}} 个未评级"
+    },
+    "columns": {
+      "network": "制式",
+      "provider": "运营商",
+      "band": "频段",
+      "earfcn": "频点",
+      "pci": "PCI",
+      "cell_id": "小区 ID",
+      "tac": "TAC",
+      "bandwidth": "带宽",
+      "signal": "信号"
+    },
+    "cells": {
+      "bandwidth": "{{value}} MHz",
+      "bandwidth_prb": "{{value}} PRB",
+      "signal": "{{value}} dBm"
+    },
+    "signal": {
+      "good": "良好",
+      "fair": "一般",
+      "poor": "较弱",
+      "none": "无数据"
+    },
+    "actions": {
+      "lock_cell": "锁定到此小区",
+      "lock_other_network": "不是你的 SIM 所属网络"
+    },
+    "a11y": {
+      "network_codes": "网络代码",
+      "row_menu": "小区操作"
+    },
+    "lock": {
+      "title": "锁定到小区 {{pci}}？",
+      "description": "模块将只驻留在此小区，在解除锁定之前不会切换到信号更强的小区。",
+      "target": "{{network}}，PCI {{pci}}，频点 {{earfcn}}",
+      "target_with_provider": "{{network}}，PCI {{pci}}，频点 {{earfcn}}（{{provider}}）",
+      "confirm": "锁定小区",
+      "cancel": "取消",
+      "locking": "锁定中…"
+    },
+    "toast": {
+      "scan_complete_title": "扫描完成",
+      "scan_complete_desc_one": "找到 {{count}} 个小区",
+      "scan_complete_desc_other": "找到 {{count}} 个小区",
+      "poll_failed_title": "与模块失去联系",
+      "poll_failed_desc": "扫描可能仍在进行。刷新页面可重新接管。",
+      "locked_title": "小区已锁定",
+      "locked_desc": "已驻留在 {{network}} PCI {{pci}}，频点 {{earfcn}}。",
+      "lock_failed_title": "锁定失败",
+      "lock_failed_unknown": "模块拒绝了此次锁定。",
+      "lock_failed_network": "无法连接到模块。"
+    },
+    "error": {
+      "scan_failed": "扫描失败",
+      "poll_lost": "扫描期间与模块失去联系。",
+      "start_failed": "模块无法启动扫描。",
+      "start_unreachable": "无法连接扫描服务。请确认模块正在响应。",
+      "other_scan_running": "邻区读取正在占用模块。它几秒钟就会结束——到时候再重新开始扫描。",
+      "scan_vanished": "扫描结束了，但没有返回任何结果。请重新开始扫描。"
+    },
+    "neighbour": {
+      "page": {
+        "title": "邻区",
+        "description": "读取服务小区已在跟踪的基站，无需扫描任何频段。"
+      },
+      "run": {
+        "title": "邻区扫描",
+        "ledger": {
+          "figure_unit_one": "个邻区",
+          "figure_unit_other": "个邻区"
+        },
+        "description": "请求服务小区已经跟踪的邻区，无需扫描额外的频段。",
+        "start": "读取邻区",
+        "rerun": "重新读取",
+        "scanning_action": "读取中…",
+        "link_sweep": "小区扫描",
+        "link_blocked": "本次读取结束后可用。",
+        "summary_empty": "本次读取结束时未列出任何邻区，因此没有可分析的内容。",
+        "idle_title": "尚未读取",
+        "idle_body": "本页加载后尚未读取。读取会列出服务小区正在测量的邻区。",
+        "scanning_title": "正在询问服务小区",
+        "scanning_body": "几秒内即可完成。",
+        "complete_title": "读取完成",
+        "failed_title": "读取失败",
+        "failed_body": "调制解调器可能繁忙或无法访问。请检查连接后重新读取。"
+      },
+      "results": {
+        "title": "邻区报告",
+        "description": "按信号排序、按信道筛选，可锁定任意 LTE 行。",
+        "filter_placeholder": "按信道筛选",
+        "empty_title": "暂无邻区",
+        "empty_body": "执行一次读取，即可列出服务基站正在测量的小区及其信道和信号。",
+        "error_title": "读取失败",
+        "error_retry": "重新读取",
+        "note_channel_only": "仅以信道形式报告的邻区背后没有测量值，因此它不带质量信息，其锁定操作保持禁用。锁定一个有测量值的 LTE 行会立即把模块锁定到该小区，直到你在基站锁定中解除锁定。",
+        "tally_measured_one": "1 个有测量值",
+        "tally_measured_other": "{{count}} 个有测量值",
+        "tally_channel_only_one": "1 个仅信道",
+        "tally_channel_only_other": "{{count}} 个仅信道"
+      },
+      "columns": {
+        "cell_type": "关系",
+        "frequency": "信道",
+        "rsrq": "RSRQ",
+        "rssi": "RSSI",
+        "sinr": "SINR"
+      },
+      "cell_type": {
+        "intra": "同频",
+        "inter": "异频",
+        "nr5g": "5G NR"
+      },
+      "cells": {
+        "unreported": "未报告",
+        "decibel": "{{value}} dB"
+      },
+      "actions": {
+        "lock_lte_only": "锁定 — 仅限 LTE 小区"
+      },
+      "toast": {
+        "complete_title": "读取完成",
+        "complete_desc_one": "报告了 {{count}} 个邻区",
+        "complete_desc_other": "报告了 {{count}} 个邻区",
+        "poll_failed_title": "与调制解调器失去联系",
+        "poll_failed_desc": "读取可能仍在进行。重新加载页面即可继续。"
+      },
+      "error": {
+        "failed": "读取失败",
+        "poll_lost": "读取过程中与调制解调器失去联系。",
+        "start_failed": "调制解调器无法启动读取。",
+        "start_unreachable": "无法访问扫描器。请检查调制解调器是否响应。",
+        "other_scan_running": "全频段扫描正在占用调制解调器。它最长需要三分钟——等它结束后再读取邻区。",
+        "scan_vanished": "读取结束了，但没有返回任何结果。请重新读取。"
+      }
+    },
+    "calculator": {
+      "page": {
+        "title": "频率计算器",
+        "description": "将 EARFCN 或 NR-ARFCN 换算为对应的频率和工作频段，适用于 LTE 与 5G NR。",
+        "sibling": "小区扫描"
+      },
+      "form": {
+        "title": "E/ARFCN 计算器",
+        "description": "输入信道号，即可得到对应的频率和频段。",
+        "mode_auto": "自动",
+        "mode_lte": "LTE",
+        "mode_nr": "NR",
+        "label_auto": "E/ARFCN 值",
+        "label_lte": "E-ARFCN",
+        "label_nr": "NR-ARFCN",
+        "placeholder": "例如 1350 或 627264",
+        "submit": "计算"
+      },
+      "error": {
+        "empty": "请先输入信道号——该字段为空。",
+        "not_a_number": "这不是数字。请输入整数信道号，例如 1850。",
+        "no_band": "没有频段与 {{value}} 匹配。请检查数值，或不用「自动」而直接选择 LTE 或 NR。",
+        "unexpected": "计算失败：{{message}}。请检查数值后重试。",
+        "negative": "信道号从 0 开始。请输入正数。",
+        "auto_gap": "自动无法定位 {{value}}——{{low}} 与 {{high}} 之间没有定义任何频段。选择 LTE 或 NR 即可强行计算。"
+      },
+      "result": {
+        "title": "计算结果",
+        "network_type": "网络类型",
+        "earfcn": "EARFCN",
+        "nrarfcn": "NR-ARFCN",
+        "frequency": "频率",
+        "bands_title": "可能的工作频段",
+        "band_lte": "频段 {{band}}",
+        "band_nr": "n{{band}}",
+        "downlink": "下行",
+        "uplink": "上行",
+        "range_mhz_label": "范围",
+        "in_band": "频段内位置",
+        "of_range": "范围 {{low}} – {{high}}",
+        "tdd_uplink": "上行与下行共用同一载波（TDD）。",
+        "sdl_uplink": "仅下行。该频段不承载上行。",
+        "position_aria": "位于频段的 {{pct}}% 处",
+        "method": "依据 {{spec}} 计算。",
+        "bands_description": "信道范围包含该数值的所有频段。",
+        "bands_empty_title": "暂无频段",
+        "bands_empty_body": "计算一个信道号，能够承载它的频段就会列在这里。",
+        "bands_agree_one": "有 {{count}} 个频段与该信道匹配。",
+        "bands_agree_other": "有 {{count}} 个频段共用该信道号，且双工模式一致，因此上面的上行信息对它们都适用。",
+        "bands_conflict_one": "有 {{count}} 个频段与该信道匹配。",
+        "bands_conflict_other": "有 {{count}} 个频段共用该信道号，但双工模式不一致——上行会因网络实际使用的频段而异。"
+      },
+      "units": {
+        "mhz": "{{value}} MHz",
+        "range_mhz": "{{low}} – {{high}} MHz",
+        "range": "{{low}} – {{high}}",
+        "mhz_short": "MHz"
+      },
+      "history": {
+        "title": "计算历史",
+        "description": "最近十次计算，保存在此浏览器中。",
+        "clear": "清空",
+        "empty_title": "暂无计算记录",
+        "empty_body": "计算一个信道号后就会显示在这里，方便对比而不必重新输入。",
+        "band_lte": "B{{band}}",
+        "band_nr": "n{{band}}",
+        "no_timestamp": "无时间戳",
+        "time_now": "刚刚",
+        "time_minutes_one": "{{count}} 分钟前",
+        "time_minutes_other": "{{count}} 分钟前",
+        "time_hours_one": "{{count}} 小时前",
+        "time_hours_other": "{{count}} 小时前",
+        "time_yesterday": "昨天",
+        "time_days_one": "{{count}} 天前",
+        "time_days_other": "{{count}} 天前"
+      },
+      "a11y": {
+        "delete_entry": "删除这条历史记录",
+        "recall_entry": "重新载入 {{value}}"
+      },
+      "readout": {
+        "idle_title": "尚无信道",
+        "idle_body": "其频率和频段会显示在这里。",
+        "failed_title": "无内容可显示",
+        "failed_body": "修正信道号后重新计算。",
+        "channel_lte": "EARFCN {{value}}（下行）",
+        "channel_nr": "NR-ARFCN {{value}}（下行）",
+        "several_bands_one": "有 {{count}} 个频段可以承载该信道。",
+        "several_bands_other": "有 {{count}} 个频段可以承载该信道。"
+      }
+    }
+  },
+  "antenna_statistics": {
+    "page": {
+      "title": "天线统计",
+      "description": "各接收链路的天线信号。对比 Main、Diversity 与 MIMO 端口，找出信号弱或未工作的天线。"
+    },
+    "context": {
+      "mimo": {
+        "label": "活动 MIMO",
+        "caption": "调制解调器上报的层数",
+        "unavailable": "未上报"
+      },
+      "mode": {
+        "label": "服务模式",
+        "caption": "当前上报的射频",
+        "lte": "4G LTE",
+        "nr": "5G NR",
+        "endc": "5G NSA (EN-DC)",
+        "none": "无服务"
+      },
+      "chains": {
+        "label": "上报中的链路",
+        "caption": "有读数的天线端口",
+        "value": "{{total}} 个中有 {{live}} 个"
+      }
+    },
+    "card": {
+      "lte": {
+        "title": "LTE 信号",
+        "description": "4G LTE 的各天线指标",
+        "identity": "LTE"
+      },
+      "nr": {
+        "title": "NR5G 信号",
+        "description": "5G NR 的各天线指标",
+        "identity": "5G NR"
+      }
+    },
+    "empty": {
+      "lte": {
+        "title": "无 LTE 信号",
+        "description": "4G LTE 激活后即会显示各天线指标。"
+      },
+      "nr": {
+        "title": "无 5G NR 信号",
+        "description": "5G NR 激活后即会显示各天线指标。"
+      }
+    },
+    "port": {
+      "not_reporting": "无数据",
+      "not_reported": "未上报"
+    },
+    "quality": {
+      "excellent": "极佳",
+      "good": "良好",
+      "fair": "一般",
+      "poor": "较差",
+      "bad": "极弱",
+      "none": "无读数"
+    },
+    "states": {
+      "loading_sr": "正在加载天线统计",
+      "retry": "重试",
+      "error_banner": "无法连接调制解调器。以下读数可能已过期。",
+      "stale_banner": "信号数据已过期。调制解调器可能无响应。",
+      "unreachable": {
+        "title": "无法连接调制解调器",
+        "description": "无法加载天线读数。请检查轮询服务是否在运行，然后重试。"
+      }
+    }
+  },
+  "antenna_alignment": {
+    "page": {
+      "title": "天线对准",
+      "description": "一边观察实时评分一边调整天线朝向或位置，然后记录最多三个位置进行对比。"
+    },
+    "mode": {
+      "lte": "4G LTE",
+      "nr": "5G NR",
+      "lte_short": "LTE",
+      "nr_short": "NR"
+    },
+    "aim": {
+      "title": "实时对准",
+      "description": "主接收链路，评分标准与已记录的位置相同。",
+      "description_live": "实时显示服务小区信号，并按与已记录位置相同的标准为主接收链路评分。",
+      "score_label": "对准评分",
+      "score_sr": "对准评分 {{score}}，满分 100",
+      "no_reading": "无对准评分 — 主链路无数据",
+      "peak": "峰值",
+      "updated": "更新于",
+      "delta_up": "较上次读数有提升",
+      "delta_down": "较上次读数有下降",
+      "partial": "仅 {{leg}}",
+      "not_reported": "未上报",
+      "primary_chain": "Main / PRX 是评分所依据的链路",
+      "score_cadence": "每 2 秒",
+      "live": {
+        "label": "服务小区 RSRP",
+        "hint_label": "关于服务小区 RSRP",
+        "hint": "服务小区在所有接收链路上的信号，每秒刷新一次。在 5G NSA 下这是 LTE 锚点，因此可能与下方的 Main / PRX 不同。",
+        "sr": "服务小区 RSRP {{value}} dBm",
+        "no_reading": "未上报服务小区 RSRP",
+        "from_peak": "距峰值 {{delta}} dB",
+        "at_peak": "处于峰值",
+        "state": {
+          "live": "实时",
+          "stale": "未更新",
+          "paused": "已暂停",
+          "connecting": "连接中"
+        }
+      }
+    },
+    "quality": {
+      "excellent": "极佳",
+      "good": "良好",
+      "fair": "一般",
+      "poor": "较差",
+      "bad": "极弱",
+      "none": "无读数"
+    },
+    "recorder": {
+      "title": "位置记录",
+      "description_directional": "记录最多三个角度并进行对比。每次记录会对调制解调器的 {{samples}} 次读数取平均，需要几秒钟。",
+      "description_omni": "记录最多三个摆放位置并进行对比。每次记录会对调制解调器的 {{samples}} 次读数取平均，需要几秒钟。",
+      "type_directional": "定向",
+      "type_omni": "全向",
+      "reset": "重置",
+      "position": "位置 {{letter}}",
+      "placeholder_angle": "角度",
+      "placeholder_position": "位置",
+      "record_angle": "记录角度",
+      "record_position": "记录位置",
+      "not_recorded": "未记录",
+      "recorded_at": "记录于 {{time}}",
+      "sample_progress": "第 {{current}} 次读数，共 {{total}} 次",
+      "waiting": "正在等待调制解调器",
+      "cancel": "取消",
+      "clear": "清除 {{label}}",
+      "label_sr": "第 {{index}} 个槽位的标签",
+      "slot_sr": "槽位 {{index}}：{{label}} — {{status}}",
+      "status": {
+        "recording": "正在记录",
+        "recorded": "已记录",
+        "recorded_best": "已记录，结果最佳",
+        "empty": "空"
+      },
+      "best": "最佳",
+      "best_margin": "最佳，领先 {{margin}}",
+      "not_comparable": "没有可排序的读数，因此无法比较该位置。",
+      "partial": "仅按单项指标评分。",
+      "confirm_cancel": "保留",
+      "reset_confirm_title": "清除所有已记录的位置？",
+      "reset_confirm_body": "你记录的所有位置都将被删除。此操作无法撤销。",
+      "reset_confirm_action": "全部清除",
+      "clear_confirm_title": "清除这条记录？",
+      "clear_confirm_body": "为 {{label}} 记录的读数将被删除。此操作无法撤销。",
+      "clear_confirm_action": "清除",
+      "all_recorded_hint": "三个位置均已记录。清除其中一个即可重新记录。",
+      "recording_hint": "请先完成或取消正在进行的记录。",
+      "record_slot": "记录 {{label}}",
+      "cancel_slot": "取消记录 {{label}}"
+    },
+    "recommendation": {
+      "title": "目前最佳：{{label}}",
+      "body_directional": "在你已记录的位置中，该角度的综合信号最强。",
+      "body_omni": "在你已记录的位置中，该摆放位置的综合信号最强。",
+      "mixed_radios": "你的记录跨越了两种射频，因此对比结果不如平时精确。",
+      "remaining": "记录剩余槽位可获得更完整的对比。"
+    },
+    "ports": {
+      "title": "接收链路",
+      "description": "哪些天线参与了评分。",
+      "not_reporting": "无数据",
+      "twin_hint": "如需查看每条链路的各项指标详情，请前往",
+      "twin_link": "天线统计"
+    },
+    "states": {
+      "loading_sr": "正在加载天线对准",
+      "retry": "重试",
+      "error_banner": "无法连接调制解调器。以下读数可能已过期。",
+      "stale_banner": "信号数据已过期。调制解调器可能无响应。",
+      "unreachable": {
+        "title": "无法连接调制解调器",
+        "description": "无法加载天线读数。请检查轮询服务是否在运行，然后重试。"
+      },
+      "no_readings": {
+        "title": "无天线读数",
+        "description": "调制解调器有响应，但没有任何接收链路上报测量值。可能正在搜索网络，也可能有天线未连接 — 一旦某条链路开始上报，读数会自动恢复。"
+      }
+    }
+  },
+  "core_settings": {
+    "basic": {
+      "page": {
+        "title": "蜂窝基本设置",
+        "description": "更改调制解调器使用 SIM 卡、射频以及接入网络的方式。",
+        "error_title": "无法读取调制解调器",
+        "error_body": "显示的值可能已过时。",
+        "retry": "重试"
+      },
+      "sim_card": {
+        "title": "SIM 卡与射频电源",
+        "description": "调制解调器使用哪张 SIM 卡，以及射频是否供电。"
+      },
+      "network_card": {
+        "title": "网络模式与漫游",
+        "description": "调制解调器如何选择要接入的网络。"
+      },
+      "cards": {
+        "unread": "尚未从调制解调器读取到任何数据，因此这里暂时没有可更改的设置。"
+      },
+      "rows": {
+        "sim_slot": {
+          "label": "SIM 卡插槽",
+          "consequence": "切换插槽会中断连接约 15 秒。",
+          "options": {
+            "slot_1": "SIM 1",
+            "slot_2": "SIM 2"
+          }
+        },
+        "cfun": {
+          "label": "射频电源",
+          "consequence": "关闭射频同时会切断 SIM 卡供电，飞行模式则保持 SIM 卡供电，两种情况下控制台都仍可通过 Ethernet 访问。",
+          "options": {
+            "normal": "正常",
+            "radio_off": "关闭射频",
+            "airplane": "飞行模式"
+          }
+        },
+        "mode_pref": {
+          "label": "首选网络类型",
+          "consequence": "仅在排查故障时才固定某一种技术。",
+          "options": {
+            "auto": "自动",
+            "lte_nr": "LTE + 5G",
+            "nr_only": "仅 5G",
+            "lte_only": "仅 LTE"
+          }
+        },
+        "nr5g_mode": {
+          "label": "5G 架构",
+          "consequence": "除非运营商要求独立组网（5G 独立运行）或非独立组网（5G 锚定到 LTE），否则请保持自动。",
+          "options": {
+            "auto": "自动",
+            "nsa": "仅 NSA",
+            "sa": "仅 SA"
+          }
+        },
+        "roam_pref": {
+          "label": "漫游偏好",
+          "consequence": "合作网络可能单独计费。",
+          "options": {
+            "any": "任意网络",
+            "home": "仅归属网络",
+            "partner": "合作网络"
+          }
+        },
+        "sim_detect": {
+          "label": "SIM 卡热插拔检测",
+          "consequence": "不启用时，更换过的 SIM 卡要到下次重启才会被发现。",
+          "on": "开启",
+          "off": "关闭"
+        }
+      },
+      "save_bar": {
+        "note": "应用时连接会短暂中断。调制解调器不会重启。",
+        "discard": "放弃",
+        "save": "保存设置",
+        "failed": "无法应用 {{fields}}。您的其他更改已保存。"
+      },
+      "toast": {
+        "saved": "设置已应用。",
+        "save_failed": "无法应用您的设置。"
+      },
+      "apply": {
+        "writing": "正在写入调制解调器",
+        "recovering": "正在等待射频稳定",
+        "verifying": "正在确认调制解调器已应用的设置"
+      },
+      "footer": {
+        "refresh": "刷新"
+      },
+      "strip": {
+        "label": "实时状态",
+        "stale": "已过时",
+        "network": "网络",
+        "sim": "SIM 卡",
+        "aggregation": "载波聚合",
+        "data_path": "数据通道",
+        "carrier_none": "未报告运营商",
+        "bands_none": "未报告频段",
+        "ip_dual": "已分配 IPv4 和 IPv6",
+        "ip_v4": "仅 IPv4",
+        "ip_v6": "仅 IPv6",
+        "ip_none": "未分配地址",
+        "unavailable_title": "无法读取调制解调器",
+        "unavailable_retrying": "上次读取失败。QManager 仍在重试。"
+      },
+      "rate_ceiling": {
+        "eyebrow": "网络授予的速率上限",
+        "no_ceiling": "未读到上限",
+        "sr_rate_block": "{{radio}}：{{state}}",
+        "provenance": "速率上限是网络授予的上限值，不是实测速度。它们在页面打开时读取，每次保存后再读取一次。",
+        "unavailable": "上次读取失败。请使用下方的“从调制解调器重新读取”再试一次。"
+      },
+      "readout": {
+        "slot_n": "SIM {{slot}}",
+        "unknown": "未知",
+        "no_apn": "未报告",
+        "ca_none": "未启用",
+        "ca_breakdown": "LTE {{lte}} + NR {{nr}}",
+        "ca_lte_only": "LTE {{lte}}",
+        "ca_nr_only": "NR {{nr}}"
+      },
+      "sim_status": {
+        "ready": "就绪",
+        "pin_required": "需要 PIN",
+        "puk_required": "需要 PUK",
+        "not_inserted": "无 SIM 卡",
+        "error": "错误",
+        "unknown": "未知"
+      },
+      "sim_slots": {
+        "empty": "空",
+        "sr_active": "SIM {{slot}}，使用中，卡号尾号 {{last4}}",
+        "sr_standby": "SIM {{slot}}，备用，卡号尾号 {{last4}}",
+        "sr_empty": "SIM {{slot}}，未检测到卡"
+      },
+      "ambr": {
+        "lte_heading": "LTE 速率上限",
+        "nr_heading": "5G 速率上限",
+        "governing": "生效中",
+        "not_governing": "未生效",
+        "nsa_note": "5G 非独立组网走 LTE 数据会话，因此以这条上限为准。",
+        "lte_empty_reason": "调制解调器仅在 LTE 数据会话建立期间才发布 LTE 上限。",
+        "nr_empty_reason": "调制解调器仅在 5G 数据会话建立期间才发布 5G 上限。",
+        "download": "下载",
+        "upload": "上传",
+        "governing_unread": "您的连接正在使用该射频。打开本页时未读到它的上限。",
+        "lte_short": "LTE",
+        "nr_short": "5G NR"
+      }
+    },
+    "apn": {
+      "page": {
+        "title": "APN 设置",
+        "description": "设置 SIM 卡用于连接的 APN、IP 协议和数据上下文。",
+        "error_load_title": "加载 APN 设置失败"
+      },
+      "card": {
+        "title": "APN 配置",
+        "description": "调制解调器用于建立数据连接的接入点名称。"
+      },
+      "status": {
+        "active": "已激活",
+        "not_live": "未生效",
+        "carrier_default": "运营商默认",
+        "network_using_label": "网络正在使用"
+      },
+      "carrier_default": {
+        "button": "使用运营商默认",
+        "dialog": {
+          "title": "使用运营商默认 APN？",
+          "description": "您的运营商将自动选择 APN。调制解调器重新连接时，蜂窝连接会短暂中断。",
+          "confirm": "使用运营商默认",
+          "cancel": "取消"
+        }
+      },
+      "toast": {
+        "saved": "APN 设置已保存",
+        "deactivated": "已恢复到运营商默认 APN"
+      },
+      "managed_by_profile_fallback": "活动的自定义 SIM 配置",
+      "edit": {
+        "fields": {
+          "apn": {
+            "label": "APN",
+            "placeholder": "fast.t-mobile.com",
+            "error_required": "APN 为必填项",
+            "error_invalid": "仅可使用字母、数字、点、连字符和下划线（最多 100 个字符）",
+            "consequence": "运营商提供的移动数据接入点名称。",
+            "presets": {
+              "trigger": "显示推荐的 APN",
+              "group_network": "适用于此 SIM 卡",
+              "group_mvno": "此网络上的其他品牌"
+            }
+          },
+          "pdp_type": {
+            "label": "PDP 类型",
+            "placeholder": "选择 PDP 类型",
+            "aria": "PDP 类型",
+            "options": {
+              "ipv4": "IPv4",
+              "ipv6": "IPv6",
+              "ipv4v6": "IPv4v6"
+            },
+            "consequence": "连接请求使用的 IP 版本。"
+          },
+          "modem_profile": {
+            "label": "CID",
+            "placeholder": "选择 CID",
+            "aria": "PDP 上下文（CID）",
+            "option_template": "CID {{cid}}",
+            "for_internet": "互联网",
+            "ims_badge": "IMS",
+            "sos_badge": "SOS",
+            "consequence": "承载数据的调制解调器上下文。"
+          }
+        },
+        "cid_confirm": {
+          "title": "使用保留的上下文？",
+          "description_ims": "CID {{cid}} 被运营商保留用于 IMS（VoLTE / Wi-Fi 通话）。在此写入数据 APN 可能会中断语音通话。仍要继续吗？",
+          "description_sos": "CID {{cid}} 被保留用于紧急（SOS）呼叫。在此写入数据 APN 可能会中断紧急呼叫。仍要继续吗？",
+          "confirm": "仍然使用",
+          "cancel": "取消"
+        },
+        "save_button": "保存配置文件"
+      },
+      "mbn": {
+        "card": {
+          "title": "运营商配置文件",
+          "description": "选择调制解调器运行的运营商固件配置文件；更改后需要重启。"
+        },
+        "auto_select": {
+          "label": "自动选择配置文件",
+          "consequence": "调制解调器会选择与 SIM 卡匹配的配置文件。"
+        },
+        "configuration": {
+          "label": "运营商配置",
+          "placeholder": "选择运营商配置",
+          "option_active_suffix": "（活动）",
+          "running": "正在运行",
+          "auto_hint": "关闭自动选择后才能选择配置文件。",
+          "empty_title": "没有运营商配置文件",
+          "empty_body": "调制解调器未列出任何运营商配置文件。"
+        },
+        "save": "保存设置",
+        "reboot_dialog": {
+          "title": "需要重启",
+          "description": "运营商配置文件更改需要重启设备才能生效。是否立即重启?",
+          "cancel": "稍后重启",
+          "reboot": "立即重启",
+          "rebooting": "正在重启…"
+        },
+        "toast": {
+          "auto_enabled": "已启用自动选择 — 需要重启",
+          "auto_disabled": "已禁用自动选择 — 需要重启",
+          "profile_applied": "运营商配置文件已应用 — 需要重启",
+          "reboot_error": "重启失败 — 请手动重启设备"
+        },
+        "load_error_title": "无法加载运营商配置文件",
+        "errors": {
+          "load_failed": "调制解调器未返回运营商配置文件，请稍后重试。",
+          "save_failed": "无法应用运营商配置文件设置。"
+        }
+      },
+      "profile_gate_title": "{{profile}} 自定义 SIM 配置正在管理您的 APN",
+      "profile_gate_note": "请编辑该配置以更改这些设置。",
+      "errors": {
+        "load_failed": "调制解调器未返回 APN 设置，请稍后重试。",
+        "save_failed": "无法保存 APN。",
+        "deactivate_failed": "无法切换到运营商默认 APN。"
+      },
+      "readout": {
+        "mode_label": "模式",
+        "custom": "自定义 APN",
+        "context_label": "数据上下文",
+        "not_connected": "未连接",
+        "matches": "与已保存的 APN 一致",
+        "not_live_note": "网络正在使用的 APN 与已保存的不同。"
+      }
+    },
+    "imei": {
+      "page": {
+        "title": "IMEI 设置",
+        "description": "查看、写入并验证调制解调器向网络出示的标识符。",
+        "error_title": "无法读取 IMEI 设置",
+        "error_body": "调制解调器没有响应：{{detail}}"
+      },
+      "legal": {
+        "title": "多数国家对修改 IMEI 有法律限制",
+        "body": "在许多司法辖区，写入不属于自己的标识符属于违法行为。修改本页任何内容之前，请先了解当地法律。"
+      },
+      "reboot": {
+        "banner": {
+          "title": "需要重启才能应用新的 IMEI",
+          "description": "标识符已写入。在重启之前，调制解调器仍会出示原来的 IMEI。",
+          "review": "查看",
+          "reboot": "重启"
+        },
+        "dialog": {
+          "title": "重启以应用新的 IMEI",
+          "description": "IMEI 已保存，但在重启之前调制解调器仍会出示原来的 IMEI。重启会中断连接约一分钟。",
+          "now": "立即重启",
+          "later": "稍后重启"
+        },
+        "toast_failed": "无法启动重启。重启仍处于待处理状态，可以从横幅中重试。"
+      },
+      "device": {
+        "title": "设备 IMEI",
+        "description": "调制解调器当前上报的值，以及下次启动后将上报的值。",
+        "rows": {
+          "write": {
+            "label": "写入新 IMEI",
+            "consequence": "15 位数字。仅在重启后生效。",
+            "placeholder": "15 位数字"
+          }
+        },
+        "errors": {
+          "length": "IMEI 必须正好是 15 位数字，您已输入 {{entered}} 位。",
+          "luhn": "这 15 位数字未通过校验位检验，网络会拒绝该号码。请修改最后一位，或在“IMEI 工具”中生成一个有效号码。"
+        },
+        "status": {
+          "empty": "没有可写入的内容，输入框为空。",
+          "unchanged": "这已经是调制解调器上的 IMEI。",
+          "ready": "可以写入。在重启之前，调制解调器仍保持当前身份。"
+        },
+        "actions": {
+          "write": "写入 IMEI",
+          "reset": "重置"
+        },
+        "toasts": {
+          "saved": "IMEI 已写入，将在下次重启后生效。",
+          "failed": "调制解调器未接受该 IMEI。"
+        }
+      },
+      "backup": {
+        "title": "备用 IMEI",
+        "description": "第二个标识符；当固件事件导致主 IMEI 失效时，设备会自动恢复使用它。",
+        "rows": {
+          "keep": {
+            "label": "保留备用 IMEI",
+            "consequence_off": "已关闭。未保存任何备用标识符。",
+            "consequence_on": "已开启。若主 IMEI 被拒绝，设备将恢复使用 {{imei}}。"
+          },
+          "value": {
+            "label": "备用标识符",
+            "consequence": "15 位数字。仅在主 IMEI 被拒绝时使用。",
+            "placeholder": "15 位数字"
+          }
+        },
+        "errors": {
+          "length": "IMEI 必须正好是 15 位数字，您已输入 {{entered}} 位。",
+          "luhn": "这 15 位数字未通过校验位检验，网络同样会拒绝该备用号码。请修改最后一位，或在“IMEI 工具”中生成一个有效号码。"
+        },
+        "actions": {
+          "save": "保存备用设置",
+          "reset": "重置"
+        },
+        "toasts": {
+          "saved": "备用设置已保存。",
+          "failed": "无法保存备用设置。"
+        },
+        "dialog": {
+          "title": "关于备用恢复",
+          "description": "保存备用 IMEI 后，设备会在每次重启后检查网络是否拒绝了当前 IMEI。若被拒绝，设备会自动切换到备用标识符并再次重启。",
+          "confirm": "保留备用 IMEI"
+        }
+      },
+      "tools": {
+        "title": "IMEI 工具",
+        "description": "根据型号分配码生成符合 Luhn 校验的号码，或检验已有的号码。",
+        "generate": {
+          "tac_label": "型号分配码",
+          "tac_consequence": "前八位数字，用于表明该号码所声称的机型。",
+          "tac_placeholder": "选择机型",
+          "custom": "自定义代码",
+          "prefix_label": "前缀",
+          "prefix_consequence": "8 至 12 位数字。其余部分会自动补全。",
+          "prefix_placeholder": "8–12 位数字",
+          "prefix_error": "前缀应为 8 至 12 位数字，您已输入 {{entered}} 位。",
+          "action": "生成"
+        },
+        "check": {
+          "label": "检验号码",
+          "placeholder": "粘贴或生成 15 位数字",
+          "valid": "Luhn 校验通过",
+          "invalid": "Luhn 校验失败",
+          "empty": "输入 15 位数字即可查看该号码的构成。",
+          "lookup": "在线查询"
+        },
+        "actions": {
+          "copy": "复制该号码"
+        },
+        "toasts": {
+          "copied": "号码已复制。",
+          "copy_failed": "无法复制该号码。"
+        },
+        "breakdown": {
+          "tac": "TAC",
+          "serial": "序列号",
+          "check": "校验位"
+        },
+        "footnote": "结构有效并不代表你有权使用该号码。此处的内容不会写入调制解调器。"
+      }
+    },
+    "network_priority": {
+      "page": {
+        "title": "网络优先级",
+        "description": "调制解调器注册网络时尝试各种无线技术的顺序。"
+      },
+      "card": {
+        "title": "搜网顺序",
+        "description": "拖动即可调整顺序。保存后调制解调器会重新注册网络，连接会中断几秒钟。"
+      },
+      "rats": {
+        "NR5G": "5G NR",
+        "LTE": "LTE",
+        "WCDMA": "WCDMA"
+      },
+      "hints": {
+        "WCDMA": "此技术的数据速率会大幅下降。"
+      },
+      "position": {
+        "first": "最先尝试。若此处没有小区响应，会自动回退。",
+        "middle": "当上方技术均无法注册时，接着尝试。",
+        "last": "最后的备用选择。仅当上方技术均无法注册时才使用。",
+        "only": "调制解调器唯一会尝试的技术。"
+      },
+      "serving_now": "当前使用中",
+      "handle_aria": "重新排序 {{name}}，当前第 {{rank}} 项，共 {{total}} 项",
+      "save_bar": {
+        "note": "保存后调制解调器会重新注册网络，预计约 3 秒无数据连接。",
+        "discard": "放弃更改",
+        "save": "保存优先级"
+      },
+      "apply": {
+        "writing": "正在写入新顺序",
+        "recovering": "正在重新注册网络",
+        "verifying": "正在读回顺序"
+      },
+      "states": {
+        "error": {
+          "title": "无法读取优先级顺序",
+          "description": "调制解调器未响应搜网顺序查询。它可能正忙，请稍后重试。"
+        },
+        "empty": {
+          "title": "未报告任何无线技术",
+          "description": "调制解调器返回的搜网顺序为空，因此没有可排序的项目。请重新读取，或确认射频是否已开启。"
+        }
+      },
+      "toast": {
+        "saved": "网络优先级已更新",
+        "save_error": "无法设置网络优先级"
+      }
+    },
+    "fplmn": {
+      "page": {
+        "title": "被阻止的网络",
+        "description": "SIM 卡会保存曾经拒绝过本设备的网络列表。清除该列表可以恢复连接并改善漫游。",
+        "note": "清除操作写入的是 SIM 卡而非调制解调器，并且不会重启任何设备。如果某个网络再次拒绝本设备，该列表会重新生成。"
+      },
+      "card": {
+        "title": "禁用网络列表",
+        "description": "每次打开本页面时，QManager 都会直接从 SIM 卡读取该列表。",
+        "learn_more": "了解更多"
+      },
+      "states": {
+        "loading": {
+          "title": "正在检查 SIM 卡",
+          "description": "正在读取卡上存储的禁用网络列表。"
+        },
+        "clean": {
+          "title": "没有被阻止的网络",
+          "description": "SIM 卡的禁用列表为空，无需任何操作。"
+        },
+        "entries": {
+          "title": "发现被阻止的网络",
+          "description": "SIM 卡正在拒绝一个或多个网络，这可能导致调制解调器无法注册。建议清除该列表。"
+        },
+        "error": {
+          "title": "无法检查 SIM 卡"
+        },
+        "unknown": {
+          "title": "状态未知",
+          "description": "QManager 无法确定此 SIM 卡是否存在被阻止的网络。未作任何更改，请重试读取。"
+        }
+      },
+      "actions": {
+        "refresh": "刷新状态",
+        "clear": "清除被阻止的网络",
+        "clearing": "正在清除…"
+      },
+      "confirm": {
+        "title": "要清除被阻止的网络列表吗？",
+        "description": "此操作将擦除存储在 SIM 卡上的禁用网络列表，且无法撤销。设备不会重启，调制解调器保持连接。如果某个网络再次拒绝本设备，该列表会重新生成。",
+        "confirm": "清除列表"
+      },
+      "toast": {
+        "cleared": "已清除被阻止的网络",
+        "clear_failed": "无法清除被阻止的网络"
+      },
+      "errors": {
+        "read_failed": "设备无法读取 SIM 卡的禁用网络列表。",
+        "unreachable": "无法连接到设备。"
+      }
+    }
+  },
+  "profiles": {
+    "today": {
+      "armed": "计划已启用",
+      "not_armed": "无计划",
+      "summary": {
+        "until": "持续到 {{time}}，然后切换为 {{next}}",
+        "rest_of_day": "持续到今日结束",
+        "all_day": "全天生效"
+      }
+    }
+  }
+}

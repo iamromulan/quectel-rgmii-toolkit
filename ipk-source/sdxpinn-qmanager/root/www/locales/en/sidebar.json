@@ -1,0 +1,91 @@
+{
+  "groups": {
+    "dashboard": "Dashboard",
+    "cellular": "Cellular",
+    "local_network": "Local Network",
+    "monitoring": "Monitoring",
+    "system": "System"
+  },
+  "breadcrumb": "Breadcrumb",
+  "items": {
+    "home": "Home",
+    "cellular_overview": "Overview",
+    "sms_inbox": "Inbox",
+    "band_locking_bands": "Band Locking",
+    "cell_scanner_full_scan": "Full Scan",
+    "cellular_settings_general": "General",
+    "ip_passthrough": "IP Passthrough",
+    "connection_quality_overview": "Overview",
+    "system_settings_general": "General",
+    "cellular_information": "Cellular Information",
+    "antenna_statistics": "Antenna Statistics",
+    "antenna_alignment": "Antenna Alignment",
+    "sms_center": "SMS Center",
+    "sms_forwarding": "SMS Forwarding",
+    "custom_profiles": "Custom Profiles",
+    "band_locking": "Band Selection",
+    "tower_locking": "Tower Locking",
+    "frequency_locking": "Frequency Locking",
+    "cell_scanner": "Cell Scanner",
+    "neighboring_cells": "Neighboring Cells",
+    "frequency_calculator": "Frequency Calculator",
+    "settings": "Settings",
+    "apn_management": "APN Settings",
+    "network_priority": "Network Priority",
+    "imei_settings": "IMEI Settings",
+    "fplmn_settings": "FPLMN Settings",
+    "ethernet_status": "Ethernet Status",
+    "local_network_settings": "Settings",
+    "custom_dns": "Custom DNS",
+    "ttl_mtu_settings": "TTL & MTU Settings",
+    "video_optimizer": "Video Optimizer",
+    "traffic_masquerade": "Traffic Masquerade",
+    "traffic_engine": "Traffic Engine",
+    "network_events": "Network Events",
+    "latency_monitor": "Latency Monitor",
+    "alerts": "Alerts",
+    "tailscale": "Tailscale",
+    "netbird": "NetBird",
+    "watchdog": "Watchdog",
+    "system_settings": "System Settings",
+    "configuration_backup": "Configuration Backup",
+    "device_access": "Device Access",
+    "ssh_password": "SSH Password",
+    "connection_quality": "Connection Quality",
+    "adaptive_polling": "Adaptive Polling",
+    "hardware": "Hardware",
+    "logs": "Logs",
+    "system_health_check": "System Health Check",
+    "software_update": "Software Update",
+    "at_terminal": "AT Terminal",
+    "luci": "LuCI",
+    "about_device": "About Device",
+    "support": "Support",
+    "donate": "Donate to the Project",
+    "languages": "Languages",
+    "prometheus": "Prometheus"
+  },
+  "switcher": {
+    "opens_new_tab": "Opens in a new tab",
+    "apps": "Apps",
+    "current": "Current app"
+  },
+  "user": {
+    "signed_in": "Signed in"
+  },
+  "actions": {
+    "toggle_section": "Toggle {{section}} section",
+    "toggle_sidebar": "Toggle sidebar",
+    "skip_to_content": "Skip to main content"
+  },
+  "mobile": {
+    "title": "Sidebar",
+    "description": "Main navigation for QManager."
+  },
+  "status": {
+    "watchdog_acting": "acting",
+    "watchdog_acting_detail": "Watchdog is recovering the connection (tier {{tier}}).",
+    "watchdog_settling": "settling",
+    "watchdog_settling_detail": "Watchdog is verifying the connection held after a recovery."
+  }
+}

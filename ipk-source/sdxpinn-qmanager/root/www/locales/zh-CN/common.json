@@ -1,0 +1,713 @@
+{
+  "actions": {
+    "save": "保存",
+    "saving": "保存中…",
+    "saved": "已保存！",
+    "save_settings": "保存设置",
+    "cancel": "取消",
+    "confirm": "确认",
+    "apply": "应用",
+    "close": "关闭",
+    "retry": "重试",
+    "reboot": "重启",
+    "log_out": "退出登录",
+    "reboot_device": "重启设备",
+    "reconnect_modem": "重新连接调制解调器",
+    "change_display_name": "更改显示名称",
+    "change_password": "更改密码",
+    "toggle_theme": "切换主题",
+    "discard": "放弃"
+  },
+  "motion": {
+    "label": "动画",
+    "system": "跟随系统",
+    "full": "完整",
+    "reduced": "减弱"
+  },
+  "account": {
+    "photo_invalid": "请选择图片文件。",
+    "photo_updated": "头像已更新。",
+    "change_photo_aria": "更换头像",
+    "name_placeholder": "你的名称",
+    "name_saved": "显示名称已更新。",
+    "name_save_failed": "更新显示名称失败。",
+    "reconnect_description": "这将使调制解调器断开几秒钟，然后自动重新连接。",
+    "disconnecting_description": "正在将调制解调器从网络断开…",
+    "reconnecting_description": "正在将调制解调器重新连接到网络…",
+    "reconnect_action": "重新连接",
+    "reconnect_complete": "调制解调器已重新连接。",
+    "reconnect_failed": "重新连接调制解调器失败。",
+    "reboot_description": "设备将重启，在其重新上线之前所有网络连接都会中断。",
+    "reboot_sent": "重启命令已发送，你即将退出登录…",
+    "reboot_now": "立即重启"
+  },
+  "state": {
+    "loading": "加载中…",
+    "saving": "保存中…",
+    "applying": "应用中…",
+    "disconnecting": "断开连接中…",
+    "reconnecting": "重新连接中…",
+    "installing": "正在安装…",
+    "removing": "正在删除…",
+    "enabled": "已启用",
+    "disabled": "已禁用",
+    "on": "开",
+    "off": "关"
+  },
+  "connection": {
+    "reconnecting": "与设备失去联系，正在重新连接…"
+  },
+  "time": {
+    "just_now": "刚刚",
+    "now": "现在",
+    "unknown": "未知",
+    "minutes_ago_one": "{{count}} 分钟前",
+    "minutes_ago_other": "{{count}} 分钟前",
+    "hours_ago_one": "{{count}} 小时前",
+    "hours_ago_other": "{{count}} 小时前",
+    "days_ago_one": "{{count}} 天前",
+    "days_ago_other": "{{count}} 天前"
+  },
+  "language": {
+    "label": "语言",
+    "switch_aria": "切换语言"
+  },
+  "login": {
+    "brand_label": "QManager 操作员控制台",
+    "welcome": "欢迎使用 QManager",
+    "password_label": "密码",
+    "submit": "登录",
+    "signing_in": "登录中…",
+    "locked_countdown": "已锁定 ({{seconds}})",
+    "show_password": "显示密码",
+    "hide_password": "隐藏密码",
+    "session_expired": "设备长时间无法访问。请重新登录以继续。",
+    "session_expired_title": "会话已结束",
+    "signing_in_to": "正在登录到 {{hostname}}",
+    "signing_in_as": "以 {{hostname}} 登录",
+    "recovery": {
+      "toggle": "无法登录?",
+      "intro": "如果您忘记了管理员密码,有两种恢复方式:",
+      "option_reset_command": "通过 SSH 连接到设备并运行 {{command}} 以设置新的管理员密码。(需要先启用 SSH 访问。)",
+      "option_backup": "如果您保存了 .qmbackup 文件,请重新刷写设备固件,然后从该文件中恢复。"
+    },
+    "attempts_left_one": "密码错误。还剩 {{count}} 次尝试。",
+    "attempts_left_other": "密码错误。还剩 {{count}} 次尝试。",
+    "invalid_password": "密码错误。",
+    "locked_body": "已锁定 {{seconds}}，以保护设备。",
+    "locked_title": "尝试次数过多",
+    "lockout_seconds": "{{seconds}} 秒",
+    "sign_in_to_label": "登录到"
+  },
+  "overview": {
+    "title": "调制解调器概览",
+    "tagline": "实时调制解调器状态",
+    "login_button": "登录",
+    "header": {
+      "carrier": "运营商",
+      "network": "网络",
+      "bands": "带宽"
+    },
+    "status": {
+      "overall": "总体",
+      "connectivity": "互联网",
+      "temperature": "温度"
+    },
+    "actions": {
+      "login": "登录以管理",
+      "luci": "LuCI",
+      "luci_aria": "打开 LuCI 高级界面",
+      "theme_toggle_aria": "切换主题",
+      "theme_light": "浅色",
+      "theme_dark": "深色",
+      "theme_system": "跟随系统"
+    },
+    "field": {
+      "carrier": "运营商",
+      "aggregation": "频段",
+      "uptime": "运行时间",
+      "temperature": "温度",
+      "temp_warn": "温度偏高",
+      "temp_danger": "温度过高",
+      "empty": "—"
+    },
+    "aggregation": {
+      "band_with_bw": "{{band}} ({{bandwidth}} MHz)",
+      "band_only": "{{band}}",
+      "pci_label": "PCI"
+    },
+    "bands": {
+      "toggle_multi_band": "活动频段",
+      "toggle_single_band": "单载波",
+      "section": "频段",
+      "count_one": "{{count}} 个活跃",
+      "count_other": "{{count}} 个活跃",
+      "bandwidth": "{{bandwidth}} MHz",
+      "rsrp_unit": "{{rsrp}} dBm",
+      "section_count_one": "载波",
+      "section_count_other": "载波"
+    },
+    "metrics": {
+      "rsrp": "RSRP",
+      "rsrq": "RSRQ",
+      "sinr": "SINR",
+      "rsrp_value": "{{rsrp}} dBm",
+      "rsrq_value": "{{rsrq}} dB",
+      "sinr_value": "{{sinr}} dB",
+      "toggle_aria": "切换频段信号指标"
+    },
+    "signal": {
+      "dual": "{{rsrp}} dBm · {{sinr}} dB SINR",
+      "rsrp_only": "{{rsrp}} dBm",
+      "sinr_only": "{{sinr}} dB SINR",
+      "none": "—"
+    },
+    "quality": {
+      "overall_label": "总体",
+      "excellent": "极佳",
+      "good": "良好",
+      "fair": "一般",
+      "poor": "较差",
+      "none": "无信号",
+      "bad": "极弱"
+    },
+    "connection": {
+      "connected": "已连接",
+      "searching": "搜索中",
+      "limited": "受限",
+      "inactive": "未激活",
+      "error": "错误",
+      "disconnected": "未连接",
+      "unknown": "未知",
+      "modem_unreachable": "离线"
+    },
+    "stale_indicator": "数据可能已过期",
+    "redirecting_setup": "正在跳转到初次设置…",
+    "loading_status": "正在加载调制解调器状态…",
+    "empty": {
+      "title": "调制解调器状态不可用",
+      "subtitle": "调制解调器已有一分钟未上报。它可能正在重启 — 读数将自动恢复。",
+      "fetch_error": "无法连接到设备。",
+      "retry": "重试"
+    },
+    "uptime": {
+      "days": "{{days}}天 {{hours}}小时",
+      "hours": "{{hours}}小时 {{minutes}}分钟",
+      "minutes": "{{minutes}}分钟"
+    },
+    "copyright": "© {{year}} QManager",
+    "stale": {
+      "banner": "读数已过去 <age>{{age}}</age>。设备可能正忙。"
+    },
+    "footer": {
+      "updated_ago": "{{age}}前更新",
+      "retrying": "每 {{seconds}} 秒重试",
+      "signin_works": "仍可登录"
+    },
+    "loading_chip": "读取中",
+    "unreachable": {
+      "banner": "调制解调器目前没有响应。它可能正忙或正在重启。"
+    }
+  },
+  "networkEvents": {
+    "page": {
+      "title": "网络事件",
+      "description": "无线电与连接的变化，最新的在前。"
+    },
+    "actions": {
+      "refresh": "刷新",
+      "updates_aria": "更新",
+      "live": "实时",
+      "paused": "已暂停"
+    },
+    "now": {
+      "title": "当前状况",
+      "description": "仍在持续的问题，以及反复出现的变化。",
+      "ongoing_one": "{{count}} 个问题持续中",
+      "ongoing_other": "{{count}} 个问题持续中",
+      "oldest_started": "最早的开始于 {{age}}",
+      "clear": "没有持续中的问题",
+      "last_problem": "上次问题：{{age}}",
+      "no_problems": "没有记录到问题",
+      "no_events": "尚无事件记录",
+      "repeating": "反复出现",
+      "repeat_meta_one": "{{span}}内变化 {{count}} 次",
+      "repeat_meta_other": "{{span}}内变化 {{count}} 次",
+      "nothing_repeating": "没有反复出现的变化。"
+    },
+    "activity": {
+      "title": "活动",
+      "window_last_one": "最近 {{count}} 个事件，跨越 {{span}}。",
+      "window_last_other": "最近 {{count}} 个事件，跨越 {{span}}。",
+      "window_all_one": "调制解调器启动以来的 {{count}} 个事件。",
+      "window_all_other": "调制解调器启动以来的全部 {{count}} 个事件。",
+      "window_empty": "调制解调器启动以来没有事件。",
+      "chart_aria": "事件时间分布",
+      "column_one": "{{from}} 至 {{to}}：{{count}} 个事件",
+      "column_other": "{{from}} 至 {{to}}：{{count}} 个事件",
+      "now": "现在",
+      "problems": "问题",
+      "recoveries": "恢复",
+      "routine": "常规"
+    },
+    "span": {
+      "minutes_one": "{{count}} 分钟",
+      "minutes_other": "{{count}} 分钟",
+      "hours_one": "{{count}} 小时",
+      "hours_other": "{{count}} 小时"
+    },
+    "log": {
+      "title": "事件日志",
+      "description_loading": "正在加载事件。",
+      "description_unreadable": "日志无法读取时不显示计数。",
+      "description": "重复的事件已合并；展开即可查看每一条。",
+      "scroll_aria": "事件"
+    },
+    "run": {
+      "title": "{{label}}反复变化",
+      "meta_one": "{{span}}内 {{count}} 个事件",
+      "meta_other": "{{span}}内 {{count}} 个事件",
+      "show": "显示 {{count}} 条",
+      "hide": "收起"
+    },
+    "filters": {
+      "all": "全部",
+      "radio": "无线电",
+      "connectivity": "连接",
+      "mode": "模式"
+    },
+    "sort": {
+      "label": "排序",
+      "newest": "最新优先",
+      "oldest": "最早优先"
+    },
+    "row": {
+      "ongoing": "进行中"
+    },
+    "day": {
+      "today": "今天",
+      "yesterday": "昨天"
+    },
+    "empty": {
+      "title": "暂无事件",
+      "description": "调制解调器重启后日志会重新开始。事件发生时会显示在这里。",
+      "filtered_title": "此视图中没有内容",
+      "filtered_description": "当前日志中没有此类事件。"
+    },
+    "error": {
+      "title": "无法加载事件",
+      "description": "{{message}}",
+      "retry": "重试"
+    },
+    "notice": {
+      "stale": "显示我们最后成功读取到的事件。{{message}}"
+    }
+  },
+  "aboutDevice": {
+    "page": {
+      "title": "关于设备",
+      "description": "设备标识、地址，以及其上运行的软件。"
+    },
+    "actions": {
+      "refresh": "刷新",
+      "refreshing": "正在刷新…",
+      "retry": "重试"
+    },
+    "band": {
+      "label": "标识",
+      "not_responding": "无响应",
+      "unreachable": {
+        "title": "设备未响应",
+        "detail": "来自 {{endpoint}} 的 {{reason}}。以下内容均未读取。",
+        "no_reason": "无响应"
+      }
+    },
+    "tiles": {
+      "model": {
+        "eyebrow": "型号"
+      },
+      "firmware": {
+        "eyebrow": "模块固件",
+        "caption": "构建于 {{date}}"
+      },
+      "host": {
+        "eyebrow": "主机系统",
+        "caption": "Linux {{kernel}}"
+      },
+      "internet": {
+        "eyebrow": "互联网",
+        "reachable": "可达",
+        "not_reachable": "不可达",
+        "not_measured": "未测量",
+        "caption_reachable": "{{family}} 有应答",
+        "caption_reachable_latency": "{{family}} 有应答（{{latency}} 毫秒）",
+        "caption_reachable_plain": "Ping 探测有应答",
+        "caption_unreachable": "Ping 探测无应答",
+        "caption_unknown": "未在探测"
+      }
+    },
+    "modem": {
+      "title": "模块",
+      "description": "硬件标识，以及各制式无线电所实现的 3GPP 版本。"
+    },
+    "addresses": {
+      "title": "地址",
+      "description": "本设备在局域网和运营商网络中的位置。",
+      "provenance": "公网地址通过 {{probe}} 解析。破折号表示设备未报告任何地址。"
+    },
+    "groups": {
+      "three_gpp": "3GPP 版本",
+      "local": "本地",
+      "wwan": "WWAN",
+      "public": "公网"
+    },
+    "rows": {
+      "manufacturer": "制造商",
+      "model": "型号",
+      "firmware": "固件",
+      "openwrt_version": "OpenWrt 版本",
+      "build_date": "构建日期",
+      "imei": "IMEI",
+      "lte": "LTE",
+      "nr5g": "NR5G",
+      "device_ip": "设备 IP",
+      "lan_subnet": "局域网子网",
+      "ipv4": "IPv4",
+      "ipv6": "IPv6"
+    },
+    "empty": {
+      "title": "未读取到数据",
+      "modem": "这些数值来自设备，而设备未响应。",
+      "addresses": "地址由同一次请求读取。"
+    },
+    "qmanager": {
+      "title": "关于 QManager",
+      "note": "你好！我是 Rus。QManager 是 QuecManager 的最新一代，采用了比前代更新、更可靠的实现方式——同时依然把面向高级用户的技术设置与面向新手的简化界面结合在一起。特别感谢 iamromulan、clndwhr 和 Wutang Clan！",
+      "copyright": "© {{year}} QManager。保留所有权利。",
+      "repository": "GitHub 仓库",
+      "release_notes": "发行说明",
+      "credits": "致谢",
+      "support": "支持本项目"
+    },
+    "credits": {
+      "title": "致谢",
+      "description": "QManager 使用了一些外部服务和开放数据，感谢背后的每一位贡献者。",
+      "roles": {
+        "apn": "运营商 APN 预设",
+        "logos": "短信发送方和监控站点的品牌标志",
+        "icons": "找不到标志时使用的网站图标"
+      }
+    },
+    "errors": {
+      "fetch_failed": "无法读取设备信息"
+    }
+  },
+  "support": {
+    "page": {
+      "title": "支持",
+      "description": "报告缺陷、向社区提问，或联系维护者。"
+    },
+    "help": {
+      "title": "获取帮助",
+      "description": "四条途径，按最常用的顺序排列。",
+      "bug": {
+        "label": "报告缺陷"
+      },
+      "community": {
+        "label": "向社区提问"
+      },
+      "email": {
+        "label": "给维护者发邮件"
+      },
+      "release_notes": {
+        "label": "查看发行说明",
+        "dest": "已安装：{{version}}"
+      }
+    },
+    "community": {
+      "title": "社区",
+      "description": "用户在这里分享配置、共同排查问题、交流蜂窝网络话题。扫码或直接打开邀请链接。",
+      "open_invite": "打开邀请链接",
+      "qr_alt": "QManager Discord 服务器邀请二维码"
+    },
+    "opens_new_tab": "在新标签页中打开"
+  },
+  "donate": {
+    "dialog": {
+      "title": "支持本项目",
+      "description": "让 QManager 继续走下去。",
+      "body": "你好，我是 Rus。QManager 是我利用业余时间免费维护的项目。如果它对你有帮助，一点小小的支持意义重大，也让我能继续做下去。",
+      "thanks": "谢谢你，你真好。💙"
+    },
+    "links": {
+      "group_label": "捐赠渠道",
+      "opens_new_tab": "在新标签页中打开"
+    },
+    "band": {
+      "title": "支持本项目",
+      "body": "QManager 是一个业余维护、完全免费的项目。如果它对你的设备有帮助，一点小小的支持就能让它继续走下去——无论如何都不会有付费墙。"
+    }
+  },
+  "tailscale": {
+    "actions": {
+      "cancel": "取消",
+      "retry": "重试"
+    },
+    "page": {
+      "title": "Tailscale VPN",
+      "description": "你的 mesh VPN：这台调制解调器在 tailnet 上的状态，以及还有谁在线。",
+      "refresh": "刷新",
+      "stale": "显示我们最后成功读取的状态。{{message}}",
+      "unreadableTitle": "无法读取 Tailscale 状态",
+      "unreadable": "设备没有应答。"
+    },
+    "status": {
+      "aria": "Tailscale 状态",
+      "running": "已连接",
+      "needsLogin": "需要登录",
+      "disconnected": "已断开",
+      "serviceStopped": "服务已停止",
+      "notInstalled": "未安装",
+      "unknown": "未知"
+    },
+    "band": {
+      "dash": "—",
+      "connectionEyebrow": "连接",
+      "version": "版本 {{version}}",
+      "versionUnknown": "版本未知",
+      "deviceEyebrow": "此设备",
+      "deviceUnknown": "尚无 tailnet 地址",
+      "tailnetEyebrow": "Tailnet",
+      "magicDnsOn": "MagicDNS 已开启",
+      "magicDnsOff": "MagicDNS 已关闭",
+      "peersEyebrow": "在线节点",
+      "exitNodes_one": "{{count}} 个出口节点",
+      "exitNodes_other": "{{count}} 个出口节点",
+      "noExitNode": "没有出口节点"
+    },
+    "connection": {
+      "title": "连接",
+      "description": "此调制解调器是否加入 tailnet，以及加入后的行为方式。",
+      "version": "v{{version}}",
+      "connect": "连接",
+      "connecting": "正在连接…",
+      "disconnect": "断开",
+      "disconnecting": "正在断开…",
+      "startService": "启动服务",
+      "starting": "正在启动…",
+      "stopService": "停止服务",
+      "stopping": "正在停止…",
+      "logout": "退出登录",
+      "logoutDialogTitle": "退出 Tailscale 登录？",
+      "logoutDialogDescription": "这会将此调制解调器从你的 tailnet 中移除。重新连接前需要重新登录。",
+      "authTitle": "登录以完成连接",
+      "authDescription": "打开登录页面并使用你的 Tailscale 账号完成身份验证。批准后，调制解调器将立即加入 tailnet。",
+      "openLogin": "打开登录页面",
+      "authWaiting": "等待你登录",
+      "bootTitle": "开机自启",
+      "bootDescription": "调制解调器重启后自动启动 Tailscale。",
+      "on": "开",
+      "off": "关",
+      "exitNodeTitle": "宣告为出口节点",
+      "exitNodeDescription": "允许其他设备通过此调制解调器路由其互联网流量。需要在 Tailscale 管理控制台中批准。",
+      "exitNodeLocked": "连接 Tailscale 后才能更改。",
+      "sshTitle": "Tailscale SSH",
+      "sshDescription": "允许 tailnet 成员通过 SSH 连接此调制解调器，具体权限取决于你的管理后台 ACL 设置。",
+      "sshLocked": "连接 Tailscale 后才能更改此设置。",
+      "sshDialogTitle": "开启 Tailscale SSH？",
+      "sshDialogDescription": "tailnet 成员将能够根据你的 Tailscale 管理后台 ACL 通过 SSH 连接此调制解调器。请先检查该策略，确保只有你允许的人能访问此设备。",
+      "sshConfirm": "开启 SSH",
+      "updateAvailable": "有可用更新（{{version}}）",
+      "update": "更新",
+      "updating": "正在更新…",
+      "updateDialogTitle": "将 Tailscale 更新到 {{version}}？",
+      "updateDialogDescription": "新版本启动期间，隧道会重新连接几秒钟。",
+      "updateLogTitle": "更新日志",
+      "communityBuild": "社区版",
+      "netFixesTitle": "网络修复",
+      "netFixesDescription": "让你的 tailnet 设备能够访问这台调制解调器及其局域网。"
+    },
+    "device": {
+      "title": "此设备",
+      "description": "此调制解调器在 tailnet 上的身份标识。",
+      "hostname": "主机名",
+      "ipv4": "IPv4",
+      "ipv6": "IPv6",
+      "dnsName": "DNS 名称",
+      "tailnet": "Tailnet",
+      "magicDns": "MagicDNS",
+      "relay": "DERP 中继",
+      "version": "版本",
+      "emptyTitle": "尚未加入 tailnet",
+      "emptyDescription": "连接 Tailscale 后，此调制解调器的地址、DNS 名称和中继信息会显示在这里。"
+    },
+    "peers": {
+      "title": "网络节点",
+      "description": "你的 tailnet 上的其他设备，以及它们是否可达。",
+      "dash": "—",
+      "unnamed": "未命名设备",
+      "exitNode": "出口节点",
+      "colDevice": "设备",
+      "colAddress": "地址",
+      "colOs": "系统",
+      "colStatus": "状态",
+      "colLastSeen": "最后在线",
+      "online": "在线",
+      "offline": "离线",
+      "seenNow": "现在",
+      "seenUnknown": "未知",
+      "seenJustNow": "刚刚",
+      "seenMinutes": "{{n}} 分钟前",
+      "seenHours": "{{n}} 小时前",
+      "seenDays": "{{n}} 天前",
+      "countOnline": "{{online}} / {{total}} 在线",
+      "countExitNodes_one": "{{count}} 个出口节点",
+      "countExitNodes_other": "{{count}} 个出口节点",
+      "errorTitle": "无法加载节点列表",
+      "emptyTitle": "没有其他设备",
+      "emptyDescription": "此 tailnet 上还没有其他设备加入。从 Tailscale 管理后台添加设备后会显示在这里。",
+      "offlineTitle": "未连接",
+      "offlineDescription": "连接 Tailscale 后即可查看你 tailnet 上的其他设备。"
+    },
+    "install": {
+      "title": "Tailscale",
+      "description": "安装 Tailscale 官方版本。这是一种 mesh VPN，无需开放端口即可从任何地方访问这台调制解调器。",
+      "conditionTitle": "尚未安装 Tailscale",
+      "conditionDescription": "安装会通过当前这条蜂窝连接下载 Tailscale 安装包，因此会消耗你的流量，安装期间连接也会变慢。",
+      "install": "安装 Tailscale",
+      "installing": "正在安装…",
+      "checkAgain": "再次检查",
+      "done": "Tailscale 已安装。",
+      "failed": "安装未完成。",
+      "logTitle": "安装日志",
+      "logWaiting": "等待输出…"
+    },
+    "danger": {
+      "uninstall": "卸载",
+      "removing": "正在移除…",
+      "dialogTitle": "卸载 Tailscale？",
+      "dialogDescription": "这会从此调制解调器卸载 Tailscale 安装包、其防火墙规则以及所有连接状态。之后重启可清除残留内容。",
+      "rebootTitle": "建议重启",
+      "rebootDescription": "Tailscale 已移除。重启可清除残留的防火墙规则等内容。是否现在重启？",
+      "rebootLater": "稍后重启",
+      "rebootNow": "立即重启",
+      "rebooting": "正在重启…"
+    },
+    "toast": {
+      "bootEnabled": "Tailscale 将在开机时启动",
+      "bootDisabled": "Tailscale 将不会在开机时启动",
+      "bootFailed": "无法更改开机启动设置",
+      "connected": "正在连接 Tailscale",
+      "connectFailed": "无法建立连接",
+      "disconnected": "Tailscale 已断开",
+      "disconnectFailed": "无法断开连接",
+      "loggedOut": "已退出 Tailscale 登录",
+      "logoutFailed": "无法退出登录",
+      "serviceStarted": "Tailscale 服务已启动",
+      "serviceStartFailed": "无法启动 Tailscale 服务",
+      "serviceStopped": "Tailscale 服务已停止",
+      "serviceStopFailed": "无法停止 Tailscale 服务",
+      "uninstalled": "Tailscale 已卸载",
+      "uninstallFailed": "无法卸载 Tailscale",
+      "exitNodeEnabled": "已宣告为出口节点",
+      "exitNodeDisabled": "已停止宣告为出口节点",
+      "exitNodeFailed": "无法更改出口节点宣告",
+      "sshEnabled": "Tailscale SSH 已开启",
+      "sshEnableFailed": "无法开启 Tailscale SSH",
+      "sshDisabled": "Tailscale SSH 已关闭",
+      "sshDisableFailed": "无法关闭 Tailscale SSH",
+      "installed": "Tailscale 已安装",
+      "installFailed": "Tailscale 安装未完成",
+      "updated": "Tailscale 已更新到 {{version}}",
+      "updateFailed": "无法更新 Tailscale",
+      "netFixesOn": "网络修复已开启",
+      "netFixesOff": "网络修复已关闭",
+      "netFixesFailed": "无法更改网络修复设置"
+    },
+    "mutex": {
+      "title": "已安装其他 VPN",
+      "description": "同一时间只能安装一个 VPN。请先在 <link>NetBird 页面</link>卸载 {{other_vpn}}。"
+    },
+    "legacy": {
+      "title": "旧版社区版本",
+      "description": "这台调制解调器运行的是 Tailscale 旧版社区版本。请先卸载，再重新安装，即可切换到官方版本。"
+    }
+  },
+  "pending_reboot": {
+    "title": "重启以完成更改",
+    "reboot_now": "立即重启",
+    "rebooting": "正在重启…",
+    "dismiss": "忽略",
+    "reboot_failed_toast": "无法启动重启，请重试。",
+    "description": {
+      "config_restore": "恢复的 IMEI 更改或 SIM 配置将在下次重启后生效。",
+      "verizon_revert": "Verizon 配置的还原将在下次重启后完成。",
+      "imei": "新的 IMEI 将在下次重启后生效。",
+      "netbird": "NetBird 已移除。重启可清除残留的防火墙规则。",
+      "mbn": "新的运营商配置文件将在调制解调器重启后生效。",
+      "ipa_offload": "硬件卸载的更改将在下次重启后生效。",
+      "package_install": "QManager 已更新。重启后完成更新。",
+      "default": "部分更改将在下次重启后生效。"
+    },
+    "dismiss_dialog": {
+      "title": "忽略重启提醒？",
+      "description": "需要重启的更改在调制解调器重启前不会生效。仅在已重启后才忽略。",
+      "keep": "保留提醒",
+      "confirm": "忽略"
+    }
+  },
+  "reboot_page": {
+    "phase": {
+      "shutting_down": "正在关机…",
+      "restarting": "正在重启服务…",
+      "almost_ready": "即将就绪…",
+      "overtime": "耗时比平时更长…"
+    },
+    "subtitle": {
+      "normal": "设备很快就会恢复在线",
+      "overtime": "设备仍在重启"
+    },
+    "timer_aria_one": "剩余 {{count}} 秒",
+    "timer_aria_other": "剩余 {{count}} 秒",
+    "timer_overtime_aria": "正在重新连接，耗时比平时更长",
+    "seconds_unit": "秒",
+    "escape": "设备可能需要人工处理。前往登录"
+  },
+  "change_password": {
+    "title": "修改密码",
+    "description": "修改密码后您将被注销。",
+    "current_label": "当前密码",
+    "new_label": "新密码",
+    "confirm_label": "确认新密码",
+    "match": "密码一致",
+    "mismatch": "密码不一致",
+    "error_weak": "新密码至少需要 5 个字符。",
+    "error_weak_strong": "新密码至少需要 5 个字符，并包含大写字母、小写字母和数字。",
+    "error_mismatch": "两次输入的新密码不一致。",
+    "failed_toast": "无法修改密码，请重试。",
+    "cancel": "取消",
+    "submit": "修改密码",
+    "submitting": "正在修改…"
+  },
+  "password_rules": {
+    "requirements_label": "密码要求",
+    "rule": {
+      "length": "至少 5 个字符",
+      "uppercase": "大写字母",
+      "lowercase": "小写字母",
+      "number": "数字"
+    },
+    "met": "（已满足）",
+    "not_met": "（未满足）",
+    "strong_label": "使用强密码",
+    "strong_hint_label": "关于强密码",
+    "strong_hint": "需要包含大写字母、小写字母和数字。"
+  },
+  "not_found": {
+    "scene_label": "星空下噼啪作响的篝火",
+    "title": "冒险者，你好像迷路了",
+    "description": "要回去继续优化你的连接吗？",
+    "home": "返回仪表盘",
+    "footer": "QManager"
+  }
+}

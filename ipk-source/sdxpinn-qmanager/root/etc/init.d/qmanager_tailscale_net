@@ -1,0 +1,47 @@
+#!/bin/sh /etc/rc.common
+# =============================================================================
+# qmanager_tailscale_net — boot re-assert of Tailscale reachability
+# =============================================================================
+# The pref-1990 ip rules are kernel-only and gone after every reboot; the fw4
+# zone is UCI and normally survives, but is re-checked too. Runs once, exits.
+# Gated on a Tailscale binary being present and quecmanager.tailscale_net.enabled
+# not being 0 (default on). See /usr/lib/qmanager/tailscale_net.sh.
+# =============================================================================
+
+START=99
+STOP=10
+
+TS_NET_LIB=/usr/lib/qmanager/tailscale_net.sh
+TS_MGR_LIB=/usr/lib/qmanager/tailscale_mgr.sh
+
+start() {
+    # A dot-source of a missing file aborts the whole script under ash.
+    [ -f "$TS_NET_LIB" ] || exit 0
+    . "$TS_NET_LIB"
+    [ -f "$TS_MGR_LIB" ] && . "$TS_MGR_LIB"
+
+    # An update cut off by a power loss leaves the old build as .X.old; put
+    # it back before tailscaled is relied on (never while a worker runs).
+    if command -v ts_recover_interrupted >/dev/null 2>&1 && ! ts_lock_holder >/dev/null; then
+        if ts_recover_interrupted; then
+            logger -t qmanager_tailscale_net "Restored Tailscale binaries from an interrupted update"
+        fi
+    fi
+
+    if [ ! -x /usr/bin/tailscale ] && ! command -v tailscale >/dev/null 2>&1; then
+        logger -t qmanager_tailscale_net "Tailscale not installed, skipping"
+        return 0
+    fi
+    if ! ts_net_enabled; then
+        logger -t qmanager_tailscale_net "Tailscale network fixes disabled, skipping"
+        return 0
+    fi
+    ts_net_apply
+    logger -t qmanager_tailscale_net "Applied: $(ts_net_status_json)"
+}
+
+# Teardown on stop would cut the tunnel on every service reload; removal is
+# owned by the Tailscale page (set_net_fixes) and uninstall.
+stop() {
+    :
+}

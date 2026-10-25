@@ -1,0 +1,55 @@
+#!/bin/sh /etc/rc.common
+# =============================================================================
+# qmanager_netbird_zone — Boot-Time NetBird Firewall Zone Self-Heal
+# =============================================================================
+# Runs once at boot. If NetBird is installed, ensures the fw4 firewall zone
+# for wt0 exists. If the zone is already present (the common case — zones
+# persist in UCI), this is a fast no-op.
+#
+# Why this exists:
+#   fw4's default input policy is DROP. Without a zone for wt0, inbound
+#   NetBird traffic hits no jump rule and is silently dropped. The CGI
+#   install flow adds the zone when the user installs NetBird via QManager —
+#   but users who installed NetBird via LuCI > Software first, or who
+#   accidentally removed the zone, would be stuck without recourse short of
+#   reinstalling. This script self-heals the zone on every boot.
+#
+# Tailscale used to share this self-heal logic, but the patched RM551E
+# firmware (sdxpinn-patch) handles tailscale0 routing/firewall on its own.
+#
+# Non-procd: runs once at boot, exits. No watch, no respawn.
+#
+# Usage:
+#   /etc/init.d/qmanager_netbird_zone start|enable|disable
+#
+# Install location: /etc/init.d/qmanager_netbird_zone
+# =============================================================================
+
+START=99
+STOP=10
+
+. /usr/lib/qmanager/netbird_firewall.sh
+
+start() {
+    if ! command -v netbird >/dev/null 2>&1; then
+        logger -t qmanager_netbird_zone "netbird not installed, skipping zone"
+        return 0
+    fi
+
+    if netbird_fw_zone_exists "netbird"; then
+        logger -t qmanager_netbird_zone "Zone 'netbird' already present, no action"
+        return 0
+    fi
+
+    logger -t qmanager_netbird_zone "Zone 'netbird' missing for installed netbird — creating"
+    netbird_fw_ensure_zone "netbird" "wt0"
+    return 0
+}
+
+# stop() is intentionally a no-op. Zone removal on stop would force a
+# firewall restart that breaks NetBird reachability on every service reload,
+# which is precisely the opposite of what this self-heal is for. Zone
+# removal is owned by the uninstall path in netbird.sh CGI.
+stop() {
+    :
+}

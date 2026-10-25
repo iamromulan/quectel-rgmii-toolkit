@@ -1,0 +1,670 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_update (v2) — Background OTA updater
+# =============================================================================
+# Spawned by update.sh CGI. Handles download, verification, installation, and
+# rollback of QManager releases from GitHub. Uses curl exclusively.
+#
+# Design invariants:
+#   1. POSIX /bin/sh only
+#   2. curl-only HTTP (no wget, no uclient-fetch)
+#   3. Supports both stable and pre-release downloads (whatever URL the CGI
+#      gives us — version channel is decided at the CGI layer)
+#   4. Status file schema is the same as v1, for frontend compatibility
+#   5. Watchdog is stopped early to prevent interference during install
+#
+# Usage (all invoked by update.sh CGI, never manually):
+#   qmanager_update install <download_url> <version> [download_size]
+#   qmanager_update download <tarball_url> <checksum_url> <version>
+#   qmanager_update install_staged
+#   qmanager_update rollback <rollback_url> <rollback_version>
+#
+# Status file (/tmp/qmanager_update.json) is a JSON object:
+#   {
+#     "status":  "idle"|"downloading"|"verifying"|"ready"|"installing"|"rebooting"|"error",
+#     "message": human-readable message,
+#     "version": target version (if applicable),
+#     "size":    download size (if applicable)
+#   }
+# =============================================================================
+
+LOG_FILE="/tmp/qmanager_update.log"
+STATUS_FILE="/tmp/qmanager_update.json"
+PID_FILE="/tmp/qmanager_update.pid"
+VERSION_FILE="/etc/qmanager/VERSION"
+VERSION_PENDING="/etc/qmanager/VERSION.pending"
+UPDATES_DIR="/etc/qmanager/updates"
+
+# B4.1: downloads, the staged tarball and the extracted tree live in a root
+# 0700 dir. In /tmp another user could plant or swap them between the checks
+# and the `sh install.sh` that runs as root.
+UPDATE_WORK="/var/run/qmanager/update"
+STAGED_TARBALL="$UPDATE_WORK/staged.tar.gz"
+STAGED_VERSION_MARKER="$UPDATE_WORK/staged_version"
+EXTRACT_ROOT="$UPDATE_WORK/extract"
+INSTALL_LOG="/tmp/qmanager_install.log"
+
+[ -f /usr/lib/qmanager/safe_tmp.sh ] && . /usr/lib/qmanager/safe_tmp.sh
+
+# URL prefix used for SSRF protection on all downloads
+GITHUB_REPO_PREFIX="https://github.com/dr-dolomite/QManager/releases/download/"
+GITHUB_RAW_PREFIX="https://github.com/dr-dolomite/QManager/raw/"
+
+# Curl defaults
+CURL_TIMEOUT=300
+CURL_CONNECT_TIMEOUT=15
+
+# =============================================================================
+# Logging and Status
+# =============================================================================
+
+log() {
+    local level="$1" msg="$2"
+    printf '[%s] %-5s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$level" "$msg" \
+        >> "$LOG_FILE" 2>/dev/null || true
+}
+
+log_info()  { log "INFO"  "$1"; }
+log_warn()  { log "WARN"  "$1"; }
+log_error() { log "ERROR" "$1"; }
+
+# Write a status atomically via temp + rename. Frontend polls this file, so
+# partial writes could produce invalid JSON — atomic rename avoids that.
+write_status() {
+    local status="$1" msg="$2" version="$3" size="$4"
+    local tmp="$STATUS_FILE.tmp.$$"
+
+    if command -v jq >/dev/null 2>&1; then
+        jq -n \
+            --arg status  "$status" \
+            --arg message "$msg" \
+            --arg version "$version" \
+            --arg size    "$size" \
+            '{status: $status, message: $message, version: $version, size: $size}' \
+            > "$tmp" 2>/dev/null
+    else
+        # Fallback if jq is somehow missing — hand-built JSON
+        printf '{"status":"%s","message":"%s","version":"%s","size":"%s"}\n' \
+            "$status" "$msg" "$version" "$size" > "$tmp"
+    fi
+
+    mv "$tmp" "$STATUS_FILE" 2>/dev/null || rm -f "$tmp"
+}
+
+# =============================================================================
+# Cleanup and Error Handling
+# =============================================================================
+
+cleanup() {
+    rm -f "$PID_FILE"
+    rm -rf "$EXTRACT_ROOT"
+    # Keep the staged tarball and the update log — they are useful for
+    # debugging a failed install. They will be cleared on the next
+    # successful install_staged or on uninstall.
+}
+
+die() {
+    local msg="$1"
+    log_error "$msg"
+    write_status "error" "$msg" "${VERSION:-}" ""
+    cleanup
+    exit 1
+}
+
+get_current_version() {
+    if [ -f "$VERSION_FILE" ]; then
+        tr -d '[:space:]' < "$VERSION_FILE"
+    else
+        echo "0.0.0"
+    fi
+}
+
+# =============================================================================
+# Install Progress Bridge
+# =============================================================================
+
+latest_install_step() {
+    [ -f "$INSTALL_LOG" ] || return 1
+    sed -n 's/.*=== Step [0-9][0-9]*\/[0-9][0-9]*: \(.*\) ===.*/\1/p' "$INSTALL_LOG" \
+        | tail -n1
+}
+
+run_install_with_progress() {
+    local version="$1" prefix="$2"
+    local install_pid="" last_step="" step=""
+
+    # install.sh truncates this file on start, but clear proactively in case
+    # it exits before log_init() on early failures.
+    rm -f "$INSTALL_LOG"
+
+    sh install.sh --skip-packages --no-reboot >> "$LOG_FILE" 2>&1 &
+    install_pid=$!
+
+    while kill -0 "$install_pid" 2>/dev/null; do
+        step=$(latest_install_step 2>/dev/null || true)
+        if [ -n "$step" ] && [ "$step" != "$last_step" ]; then
+            write_status "installing" "$prefix: $step" "$version" ""
+            last_step="$step"
+        fi
+        sleep 2
+    done
+
+    wait "$install_pid"
+    return $?
+}
+
+# Empty root-owned extract dir inside UPDATE_WORK (itself root 0700).
+extract_fresh_root() {
+    rm -rf "$EXTRACT_ROOT"
+    mkdir -m 0700 "$EXTRACT_ROOT"
+}
+
+# =============================================================================
+# HTTP (curl only)
+# =============================================================================
+
+http_download() {
+    local url="$1" dest="$2" timeout="${3:-$CURL_TIMEOUT}"
+
+    if ! command -v curl >/dev/null 2>&1; then
+        log_error "curl is not installed — cannot download anything"
+        return 1
+    fi
+
+    # -f: fail on HTTP errors
+    # -sS: silent but show errors
+    # -L: follow redirects (GitHub redirects through object storage)
+    # --max-time: total wall clock timeout for the transfer
+    # --connect-timeout: cap TCP handshake
+    curl -fsSL \
+        --max-time "$timeout" \
+        --connect-timeout "$CURL_CONNECT_TIMEOUT" \
+        -o "$dest" \
+        "$url" \
+        2>> "$LOG_FILE"
+}
+
+# Validate that a URL points to our GitHub repo releases. Prevents SSRF
+# (caller could otherwise inject arbitrary URLs via the CGI endpoint).
+validate_url() {
+    local url="$1"
+
+    case "$url" in
+        "${GITHUB_REPO_PREFIX}"*/qmanager.tar.gz)        return 0 ;;
+        "${GITHUB_REPO_PREFIX}"*/sha256sum.txt)          return 0 ;;
+        "${GITHUB_RAW_PREFIX}"*/qmanager-build/qmanager.tar.gz) return 0 ;;
+        "${GITHUB_RAW_PREFIX}"*/qmanager-build/sha256sum.txt)   return 0 ;;
+    esac
+
+    log_error "URL failed validation: $url"
+    return 1
+}
+
+# =============================================================================
+# Archive Verification
+# =============================================================================
+
+verify_archive() {
+    local archive="$1"
+
+    if ! tar tzf "$archive" >/dev/null 2>&1; then
+        log_error "Archive is corrupt or not a valid tar.gz: $archive"
+        return 1
+    fi
+
+    # Require the install.sh entry point inside the archive
+    if ! tar tzf "$archive" | grep -q 'install\.sh$'; then
+        log_error "Archive is missing install.sh: $archive"
+        return 1
+    fi
+
+    return 0
+}
+
+# B5.12: fail closed. Every release ships sha256sum.txt next to qmanager.tar.gz,
+# so an archive that cannot be checked (no checksum URL, fetch failure, no
+# sha256sum, malformed hash) is refused, never installed unverified.
+verify_sha256() {
+    local archive="$1" checksum_url="$2" version="$3"
+    local checksum_file="$UPDATE_WORK/sha256sum.txt"
+
+    if [ -z "$checksum_url" ]; then
+        log_error "No checksum URL for $version, refusing to install unverified"
+        return 1
+    fi
+
+    if ! validate_url "$checksum_url"; then
+        log_error "Refusing to fetch checksum from unvalidated URL"
+        return 1
+    fi
+
+    if ! command -v sha256sum >/dev/null 2>&1; then
+        log_error "sha256sum not available, cannot verify $version"
+        return 1
+    fi
+
+    rm -f "$checksum_file"
+
+    if ! http_download "$checksum_url" "$checksum_file" 30; then
+        log_error "Could not fetch $checksum_url, cannot verify $version"
+        rm -f "$checksum_file"
+        return 1
+    fi
+
+    local expected actual
+    expected=$(awk 'NR == 1 { print tolower($1) }' "$checksum_file" 2>/dev/null)
+    actual=$(sha256sum "$archive" 2>/dev/null | awk '{ print $1 }')
+
+    rm -f "$checksum_file"
+
+    case "$expected" in
+        *[!0-9a-f]*|'') expected="" ;;
+    esac
+    if [ "${#expected}" -ne 64 ] || [ -z "$actual" ]; then
+        log_error "Could not read or compute SHA-256 for $version, refusing"
+        return 1
+    fi
+
+    if [ "$expected" != "$actual" ]; then
+        log_error "SHA-256 mismatch for $version: expected=$expected actual=$actual"
+        return 1
+    fi
+
+    log_info "SHA-256 verified ($version)"
+    return 0
+}
+
+# checksum_url_for TARBALL_URL — the sha256sum.txt published beside a release
+# (or dev build) tarball. Prints nothing for any other URL shape.
+checksum_url_for() {
+    case "$1" in
+        */qmanager.tar.gz) printf '%s/sha256sum.txt' "${1%/qmanager.tar.gz}" ;;
+    esac
+}
+
+# =============================================================================
+# Post-install Health Check
+# =============================================================================
+
+# Called after reboot would normally happen. Since we reboot the device, this
+# actually runs before the reboot — it's a "did install.sh produce a working
+# state?" check that we can report back to the status file.
+
+post_install_check() {
+    local version="$1"
+
+    # install.sh writes this file at the very end of its main() — its
+    # presence indicates all install steps succeeded.
+    if [ -f "$VERSION_FILE" ]; then
+        local stamped
+        stamped=$(tr -d '[:space:]' < "$VERSION_FILE")
+        if [ "$stamped" = "$version" ]; then
+            log_info "VERSION file correctly stamped: $stamped"
+            return 0
+        else
+            log_warn "VERSION file says '$stamped' but expected '$version'"
+            return 1
+        fi
+    fi
+
+    if [ -f "$VERSION_PENDING" ]; then
+        log_warn "VERSION.pending still present — install may have failed"
+        return 1
+    fi
+
+    log_warn "No VERSION file found after install"
+    return 1
+}
+
+# =============================================================================
+# Pre-flight (common to all modes)
+# =============================================================================
+
+preflight() {
+    mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
+    : > "$LOG_FILE" 2>/dev/null || true
+
+    # Fail closed: without a root-owned work dir nothing is downloaded or run.
+    if ! command -v qm_root_dir >/dev/null 2>&1; then
+        write_status "error" "Update helper library is missing" "" ""
+        exit 1
+    fi
+    echo "$$" | qm_atomic_write "$PID_FILE"
+    trap 'cleanup' EXIT INT TERM
+    if ! qm_run_dir >/dev/null || ! qm_root_dir "$UPDATE_WORK" 0700; then
+        die "Cannot create a private update work directory"
+    fi
+
+    log_info "qmanager_update v2 started (mode=$MODE, pid=$$)"
+
+    # An ipk install is updated by opkg; a tarball install over it would leave
+    # opkg's file list wrong (install.sh refuses too). Checked before the
+    # watchdog stops so a refused run changes nothing.
+    if [ -f /usr/lib/opkg/info/sdxpinn-qmanager.control ]; then
+        die "QManager is managed by the package manager; update it with opkg"
+    fi
+
+    # Stop the watchdog early — it might try to recover from "network down"
+    # during our install and cause trouble.
+    if [ -x /etc/init.d/qmanager_watchcat ]; then
+        /etc/init.d/qmanager_watchcat stop >/dev/null 2>&1 || true
+        log_info "Watchdog stopped (pre-install)"
+    fi
+
+    if ! command -v curl >/dev/null 2>&1; then
+        die "curl is not installed — cannot proceed"
+    fi
+}
+
+# =============================================================================
+# INSTALL mode — one-shot download + install + reboot
+# =============================================================================
+
+mode_install() {
+    local url="$1" version="$2" size="$3"
+
+    [ -n "$url" ]     || die "Missing download URL"
+    [ -n "$version" ] || die "Missing version argument"
+
+    validate_url "$url" || die "Invalid download URL: $url"
+
+    VERSION="$version"
+
+    # --- Step 1: Download ---
+    write_status "downloading" "Downloading QManager $version..." "$version" "$size"
+    log_info "Downloading $url"
+
+    local download_path="$UPDATE_WORK/new.tar.gz"
+    rm -f "$download_path"
+
+    if ! http_download "$url" "$download_path"; then
+        die "Download failed. Check your internet connection and try again."
+    fi
+    log_info "Download complete"
+
+    # --- Step 2: Verify archive ---
+    if ! verify_archive "$download_path"; then
+        rm -f "$download_path"
+        die "Downloaded archive is invalid. Please retry the download."
+    fi
+    log_info "Archive integrity verified"
+
+    # B5.12: the direct install path is checksum-verified too
+    if ! verify_sha256 "$download_path" "$(checksum_url_for "$url")" "$version"; then
+        rm -f "$download_path"
+        die "Could not verify the download (SHA-256). Nothing was installed."
+    fi
+
+    # --- Step 3: Save current version for rollback ---
+    write_status "installing" "Installing update..." "$version" ""
+
+    mkdir -p "$UPDATES_DIR"
+    local current_ver
+    current_ver=$(get_current_version)
+    echo "$current_ver" | qm_durable_write "$UPDATES_DIR/previous_version"
+    log_info "Saved previous version for rollback: $current_ver"
+
+    # --- Step 4: Extract and run install.sh ---
+    extract_fresh_root || die "Cannot create a private extract directory"
+    if ! tar xzf "$download_path" -C "$EXTRACT_ROOT" 2>>"$LOG_FILE"; then
+        rm -f "$download_path"
+        die "Failed to extract archive"
+    fi
+    rm -f "$download_path"
+
+    cd "$EXTRACT_ROOT/qmanager_install" || die "Extraction produced no qmanager_install directory"
+
+    log_info "Running install.sh --skip-packages --no-reboot"
+    if ! run_install_with_progress "$version" "Installing QManager $version"; then
+        die "Installation failed. See $LOG_FILE for details."
+    fi
+    log_info "Install complete"
+
+    # --- Step 5: Post-install sanity check ---
+    if ! post_install_check "$version"; then
+        log_warn "Post-install check raised warnings — see log above"
+        # Do not die — install may still work; user can verify after reboot
+    fi
+
+    # --- Step 6: Cleanup + reboot ---
+    cd / && rm -rf "$EXTRACT_ROOT"
+    write_status "rebooting" "Rebooting device..." "$version" ""
+    log_info "Rebooting in 5 seconds"
+
+    rm -f "$PID_FILE"
+    trap - EXIT INT TERM
+    sleep 5
+    # install.sh already flushed; this covers our own status/log writes.
+    sync 2>/dev/null || true
+    reboot
+    exit 0
+}
+
+# =============================================================================
+# DOWNLOAD mode — stage without installing
+# =============================================================================
+
+mode_download() {
+    local url="$1" checksum_url="$2" version="$3"
+
+    [ -n "$url" ]     || die "Missing tarball URL"
+    [ -n "$version" ] || die "Missing version argument"
+
+    validate_url "$url" || die "Invalid download URL: $url"
+
+    VERSION="$version"
+
+    # --- Step 1: Download tarball ---
+    write_status "downloading" "Downloading QManager $version..." "$version" ""
+    log_info "Downloading $url"
+
+    rm -f "$STAGED_TARBALL"
+
+    if ! http_download "$url" "$STAGED_TARBALL"; then
+        die "Download failed. Check your internet connection."
+    fi
+    log_info "Download complete"
+
+    # --- Step 2: Verify archive integrity ---
+    if ! verify_archive "$STAGED_TARBALL"; then
+        rm -f "$STAGED_TARBALL"
+        die "Downloaded archive is invalid. Please retry."
+    fi
+    log_info "Archive integrity verified"
+
+    # --- Step 3: SHA-256 verification ---
+    write_status "verifying" "Verifying SHA-256..." "$version" ""
+    if ! verify_sha256 "$STAGED_TARBALL" "$checksum_url" "$version"; then
+        rm -f "$STAGED_TARBALL"
+        die "Could not verify the download (SHA-256 missing or mismatched). Nothing was staged."
+    fi
+
+    # --- Step 4: Stage version marker ---
+    echo "$version" > "$STAGED_VERSION_MARKER"
+
+    # --- Step 5: Report ready ---
+    local local_size
+    local_size=$(du -k "$STAGED_TARBALL" 2>/dev/null | awk '{printf "%.1f MB", $1/1024}')
+
+    write_status "ready" "Download verified ($local_size)" "$version" "$local_size"
+    log_info "Staged $version ($local_size) — ready for install"
+
+    rm -f "$PID_FILE"
+    trap - EXIT INT TERM
+    exit 0
+}
+
+# =============================================================================
+# INSTALL_STAGED mode — install a previously staged tarball
+# =============================================================================
+
+mode_install_staged() {
+    [ -f "$STAGED_TARBALL" ]        || die "No staged tarball found. Download first."
+    [ -f "$STAGED_VERSION_MARKER" ] || die "No staged version marker found."
+
+    VERSION=$(cat "$STAGED_VERSION_MARKER" 2>/dev/null)
+    log_info "Installing staged version: $VERSION"
+
+    # --- Step 1: Save current version for rollback ---
+    write_status "installing" "Installing QManager $VERSION..." "$VERSION" ""
+
+    mkdir -p "$UPDATES_DIR"
+    local current_ver
+    current_ver=$(get_current_version)
+    echo "$current_ver" | qm_durable_write "$UPDATES_DIR/previous_version"
+    log_info "Saved previous version for rollback: $current_ver"
+
+    # --- Step 2: Extract ---
+    extract_fresh_root || die "Cannot create a private extract directory"
+    if ! tar xzf "$STAGED_TARBALL" -C "$EXTRACT_ROOT" 2>>"$LOG_FILE"; then
+        die "Failed to extract staged archive"
+    fi
+
+    # Successfully extracted — remove staged tarball to free RAM
+    rm -f "$STAGED_TARBALL" "$STAGED_VERSION_MARKER"
+
+    cd "$EXTRACT_ROOT/qmanager_install" || die "Extraction produced no qmanager_install directory"
+
+    # --- Step 3: Run install.sh ---
+    log_info "Running install.sh --skip-packages --no-reboot"
+    if ! run_install_with_progress "$VERSION" "Installing QManager $VERSION"; then
+        die "Installation failed. See $LOG_FILE for details."
+    fi
+    log_info "Install complete"
+
+    # --- Step 4: Post-install check ---
+    if ! post_install_check "$VERSION"; then
+        log_warn "Post-install check raised warnings"
+    fi
+
+    # --- Step 5: Cleanup + reboot ---
+    cd / && rm -rf "$EXTRACT_ROOT"
+    write_status "rebooting" "Rebooting device..." "$VERSION" ""
+    log_info "Rebooting in 5 seconds"
+
+    rm -f "$PID_FILE"
+    trap - EXIT INT TERM
+    sleep 5
+    # install.sh already flushed; this covers our own status/log writes.
+    sync 2>/dev/null || true
+    reboot
+    exit 0
+}
+
+# =============================================================================
+# ROLLBACK mode — download and install a previous version
+# =============================================================================
+
+mode_rollback() {
+    local url="$1" version="$2"
+
+    [ -n "$url" ]     || die "Missing rollback URL"
+    [ -n "$version" ] || die "Missing rollback version"
+
+    validate_url "$url" || die "Invalid rollback URL: $url"
+
+    VERSION="$version"
+
+    # --- Step 1: Download ---
+    write_status "downloading" "Downloading previous version $version..." "$version" ""
+    log_info "Downloading rollback archive: $url"
+
+    local download_path="$UPDATE_WORK/rollback.tar.gz"
+    rm -f "$download_path"
+
+    if ! http_download "$url" "$download_path"; then
+        die "Rollback download failed. Check your internet connection."
+    fi
+    log_info "Rollback download complete"
+
+    # --- Step 2: Verify ---
+    if ! verify_archive "$download_path"; then
+        rm -f "$download_path"
+        die "Rollback archive is invalid"
+    fi
+
+    # B5.12: rollback downloads are checksum-verified too
+    if ! verify_sha256 "$download_path" "$(checksum_url_for "$url")" "$version"; then
+        rm -f "$download_path"
+        die "Could not verify the rollback download (SHA-256). Nothing was installed."
+    fi
+    log_info "Rollback archive verified"
+
+    # --- Step 3: Save current version (so we can roll forward again) ---
+    write_status "installing" "Restoring previous version $version..." "$version" ""
+
+    mkdir -p "$UPDATES_DIR"
+    local current_ver
+    current_ver=$(get_current_version)
+    echo "$current_ver" | qm_durable_write "$UPDATES_DIR/previous_version"
+    log_info "Saved current version before rollback: $current_ver"
+
+    # --- Step 4: Extract and install ---
+    extract_fresh_root || die "Cannot create a private extract directory"
+    if ! tar xzf "$download_path" -C "$EXTRACT_ROOT" 2>>"$LOG_FILE"; then
+        rm -f "$download_path"
+        die "Failed to extract rollback archive"
+    fi
+    rm -f "$download_path"
+
+    cd "$EXTRACT_ROOT/qmanager_install" || die "Extraction produced no qmanager_install directory"
+
+    log_info "Running install.sh --skip-packages --no-reboot"
+    if ! run_install_with_progress "$version" "Restoring $version"; then
+        die "Rollback installation failed. See $LOG_FILE for details."
+    fi
+    log_info "Rollback install complete"
+
+    # --- Step 5: Post-install check ---
+    if ! post_install_check "$version"; then
+        log_warn "Post-install check raised warnings"
+    fi
+
+    # --- Step 6: Cleanup + reboot ---
+    cd / && rm -rf "$EXTRACT_ROOT"
+    write_status "rebooting" "Rebooting device..." "$version" ""
+    log_info "Rebooting in 5 seconds"
+
+    rm -f "$PID_FILE"
+    trap - EXIT INT TERM
+    sleep 5
+    # install.sh already flushed; this covers our own status/log writes.
+    sync 2>/dev/null || true
+    reboot
+    exit 0
+}
+
+# =============================================================================
+# Main entry point
+# =============================================================================
+
+MODE="$1"
+shift 2>/dev/null
+
+case "$MODE" in
+    install)
+        preflight
+        mode_install "$@"
+        ;;
+    download)
+        preflight
+        mode_download "$@"
+        ;;
+    install_staged)
+        preflight
+        mode_install_staged
+        ;;
+    rollback)
+        preflight
+        mode_rollback "$@"
+        ;;
+    "")
+        echo "Usage: qmanager_update {install|download|install_staged|rollback} [args...]" >&2
+        exit 2
+        ;;
+    *)
+        echo "Unknown mode: $MODE" >&2
+        echo "Usage: qmanager_update {install|download|install_staged|rollback} [args...]" >&2
+        exit 2
+        ;;
+esac
