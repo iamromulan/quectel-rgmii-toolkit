@@ -1,0 +1,285 @@
+name: opkg-feed
+
+# Builds the changed ipk-source/ packages, regenerates the opkg-feed index and
+# signs it with the feed key. Contributors only change ipk-source/ in a pull
+# request; this runs after the merge. Never add pull_request or
+# pull_request_target triggers: the sign job holds the private key.
+
+on:
+  push:
+    branches: [development-SDXPINN]
+    paths: ['ipk-source/**']
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: 'ipk-source directories to rebuild, space or comma separated (empty = all)'
+        required: false
+        default: ''
+
+permissions: {}
+
+concurrency:
+  group: opkg-feed
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # Unprivileged: no secrets, read-only token. Only runs the central
+    # .github/scripts/*, never anything from inside ipk-source/<pkg>/.
+    if: github.ref == 'refs/heads/development-SDXPINN'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      count: ${{ steps.select.outputs.count }}
+    steps:
+      - name: Checkout branch head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Select packages to rebuild
+        id: select
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_BEFORE: ${{ github.event.before }}
+          INPUT_PACKAGES: ${{ inputs.packages }}
+        run: |
+          set -euo pipefail
+
+          valid_name() { printf '%s' "$1" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9._+-]*$'; }
+          has_control() { [ -f "ipk-source/$1/CONTROL/control" ]; }
+
+          all_packages() {
+            for d in ipk-source/*/; do
+              d=${d%/}; d=${d#ipk-source/}
+              if valid_name "$d" && has_control "$d"; then echo "$d"; fi
+            done
+          }
+
+          : > selected.txt
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            if [ -n "$(printf '%s' "$INPUT_PACKAGES" | tr -d ' ,\t\n')" ]; then
+              for d in $(printf '%s' "$INPUT_PACKAGES" | tr ',' ' '); do
+                valid_name "$d" || { echo "::error::invalid package name: $d"; exit 1; }
+                has_control "$d" || { echo "::error::ipk-source/$d/CONTROL/control not found"; exit 1; }
+                echo "$d" >> selected.txt
+              done
+            else
+              all_packages >> selected.txt
+            fi
+          else
+            # Range start: the commit the last bot rebuild was built from (so
+            # pushes whose runs were superseded in the queue are not lost),
+            # else the push's "before" sha, else everything.
+            base=$(git log -n 100 --committer='github-actions' \
+                     --format='%(trailers:key=Built-From,valueonly)' \
+                   | grep -m1 -E '^[0-9a-f]{40}$' || true)
+            if [ -n "$base" ] && ! git merge-base --is-ancestor "$base" HEAD 2>/dev/null; then
+              base=""
+            fi
+            if [ -z "$base" ] && printf '%s' "$EVENT_BEFORE" | grep -Eq '^[0-9a-f]{40}$' \
+               && [ "$EVENT_BEFORE" != "0000000000000000000000000000000000000000" ] \
+               && git merge-base --is-ancestor "$EVENT_BEFORE" HEAD 2>/dev/null; then
+              base="$EVENT_BEFORE"
+            fi
+            if [ -n "$base" ]; then
+              echo "Diff base: $base"
+              git -c core.quotepath=off diff --name-only "$base" HEAD -- ipk-source/ \
+                | cut -d/ -f2 | sort -u > changed.txt
+              while IFS= read -r d; do
+                [ -n "$d" ] || continue
+                if ! valid_name "$d"; then echo "::warning::skipping odd directory name: $d"; continue; fi
+                # deleted directories and top-level files have no CONTROL/control
+                if has_control "$d"; then echo "$d" >> selected.txt; fi
+              done < changed.txt
+            else
+              echo "::warning::no diff base found; rebuilding every package"
+              all_packages >> selected.txt
+            fi
+          fi
+
+          count=$(wc -l < selected.txt | tr -d ' ')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "Packages to rebuild ($count):"
+          cat selected.txt
+          if [ "$count" = "0" ]; then
+            echo "No package directories changed; nothing to rebuild." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Build ipks
+        if: steps.select.outputs.count != '0'
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          while IFS= read -r pkg; do
+            # Time of the last commit touching the package: same source, same bytes.
+            epoch=$(git log -1 --format=%ct HEAD -- "ipk-source/$pkg")
+            python3 .github/scripts/build_ipk.py "ipk-source/$pkg" --out dist --epoch "$epoch"
+          done < selected.txt
+          ls -l dist
+
+      - name: Update the feed index
+        if: steps.select.outputs.count != '0'
+        run: |
+          set -euo pipefail
+          cp -a opkg-feed feed-out
+          python3 .github/scripts/build_feed.py feed-out dist/*.ipk \
+            --summary feed.diff --export export | tee -a "$GITHUB_STEP_SUMMARY"
+          {
+            echo "BUILT_FROM=$(git rev-parse HEAD)"
+            echo "FEED_TREE=$(git rev-parse HEAD:opkg-feed)"
+          } > export/meta.env
+          {
+            echo
+            echo "<details><summary>Packages diff (first 400 lines)</summary>"
+            echo
+            echo '```diff'
+            head -n 400 feed.diff
+            echo '```'
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload feed changes
+        if: steps.select.outputs.count != '0'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: feed-export
+          path: export/
+          if-no-files-found: error
+          retention-days: 7
+
+  sign:
+    # Privileged: holds the signing key. Executes no script from the repo
+    # except the hash-pinned usign_x64.
+    needs: build
+    if: github.ref == 'refs/heads/development-SDXPINN' && needs.build.outputs.count != '0'
+    runs-on: ubuntu-latest
+    environment: feed-signing
+    permissions:
+      contents: write
+    env:
+      # sha256 of opkg-feed/usign_x64; update it together with any deliberate
+      # change to that binary (sha256sum opkg-feed/usign_x64).
+      USIGN_SHA256: 961aacc9dc143c3e14bd04732e7917ff2801c2b705131ba9416c38e1022bf169
+    steps:
+      - name: Checkout branch head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download feed changes
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: feed-export
+          path: export
+
+      - name: Verify the signer binary
+        run: |
+          set -euo pipefail
+          actual=$(sha256sum opkg-feed/usign_x64 | cut -d' ' -f1)
+          if [ "$actual" != "$USIGN_SHA256" ]; then
+            echo "::error::opkg-feed/usign_x64 sha256 is $actual, expected $USIGN_SHA256; refusing to use the signing key"
+            exit 1
+          fi
+          chmod +x opkg-feed/usign_x64
+
+      - name: Apply the build to opkg-feed
+        run: |
+          set -euo pipefail
+          safe_ipk() { printf '%s' "$1" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9._+~-]*\.ipk$'; }
+
+          built_from=$(sed -n 's/^BUILT_FROM=//p' export/meta.env)
+          feed_tree=$(sed -n 's/^FEED_TREE=//p' export/meta.env)
+          printf '%s' "$built_from" | grep -Eq '^[0-9a-f]{40}$' || { echo "::error::bad BUILT_FROM"; exit 1; }
+          printf '%s' "$feed_tree" | grep -Eq '^[0-9a-f]{40}$' || { echo "::error::bad FEED_TREE"; exit 1; }
+          echo "BUILT_FROM=$built_from" >> "$GITHUB_ENV"
+
+          # The build started from this feed state; if someone edited opkg-feed
+          # since, applying would overwrite their change.
+          current=$(git rev-parse HEAD:opkg-feed)
+          if [ "$current" != "$feed_tree" ]; then
+            echo "::error::opkg-feed changed on the branch since the build started; re-run the workflow"
+            exit 1
+          fi
+
+          [ -s export/Packages ] || { echo "::error::exported Packages is empty"; exit 1; }
+          cp export/Packages export/Packages.gz opkg-feed/
+
+          for f in export/*.ipk; do
+            name=$(basename "$f")
+            safe_ipk "$name" || { echo "::error::unsafe ipk name: $name"; exit 1; }
+            sum=$(sha256sum "$f" | cut -d' ' -f1)
+            grep -q "^SHA256sum: $sum\$" opkg-feed/Packages \
+              || { echo "::error::$name is not described by the new Packages"; exit 1; }
+            cp "$f" "opkg-feed/$name"
+          done
+
+          while IFS= read -r name; do
+            [ -n "$name" ] || continue
+            safe_ipk "$name" || { echo "::error::unsafe deleted name: $name"; exit 1; }
+            rm -f -- "opkg-feed/$name"
+          done < export/deleted.txt
+
+      - name: Sign Packages
+        env:
+          SDXPINN_USIGN_KEY: ${{ secrets.SDXPINN_USIGN_KEY }}
+        run: |
+          set -euo pipefail
+          umask 077
+          if [ -z "${SDXPINN_USIGN_KEY:-}" ]; then
+            echo "::error::secret SDXPINN_USIGN_KEY is empty or missing (repository or feed-signing environment secret)"
+            exit 1
+          fi
+          KEYFILE=$(mktemp "$RUNNER_TEMP/usign-key.XXXXXX")
+          echo "KEYFILE=$KEYFILE" >> "$GITHUB_ENV"
+          printf '%s' "$SDXPINN_USIGN_KEY" | tr -d '\r' > "$KEYFILE"
+          [ -z "$(tail -c1 "$KEYFILE")" ] || echo >> "$KEYFILE"
+          rm -f opkg-feed/Packages.sig
+          opkg-feed/usign_x64 -S -m opkg-feed/Packages -s "$KEYFILE"
+
+      - name: Remove the key file
+        if: always()
+        run: |
+          if [ -n "${KEYFILE:-}" ] && [ -e "$KEYFILE" ]; then
+            shred -u "$KEYFILE" 2>/dev/null || rm -f "$KEYFILE"
+          fi
+
+      - name: Verify the signature
+        run: |
+          set -euo pipefail
+          opkg-feed/usign_x64 -V -p opkg-feed/iamromulan-SDXPINN-repo.key -m opkg-feed/Packages
+          echo "Packages.sig verifies against iamromulan-SDXPINN-repo.key" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit and push
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A opkg-feed
+          if git diff --cached --quiet; then
+            echo "Nothing changed; no commit." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          n=$(wc -l < export/packages.txt | tr -d ' ')
+          list=$(paste -sd, export/packages.txt)
+          if [ "$n" -le 6 ]; then subject="opkg-feed: rebuild ($list)"; else subject="opkg-feed: rebuild ($n packages)"; fi
+          git commit -m "$subject" -m "Packages: $list" -m "Built-From: $BUILT_FROM"
+
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          echo "::add-mask::$auth"
+          gitpush() { git -c "http.extraheader=AUTHORIZATION: basic $auth" "$@"; }
+          if ! gitpush push origin "HEAD:refs/heads/$BRANCH"; then
+            echo "Push raced; rebasing once."
+            gitpush pull --rebase origin "$BRANCH"
+            gitpush push origin "HEAD:refs/heads/$BRANCH"
+          fi
+          echo "Pushed $(git rev-parse --short HEAD): $subject" >> "$GITHUB_STEP_SUMMARY"

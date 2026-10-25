@@ -1,0 +1,9 @@
+# Package sources and CI are LF everywhere (a Windows autocrlf checkout must not
+# turn shell scripts or the build tooling into CRLF). text=auto leaves binaries
+# (ELF, images, ...) inside ipk-source/ alone.
+ipk-source/** text=auto eol=lf
+.github/** text eol=lf
+
+# The published feed is data: never convert it.
+opkg-feed/** -text
+*.ipk binary
