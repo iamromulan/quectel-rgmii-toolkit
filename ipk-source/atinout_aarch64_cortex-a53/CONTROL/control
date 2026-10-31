@@ -1,5 +1,5 @@
 Package: atinout
-Version: 0.9.1
+Version: 0.9.1-1
 Depends: libc
 Source: feeds/kiddin9/atinout
 SourceName: atinout

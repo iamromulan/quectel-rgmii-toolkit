@@ -1,6 +1,6 @@
 Package: wgcf
 Depends: libc
-Version: 2.2.24
+Version: 2.2.24-1
 Architecture: aarch64_generic
 Maintainer: ViRb3
 Source: github.com/ViRb3/wgcf/releases

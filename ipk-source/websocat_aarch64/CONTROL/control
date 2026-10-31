@@ -1,5 +1,5 @@
 Package: websocat
-Version: 1.14.0
+Version: 1.14.0-1
 Architecture: aarch64_cortex-a53
 Maintainer: Vitaly Shukela https://github.com/vi/websocat
 Source: https://github.com/vi/websocat/releases/download/v1.14.0/websocat_max.aarch64-unknown-linux-musl

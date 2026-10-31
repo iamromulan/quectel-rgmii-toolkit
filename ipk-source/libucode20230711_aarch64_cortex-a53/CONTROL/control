@@ -1,5 +1,5 @@
 Package: libucode20230711
-Version: 2024.07.22~b610860d-r3
+Version: 2024.07.22~b610860d-r4
 Depends: libc, libjson-c5
 Provides: libucode
 Source: https://dl.openwrt.ai/packages-24.10/aarch64_cortex-a53/base/libucode20230711_2025.02.10~a8a11aea-r1_aarch64_cortex-a53.ipk

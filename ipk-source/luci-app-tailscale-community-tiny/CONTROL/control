@@ -1,5 +1,5 @@
 Package: luci-app-tailscale-community-tiny
-Version: 1.0.0
+Version: 1.0.0-1
 Depends: tailscale-tiny, ip-full, luci-base
 Conflicts: luci-app-tailscale, luci-app-tailscale-community
 Source: https://github.com/iamromulan/luci-app-tailscale-community/tree/tiny
