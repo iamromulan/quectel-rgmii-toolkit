@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # sha256 of opkg-feed/usign_x64 (same pin as opkg-feed.yml on the feed branch).
+  # sha256 of .github/bin/usign_x64 (same pin as opkg-feed.yml on the feed branch; the binary lives in .github/bin/).
   USIGN_SHA256: 961aacc9dc143c3e14bd04732e7917ff2801c2b705131ba9416c38e1022bf169
 
 jobs:
@@ -51,11 +51,11 @@ jobs:
 
           # Verify the dev feed with the pinned signer, using only dev's own files.
           mkdir -p chk
-          git archive "origin/$DEV" opkg-feed | tar -x -C chk
-          actual=$(sha256sum chk/opkg-feed/usign_x64 | cut -d' ' -f1)
+          git archive "origin/$DEV" opkg-feed .github/bin | tar -x -C chk
+          actual=$(sha256sum chk/.github/bin/usign_x64 | cut -d' ' -f1)
           [ "$actual" = "$USIGN_SHA256" ] || { echo "::error::usign_x64 on $DEV does not match the pinned sha256"; exit 1; }
-          chmod +x chk/opkg-feed/usign_x64
-          chk/opkg-feed/usign_x64 -V -p "chk/opkg-feed/iamromulan-$FEED-repo.key" -m chk/opkg-feed/Packages
+          chmod +x chk/.github/bin/usign_x64
+          chk/.github/bin/usign_x64 -V -p "chk/opkg-feed/iamromulan-$FEED-repo.key" -m chk/opkg-feed/Packages
           echo "dev Packages.sig verifies" >> "$GITHUB_STEP_SUMMARY"
 
           n=$(git rev-list --count "origin/$FEED..origin/$DEV")
@@ -90,7 +90,7 @@ jobs:
           if ! git diff --quiet "origin/$DEV" HEAD -- opkg-feed; then
             echo "::error::$FEED's opkg-feed differs from $DEV after the merge; not pushing"; exit 1
           fi
-          chmod +x opkg-feed/usign_x64
-          opkg-feed/usign_x64 -V -p "opkg-feed/iamromulan-$FEED-repo.key" -m opkg-feed/Packages
+          chmod +x .github/bin/usign_x64
+          .github/bin/usign_x64 -V -p "opkg-feed/iamromulan-$FEED-repo.key" -m opkg-feed/Packages
           git push origin "HEAD:refs/heads/$FEED"
           echo "Pushed $(git rev-parse --short HEAD) to $FEED." | tee -a "$GITHUB_STEP_SUMMARY"
