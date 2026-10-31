@@ -58,4 +58,16 @@ These branches are for large overhauls or experimentation that needs to happen o
 
 	- This branch is being used to create a similar model to how SDXPINN branches behave. A new mount-fix is needed along with a solid plan for how to approch the opkg rework. Indexing already installed "packages" is recomeneded in order to avoid duplicate installs/save space. The goal will be to package all applications as IPKs and hopefuly port QuecManager and Luci over to it. 
 
+# CI for the SDXPINN feed
+
+On the SDXPINN branches packages are not built or signed by hand. Contributors only change `ipk-source/<package>/` in a pull request to **development-SDXPINN** and bump `Version` in its `CONTROL/control`. After the merge, GitHub Actions does the rest:
+
+| Workflow | Lives on | What it does |
+|---|---|---|
+| **Autobuild: development-SDXPINN** (`opkg-feed.yml`) | `development-SDXPINN` | Runs on every push that touches `ipk-source/**`. Compares each package's git tree with `opkg-feed/build-state.json` to find what changed, builds those ipks, updates and signs `opkg-feed/Packages`, and commits `CI: autobuild (...)` listing what was added, upgraded, rebuilt or removed. If the source changed but `Version` did not, a package revision is added (`1.2.3` becomes `1.2.3-1`). A deleted `ipk-source/<dir>` removes its package. This is the only workflow that uses the signing key (secret `OPKG_USIGN_KEY`, environment `feed-signing`). |
+| **Build feed** | `main` | Manual form (Actions tab or GitHub mobile) that starts Autobuild by hand: mode `changed` (default), `all` (rebuilds every package and regenerates every index entry) or `listed`, plus a dry-run option. |
+| **Import tailscale-tiny** | `main` | Every 2 hours: if [tiny-tailscale](https://github.com/iamromulan/tiny-tailscale) has a newer release, swaps in its arm64 `tailscaled`, sets the version, commits to **development-SDXPINN** and starts Autobuild. |
+| **Sync SDXPINN with dev branch** | `main` | The release step: verifies the signed dev feed and merges **development-SDXPINN** into **SDXPINN**. Tick *confirm*, otherwise it only reports. |
+
+The Build, Import and Sync workflows live on `main` because scheduled and manually started workflows only exist on the default branch. One signing key is shared by every feed branch of this repository. Never add `pull_request` or `pull_request_target` triggers to the Autobuild workflow, because its sign job holds the private key.
 
