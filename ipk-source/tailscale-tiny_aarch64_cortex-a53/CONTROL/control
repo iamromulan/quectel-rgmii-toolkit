@@ -1,5 +1,5 @@
 Package: tailscale-tiny
-Version: 1.104.4-1
+Version: 1.104.4
 Depends: ca-bundle, kmod-tun
 Conflicts: tailscale, tailscaled
 Source: feeds/packages/net/tailscale

@@ -1,5 +1,5 @@
 Package: ookla-speedtest
-Version: 1.2.0-1
+Version: 1.2.0
 Architecture: aarch64_cortex-a53
 Maintainer: Ookla speedtest.net https://www.speedtest.net/apps/cli
 Source: speedtest.net

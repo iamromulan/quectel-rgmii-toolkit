@@ -1,5 +1,5 @@
 Package: luci-app-zerotier-22
-Version: 1.0-21
+Version: 1.0-20
 Depends: libc, zerotier
 Source: feeds/luci/applications/luci-app-zerotier
 SourceName: luci-app-zerotier

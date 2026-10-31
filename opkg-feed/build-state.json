@@ -1,172 +1,172 @@
 {
   "packages": {
     "atinout_aarch64_cortex-a53": {
-      "ipk": "atinout_0.9.1-1_aarch64_cortex-a53.ipk",
+      "ipk": "atinout_0.9.1_aarch64_cortex-a53.ipk",
       "package": "atinout",
-      "tree": "19bfe9606e8c9a3d85a76d19130dc3416f39b8b6",
-      "version": "0.9.1-1"
+      "tree": "033c35cc8e1ebb633e809903b227db28fcd5d8e1",
+      "version": "0.9.1"
     },
     "autoupgrade": {
-      "ipk": "autoupgrade_0.5.2-r2_all.ipk",
+      "ipk": "autoupgrade_0.5.2-r1_all.ipk",
       "package": "autoupgrade",
-      "tree": "0c75b30838bcd7b4ac6c9ca198a773d765d45570",
-      "version": "0.5.2-r2"
+      "tree": "588831c13aea0840f81e75287e4bc6065ff4cd0a",
+      "version": "0.5.2-r1"
     },
     "kmod-wireguard": {
-      "ipk": "kmod-wireguard_1-1_sdxpinn.ipk",
+      "ipk": "kmod-wireguard_1_sdxpinn.ipk",
       "package": "kmod-wireguard",
-      "tree": "22634fe1f360bf7f333bed773c8036778a213623",
-      "version": "1-1"
+      "tree": "78cfe01a8593b1fe8accf92a6171a238b83c9713",
+      "version": "1"
     },
     "libucode20230711_aarch64_cortex-a53": {
-      "ipk": "libucode20230711_2024.07.22~b610860d-r4_aarch64_cortex-a53.ipk",
+      "ipk": "libucode20230711_2024.07.22~b610860d-r3_aarch64_cortex-a53.ipk",
       "package": "libucode20230711",
-      "tree": "d11cc88fd14a5f8734c1e47a4d35e5d4dfb11450",
-      "version": "2024.07.22~b610860d-r4"
+      "tree": "41a4b9280f0e9225c0ad22676b1c6d7c97f35f5d",
+      "version": "2024.07.22~b610860d-r3"
     },
     "luci-app-argon-config": {
-      "ipk": "luci-app-argon-config_0.9-2_all.ipk",
+      "ipk": "luci-app-argon-config_0.9-1_all.ipk",
       "package": "luci-app-argon-config",
-      "tree": "3857031d70cfa0e7353f1c44a2e8d6f52742fbc2",
-      "version": "0.9-2"
+      "tree": "31c047e4da75af377951ee476705d0cc8af837b1",
+      "version": "0.9-1"
     },
     "luci-app-atinout-mod": {
-      "ipk": "luci-app-atinout-mod_1.3.4-20250120_all.ipk",
+      "ipk": "luci-app-atinout-mod_1.3.4-20250119_all.ipk",
       "package": "luci-app-atinout-mod",
-      "tree": "0b1d44a70017d1b38395fd7ade46c3f560fed16f",
-      "version": "1.3.4-20250120"
+      "tree": "ee373f4d871fe5cb16083e449106b0b32b91cfdf",
+      "version": "1.3.4-20250119"
     },
     "luci-app-autoupgrade": {
-      "ipk": "luci-app-autoupgrade_0.5.2-r2_all.ipk",
+      "ipk": "luci-app-autoupgrade_0.5.2-r1_all.ipk",
       "package": "luci-app-autoupgrade",
-      "tree": "2dd14d95d531e222484023ae68f9b13bf81d0518",
-      "version": "0.5.2-r2"
+      "tree": "dde7193e4afbad4db6204e16aed6c74c9dae41ca",
+      "version": "0.5.2-r1"
     },
     "luci-app-go-wireguard": {
-      "ipk": "luci-app-go-wireguard_4.500-3_all.ipk",
+      "ipk": "luci-app-go-wireguard_4.500-2_all.ipk",
       "package": "luci-app-go-wireguard",
-      "tree": "2adba22731e2ef615f1f835d0b55cad865d2e363",
-      "version": "4.500-3"
+      "tree": "ef69cc1dc96a6a8ad1cf15d4f0318b97867eb577",
+      "version": "4.500-2"
     },
     "luci-app-tailscale-community-tiny": {
-      "ipk": "luci-app-tailscale-community-tiny_1.0.0-1_all.ipk",
+      "ipk": "luci-app-tailscale-community-tiny_1.0.0_all.ipk",
       "package": "luci-app-tailscale-community-tiny",
-      "tree": "9f8cbba51bcc17ccb339258c089df9768b58fa3e",
-      "version": "1.0.0-1"
+      "tree": "f2b00e0f0df83e1a620566533d42aa0a6b7e85a0",
+      "version": "1.0.0"
     },
     "luci-app-zerotier": {
-      "ipk": "luci-app-zerotier_1.0-1_all.ipk",
+      "ipk": "luci-app-zerotier_1.0_all.ipk",
       "package": "luci-app-zerotier",
-      "tree": "033a09be1532d57781e5827ef2065436ef073eaf",
-      "version": "1.0-1"
+      "tree": "683c5034184240a07f8c8e29c2216aa10213b147",
+      "version": "1.0"
     },
     "luci-app-zerotier-22": {
-      "ipk": "luci-app-zerotier-22_1.0-21_all.ipk",
+      "ipk": "luci-app-zerotier-22_1.0-20_all.ipk",
       "package": "luci-app-zerotier-22",
-      "tree": "cb6cc664d23b88797f35dbed448a4dddf29fcfad",
-      "version": "1.0-21"
+      "tree": "d4a09fb961a8c5629bd00528511c05de3efc7dd3",
+      "version": "1.0-20"
     },
     "luci-app-zerotier-23": {
-      "ipk": "luci-app-zerotier-23_1.14.1-2_all.ipk",
+      "ipk": "luci-app-zerotier-23_1.14.1-1_all.ipk",
       "package": "luci-app-zerotier-23",
-      "tree": "aca6d7db60bf9ca46a503afb7fa8cf1e4f5709fd",
-      "version": "1.14.1-2"
+      "tree": "06c3b637f4592810f445fd04d2580e08a81373d7",
+      "version": "1.14.1-1"
     },
     "luci-lua-runtime_aarch64_cortex-a53": {
-      "ipk": "luci-lua-runtime_25.034.70690~7b0663a-sdxpinn-1_sdxpinn.ipk",
+      "ipk": "luci-lua-runtime_25.034.70690~7b0663a-sdxpinn_sdxpinn.ipk",
       "package": "luci-lua-runtime",
-      "tree": "14a63c1bca6d625701b77d27bed5760afc2f3c3c",
-      "version": "25.034.70690~7b0663a-sdxpinn-1"
+      "tree": "26c648f6def7d42d9bb4ebba930be760dd6f8949",
+      "version": "25.034.70690~7b0663a-sdxpinn"
     },
     "luci-theme-argon": {
-      "ipk": "luci-theme-argon_2.3.2-r20250208_all.ipk",
+      "ipk": "luci-theme-argon_2.3.2-r20250207_all.ipk",
       "package": "luci-theme-argon",
-      "tree": "7e4c5d01800ea6f224aaf01a844c9bdad40aa47e",
-      "version": "2.3.2-r20250208"
+      "tree": "0ce682d7183dc938546b1d6d9e54e2cdd4017229",
+      "version": "2.3.2-r20250207"
     },
     "ookla-speedtest_aarch64_cortex-a53": {
-      "ipk": "ookla-speedtest_1.2.0-1_aarch64_cortex-a53.ipk",
+      "ipk": "ookla-speedtest_1.2.0_aarch64_cortex-a53.ipk",
       "package": "ookla-speedtest",
-      "tree": "6be57d6fdd5ed1521fae401f3530e5aed4731691",
-      "version": "1.2.0-1"
+      "tree": "bc960d94b883059935773629e57a32a1dc1487ec",
+      "version": "1.2.0"
     },
     "sdxpinn-console-menu": {
-      "ipk": "sdxpinn-console-menu_0.0.3-1_aarch64_cortex-a53.ipk",
+      "ipk": "sdxpinn-console-menu_0.0.3_aarch64_cortex-a53.ipk",
       "package": "sdxpinn-console-menu",
-      "tree": "19d4a22ee5f352473f334d59d9927ac0135c6bfe",
-      "version": "0.0.3-1"
+      "tree": "9c25d6a29c875889d5c22704e38996e5092c844b",
+      "version": "0.0.3"
     },
     "sdxpinn-firstboot": {
-      "ipk": "sdxpinn-firstboot_1.0-1_sdxpinn.ipk",
+      "ipk": "sdxpinn-firstboot_1.0_sdxpinn.ipk",
       "package": "sdxpinn-firstboot",
-      "tree": "0ed59f79eadc18783f24b981646ece1c94eb8726",
-      "version": "1.0-1"
+      "tree": "7f108206fb6a8e04a8c75b0e504cdbec8aa0ea1a",
+      "version": "1.0"
     },
     "sdxpinn-mount-fix": {
-      "ipk": "sdxpinn-mount-fix_1.4-1_aarch64_cortex-a53.ipk",
+      "ipk": "sdxpinn-mount-fix_1.4_aarch64_cortex-a53.ipk",
       "package": "sdxpinn-mount-fix",
-      "tree": "8257af287349648ac6ca3710420b31cd400b0472",
-      "version": "1.4-1"
+      "tree": "4e9812c8cafd2a6a32434cab62fd12ac7a56965d",
+      "version": "1.4"
     },
     "sdxpinn-patch": {
-      "ipk": "sdxpinn-patch_3.2-1_all.ipk",
+      "ipk": "sdxpinn-patch_3.2_all.ipk",
       "package": "sdxpinn-patch",
-      "tree": "910b56666f4612d8ec6bc32078c333c128c11c1d",
-      "version": "3.2-1"
+      "tree": "f8f8356e75e2021fde744e1ebbf9664be813cfad",
+      "version": "3.2"
     },
     "sdxpinn-quecmanager": {
-      "ipk": "sdxpinn-quecmanager_2.3.4-1_sdxpinn.ipk",
+      "ipk": "sdxpinn-quecmanager_2.3.4_sdxpinn.ipk",
       "package": "sdxpinn-quecmanager",
-      "tree": "3fcb6dc34de56cbfb523bdcaa857307cb7b20104",
-      "version": "2.3.4-1"
+      "tree": "3e98b19d8562b9503565772f47c72895769d0f37",
+      "version": "2.3.4"
     },
     "sdxpinn-quecmanager-beta": {
-      "ipk": "sdxpinn-quecmanager-beta_2.3.9-1_sdxpinn.ipk",
+      "ipk": "sdxpinn-quecmanager-beta_2.3.9_sdxpinn.ipk",
       "package": "sdxpinn-quecmanager-beta",
-      "tree": "7bc6bc02961316084bccee437829da6c737e7c75",
-      "version": "2.3.9-1"
+      "tree": "f40a0c3ea84a84971af87ce5c45f86509fbf95dd",
+      "version": "2.3.9"
     },
     "sms-toolAP_aarch64_cortex-a53": {
-      "ipk": "sms-tool_2025.1.19-APmod-iamromulan-1_aarch64_cortex-a53.ipk",
+      "ipk": "sms-tool_2025.1.19-APmod-iamromulan_aarch64_cortex-a53.ipk",
       "package": "sms-tool",
-      "tree": "fc4c55487618190bf8c7e4593ae479b5664a9d9f",
-      "version": "2025.1.19-APmod-iamromulan-1"
+      "tree": "f6732d7547a4f445581d0d202ab941d274a15fcb",
+      "version": "2025.1.19-APmod-iamromulan"
     },
     "socat-at-bridge": {
-      "ipk": "socat-at-bridge_1.2.0-1_aarch64_cortex-a53.ipk",
+      "ipk": "socat-at-bridge_1.2.0_aarch64_cortex-a53.ipk",
       "package": "socat-at-bridge",
-      "tree": "e560ef8c7df9aac00e71957d24dbd0e709b03e45",
-      "version": "1.2.0-1"
+      "tree": "5eccf0264f0c2d171b70585bc9fda83dc32952d5",
+      "version": "1.2.0"
     },
     "tailscale-tiny_aarch64_cortex-a53": {
-      "ipk": "tailscale-tiny_1.104.4-1_aarch64_cortex-a53.ipk",
+      "ipk": "tailscale-tiny_1.104.4_aarch64_cortex-a53.ipk",
       "package": "tailscale-tiny",
-      "tree": "4e789d97aad81c289cf37a2363721508afaa0e70",
-      "version": "1.104.4-1"
+      "tree": "60d4413c9dd7e713ec6030158bdf240815ea0617",
+      "version": "1.104.4"
     },
     "ucode-mod-lua_aarch64_cortex-a53": {
-      "ipk": "ucode-mod-lua_1-1_aarch64_cortex-a53.ipk",
+      "ipk": "ucode-mod-lua_1_aarch64_cortex-a53.ipk",
       "package": "ucode-mod-lua",
-      "tree": "51d10ffbab2b10b9551e4de0e5db7eafe7ef28f5",
-      "version": "1-1"
+      "tree": "cce053c9715a2361fe1617ef39e79afa14c52f16",
+      "version": "1"
     },
     "warp_sdxpinn": {
-      "ipk": "warp_1.0-1_sdxpinn.ipk",
+      "ipk": "warp_1.0_sdxpinn.ipk",
       "package": "warp",
-      "tree": "65f795a208be228c8ab70ff6107801ef1dd87c62",
-      "version": "1.0-1"
+      "tree": "aa924cb9e0d5fb2b7f38a75a774d70b411ab65f5",
+      "version": "1.0"
     },
     "websocat_aarch64": {
-      "ipk": "websocat_1.14.0-1_aarch64_cortex-a53.ipk",
+      "ipk": "websocat_1.14.0_aarch64_cortex-a53.ipk",
       "package": "websocat",
-      "tree": "83ff67fa4ca7d68c046e7255e1f1d46158154ae7",
-      "version": "1.14.0-1"
+      "tree": "27ea141279e4fa0fe4035c6daba7f72837d34b33",
+      "version": "1.14.0"
     },
     "wgcf_aarch64_generic": {
-      "ipk": "wgcf_2.2.24-1_aarch64_generic.ipk",
+      "ipk": "wgcf_2.2.24_aarch64_generic.ipk",
       "package": "wgcf",
-      "tree": "fc884d03c75169e9f9dc8d71a185e8e1a6d7781c",
-      "version": "2.2.24-1"
+      "tree": "ed97ba3e35d7f5439a1718f0daf7bcc2cdd4ef91",
+      "version": "2.2.24"
     }
   },
   "version": 1
