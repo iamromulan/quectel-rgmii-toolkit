@@ -7,7 +7,7 @@ name: "Autobuild: development-SDXPINN"
 # private key.
 #
 # What needs a rebuild is decided from opkg-feed/build-state.json (git tree hash
-# of each ipk-source/<dir> at its last build), not from commit history. See
+# of each package's CONTROL/ + root/ at its last build), not from commit history. See
 # .github/scripts/plan_build.py.
 
 on:
@@ -229,7 +229,9 @@ jobs:
             [ -n "$d" ] || continue
             safe_dir "$d" || { echo "::error::unsafe package dir: $d"; exit 1; }
             want=$(jq -r --arg d "$d" '.packages[$d].tree // empty' export/build-state.json)
-            got=$(git write-tree --prefix="ipk-source/$d/")
+            ctree=$(git write-tree --prefix="ipk-source/$d/CONTROL/")
+            rtree=$(git write-tree --prefix="ipk-source/$d/root/")
+            got=$(printf '%s %s\n' "$ctree" "$rtree" | sha1sum | cut -d' ' -f1)
             [ "$want" = "$got" ] || { echo "::error::$d: source tree $got does not match the state ($want)"; exit 1; }
           done < export/dirs.txt
           cp export/build-state.json opkg-feed/build-state.json

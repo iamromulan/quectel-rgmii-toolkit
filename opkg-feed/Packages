@@ -1,43 +1,36 @@
 Package: atinout
-Version: 0.9.1-1
+Version: 0.9.1
 Depends: libc
 Source: feeds/kiddin9/atinout
-SourceName: atinout
-License: GPLv2
 Section: net
-SourceDateEpoch: 1691250335
-Maintainer: Adrian Guenter <a@gntr.me>
 Architecture: aarch64_cortex-a53
-Installed-Size: 3571
-MD5Sum: 6dbf4eec73de1fd4e893f6f75f1f82e0
-SHA256sum: b1a2afcff4c3d3b93e5123d936a524606ae6a64ae82c004368979deecb35d8df
-Size: 4171
-Filename: atinout_0.9.1-1_aarch64_cortex-a53.ipk
-Description:  Atinout is a program that will execute AT commands in sequence and capture the response from the modem.
+Maintainer: Adrian Guenter <a@gntr.me>
+MD5Sum: 444eb87488bad1927b6ed069dedf7393
+Size: 4323
+Filename: atinout_0.9.1_aarch64_cortex-a53.ipk
+Source: feeds/kiddin9/atinout
+Description: Atinout is a program that will execute AT commands in sequence and
+License: GPLv2
 
 
 Package: autoupgrade
-Version: 0.5.2-r2
+Version: 0.5.2-r1
 Depends: libc
-Source: /feed/utils/autoupgrade
-SourceName: autoupgrade
 License: GPL-2.0-only
 Section: utils
-SourceDateEpoch: 1779010265
-Maintainer: Cameron Thompson <cameronst2@gmail.com>
 Architecture: all
 Installed-Size: 20480
-MD5Sum: 5acef12273e0bcd123190632dab0e963
-SHA256sum: 39dcaf3ed7706b69f809d71627aca1b5227afc07a7a3470bb0fb4595ca717516
-Size: 3362
-Filename: autoupgrade_0.5.2-r2_all.ipk
+Filename: autoupgrade_0.5.2-r1_all.ipk
+Size: 3416
+SHA256sum: db647a36ed4a164a30d052cb1c620a9cbbf19e3d749c3fa7ec75e6f4433091c9
 Description:  Automatically upgrade a user-defined list of packages on a schedule.
  Configurable via UCI. Each package is upgraded individually with full
  logging of successes, warnings, and failures.
 
 
 Package: libucode20230711
-Version: 2024.07.22~b610860d-r4
+Version: 2024.07.22~b610860d-r3
+Architecture: aarch64_cortex-a53
 Depends: libc, libjson-c5
 Provides: libucode
 Source: https://dl.openwrt.ai/packages-24.10/aarch64_cortex-a53/base/libucode20230711_2025.02.10~a8a11aea-r1_aarch64_cortex-a53.ipk
@@ -47,17 +40,15 @@ Section: libs
 SourceDateEpoch: 1729600843
 ABIVersion: 20230711
 Maintainer: Jo-Philipp Wich <jo@mein.io>
-Architecture: aarch64_cortex-a53
-Installed-Size: 204800
-MD5Sum: 0da6425130a52df8da09fb5b01ccba2a
-SHA256sum: e433afd4ec3d20b9d138369fdf91149c2c402bd31fd9d21603e4fb3cfa964358
-Size: 79706
-Filename: libucode20230711_2024.07.22~b610860d-r4_aarch64_cortex-a53.ipk
+MD5Sum: c38bd45a6aa14a969b7e92f051481d7e
+Size: 79358
+Filename: libucode20230711_2024.07.22~b610860d-r3_aarch64_cortex-a53.ipk
 Description:  The libucode package provides the shared runtime library for the ucode interpreter.
 
 
 Package: luci-app-argon-config
-Version: 0.9-2
+Version: 0.9-1
+Architecture: all
 Depends: libc, luci-compat, luci-lib-ipkg
 Recommends: luci-theme-argon
 Source: github.com/jerrykuku/luci-app-argon-config/releases/tag/v0.9
@@ -65,151 +56,123 @@ SourceName: luci-app-argon-config
 Section: luci
 SourceDateEpoch: 1650782942
 Maintainer: github.com/jerrykuku
-Architecture: all
-Installed-Size: 3586
-MD5Sum: dccb5592b1ae6810f2404682e178ea06
-SHA256sum: 51fece2e4fed9bc3ced19a79e0f25ea646c08b5fc7d377d7198429e790055e42
-Size: 4390
-Filename: luci-app-argon-config_0.9-2_all.ipk
+MD5Sum: 5a418efdfeee34fb11c7f9cb5fff67fe
+Size: 4546
+Filename: luci-app-argon-config_0.9-1_all.ipk
 Description:  LuCI page for Argon Config
 
 
 Package: kmod-wireguard
+Version: 1
 Depends: sdxpinn-patch
-Version: 1-1
 Architecture: sdxpinn
 Maintainer: Cameron Thompson iamromulan@github.com
+MD5Sum: 98e77b68c2f1b5ff46ef7713b4f63a94
+Size: 789
+Filename: kmod-wireguard_1_sdxpinn.ipk
 Source: github.com/iamromulan
-MD5Sum: a741daebb875534f7d63948d7f941fb4
-SHA256sum: d993765bd315b4302c2bae844dd37dbe4ae14d1f3d95d197deacd95b4366955b
-Size: 700
-Filename: kmod-wireguard_1-1_sdxpinn.ipk
 Description: Wireguard is compiled into the kernel
 
 
 Package: luci-app-atinout-mod
-Version: 1.3.4-20250120
+Version: 1.3.4-20250119
 Depends: libc, atinout, luci-compat
-Source: package/luci-app-atinout-mod
-SourceName: luci-app-atinout-mod
-License: GPLv3
 Section: luci
-SourceDateEpoch: 1636930326
-Maintainer: OpenWrt LuCI community
 Architecture: all
-Installed-Size: 3790
-MD5Sum: bc6a20670fd4ad8b0c2554343f3cd32c
-SHA256sum: 90ae84fb18b3bf103440da0ac0dc7cf9814fcbfbf3c17a2194d21940e743bea4
-Size: 4698
-Filename: luci-app-atinout-mod_1.3.4-20250120_all.ipk
-Description:  Web UI for atinout modded by iamromulan preset for use on SDXPINN
+Maintainer: OpenWrt LuCI community
+MD5Sum: 1ffee9ec8fe5723b8140bf2c21fea508
+Size: 4864
+Filename: luci-app-atinout-mod_1.3.4-20250119_all.ipk
+Source: package/luci-app-atinout-mod
+Description: Web UI for atinout
+License: GPLv3
 
 
 Package: luci-app-autoupgrade
-Version: 0.5.2-r2
+Version: 0.5.2-r1
 Depends: libc, luci-base, autoupgrade
-Source: /feed/applications/luci-app-autoupgrade
-SourceName: luci-app-autoupgrade
 License: Apache-2.0
 Section: luci
-SourceDateEpoch: 1779010265
 URL: https://github.com/openwrt/luci
-Maintainer: OpenWrt LuCI community
 Architecture: all
 Installed-Size: 30720
-MD5Sum: 19580e261bf6c39bb97efd83f5ad9c63
-SHA256sum: b5593aeae9825b13b5999d198cf9f8498dc8653ec57e534caddfe4ce17bfed37
-Size: 4966
-Filename: luci-app-autoupgrade_0.5.2-r2_all.ipk
+Filename: luci-app-autoupgrade_0.5.2-r1_all.ipk
+Size: 5029
+SHA256sum: 78a3e3e84a6cbd48488fbc9adc67e4d6dd2cc4c3b9387eb583e901d5d168f588
 Description:  LuCI support for autoupgrade
 
 
 Package: luci-app-go-wireguard
-Version: 4.500-3
+Version: 4.500-2
 Depends: libc, wireguard-tools, kmod-wireguard, luci-proto-wireguard, udptunnel, eoip
 Source: package/rooter/0optionalapps/ext-wireguard
 SourceName: ext-wireguard
 Section: utils
+Architecture: all
 SourceDateEpoch: 1716401566
 Maintainer: Created by DM/makefile by Cobia@whirlpool
-Architecture: all
-Installed-Size: 23912
-MD5Sum: dfa0b4d88c744804b7e47e05fa821d6e
-SHA256sum: b2ce09bb1077a4115a923ec0d0636957ce6b94506e5a473cad4c3fc9af94154e
-Size: 24818
-Filename: luci-app-go-wireguard_4.500-3_all.ipk
-Description:  Install scripts for Wireguard
+MD5Sum: 66549e8d970b9046440e6a836f9c9639
+Size: 24213
+Filename: luci-app-go-wireguard_4.500-2_all.ipk
+Description:  Wireguard luci App
 
 
 Package: luci-app-tailscale-community-tiny
-Version: 1.0.0-1
+Version: 1.0.0
 Depends: tailscale-tiny, ip-full, luci-base
 Conflicts: luci-app-tailscale, luci-app-tailscale-community
-Source: https://github.com/iamromulan/luci-app-tailscale-community/tree/tiny
-SourceName: luci-app-tailscale-community-tiny
-License: Apache-2.0
 Section: luci
-Maintainer: Cameron Thompson <iamromulan@github>
 Architecture: all
-MD5Sum: d728c60d02bba80de574f7b66b8a080c
-SHA256sum: 26cb7122a95714eeccd271d34d6e4ff45b80887cb9ffff2121cace75e7c770ac
-Size: 13993
-Filename: luci-app-tailscale-community-tiny_1.0.0-1_all.ipk
-Description: LuCI web interface for Tailscale. Stripped variant for tiny-tailscale — no DNS or webclient toggles. Shell rpcd backend for all OpenWrt versions (21.02+).
+Maintainer: Cameron Thompson <iamromulan@github>
+MD5Sum: 30f60315f36cd366b3c966ae9926cb10
+Size: 14122
+Filename: luci-app-tailscale-community-tiny_1.0.0_all.ipk
+Source: github/iamromulan
+Description: Luci app for tailscale-tiny
 
 
 Package: luci-app-zerotier
-Version: 1.0-1
+Version: 1.0
 Depends: libc, zerotier
-Source: github.com/iamromulan
 Section: luci
-URL: https://github.com/iamromulan
-Maintainer: iamromulan
 Architecture: all
-Installed-Size: 30720
-MD5Sum: ee352dce72d38b2ecc24c5315918548f
-SHA256sum: e8e0ade1a63ded2e182a519bc2b57ebc039701630594e9ed50fb6fea5ca569c7
-Size: 1305
-Filename: luci-app-zerotier_1.0-1_all.ipk
-Description:  Wrapper package that auto installs the correct luci-app-zerotier for your OpenWRT version (22 or 23).
+Maintainer: iamromulan
+MD5Sum: 62dccab49d8f53ce08f8650eda0c547d
+Size: 1399
+Filename: luci-app-zerotier_1.0_all.ipk
+Source: github.com/iamromulan
+Description: Wrapper package that auto installs the correct luci-app-zerotier for your OpenWRT version (22 or 23).
 
 
 Package: luci-app-zerotier-22
-Version: 1.0-21
+Version: 1.0-20
 Depends: libc, zerotier
-Source: feeds/luci/applications/luci-app-zerotier
-SourceName: luci-app-zerotier
 Section: luci
-SourceDateEpoch: 1711432774
 Architecture: all
-Installed-Size: 3307
-MD5Sum: 4a4cb078edeabddc97171ab6fceb71b6
-SHA256sum: 7ae19fe78531aacc56a0f3c5cff1bcb44f70d88924a1a35cdb360b3c1d340cb4
-Size: 3100
-Filename: luci-app-zerotier-22_1.0-21_all.ipk
-Description:  LuCI for Zerotier on OpenWRT 22
+Maintainer: OpenWrt LuCI community
+MD5Sum: 7a0d9d5a33eb2fce4f03363ff1446c0c
+Size: 3257
+Filename: luci-app-zerotier-22_1.0-20_all.ipk
+Source: feeds/luci/applications/luci-app-zerotier
+Description: LuCI for Zerotier on OpenWRT 22
 
 
 Package: luci-app-zerotier-23
-Version: 1.14.1-2
+Version: 1.14.1-1
 Depends: libc, zerotier
-Source: feeds/kiddin9/luci-app-zerotier
-SourceName: luci-app-zerotier
 Section: luci
-SourceDateEpoch: 1754481838
-URL: https://github.com/openwrt/luci
-Maintainer: OpenWrt LuCI community
 Architecture: all
-Installed-Size: 30720
-MD5Sum: 60808f2817117c1d2ce8d11024bfd048
-SHA256sum: 4e9f1dd0d48ff9d43849db62e64ebce05407e5eb5bc10982065bd8c0ae2fcf59
-Size: 5738
-Filename: luci-app-zerotier-23_1.14.1-2_all.ipk
-Description:  LuCI app for Zerotier on OpenWRT 23
+Maintainer: OpenWrt LuCI community
+MD5Sum: b6818c3c17ebef35a3fcc7653e9e3827
+Size: 5891
+Filename: luci-app-zerotier-23_1.14.1-1_all.ipk
+Source: feeds/kiddin9/luci-app-zerotier
+Description: Luci app for zerotier
 
 
 Package: luci-lua-runtime
-Version: 25.034.70690~7b0663a-sdxpinn-1
+Version: 25.034.70690~7b0663a-sdxpinn
+Architecture: sdxpinn
 Depends: libc, luci-base, lua, luci-lib-base, luci-lib-nixio, luci-lib-ip, luci-lib-jsonc, libubus-lua, liblucihttp-lua, ucode-mod-lua
 Source: https://dl.openwrt.ai/packages-24.10/aarch64_cortex-a53/luci/luci-lua-runtime_25.049.66344~2b8e93c_aarch64_cortex-a53.ipk
 SourceName: luci-lua-runtime
@@ -218,17 +181,15 @@ Section: luci
 SourceDateEpoch: 1738611490
 URL: https://github.com/openwrt/luci
 Maintainer: github/iamromulan
-Architecture: sdxpinn
-Installed-Size: 153600
-MD5Sum: 4b8597d196158a0488e5cbe9ac3a5ce7
-SHA256sum: c888dc57e75f7a335c9115a0fb08547be12bb7608153542fee6ef75e2671c264
-Size: 1953
-Filename: luci-lua-runtime_25.034.70690~7b0663a-sdxpinn-1_sdxpinn.ipk
-Description:  Missing LuCI Lua runtime libraries for sdxpinn
+MD5Sum: c6c571d34de434c6a55262112bc9261d
+Size: 2072
+Filename: luci-lua-runtime_25.034.70690~7b0663a-sdxpinn_sdxpinn.ipk
+Description:  LuCI Lua runtime libraries
 
 
 Package: luci-theme-argon
-Version: 2.3.2-r20250208
+Version: 2.3.2-r20250207
+Architecture: all
 Depends: libc, curl, jsonfilter, luci-lua-runtime
 Recommends: luci-app-argon-config
 Source: https://github.com/jerrykuku/luci-theme-argon/releases
@@ -237,153 +198,139 @@ Section: luci
 SourceDateEpoch: 1739087731
 URL: https://github.com/jerrykuku/luci-theme-argon
 Maintainer: github.com/jerrykuku
-Architecture: all
-Installed-Size: 768000
-MD5Sum: 488e00d66bf9512358b10958dbcfa484
-SHA256sum: 8c87f9d55d13a173d6161bce259a324676fa1602cd7bd763d3b53c3cb1d4bf37
-Size: 391161
-Filename: luci-theme-argon_2.3.2-r20250208_all.ipk
+MD5Sum: 1354d843e7a0257fc8684548ec37a284
+Size: 401244
+Filename: luci-theme-argon_2.3.2-r20250207_all.ipk
 Description:  Argon Theme
 
 
 Package: ookla-speedtest
-Version: 1.2.0-1
-Architecture: aarch64_cortex-a53
-Maintainer: Ookla speedtest.net https://www.speedtest.net/apps/cli
-Source: speedtest.net
+Version: 1.2.0
 Depends: libc
 Section: net
+Architecture: aarch64_cortex-a53
+Maintainer: Ookla <https://www.speedtest.net/apps/cli>
+MD5Sum: b26e1909599f73cab40ea0281c5a6283
+Size: 1075696
+Filename: ookla-speedtest_1.2.0_aarch64_cortex-a53.ipk
+Source: speedtest.net/apps/cli
+Description: speedtest.net CLI
 License: GPLv3
-MD5Sum: bfe95e795319518bdb3a9eefa2c3c9a3
-SHA256sum: b55550b625189e8c73116619faaa3a6946e73284f6bcca7ea250a6227251d063
-Size: 1072213
-Filename: ookla-speedtest_1.2.0-1_aarch64_cortex-a53.ipk
-Description: Allows you to test your internet speed with speedtest.net
 
 
 Package: sdxpinn-console-menu
-Version: 0.0.3-1
-Architecture: aarch64_cortex-a53
-Maintainer: Cameron Thompson iamromulan@github.com
-Source: github.com/iamromulan
+Version: 0.0.3
 Depends: libc
 Section: utils
-License: GPLv3
-MD5Sum: 84e656580da73dbc4740a9c38e69d94f
-SHA256sum: 99e55797824808aaca5d354b5d155fc7049bb55ec691f23a6869b21afc1374ff
-Size: 7363
-Filename: sdxpinn-console-menu_0.0.3-1_aarch64_cortex-a53.ipk
+Architecture: aarch64_cortex-a53
+Maintainer: iamromulan <https://github.com/iamromulan>
+MD5Sum: a2eb562bf9cdb731c3f64ded26d9df99
+Size: 7511
+Filename: sdxpinn-console-menu_0.0.3_aarch64_cortex-a53.ipk
+Source: github/iamromulan
 Description: A custom CLI menu system for mamnagment of Quectel RM5xx modems
+License: GPLv3
 
 
 Package: sdxpinn-firstboot
-Version: 1.0-1
+Version: 1.0
+Depends: libc
+Section: system
 Architecture: sdxpinn
 Maintainer: Cameron Thompson iamromulan@github.com
+MD5Sum: aa6815442a0e53efe5c1fe834f1a64ad
+Size: 1117
+Filename: sdxpinn-firstboot_1.0_sdxpinn.ipk
 Source: github.com/iamromulan
-Section: system
-License: GPLv3
-MD5Sum: e130c5bddbf7c8d0b9a42c751f47a9ee
-SHA256sum: bf5860e3532d39bbac162a6f827403d5cd2cba6eee28060ffb255c82efcd0e48
-Size: 1045
-Filename: sdxpinn-firstboot_1.0-1_sdxpinn.ipk
 Description: A first boot init after a flash or factory reset
+License: GPLv3
 
 
 Package: sdxpinn-mount-fix
-Version: 1.4-1
-Architecture: aarch64_cortex-a53
-Maintainer: Cameron Thompson iamromulan@github.com
-Source: github.com/iamromulan
+Version: 1.4
 Depends: libc
 Section: base
-License: GPLv3
-MD5Sum: 557c5daab834f59c2deeca2bbf44b16e
-SHA256sum: fd33c402d635fe31635355a4707997748527cff2910176b061abd89ac5b54235
-Size: 4234
-Filename: sdxpinn-mount-fix_1.4-1_aarch64_cortex-a53.ipk
+Architecture: aarch64_cortex-a53
+Maintainer: iamromulan <https://github.com/iamromulan>
+MD5Sum: 019d6df8dc1136b86222df0d5723596f
+Size: 4323
+Filename: sdxpinn-mount-fix_1.4_aarch64_cortex-a53.ipk
+Source: github/iamromulan
 Description: Creates a usable mount space and overlay for SDXPINN modems. Dependencies bundled: libinotifytools and inotifywait
+License: GPLv3
 
 
 Package: sdxpinn-patch
+Version: 3.2
 Depends: libc
-Version: 3.2-1
+Section: base
 Architecture: all
 Maintainer: Cameron Thompson iamromulan@github.com
+MD5Sum: ffc0ccbb1f7437052303d62f305e3f0f
+Size: 4040
+Filename: sdxpinn-patch_3.2_all.ipk
 Source: github.com/iamromulan
-Section: base
-MD5Sum: f2d3d535fd6a260170ea2c0afc27a26d
-SHA256sum: 650dfeff1da02f99f22f0cd52b2d23f363b0aa5e93fd53ef6ab3f3d6f8d9f82d
-Size: 3936
-Filename: sdxpinn-patch_3.2-1_all.ipk
 Description: A general first system patch for SDXPINN OpenWRT
 
 
 Package: sdxpinn-quecmanager
-Version: 2.3.4-1
-Architecture: sdxpinn
-Maintainer: Russel Yasol dr-dolomite@github.com Cameron Thompson iamromulan@github.com Christopher Landwehr clndwhr@github.com
-Source: github.com/iamromulan
+Version: 2.3.4
 Depends: sdxpinn-patch (>= 2.5), libc, inotifywait, coreutils-timeout, uhttpd, sms-tool (>= 2025.1.19-APmod-iamromulan), jq, ookla-speedtest
 Conflicts: sdxpinn-quecmanager-beta
 Section: admin
-License: GPLv3
-MD5Sum: bc08ca22de8e252fd6aa80e28072c865
-SHA256sum: a8375fa4398f9e00d5b2eb176b20eca3e35c00caba05431d7140bbe0cf6e7b46
-Size: 1504296
-Filename: sdxpinn-quecmanager_2.3.4-1_sdxpinn.ipk
+Architecture: sdxpinn
+Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
+MD5Sum: 57c8459f23120ce906102157615e9bbc
+Size: 1535891
+Filename: sdxpinn-quecmanager_2.3.4_sdxpinn.ipk
+Source: github/iamromulan
 Description: A custom web UI desgined to run alongside luci for Quectel RM55x modems
+License: GPLv3
 
 
 Package: sdxpinn-quecmanager-beta
-Version: 2.3.9-1
-Architecture: sdxpinn
-Maintainer: Russel Yasol dr-dolomite@github.com Cameron Thompson iamromulan@github.com Christopher Landwehr clndwhr@github.com
-Source: github.com/iamromulan
+Version: 2.3.9
 Depends: sdxpinn-patch (>= 2.5), libc, inotifywait, coreutils-timeout, uhttpd, sms-tool (>= 2025.1.19-APmod-iamromulan), jq, ookla-speedtest, websocat, msmtp, ca-bundle, ca-certificates, openssl-util
 Conflicts: sdxpinn-quecmanager
 Section: admin
+Architecture: sdxpinn
+Maintainer: Russel Yasol <https://github.com/dr-dolomite> Cameron Thompson <https://github.com/iamromulan>
+MD5Sum: 4ee32aa37e03f7c6f6b15e7c5c655e85
+Size: 1900607
+Filename: sdxpinn-quecmanager-beta_2.3.9_sdxpinn.ipk
+Source: github/iamromulan
+Description: BETA: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 License: GPLv3
-MD5Sum: db8fe81aa66cb7e23ffab731bba4dc9e
-SHA256sum: 051bedf1e1a37102c2fa2093995d0075f958e59527c9d6f46ca1c83c78efac0d
-Size: 1924319
-Filename: sdxpinn-quecmanager-beta_2.3.9-1_sdxpinn.ipk
-Description: A custom web UI desgined to run alongside luci for Quectel RM55x modems
 
 
 Package: sms-tool
-Version: 2025.1.19-APmod-iamromulan-1
-Maintainer: github.com/iamromulan
+Version: 2025.1.19-APmod-iamromulan
 Depends: libc, socat-at-bridge
-Source: github/iamromulan/sms_tool
-SourceName: github/iamromulan/sms_tool
 Section: utils
-URL: https://github.com/iamromulan/sms_tool
 Architecture: aarch64_cortex-a53
-MD5Sum: 545386adedbfc771cf45e9143ee3b894
-SHA256sum: 5a0031dd61c6146e555ab48e8e2b0d22b8e207bb1246b1ad83f65e77bca479b3
-Size: 13458
-Filename: sms-tool_2025.1.19-APmod-iamromulan-1_aarch64_cortex-a53.ipk
-Description:  SMS Tool for 3G/4G/5G modem AP
+Maintainer: osby and iamromulan
+MD5Sum: 83dc8bfd2d4ac8d8952a2a95b2be943f
+Size: 13687
+Filename: sms-tool_2025.1.19-APmod-iamromulan_aarch64_cortex-a53.ipk
+Source: https://github.com/iamromulan/sms_tool
+Description:  SMS Tool for 3G/4G/5G modem
 
 
 Package: socat-at-bridge
-Version: 1.2.0-1
+Version: 1.2.0
 Depends: libc, socat
-Source: github/iamromulan/quectel-rgmii-toolkit
-Maintainer: github.com/iamromulan
 Section: utils
-URL: https://github.com/iamromulan/quectel-rgmii-toolkit
 Architecture: aarch64_cortex-a53
-MD5Sum: c717ca60a678151ea7171ec2c88ed0be
-SHA256sum: 771c1ffebadbe27115f87a28358e734a29659e45073b0e0cd3a5a888b92fae91
-Size: 1350
-Filename: socat-at-bridge_1.2.0-1_aarch64_cortex-a53.ipk
-Description:  Sets up a tty from SMD11, SMD7 optional
+Maintainer: iamromulan
+MD5Sum: eccb5b567c5fd7969ebedbef3c6fdebb
+Size: 1445
+Filename: socat-at-bridge_1.2.0_aarch64_cortex-a53.ipk
+Source: https://github.com/iamromulan/quectel-rgmii-toolkit
+Description:  Sets up a tty from SMD11
 
 
 Package: tailscale-tiny
-Version: 1.104.4-1
+Version: 1.104.4
 Depends: ca-bundle, kmod-tun
 Conflicts: tailscale, tailscaled
 Source: feeds/packages/net/tailscale
@@ -392,15 +339,16 @@ License: BSD-3-Clause
 Section: net
 Maintainer: Cameron Thompson <iamromulan@github>
 Architecture: aarch64_cortex-a53
-MD5Sum: 74801101995c9811d16e370849ad85ba
-SHA256sum: 091230a20c61d093ff0a4b59981e836c6a58ee2571444fec303df9f732a28a52
-Size: 7674688
-Filename: tailscale-tiny_1.104.4-1_aarch64_cortex-a53.ipk
+MD5Sum: a635c179355351d731175fca1a78fe96
+SHA256sum: 59fd999b43abea6aee7f466f539c852d18d7ff87d61ad62e48f74ec82c5e75a2
+Size: 7674595
+Filename: tailscale-tiny_1.104.4_aarch64_cortex-a53.ipk
 Description: Zero config VPN. Stripped combined binary from tiny-tailscale with 25 features kept. Static, no libc dependency.
 
 
 Package: ucode-mod-lua
-Version: 1-1
+Version: 1
+Architecture: aarch64_cortex-a53
 Depends: libc, libucode20230711, liblua5.1.5
 Source: feeds/luci/contrib/package/ucode-mod-lua
 SourceName: ucode-mod-lua
@@ -408,51 +356,45 @@ License: ISC
 Section: utils
 SourceDateEpoch: 1738611490
 Maintainer: Jo-Philipp Wich <jo@mein.io>
-Architecture: aarch64_cortex-a53
-Installed-Size: 71680
-MD5Sum: 35b06b1cc0fc8414d8e48759437bef7f
-SHA256sum: c9f04b5e42267469886120b11f5371df448b92333b7a5d3ea052fe16fe204d20
-Size: 9894
-Filename: ucode-mod-lua_1-1_aarch64_cortex-a53.ipk
+MD5Sum: cd83c6848867112332d1155b4c4f0640
+Size: 10085
+Filename: ucode-mod-lua_1_aarch64_cortex-a53.ipk
 Description:  ucode to Lua bridge library
 
 
 Package: warp
 Depends: libc, wgcf, luci-app-go-wireguard
-Version: 1.0-1
+Version: 1.0
 Architecture: sdxpinn
 Maintainer: iamromulan
+MD5Sum: ea95658bf84f619cabe5dd62280fe787
+Size: 2698
+Filename: warp_1.0_sdxpinn.ipk
 Source: github.com/iamromulan
-MD5Sum: 628c902450309d0c460f3dd141752877
-SHA256sum: d4012a743533bf15e3c560b9ce7cd0d4bca60f977455520b4da39da9afa400bf
-Size: 2605
-Filename: warp_1.0-1_sdxpinn.ipk
 Description: Installs the 'warp' command to help setup Cloudflare WARP on SDXPINN
 
 
 Package: websocat
-Version: 1.14.0-1
+Version: 1.14.0
+Depends: libc
 Architecture: aarch64_cortex-a53
 Maintainer: Vitaly Shukela https://github.com/vi/websocat
+MD5Sum: e877135ca393c19a17ee81966d88ec38
+Size: 3067044
+Filename: websocat_1.14.0_aarch64_cortex-a53.ipk
 Source: https://github.com/vi/websocat/releases/download/v1.14.0/websocat_max.aarch64-unknown-linux-musl
-Depends: libc
-MD5Sum: f45c72fc3a17f9e779f45194323fb63c
-SHA256sum: b2b83b1b9b1ae94992978e53a779a4ea9d9cd80170b60ee114a35eaf7e29b7e5
-Size: 3060441
-Filename: websocat_1.14.0-1_aarch64_cortex-a53.ipk
 Description: Netcat, curl and socat for WebSockets.
 
 
 Package: wgcf
+Version: 2.2.24
 Depends: libc
-Version: 2.2.24-1
 Architecture: aarch64_generic
 Maintainer: ViRb3
+MD5Sum: b2ba181f9181c2bd8f37933c60c0713f
+Size: 3677883
+Filename: wgcf_2.2.24_aarch64_generic.ipk
 Source: github.com/ViRb3/wgcf/releases
-MD5Sum: 383ee1ca0a5ab5deef8806dc9a31b41e
-SHA256sum: 59b234c1bf2f3ee59d0367f325289139feebe505a0fef0abdd59c8bf90c7fc51
-Size: 3653070
-Filename: wgcf_2.2.24-1_aarch64_generic.ipk
 Description: wgcf is an unofficial, cross-platform CLI for Cloudflare Warp
 
 

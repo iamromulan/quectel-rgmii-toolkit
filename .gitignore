@@ -3,3 +3,5 @@
 *Zone.Identifier
 # Editor metadata
 .obsidian/
+__pycache__/
+*.pyc

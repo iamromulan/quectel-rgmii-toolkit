@@ -1,5 +1,5 @@
 Package: luci-app-autoupgrade
-Version: 0.5.2-r2
+Version: 0.5.2-r1
 Depends: libc, luci-base, autoupgrade
 Source: /feed/applications/luci-app-autoupgrade
 SourceName: luci-app-autoupgrade

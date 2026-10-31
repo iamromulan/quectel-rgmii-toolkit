@@ -8,8 +8,8 @@ Usage:
 Common options: --src ipk-source  --feed opkg-feed  --state opkg-feed/build-state.json
 
 State, not history. opkg-feed/build-state.json records, for every package
-directory the feed was built from, the git tree hash of ipk-source/<dir> at that
-time. A package needs a rebuild exactly when its current tree hash differs from
+directory the feed was built from, a fingerprint of its CONTROL/ and root/ trees
+(the files that go into the ipk) at that time. A package needs a rebuild exactly when its current tree hash differs from
 the recorded one. Unlike a "what changed since commit X" search this survives
 cancelled or queued runs, force-pushes, rebases and manual pushes, and running
 twice is harmless.
@@ -40,6 +40,7 @@ Python 3.8+ standard library only.
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -194,9 +195,14 @@ def write_state(path, packages):
 
 
 def tree_of(src, d):
-    """Tree hash of ipk-source/<d> as staged in the index (equals HEAD:<path>
-    until a bump is staged). The index has no tree entries, so ask write-tree."""
-    return git("write-tree", "--prefix=%s/%s/" % (src, d))
+    """Fingerprint of what ends up in the ipk: the git trees of CONTROL/ and root/
+    as staged in the index (they equal HEAD's until a bump is staged), combined.
+    Files beside them (notes, helper scripts) never trigger a rebuild. The
+    index has no tree entries, so ask write-tree. The sign job recomputes this
+    in shell: sha1 of "<CONTROL tree> <root tree>\n"."""
+    parts = [git("write-tree", "--prefix=%s/%s/%s/" % (src, d, sub))
+             for sub in ("CONTROL", "root")]
+    return hashlib.sha1(("%s %s\n" % tuple(parts)).encode("ascii")).hexdigest()
 
 
 def entry_for(src, d, ctl):
