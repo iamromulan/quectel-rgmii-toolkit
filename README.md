@@ -16,6 +16,19 @@ Flash with QFlash, QFIL, or qfirehose. At first boot a script will automaticly s
 
 
 
+# How the feed is built (CI)
+
+Packages are not built or signed by hand. Contributors only change `ipk-source/<package>/` in a pull request to **development-SDXPINN** and bump `Version` in its `CONTROL/control`. After the merge, GitHub Actions does the rest:
+
+| Workflow | Lives on | What it does |
+|---|---|---|
+| **Autobuild: development-SDXPINN** (`opkg-feed.yml`) | this feed branch | Runs on every push that touches `ipk-source/**`. Compares each package's git tree with `opkg-feed/build-state.json` to find what changed, builds those ipks, updates and signs `opkg-feed/Packages`, and commits `CI: autobuild (...)` listing what was added, upgraded, rebuilt or removed. If the source changed but `Version` did not, a package revision is added (`1.2.3` becomes `1.2.3-1`). A deleted `ipk-source/<dir>` removes its package. This is the only workflow that uses the signing key (secret `OPKG_USIGN_KEY`, environment `feed-signing`). |
+| **Build feed** | `main` | Manual form (Actions tab or GitHub mobile) that starts Autobuild by hand: mode `changed` (default), `all` (rebuilds every package and regenerates every index entry) or `listed`, plus a dry-run option. |
+| **Import tailscale-tiny** | `main` | Every 2 hours: if [tiny-tailscale](https://github.com/iamromulan/tiny-tailscale) has a newer release, swaps in its arm64 `tailscaled`, sets the version, commits to **development-SDXPINN** and starts Autobuild. |
+| **Sync SDXPINN with dev branch** | `main` | The release step: verifies the signed dev feed and merges **development-SDXPINN** into **SDXPINN**. Tick *confirm*, otherwise it only reports. |
+
+The Build, Import and Sync workflows live on `main` because scheduled and manually started workflows only exist on the default branch. One signing key is shared by every feed branch of this repository. Never add `pull_request` or `pull_request_target` triggers to the Autobuild workflow, because its sign job holds the private key.
+
 # :warning: Known issues with Packages
 
 Currently there is know vulnerability with QuecManager that allows cgi scripts to be executed unauthenticated. It is not recommended to expose uhttpd to the public internet, and to only used in a controlled, trusted local environment for now. Please see [Issue #175](https://github.com/iamromulan/quectel-rgmii-toolkit/issues/175) for more info.
