@@ -3,7 +3,7 @@ name: Sync SDXPINN with dev branch
 # Promote the dev feed to stable: merge development-SDXPINN into SDXPINN.
 # Holds no signing key. It only moves what CI already signed on the dev branch,
 # and refuses to continue unless that signature verifies and the merged feed is
-# exactly the dev feed.
+# exactly the dev feed. README.md is never taken from dev (it differs per branch).
 
 on:
   workflow_dispatch:
@@ -76,8 +76,16 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git merge --no-ff -m "Merge branch '$DEV' into $FEED" "origin/$DEV" \
-            || { echo "::error::merge conflict; resolve it by hand"; exit 1; }
+          # The README is different on every branch on purpose: keep this
+          # branch's own README no matter what the merge did to it.
+          git merge --no-ff --no-commit "origin/$DEV" || true
+          git checkout HEAD -- README.md
+          if [ -n "$(git diff --name-only --diff-filter=U)" ]; then
+            echo "::error::merge conflict outside README.md; resolve it by hand"
+            git merge --abort || true
+            exit 1
+          fi
+          git commit -q -m "Merge branch '$DEV' into $FEED"
           # The promoted feed must be exactly the signed dev feed.
           if ! git diff --quiet "origin/$DEV" HEAD -- opkg-feed; then
             echo "::error::$FEED's opkg-feed differs from $DEV after the merge; not pushing"; exit 1
