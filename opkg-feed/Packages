@@ -392,9 +392,9 @@ License: BSD-3-Clause
 Section: net
 Maintainer: Cameron Thompson <iamromulan@github>
 Architecture: aarch64_cortex-a53
-MD5Sum: 30c9e721b02da5166f885f673aec49b3
-SHA256sum: 57eca0f44eb36146b5ff0191f183ad0f735963ee7fe67c636f590536732aa878
-Size: 7674625
+MD5Sum: 74801101995c9811d16e370849ad85ba
+SHA256sum: 091230a20c61d093ff0a4b59981e836c6a58ee2571444fec303df9f732a28a52
+Size: 7674688
 Filename: tailscale-tiny_1.104.4-1_aarch64_cortex-a53.ipk
 Description: Zero config VPN. Stripped combined binary from tiny-tailscale with 25 features kept. Static, no libc dependency.
 
