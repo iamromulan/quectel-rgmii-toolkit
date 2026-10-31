@@ -1,0 +1,49 @@
+name: Build feed
+
+# Control panel on the default branch: the "Run workflow" button (web and
+# mobile) only exists for workflows here. It starts the real build, which lives
+# on the feed branch (opkg-feed.yml), on the branch you pick. Holds no secrets;
+# the signing key is only ever used by opkg-feed.yml's sign job.
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Feed branch to build'
+        type: choice
+        options: [development-SDXPINN]
+        default: development-SDXPINN
+      mode:
+        description: 'changed = only packages whose source changed; all = rebuild EVERY package and regenerate every index entry (hand-curated stanzas get overwritten); listed = only the packages named below'
+        type: choice
+        options: [changed, all, listed]
+        default: changed
+      packages:
+        description: 'Only for mode "listed": ipk-source directories, space or comma separated'
+        type: string
+        required: false
+        default: ''
+      dry_run:
+        description: 'Only show what would be built; change nothing'
+        type: boolean
+        default: true
+
+permissions:
+  actions: write
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start opkg-feed.yml on the chosen branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ inputs.branch }}
+          MODE: ${{ inputs.mode }}
+          PACKAGES: ${{ inputs.packages }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          gh workflow run opkg-feed.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH" \
+            -f mode="$MODE" -f packages="$PACKAGES" -f dry_run="$DRY_RUN"
+          echo "Started opkg-feed.yml on $BRANCH (mode=$MODE, dry_run=$DRY_RUN). See the Actions tab." >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,122 @@
+name: Import tailscale-tiny
+
+# Keeps ipk-source/tailscale-tiny_aarch64_cortex-a53 on the latest
+# iamromulan/tiny-tailscale release: swaps in the arm64 tailscaled, sets the
+# package Version, commits to the dev feed branch and starts the feed build
+# (opkg-feed.yml signs and publishes). Holds no signing key.
+# GitHub delays scheduled runs by hours, so this polls instead of trying to
+# line up with tiny-tailscale's own cron.
+
+on:
+  schedule:
+    - cron: '17 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release tag to import (e.g. v1.104.4). Empty = latest.'
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: import-tailscale-tiny
+  cancel-in-progress: false
+
+env:
+  UPSTREAM: iamromulan/tiny-tailscale
+  BRANCH: development-SDXPINN
+  PKG_DIR: ipk-source/tailscale-tiny_aarch64_cortex-a53
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the dev feed branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.BRANCH }}
+
+      - name: Find the version to import
+        id: ver
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WANT: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          tag="${WANT:-}"
+          if [ -z "$tag" ]; then
+            tag=$(gh release view --repo "$UPSTREAM" --json tagName --jq .tagName)
+          fi
+          printf '%s' "$tag" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+            || { echo "::error::unexpected release tag: $tag"; exit 1; }
+          new=${tag#v}
+          cur=$(sed -n 's/^Version:[[:space:]]*//p' "$PKG_DIR/CONTROL/control" | head -n1)
+          cur_up=${cur%%-*}   # upstream part of 1.104.2-1
+          echo "feed source: $cur  upstream release: $new"
+          newest=$(printf '%s\n%s\n' "$cur_up" "$new" | sort -V | tail -n1)
+          if [ -z "${WANT:-}" ] && { [ "$cur_up" = "$new" ] || [ "$newest" != "$new" ]; }; then
+            echo "Up to date." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "import=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "import=true" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$new" >> "$GITHUB_OUTPUT"
+
+      - name: Download and check the arm64 binary
+        if: steps.ver.outputs.import == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.ver.outputs.tag }}
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p dl && cd dl
+          gh release download "$TAG" --repo "$UPSTREAM" --pattern "tiny-tailscale_${VERSION}_arm64.tgz"
+          tar -xzf "tiny-tailscale_${VERSION}_arm64.tgz"
+          bin="tiny-tailscale_${VERSION}_arm64/tailscaled"
+          [ -f "$bin" ] && [ ! -L "$bin" ] || { echo "::error::tailscaled missing in the tarball"; exit 1; }
+          python3 - "$bin" <<'PY'
+          import struct, sys
+          data = open(sys.argv[1], 'rb').read(64)
+          # ELF, 64-bit, little-endian, e_machine 183 = AArch64
+          ok = data[:4] == b'\x7fELF' and data[4] == 2 and data[5] == 1 \
+              and struct.unpack_from('<H', data, 18)[0] == 183
+          sys.exit(0 if ok else 'not an aarch64 ELF binary')
+          PY
+          size=$(stat -c %s "$bin")
+          [ "$size" -gt 5000000 ] || { echo "::error::tailscaled is only $size bytes"; exit 1; }
+          echo "BIN=$PWD/$bin" >> "$GITHUB_ENV"
+
+      - name: Update the package and commit
+        if: steps.ver.outputs.import == 'true'
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          install -m 0755 "$BIN" "$PKG_DIR/root/usr/sbin/tailscaled"
+          sed -i "s/^Version:.*/Version: $VERSION/" "$PKG_DIR/CONTROL/control"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A "$PKG_DIR"
+          if git diff --cached --quiet; then
+            echo "Nothing changed." | tee -a "$GITHUB_STEP_SUMMARY"; exit 0
+          fi
+          git commit -q -m "import: tailscale-tiny $VERSION" -m "From $UPSTREAM release v$VERSION (arm64)."
+          git push origin "HEAD:refs/heads/$BRANCH"
+          echo "Imported tailscale-tiny $VERSION." | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "PUSHED=true" >> "$GITHUB_ENV"
+
+      - name: Start the feed build
+        if: env.PUSHED == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # A push made with GITHUB_TOKEN does not trigger workflows; dispatch does.
+          gh workflow run opkg-feed.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH" \
+            -f mode=changed -f dry_run=false
