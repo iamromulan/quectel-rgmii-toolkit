@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Update an opkg feed directory in place with freshly built .ipk files.
 
-Usage: build_feed.py <feed-dir> <ipk> [<ipk> ...]
+Usage: build_feed.py <feed-dir> [<ipk> ...] [--remove-package NAME ...]
                      [--summary DIFF_FILE] [--export DIR]
+                     [--changes FILE] [--bumps FILE]
 
 For every new ipk (identified by the Package: field of its control file, never
 by its filename):
@@ -15,6 +16,11 @@ by its filename):
   * superseded ipks (other *.ipk in <feed-dir> whose control Package: matches
     a rebuilt package) are deleted;
   * Packages.gz is rewritten deterministically (no mtime, no filename).
+
+--remove-package NAME drops that package's stanza from the index and deletes its
+ipk(s) (packages whose ipk-source directory was deleted). --changes writes one
+line per action for a commit message (added / upgraded / rebuilt / removed);
+--bumps (plan_build.py's bumps.txt) marks upgrades that were automatic.
 
 Packages.sig is NOT touched: signing happens in a separate step that holds the
 key. A summary in Markdown goes to stdout; --summary writes a unified diff of
@@ -206,10 +212,17 @@ def file_digests(path):
 def main():
     ap = argparse.ArgumentParser(description="Update an opkg feed with new ipks")
     ap.add_argument("feed_dir")
-    ap.add_argument("ipks", nargs="+")
+    ap.add_argument("ipks", nargs="*")
+    ap.add_argument("--remove-package", action="append", default=[], metavar="NAME",
+                    help="drop this package's stanza and ipk(s) from the feed")
+    ap.add_argument("--changes", help="write one line per action here")
+    ap.add_argument("--bumps", help="plan_build.py bumps.txt (marks auto-bumps)")
     ap.add_argument("--summary", help="write a unified diff of Packages here")
     ap.add_argument("--export", help="copy the signer's inputs into this dir")
     args = ap.parse_args()
+    if not args.ipks and not args.remove_package:
+        fail("nothing to do: give ipks and/or --remove-package")
+    to_remove = set(args.remove_package)
 
     feed = args.feed_dir
     index_path = os.path.join(feed, "Packages")
@@ -242,7 +255,12 @@ def main():
     replaced, added, dropped_dups = [], [], []
     done = set()
     result = []
+    dropped = []  # (package, version) of stanzas removed on request
     for name, chunk in chunks:
+        if name is not None and name in to_remove and name not in new:
+            old_fields = parse_fields(chunk.decode("utf-8", "surrogateescape"))
+            dropped.append((name, field_value(old_fields, "Version")))
+            continue
         if name is None or name not in new:
             result.append((name, chunk))
             continue
@@ -295,7 +313,7 @@ def main():
         except Exception as exc:  # noqa: BLE001
             warn("cannot read %s, leaving it alone: %s" % (fname, exc))
             continue
-        if pkg in new:
+        if pkg in new or pkg in to_remove:
             os.remove(os.path.join(feed, fname))
             removed.append(fname)
 
@@ -343,12 +361,36 @@ def main():
         with open(os.path.join(args.export, "packages.txt"), "w", newline="\n") as fh:
             fh.write("".join(p + "\n" for p in sorted(new)))
 
+    if args.changes:
+        bumped = set()
+        if args.bumps and os.path.isfile(args.bumps):
+            with open(args.bumps, encoding="utf-8") as fh:
+                for line in fh:
+                    parts = line.split()
+                    if len(parts) == 4:
+                        bumped.add(parts[1])
+        rows = []
+        for pkg, ov, nv, _fn in replaced:
+            if ov and ov != nv:
+                rows.append("upgraded %s %s -> %s%s" % (
+                    pkg, ov, nv, " (auto-bump)" if pkg in bumped else ""))
+            else:
+                rows.append("rebuilt %s %s" % (pkg, nv))
+        for pkg, nv, _fn in added:
+            rows.append("added %s %s" % (pkg, nv))
+        for pkg, ver in dropped:
+            rows.append("removed %s %s" % (pkg, ver or "?"))
+        with open(args.changes, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("".join(r + "\n" for r in sorted(rows)))
+
     print("### opkg feed update")
     print("")
     for pkg, ov, nv, fn in replaced:
         print("- replaced `%s` %s -> %s (`%s`)" % (pkg, ov or "?", nv, fn))
     for pkg, nv, fn in added:
         print("- added `%s` %s (`%s`)" % (pkg, nv, fn))
+    for pkg, ver in dropped:
+        print("- removed `%s` %s from the index" % (pkg, ver or "?"))
     for fn in removed:
         print("- removed superseded `%s`" % fn)
     for pkg in dropped_dups:
