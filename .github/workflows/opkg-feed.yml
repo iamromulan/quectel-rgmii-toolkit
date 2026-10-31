@@ -1,4 +1,4 @@
-name: opkg-feed
+name: "Autobuild: development-SDXPINN"
 
 # Builds the ipk-source/ packages whose source changed, regenerates the opkg-feed
 # index and signs it with the feed key. Contributors only change ipk-source/ in
