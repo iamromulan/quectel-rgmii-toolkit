@@ -20,10 +20,12 @@ Modes (plan):
   all      every package directory (deletions are handled too)
   listed   only the named directories (no deletions)
 
-Version discipline: when a package's source changed but its Version equals the
-version already in the feed, the Version is bumped (-rN -> -r(N+1), a trailing
--N -> -(N+1), otherwise -r1 is appended) and written back into
-CONTROL/control in the working tree, so the source stays the source of truth.
+Version discipline: whoever changes a package's source is expected to bump its
+Version. Only when the source changed and the Version still equals the feed's
+is a package revision added as a fallback (1.2.3 -> 1.2.3-1, 1.2.3-1 -> 1.2.3-2,
+an existing -rN stays -rN), written back into CONTROL/control in the working
+tree so the source stays the source of truth. A human-edited Version is never
+touched.
 A source Version lower than the feed's is an error. Versions compare the way
 opkg does (dpkg algorithm: epoch:upstream-revision, revision after the last '-').
 
@@ -124,10 +126,12 @@ def compare_versions(a, b):
 
 
 def bump_version(v):
+    """Packaging-only change, version not edited: OpenWrt style package revision.
+    1.2.3 -> 1.2.3-1, 1.2.3-1 -> 1.2.3-2 (an existing -rN keeps its style)."""
     m = re.search(r"-(r?)(\d+)$", v)
     if m:
         return "%s-%s%d" % (v[:m.start()], m.group(1), int(m.group(2)) + 1)
-    return v + "-r1"
+    return v + "-1"
 
 
 # ------------------------------------------------------------------- reading

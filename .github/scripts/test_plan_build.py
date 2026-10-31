@@ -23,7 +23,8 @@ class Versions(unittest.TestCase):
             self.assertEqual(self.sign(a, b), want, (a, b))
 
     def test_bump(self):
-        self.assertEqual(pb.bump_version("1.0"), "1.0-r1")
+        self.assertEqual(pb.bump_version("1.0"), "1.0-1")
+        self.assertEqual(pb.bump_version("1.0-1"), "1.0-2")
         self.assertEqual(pb.bump_version("1.0-r1"), "1.0-r2")
         self.assertEqual(pb.bump_version("0.9-1"), "0.9-2")
         self.assertEqual(pb.bump_version("2.3.2-r20250207"), "2.3.2-r20250208")
