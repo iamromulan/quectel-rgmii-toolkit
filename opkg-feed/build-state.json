@@ -1,0 +1,173 @@
+{
+  "packages": {
+    "atinout_aarch64_cortex-a53": {
+      "ipk": "atinout_0.9.1_aarch64_cortex-a53.ipk",
+      "package": "atinout",
+      "tree": "2b52b667e1901345fe96c79b451eb61fda8ba67f",
+      "version": "0.9.1"
+    },
+    "autoupgrade": {
+      "ipk": "autoupgrade_0.5.2-r1_all.ipk",
+      "package": "autoupgrade",
+      "tree": "320f1effed41695e927603fa9bdbdb5d7e269b42",
+      "version": "0.5.2-r1"
+    },
+    "kmod-wireguard": {
+      "ipk": "kmod-wireguard_1_sdxpinn.ipk",
+      "package": "kmod-wireguard",
+      "tree": "0b591d1ad4cdde0e7a4231d2b45bb8f1a27707cd",
+      "version": "1"
+    },
+    "libucode20230711_aarch64_cortex-a53": {
+      "ipk": "libucode20230711_2024.07.22~b610860d-r3_aarch64_cortex-a53.ipk",
+      "package": "libucode20230711",
+      "tree": "7c6998dcc7d237f36934ee2f4b931a3d93ffd9cd",
+      "version": "2024.07.22~b610860d-r3"
+    },
+    "luci-app-argon-config": {
+      "ipk": "luci-app-argon-config_0.9-1_all.ipk",
+      "package": "luci-app-argon-config",
+      "tree": "6227f6bc7600b188957b9223db15e37baf2f9ecd",
+      "version": "0.9-1"
+    },
+    "luci-app-atinout-mod": {
+      "ipk": "luci-app-atinout-mod_1.3.4-20250119_all.ipk",
+      "package": "luci-app-atinout-mod",
+      "tree": "fc57d9f6509ea1926f4cf3965f0eec874b573859",
+      "version": "1.3.4-20250119"
+    },
+    "luci-app-autoupgrade": {
+      "ipk": "luci-app-autoupgrade_0.5.2-r1_all.ipk",
+      "package": "luci-app-autoupgrade",
+      "tree": "bbe5c23fae91e0ed901fdb943895ca59f6aac0a7",
+      "version": "0.5.2-r1"
+    },
+    "luci-app-go-wireguard": {
+      "ipk": "luci-app-go-wireguard_4.500-2_all.ipk",
+      "package": "luci-app-go-wireguard",
+      "tree": "79e3667245e10210b0b22c2bba74934af08318b1",
+      "version": "4.500-2"
+    },
+    "luci-app-tailscale-community-tiny": {
+      "ipk": "luci-app-tailscale-community-tiny_1.0.0_all.ipk",
+      "package": "luci-app-tailscale-community-tiny",
+      "tree": "61c789b1e6b8af6365f0bfbaf569e07279a639b9",
+      "version": "1.0.0"
+    },
+    "luci-app-zerotier": {
+      "ipk": "luci-app-zerotier_1.0_all.ipk",
+      "package": "luci-app-zerotier",
+      "tree": "f3c659ee103ff3c5e5b692d91670233ac823f6c4",
+      "version": "1.0"
+    },
+    "luci-app-zerotier-22": {
+      "ipk": "luci-app-zerotier-22_1.0-20_all.ipk",
+      "package": "luci-app-zerotier-22",
+      "tree": "f02f25eceb9b2277d8dd01a680e2ac005325e908",
+      "version": "1.0-20"
+    },
+    "luci-app-zerotier-23": {
+      "ipk": "luci-app-zerotier-23_1.14.1-1_all.ipk",
+      "package": "luci-app-zerotier-23",
+      "tree": "b93080bd55dc589bc768f8604e8345a81109102f",
+      "version": "1.14.1-1"
+    },
+    "luci-lua-runtime_aarch64_cortex-a53": {
+      "ipk": "luci-lua-runtime_25.034.70690~7b0663a-sdxpinn_sdxpinn.ipk",
+      "package": "luci-lua-runtime",
+      "tree": "33fe8885a54b25aeebf1a9da35ed66ce0d69ad64",
+      "version": "25.034.70690~7b0663a-sdxpinn"
+    },
+    "luci-theme-argon": {
+      "ipk": "luci-theme-argon_2.3.2-r20250207_all.ipk",
+      "package": "luci-theme-argon",
+      "tree": "479b17de4989d4a98c6bffaae3c1438aa322ec9f",
+      "version": "2.3.2-r20250207"
+    },
+    "ookla-speedtest_aarch64_cortex-a53": {
+      "ipk": "ookla-speedtest_1.2.0_aarch64_cortex-a53.ipk",
+      "package": "ookla-speedtest",
+      "tree": "2527f9bd733c1d4f2bd9b9fd3dd5db2baa745768",
+      "version": "1.2.0"
+    },
+    "sdxpinn-console-menu": {
+      "ipk": "sdxpinn-console-menu_0.0.3_aarch64_cortex-a53.ipk",
+      "package": "sdxpinn-console-menu",
+      "tree": "1d7c38db6a4ef8dbcaa0a30333e92231aada9907",
+      "version": "0.0.3"
+    },
+    "sdxpinn-firstboot": {
+      "ipk": "sdxpinn-firstboot_1.0_sdxpinn.ipk",
+      "package": "sdxpinn-firstboot",
+      "tree": "c917e5ca95cfd9e8b3c106ad39b3d227d87e4671",
+      "version": "1.0"
+    },
+    "sdxpinn-mount-fix": {
+      "ipk": "sdxpinn-mount-fix_1.4_aarch64_cortex-a53.ipk",
+      "package": "sdxpinn-mount-fix",
+      "tree": "083356ba1d01ae1b23e575a8cea7641f462f4b02",
+      "version": "1.4"
+    },
+    "sdxpinn-patch": {
+      "ipk": "sdxpinn-patch_3.2_all.ipk",
+      "package": "sdxpinn-patch",
+      "tree": "9813becc59036eeb0d7150f6524f94fb67132784",
+      "version": "3.2"
+    },
+    "sdxpinn-quecmanager": {
+      "ipk": "sdxpinn-quecmanager_2.3.4_sdxpinn.ipk",
+      "package": "sdxpinn-quecmanager",
+      "tree": "c69224c50099a2f07972b657c992782f4d8a7c1b",
+      "version": "2.3.4"
+    },
+    "sdxpinn-quecmanager-beta": {
+      "ipk": "sdxpinn-quecmanager-beta_2.3.9_sdxpinn.ipk",
+      "package": "sdxpinn-quecmanager-beta",
+      "tree": "157de914192ada50d04a34d099ec0dce9f6f5e63",
+      "version": "2.3.9"
+    },
+    "sms-toolAP_aarch64_cortex-a53": {
+      "ipk": "sms-tool_2025.1.19-APmod-iamromulan_aarch64_cortex-a53.ipk",
+      "package": "sms-tool",
+      "tree": "5869d16c02a32f38af8c0e3cd338d64b1d84cacc",
+      "version": "2025.1.19-APmod-iamromulan"
+    },
+    "socat-at-bridge": {
+      "ipk": "socat-at-bridge_1.2.0_aarch64_cortex-a53.ipk",
+      "package": "socat-at-bridge",
+      "tree": "2863644faed0b7c83c71b89a39eefb19a1cf45f6",
+      "version": "1.2.0"
+    },
+    "tailscale-tiny_aarch64_cortex-a53": {
+      "ipk": "tailscale-tiny_1.104.2_aarch64_cortex-a53.ipk",
+      "package": "tailscale-tiny",
+      "tree": "e015b52e8bba3a56d24165a1cb4629ad5ee14f46",
+      "version": "1.104.2"
+    },
+    "ucode-mod-lua_aarch64_cortex-a53": {
+      "ipk": "ucode-mod-lua_1_aarch64_cortex-a53.ipk",
+      "package": "ucode-mod-lua",
+      "tree": "92c3fb07a07ee73f0533794f367ec606c20d67e8",
+      "version": "1"
+    },
+    "warp_sdxpinn": {
+      "ipk": "warp_1.0_sdxpinn.ipk",
+      "package": "warp",
+      "tree": "b4877fdbb046c25be0640309b8690d8536fd7638",
+      "version": "1.0"
+    },
+    "websocat_aarch64": {
+      "ipk": "websocat_1.14.0_aarch64_cortex-a53.ipk",
+      "package": "websocat",
+      "tree": "cc10fac29f0479b70f459cb47075535d66821e59",
+      "version": "1.14.0"
+    },
+    "wgcf_aarch64_generic": {
+      "ipk": "wgcf_2.2.24_aarch64_generic.ipk",
+      "package": "wgcf",
+      "tree": "05f445958d04ec91172ef62c1e41ac9935846b1a",
+      "version": "2.2.24"
+    }
+  },
+  "version": 1
+}
