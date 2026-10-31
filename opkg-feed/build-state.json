@@ -139,10 +139,10 @@
       "version": "1.2.0"
     },
     "tailscale-tiny_aarch64_cortex-a53": {
-      "ipk": "tailscale-tiny_1.104.2_aarch64_cortex-a53.ipk",
+      "ipk": "tailscale-tiny_1.104.4_aarch64_cortex-a53.ipk",
       "package": "tailscale-tiny",
-      "tree": "e015b52e8bba3a56d24165a1cb4629ad5ee14f46",
-      "version": "1.104.2"
+      "tree": "b704d830d2f814fe530adb4b41e0039a5c5ceb9b",
+      "version": "1.104.4"
     },
     "ucode-mod-lua_aarch64_cortex-a53": {
       "ipk": "ucode-mod-lua_1_aarch64_cortex-a53.ipk",
