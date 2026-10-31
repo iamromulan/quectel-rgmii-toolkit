@@ -1,5 +1,5 @@
 Package: luci-app-zerotier
-Version: 1.0
+Version: 1.0-1
 Depends: libc, zerotier
 Source: github.com/iamromulan
 Section: luci

@@ -1,5 +1,5 @@
 Package: ucode-mod-lua
-Version: 1
+Version: 1-1
 Depends: libc, libucode20230711, liblua5.1.5
 Source: feeds/luci/contrib/package/ucode-mod-lua
 SourceName: ucode-mod-lua

@@ -1,5 +1,5 @@
 Package: luci-app-zerotier-23
-Version: 1.14.1-1
+Version: 1.14.1-2
 Depends: libc, zerotier
 Source: feeds/kiddin9/luci-app-zerotier
 SourceName: luci-app-zerotier

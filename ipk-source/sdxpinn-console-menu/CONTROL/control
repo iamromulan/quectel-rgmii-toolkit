@@ -1,5 +1,5 @@
 Package: sdxpinn-console-menu
-Version: 0.0.3
+Version: 0.0.3-1
 Architecture: aarch64_cortex-a53
 Maintainer: Cameron Thompson iamromulan@github.com
 Source: github.com/iamromulan

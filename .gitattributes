@@ -7,3 +7,6 @@ ipk-source/** text=auto eol=lf
 # The published feed is data: never convert it.
 opkg-feed/** -text
 *.ipk binary
+
+# Signer binary: never convert line endings
+.github/bin/** -text
