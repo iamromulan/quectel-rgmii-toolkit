@@ -1,7 +1,7 @@
 Current Branch: **SDXPINN**
 
 > :warning: If you wish to contribute, please PR to **development-SDXPINN**  
->:checkered_flag: Hint: Start by checking out the ipk-source directory, each package is broken down into its contents. Inside, root represents the structure copied starting at / and control includes metadata and scripts to be ran before and after installation. The build-ipk.sh will produce an ipk based on the control and root directories next to it.
+>:checkered_flag: Hint: Start by checking out the ipk-source directory, each package is broken down into its contents. Inside, root represents the structure copied starting at / and control includes metadata and scripts to be ran before and after installation. CI builds the ipk from them (see "How the feed is built (CI)" below).
 
 # SDXPINN OpenWRT Repository
 
