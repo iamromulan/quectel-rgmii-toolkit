@@ -321,8 +321,54 @@ set_root_passwd() {
 	/opt/bin/passwd
 }
 
+# Function to install/update/remove QManager (replaces Simple Admin)
+install_qmanager() {
+	QMANAGER_INSTALLER="/tmp/qmanager-installer.sh"
+	QMANAGER_URL="https://github.com/dr-dolomite/QManager-RM520N/raw/refs/heads/main/qmanager-installer.sh"
+
+	echo -e "\e[1;32mQManager: the successor to Simple Admin (https://github.com/dr-dolomite/QManager-RM520N)\e[0m"
+	echo -e "\e[1;32mIt installs standalone and sets up its own Entware, web server and services.\e[0m"
+
+	# Simple Admin and QManager both serve the web UI, so they should not run side by side
+	if [ -d "$SIMPLE_ADMIN_DIR" ]; then
+		echo -e "\e[1;31mSimple Admin (Legacy) is installed. QManager replaces it, and both use the web server.\e[0m"
+		echo -e "\e[1;32m1) Uninstall Simple Admin first, then continue\e[0m"
+		echo -e "\e[1;33m2) Continue without uninstalling\e[0m"
+		echo -e "\e[1;31m3) Cancel\e[0m"
+		read -p "Enter your choice (1-3): " qm_choice
+		case $qm_choice in
+			1)
+				uninstall_simpleadmin_components
+				;;
+			2)
+				;;
+			*)
+				echo -e "\e[1;31mCancelled.\e[0m"
+				return 1
+				;;
+		esac
+	fi
+
+	echo -e "\e[1;32mDownloading the QManager installer...\e[0m"
+	rm -f "$QMANAGER_INSTALLER"
+	if command -v curl > /dev/null 2>&1; then
+		curl -fsSL -o "$QMANAGER_INSTALLER" "$QMANAGER_URL"
+	else
+		wget -O "$QMANAGER_INSTALLER" "$QMANAGER_URL"
+	fi
+	if [ "$?" -ne 0 ] || [ ! -s "$QMANAGER_INSTALLER" ]; then
+		echo -e "\e[1;31mCould not download the QManager installer. Check your internet connection and try again.\e[0m"
+		rm -f "$QMANAGER_INSTALLER"
+		return 1
+	fi
+
+	bash "$QMANAGER_INSTALLER"
+	rm -f "$QMANAGER_INSTALLER"
+}
+
 # Function to install/update Simple Admin
 install_simple_admin() {
+	echo -e "\e[1;33mSimple Admin is Legacy (discontinued). QManager is the recommended install (main menu option 2).\e[0m"
 	echo -e "\e[1;32mInstalling Simpleadmin 2.0\e[0m"
 	ensure_entware_installed
 	echo -e "\e[1;31m2) Installing Simpleadmin 2.0\e[0m"
@@ -829,19 +875,20 @@ echo "                                           :+##+.            "
     echo "Select an option:"
     echo -e "\e[0m"
     echo -e "\e[96m1) Send AT Commands\e[0m" # Cyan
-    echo -e "\e[93m2) Install Simple Admin\e[0m" # Yellow
-	echo -e "\e[95m3) Set Simpleadmin (admin) password\e[0m" # Light Purple
-	echo -e "\e[94m4) Set Console/ttyd (root) password\e[0m" # Light Blue
-    echo -e "\e[91m5) Uninstall Simple Admin\e[0m" # Light Red	
-    echo -e "\e[95m6) Simple Firewall Management\e[0m" # Light Purple
-    echo -e "\e[94m7) Tailscale Management\e[0m" # Light Blue
-    echo -e "\e[92m8) Install/Change or remove Daily Reboot Timer\e[0m" # Light Green
-    echo -e "\e[96m9) Install/Uninstall CFUN 0 Fix\e[0m" # Cyan (repeated color for additional options)
-    echo -e "\e[91m10) Uninstall Entware/OPKG\e[0m" # Light Red
-    echo -e "\e[92m11) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
-    echo -e "\e[92m12) Install Fast.com CLI app (fast command)(tops out at 40Mbps)\e[0m" # Light Green
-    echo -e "\e[92m13) Install OpenSSH Server\e[0m" # Light Green
-    echo -e "\e[93m14) Exit\e[0m" # Yellow (repeated color for exit option)
+    echo -e "\e[92m2) Install/Update/Remove QManager (Recommended)\e[0m" # Light Green
+    echo -e "\e[93m3) Install Simple Admin \e[2m(Legacy - discontinued)\e[0m" # Yellow
+	echo -e "\e[95m4) Set Simpleadmin (admin) password \e[2m(Legacy)\e[0m" # Light Purple
+	echo -e "\e[94m5) Set Console/ttyd (root) password\e[0m" # Light Blue
+    echo -e "\e[91m6) Uninstall Simple Admin \e[2m(Legacy)\e[0m" # Light Red	
+    echo -e "\e[95m7) Simple Firewall Management\e[0m" # Light Purple
+    echo -e "\e[94m8) Tailscale Management\e[0m" # Light Blue
+    echo -e "\e[92m9) Install/Change or remove Daily Reboot Timer\e[0m" # Light Green
+    echo -e "\e[96m10) Install/Uninstall CFUN 0 Fix\e[0m" # Cyan (repeated color for additional options)
+    echo -e "\e[91m11) Uninstall Entware/OPKG\e[0m" # Light Red
+    echo -e "\e[92m12) Install Speedtest.net CLI app (speedtest command)\e[0m" # Light Green
+    echo -e "\e[92m13) Install Fast.com CLI app (fast command)(tops out at 40Mbps)\e[0m" # Light Green
+    echo -e "\e[92m14) Install OpenSSH Server\e[0m" # Light Green
+    echo -e "\e[93m15) Exit\e[0m" # Yellow (repeated color for exit option)
     read -p "Enter your choice: " choice
 
     case $choice in
@@ -849,30 +896,33 @@ echo "                                           :+##+.            "
             send_at_commands
             ;;
         2)
+            install_qmanager
+            ;;
+        3)
             install_simple_admin
             ;;
-		3)	set_simpleadmin_passwd
-			;;
-		4)
-			set_root_passwd
+		4)	set_simpleadmin_passwd
 			;;
 		5)
-			uninstall_simpleadmin_components
+			set_root_passwd
 			;;
 		6)
+			uninstall_simpleadmin_components
+			;;
+		7)
 			configure_simple_firewall
             ;;
         
-        7)  
+        8)  
 			tailscale_menu
 	        ;;
-		8)
+		9)
 			manage_reboot_timer
             ;;
-		9)
+		10)
 			manage_cfun_fix
             ;;	    
-		10)
+		11)
 			echo -e "\033[31mAre you sure you want to uninstall entware?\033[0m"
 			echo -e "\033[31m1) Yes\033[0m"
 			echo -e "\033[31m2) No\033[0m"
@@ -897,7 +947,7 @@ echo "                                           :+##+.            "
 			esac
 			;;
 
-		11) 
+		12) 
 			ensure_entware_installed
 			echo -e "\e[1;32mInstalling Speedtest.net CLI (speedtest command)\e[0m"
      	    remount_rw
@@ -917,7 +967,7 @@ echo "                                           :+##+.            "
 			echo -e "\e[1;32mNormaly only an issue in adb, ttyd and ssh you are forced to login\e[0m"
 			echo -e "\e[1;32mIf in adb just type login and then try to run the speedtest command\e[0m"
             ;;
-		12) 
+		13) 
 			echo -e "\e[1;32mInstalling fast.com CLI (fast command)\e[0m"
      	    remount_rw
 			mkdir /usrdata/root
@@ -931,10 +981,10 @@ echo "                                           :+##+.            "
      	    echo -e "\e[1;32mTry running the command 'fast'\e[0m"
 			echo -e "\e[1;32mThe fast.com test tops out at 40Mbps on the modem\e[0m"
             ;;
-		13) 
+		14) 
 			install_sshd
 			;;
-		14) 
+		15) 
 			echo -e "\e[1;32mGoodbye!\e[0m"
      	    break
             ;;    
