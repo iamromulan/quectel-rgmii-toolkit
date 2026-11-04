@@ -1,0 +1,675 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_sites — QManager Sites Monitor Daemon
+# =============================================================================
+# Every interval_sec (default 300) measures the TCP handshake time to each
+# configured website over the cellular link, and keeps the history.
+# Never touches the modem serial port. BusyBox ash (64-bit arithmetic on aarch64;
+# no `10#`: leading zeros are stripped before any arithmetic, they read as octal).
+#
+# Config  : /etc/qmanager/sites.json (written by the CGI; validated here)
+# Latest  : /tmp/qmanager_sites.json            (root, atomic)
+# Raw 24h : /tmp/qmanager_sites_raw.ndjson      (root, trimmed to 24 h)
+# Rollups : /usrdata/qmanager/sites/YYYY-MM-DD.jsonl (append-only, hourly rows)
+# Flag    : /tmp/qmanager_sites_now  (created by the CGI; the daemon only tests+rm)
+# Lease   : /tmp/qmanager_sites_live (written by the CGI; the daemon only reads it)
+# Live    : /tmp/qmanager_sites_live.json (root, atomic; ~2 s HTTP samples while leased)
+#
+# Lifecycle: /etc/init.d/qmanager_sites (procd). See docs/features/sites-monitor.md.
+#
+# Test overrides: QM_SITES_TMP_DIR, QM_SITES_DATA_DIR, QM_SITES_CONF,
+# QM_SITES_ONESHOT=1 (one sweep, flush, exit).
+# =============================================================================
+
+# Guard before dot-sourcing: `.` on a missing file aborts a BusyBox ash script.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init() { :; }
+    qlog_debug() { :; }
+    qlog_info() { :; }
+    qlog_warn() { :; }
+    qlog_error() { :; }
+fi
+qlog_init "sites"
+
+TMP_DIR="${QM_SITES_TMP_DIR:-/tmp}"
+DATA_DIR="${QM_SITES_DATA_DIR:-/usrdata/qmanager/sites}"
+CONF_FILE="${QM_SITES_CONF:-/etc/qmanager/sites.json}"
+ONESHOT="${QM_SITES_ONESHOT:-}"
+
+LATEST_FILE="$TMP_DIR/qmanager_sites.json"
+RAW_FILE="$TMP_DIR/qmanager_sites_raw.ndjson"
+FLUSHED_FILE="$TMP_DIR/qmanager_sites_flushed"
+NOW_FLAG="$TMP_DIR/qmanager_sites_now"
+CHECKING_FILE="$TMP_DIR/qmanager_sites_checking"
+PID_FILE="$TMP_DIR/qmanager_sites.pid"
+LIVE_LEASE="$TMP_DIR/qmanager_sites_live"       # CGI-owned: only ever read here
+LIVE_FILE="$TMP_DIR/qmanager_sites_live.json"
+
+CURL=/usr/bin/curl
+SANE_EPOCH=1700000000       # the device boots at 1970; below this the clock is unset
+BOOT_SETTLE=60              # first sweep waits for uptime >= this (clock step, /opt mount)
+MIN_FLAG_GAP=10             # a spammed check-now flag cannot sweep more often than this
+POLL=5                      # flag poll while waiting
+LIVE_LEASE_SEC=10           # live ticks run while the lease is at most this old
+LIVE_TICK=2                 # target seconds per live tick
+RETAIN_DAYS=90
+DATA_CAP_KB=4096
+MIN_FREE_KB=8192
+MAX_SITES=32
+
+DEFAULT_SITES="google.com facebook.com tiktok.com youtube.com roblox.com spotify.com x.com cellmapper.net reddit.com github.com discord.com instagram.com messenger.com"
+
+NL='
+'
+
+# --- State -------------------------------------------------------------------
+cfg_enabled="true"
+cfg_interval=300
+cfg_hosts=""                # newline-separated, validated
+flushed_through=0           # newest raw ts already written to a rollup
+TMPD=""
+PROBE_PIDS=""               # probe jobs of the running sweep/tick (killed on TERM)
+live_on="false"
+live_ips=""                 # "host ipv4" lines learned from live probes
+live_ips_for=""             # cfg_hosts the cache was built for
+live_frac=""                # 1 when sleep takes fractional seconds
+CS=0                        # set by mono_cs
+NUM=0                       # set by strip0
+LIP=""                      # set by lookup_ip
+
+# =============================================================================
+# HELPERS
+# =============================================================================
+
+# $1 = digit string -> NUM without leading zeros ("" -> 0). No fork.
+strip0() {
+    NUM="${1#"${1%%[!0]*}"}"
+    [ -n "$NUM" ] || NUM=0
+}
+
+mono_now() {
+    local up
+    local _rest
+    read -r up _rest < /proc/uptime 2>/dev/null
+    up="${up%%.*}"
+    case "$up" in ''|*[!0-9]*) up=0 ;; esac
+    echo "$up"
+}
+
+# Uptime in centiseconds -> CS (no fork). /proc/uptime always has 2 decimals.
+mono_cs() {
+    local up
+    local _rest
+    read -r up _rest < /proc/uptime 2>/dev/null
+    up="${up%.*}${up#*.}"
+    case "$up" in ''|*[!0-9]*) up=0 ;; esac
+    strip0 "$up"
+    CS=$NUM
+}
+
+# curl "%{time_*}" (seconds, 6 decimals) -> NUM microseconds, or "" when malformed.
+usec() {
+    case "$1" in
+        [0-9].[0-9][0-9][0-9][0-9][0-9][0-9]) strip0 "${1%.*}${1#*.}" ;;
+        *) NUM="" ;;
+    esac
+}
+
+# $1 = namelookup, $2 = connect (curl seconds) -> MS "<ms>.<tenth>" or "null".
+handshake_ms() {
+    local d
+    local c
+    local t
+    MS=null
+    usec "$1"; d="$NUM"
+    usec "$2"; c="$NUM"
+    [ -n "$d" ] && [ -n "$c" ] || return 0
+    [ "$c" -gt 0 ] || return 0
+    t=$(( (c - d + 50) / 100 ))
+    [ "$t" -lt 0 ] && t=0
+    MS="$((t / 10)).$((t % 10))"
+}
+
+# Atomic root-side publish: mktemp + 0644 + mv. Reads the body from stdin.
+atomic_put() {
+    local dest="$1"
+    local t
+    t=$(mktemp "${dest}.XXXXXX" 2>/dev/null) || return 1
+    if cat > "$t" && chmod 0644 "$t" && mv -f "$t" "$dest"; then
+        return 0
+    fi
+    rm -f "$t"
+    return 1
+}
+
+# Drop a fixed /tmp file we do not own (root's O_CREAT append fails on another
+# user's file under protected_regular=1). Our own files are kept.
+own_or_rm() {
+    [ -e "$1" ] || [ -L "$1" ] || return 0
+    [ -O "$1" ] && [ ! -L "$1" ] || rm -f "$1"
+}
+
+# Conservative hostname / IPv4 check, no regex engine (device jq has none).
+valid_host() {
+    local h="$1"
+    [ "${#h}" -ge 3 ] && [ "${#h}" -le 253 ] || return 1
+    case "$h" in
+        *[!A-Za-z0-9.-]*|-*|.*|*.|*-|*..*|*.-*|*-.*) return 1 ;;
+        *.*) return 0 ;;
+    esac
+    return 1
+}
+
+# yyyy-mm-dd -> yyyymmdd for numeric comparison (ash `[` has no string <).
+daynum() {
+    local y="${1%%-*}"
+    local r="${1#*-}"
+    printf '%s%s%s' "$y" "${r%%-*}" "${r#*-}"
+}
+
+# --- Config ------------------------------------------------------------------
+# Returns 1 only when jq itself is unusable (retry later); never "disabled".
+load_config() {
+    local out=""
+    local line
+    local n=0
+    local seen_sites="false"
+    local hosts=""
+    local h
+
+    cfg_enabled="true"
+    cfg_interval=300
+    cfg_hosts=""
+
+    jq -n 1 >/dev/null 2>&1 || return 1
+
+    if [ -f "$CONF_FILE" ]; then
+        out=$(jq -r '
+            (if .enabled == false then "false" else "true" end),
+            (.interval_sec | if type == "number" then floor | tostring else "300" end),
+            (has("sites") | tostring),
+            (if has("sites") and (.sites | type == "array")
+             then (.sites[:32][] | if type == "object" then (.host | strings) else empty end)
+             else empty end)
+        ' "$CONF_FILE" 2>/dev/null) || {
+            qlog_warn "sites.json unreadable, using defaults"
+            out=""
+        }
+    fi
+
+    if [ -n "$out" ]; then
+        while IFS= read -r line; do
+            n=$((n + 1))
+            case "$n" in
+                1) cfg_enabled="$line" ;;
+                2) cfg_interval="$line" ;;
+                3) seen_sites="$line" ;;
+                *) hosts="$hosts$line$NL" ;;
+            esac
+        done <<EOF
+$out
+EOF
+    fi
+
+    case "$cfg_interval" in ''|*[!0-9]*) cfg_interval=300 ;; esac
+    strip0 "$cfg_interval"; cfg_interval="$NUM"
+    [ "${#cfg_interval}" -le 5 ] || cfg_interval=3600
+    [ "$cfg_interval" -lt 60 ] && cfg_interval=60
+    [ "$cfg_interval" -gt 3600 ] && cfg_interval=3600
+
+    if [ "$seen_sites" != "true" ]; then
+        hosts=""
+        for h in $DEFAULT_SITES; do hosts="$hosts$h$NL"; done
+    fi
+
+    # Validate + dedupe; a bad entry is skipped, never aborts.
+    n=0
+    while IFS= read -r h; do
+        [ -n "$h" ] || continue
+        valid_host "$h" || { qlog_warn "sites: skipping invalid host"; continue; }
+        case "$NL$cfg_hosts" in *"$NL$h$NL"*) continue ;; esac
+        [ "$n" -ge "$MAX_SITES" ] && break
+        cfg_hosts="$cfg_hosts$h$NL"
+        n=$((n + 1))
+    done <<EOF
+$hosts
+EOF
+    return 0
+}
+
+# --- Probes ------------------------------------------------------------------
+# Probe functions run as background jobs: each drops the daemon's traps first,
+# so a killed probe never runs cleanup (PID file) or on_term (rollup flush).
+
+# HEAD (-I) keeps the exchange to a few KB; ms = connect - namelookup.
+# $1 = result file, $2 = host. Writes "s <host> <ms|null>".
+probe_site() {
+    local out
+    local rc
+    local k=""
+    trap - EXIT INT TERM
+    case "$2" in *[!0-9.]*) ;; *) k="-k" ;; esac
+    out=$("$CURL" -s -I $k -o /dev/null --connect-timeout 5 --max-time 6 \
+        -w '%{time_namelookup} %{time_connect}' -- "https://$2" </dev/null 2>/dev/null)
+    rc=$?
+    MS=null
+    [ "$rc" -eq 0 ] && handshake_ms "${out%% *}" "${out##* }"
+    printf 's %s %s\n' "$2" "$MS" > "$1"
+}
+
+# Gateway entry only when the default route has a real next hop on a LAN-style
+# device; the cellular rmnet hop is point-to-point and never answers.
+probe_gateway() {
+    local route
+    local gw
+    local dev
+    local out
+    local rtt
+    local ms=null
+    trap - EXIT INT TERM
+    route=$(ip route show default 2>/dev/null | head -n1)
+    case "$route" in *" via "*) ;; *) return 1 ;; esac
+    gw="${route#* via }"; gw="${gw%% *}"
+    dev="${route#* dev }"; dev="${dev%% *}"
+    case "$dev" in rmnet*|ppp*|wwan*|usb*) return 1 ;; esac
+    valid_host "$gw" || return 1
+    out=$(ping -c1 -W2 "$gw" 2>/dev/null </dev/null)
+    rtt=$(printf '%s\n' "$out" | grep -oE 'time=[0-9.]+' | head -n1 | cut -d= -f2)
+    case "$rtt" in
+        ''|*[!0-9.]*) ;;
+        *) ms=$(awk -v r="$rtt" 'BEGIN { printf "%.1f", r }') ;;
+    esac
+    printf 'g %s %s\n' "$gw" "$ms" > "$1"
+}
+
+# =============================================================================
+# SWEEP
+# =============================================================================
+
+sweep() {
+    local start_mono
+    local ts
+    local ts_json=null
+    local next_json=null
+    local i=100
+    local h
+    local results
+    local nrows
+
+    start_mono=$(mono_now)
+    ts=$(date +%s)
+    if [ "$ts" -ge "$SANE_EPOCH" ]; then
+        ts_json="$ts"; next_json=$((ts + cfg_interval))
+    fi
+
+    atomic_put "$CHECKING_FILE" </dev/null
+    TMPD=$(mktemp -d "$TMP_DIR/qmanager_sites.XXXXXX") || { qlog_error "mktemp failed"; rm -f "$CHECKING_FILE"; return 1; }
+
+    # Result files are r100, r101, ... so the glob keeps probe order (gateway first).
+    PROBE_PIDS=""
+    probe_gateway "$TMPD/r$i" &
+    PROBE_PIDS="$PROBE_PIDS $!"
+    i=$((i + 1))
+    while IFS= read -r h; do
+        [ -n "$h" ] || continue
+        probe_site "$TMPD/r$i" "$h" &
+        PROBE_PIDS="$PROBE_PIDS $!"
+        i=$((i + 1))
+    done <<EOF
+$cfg_hosts
+EOF
+    # shellcheck disable=SC2086
+    wait $PROBE_PIDS 2>/dev/null
+    PROBE_PIDS=""
+
+    results=$(cat "$TMPD"/r* 2>/dev/null | jq -Rn '
+        [inputs | split(" ")
+         | {host: .[1], kind: (if .[0] == "g" then "gateway" else "site" end),
+            ms: (if .[2] == "null" then null else (.[2] | tonumber) end)}
+         | .ok = (.ms != null)]')
+    rm -rf "$TMPD"; TMPD=""
+    if [ -z "$results" ]; then
+        qlog_error "sweep produced no results"
+        rm -f "$CHECKING_FILE"
+        return 1
+    fi
+
+    jq -n --argjson r "$results" --argjson ts "$ts_json" --argjson nx "$next_json" \
+        --argjson iv "$cfg_interval" '
+        {checked_at: $ts, interval_sec: $iv, next_check_at: $nx, wan: "cellular",
+         results: ($r | map({host, kind, ts: $ts, ms, ok}))}' | atomic_put "$LATEST_FILE"
+
+    nrows=$(printf '%s' "$results" | jq -r '"\([.[] | select(.ok)] | length) of \(length)"')
+    qlog_info "sweep: ${nrows:-0} answered in $(( $(mono_now) - start_mono ))s"
+
+    if [ "$ts" -ge "$SANE_EPOCH" ]; then
+        own_or_rm "$RAW_FILE"
+        printf '%s' "$results" | jq -c --argjson ts "$ts" \
+            '.[] | {ts: $ts, host, ms, ok}' >> "$RAW_FILE"
+        trim_raw "$ts"
+        flush_rollups "$(( ts / 3600 * 3600 ))"
+    fi
+    rm -f "$CHECKING_FILE"
+    return 0
+}
+
+# Drop raw rows older than 24 h (rows start with {"ts":N,).
+trim_raw() {
+    [ -s "$RAW_FILE" ] || return 0
+    awk -v c="$(( $1 - 86400 ))" '{ if (substr($0, 7) + 0 >= c) print }' "$RAW_FILE" \
+        | atomic_put "$RAW_FILE"
+}
+
+# =============================================================================
+# ROLLUPS
+# =============================================================================
+
+load_flushed() {
+    local v
+    v=$(cat "$FLUSHED_FILE" 2>/dev/null)
+    case "$v" in ''|*[!0-9]*) v=0 ;; esac
+    strip0 "$v"
+    flushed_through="$NUM"
+}
+
+# Append hourly rows for raw samples newer than flushed_through and older than
+# $1 (epoch limit; pass a far-future value to include the pending hour).
+flush_rollups() {
+    local limit="$1"
+    local out
+    local free
+    local f
+
+    [ -s "$RAW_FILE" ] || return 0
+    # No `install` applet on the device: mkdir + chmod.
+    [ -d "$DATA_DIR" ] || { mkdir -p "$DATA_DIR" && chmod 0755 "$DATA_DIR"; } 2>/dev/null || return 0
+    free=$(df -k "$DATA_DIR" 2>/dev/null | awk 'NR > 1 { v = $4 } END { print v + 0 }')
+    if [ "${free:-0}" -gt 0 ] && [ "$free" -lt "$MIN_FREE_KB" ]; then
+        qlog_warn "sites: rollup flush skipped, ${free}KB free"
+        return 0
+    fi
+
+    out=$(jq -Rn -r --argjson f "$flushed_through" --argjson lim "$limit" '
+        [inputs | fromjson? | objects
+         | select((.ts | type) == "number" and .ts > $f and .ts < $lim)] as $r
+        | if ($r | length) == 0 then empty else
+            ($r | group_by([((.ts / 3600) | floor), .host])[]
+             | map(.ms | numbers) as $v
+             | {ts_hour: (((.[0].ts / 3600) | floor) * 3600), host: .[0].host,
+                n: length, ok: (map(select(.ok == true)) | length),
+                min: (if ($v | length) > 0 then ($v | min) else null end),
+                avg: (if ($v | length) > 0 then ((($v | add) / ($v | length) * 10 | round) / 10) else null end),
+                max: (if ($v | length) > 0 then ($v | max) else null end)}
+             | ((.ts_hour | strftime("%Y-%m-%d")) + "\t" + tostring)),
+            "F\t" + ($r | map(.ts) | max | tostring)
+          end' "$RAW_FILE" 2>/dev/null)
+    [ -n "$out" ] || return 0
+
+    # One append per day file.
+    printf '%s\n' "$out" | awk -F'\t' -v dir="$DATA_DIR" '
+        $1 != "F" { print $2 >> (dir "/" $1 ".jsonl") }'
+    f=$(printf '%s\n' "$out" | awk -F'\t' '$1 == "F" { print $2 }')
+    case "$f" in ''|*[!0-9]*) return 0 ;; esac
+    flushed_through="$f"
+    printf '%s\n' "$flushed_through" | atomic_put "$FLUSHED_FILE"
+    expire_rollups "$(date +%s)"
+}
+
+# Whole-file expiry (> 90 d), then the 4 MB cap, oldest day first.
+expire_rollups() {
+    local cutoff
+    local cutnum
+    local f
+    local name
+    local num
+    local total
+    cutoff=$(date -u -d "@$(( $1 - RETAIN_DAYS * 86400 ))" +%Y-%m-%d 2>/dev/null)
+    case "$cutoff" in [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;; *) return 0 ;; esac
+    cutnum=$(daynum "$cutoff")
+    for f in "$DATA_DIR"/*.jsonl; do
+        [ -f "$f" ] || continue
+        name="${f##*/}"; name="${name%.jsonl}"
+        case "$name" in [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;; *) continue ;; esac
+        num=$(daynum "$name")
+        [ "$num" -lt "$cutnum" ] && rm -f "$f"
+    done
+    while :; do
+        total=$(cat "$DATA_DIR"/*.jsonl 2>/dev/null | wc -c)
+        [ "${total:-0}" -le $((DATA_CAP_KB * 1024)) ] && break
+        f=$(ls "$DATA_DIR"/*.jsonl 2>/dev/null | head -n2)
+        [ "$(printf '%s\n' "$f" | wc -l)" -ge 2 ] || break
+        rm -f "$(printf '%s\n' "$f" | head -n1)"
+    done
+}
+
+# =============================================================================
+# LIVE MODE (while a browser holds the lease: ~2 s HTTP probes, latest-only)
+# =============================================================================
+
+# True while the lease holds a recent epoch. The file is the CGI's: never
+# trust its content beyond digits, never write it.
+live_fresh() {
+    local v=""
+    local now
+    local age
+    [ "$cfg_enabled" = "false" ] && return 1
+    [ -f "$LIVE_LEASE" ] && [ ! -L "$LIVE_LEASE" ] || return 1
+    { read -r -n 13 v < "$LIVE_LEASE"; } 2>/dev/null
+    case "$v" in ''|*[!0-9]*) return 1 ;; esac
+    [ "${#v}" -le 12 ] || return 1
+    strip0 "$v"
+    now=$(date +%s)
+    age=$(( now - NUM ))
+    [ "$age" -ge 0 ] && [ "$age" -le "$LIVE_LEASE_SEC" ]
+}
+
+# $1 = host -> LIP = cached IPv4 or "".
+lookup_ip() {
+    local l
+    LIP=""
+    while IFS= read -r l; do
+        case "$l" in "$1 "*) LIP="${l#* }"; return 0 ;; esac
+    done <<EOF
+$live_ips
+EOF
+    return 0
+}
+
+# Plain HTTP HEAD on :80 (TCP handshake time, no TLS). $1 = result file,
+# $2 = host, $3 = cached IPv4 or "". Writes "s <host> <ms|null> <ipv4|>".
+live_probe() {
+    local out
+    local rc
+    local d
+    local c
+    local ip
+    local res=""
+    trap - EXIT INT TERM
+    [ -n "$3" ] && res="--resolve $2:80:$3"
+    # shellcheck disable=SC2086
+    out=$("$CURL" -s -I $res -o /dev/null --connect-timeout 1.5 --max-time 1.8 \
+        -w '%{time_namelookup} %{time_connect} %{remote_ip}' -- "http://$2/" </dev/null 2>/dev/null)
+    rc=$?
+    d="${out%% *}"; c="${out#* }"; ip="${c#* }"; c="${c%% *}"
+    case "$ip" in ''|*[!0-9.]*) ip="" ;; esac
+    MS=null
+    if [ "$rc" -eq 0 ]; then
+        handshake_ms "$d" "$c"
+    else
+        ip=""
+    fi
+    printf 's %s %s %s\n' "$2" "$MS" "$ip" > "$1"
+}
+
+# One live tick: probe every host in parallel, publish LIVE_FILE, pace to LIVE_TICK.
+live_tick() {
+    local t0
+    local at
+    local i=100
+    local h
+    local f
+    local tag
+    local ms
+    local ip
+    local lines=""
+    local nips=""
+    local out
+    local rem
+
+    mono_cs; t0=$CS
+    [ "$live_ips_for" = "$cfg_hosts" ] || { live_ips=""; live_ips_for="$cfg_hosts"; }
+    TMPD=$(mktemp -d "$TMP_DIR/qmanager_sites.XXXXXX") || { qlog_error "mktemp failed"; nap 1; return 1; }
+
+    PROBE_PIDS=""
+    while IFS= read -r h; do
+        [ -n "$h" ] || continue
+        lookup_ip "$h"
+        live_probe "$TMPD/r$i" "$h" "$LIP" &
+        PROBE_PIDS="$PROBE_PIDS $!"
+        i=$((i + 1))
+    done <<EOF
+$cfg_hosts
+EOF
+    # shellcheck disable=SC2086
+    wait $PROBE_PIDS 2>/dev/null
+    PROBE_PIDS=""
+
+    at=$(date +%s)
+    for f in "$TMPD"/r*; do
+        [ -f "$f" ] || continue
+        tag=""; h=""; ms=""; ip=""
+        read -r tag h ms ip < "$f"
+        [ -n "$h" ] || continue
+        lines="$lines$tag $h $ms$NL"
+        # Cache only a fresh IPv4 from a host name (an IP literal needs no pin).
+        case "$h" in *[!0-9.]*) [ -n "$ip" ] && nips="$nips$h $ip$NL" ;; esac
+    done
+    live_ips="$nips"
+    rm -rf "$TMPD"; TMPD=""
+
+    out=$(printf '%s' "$lines" | jq -Rnc --argjson at "$at" '
+        {at: $at,
+         results: [inputs | split(" ")
+                   | {host: .[1], ms: (if .[2] == "null" then null else (.[2] | tonumber) end)}
+                   | .ok = (.ms != null)]}')
+    [ -n "$out" ] && printf '%s\n' "$out" | atomic_put "$LIVE_FILE"
+
+    if [ -z "$live_frac" ]; then
+        if sleep 0.01 </dev/null 2>/dev/null; then live_frac=1; else live_frac=0; fi
+    fi
+    if [ "$live_frac" = "1" ]; then
+        mono_cs
+        rem=$(( LIVE_TICK * 100 - (CS - t0) ))
+        if [ "$rem" -gt 0 ]; then
+            nap "$(printf '%d.%02d' $((rem / 100)) $((rem % 100)))"
+        fi
+    else
+        nap 1
+    fi
+}
+
+# =============================================================================
+# LIFECYCLE
+# =============================================================================
+
+cleanup() {
+    [ -n "$TMPD" ] && rm -rf "$TMPD"
+    rm -f "$CHECKING_FILE"
+    [ -z "$ONESHOT" ] && rm -f "$PID_FILE"
+}
+
+on_term() {
+    local p
+    for p in $PROBE_PIDS; do kill "$p" 2>/dev/null; done
+    if [ "$(date +%s)" -ge "$SANE_EPOCH" ]; then
+        flush_rollups 99999999999
+    fi
+    exit 0
+}
+
+# Sleep without delaying a trapped signal.
+nap() {
+    sleep "$1" </dev/null &
+    wait $!
+}
+
+main() {
+    local last_end
+    local next_mono
+    local now_mono
+    local old_pid
+
+    if [ -z "$ONESHOT" ]; then
+        # A pid file we do not own is untrusted: never let it block startup.
+        own_or_rm "$PID_FILE"
+        if [ -f "$PID_FILE" ]; then
+            old_pid=$(cat "$PID_FILE" 2>/dev/null)
+            case "$old_pid" in ''|*[!0-9]*) old_pid="" ;; esac
+            if [ -n "$old_pid" ] && [ "$old_pid" != "$$" ] && kill -0 "$old_pid" 2>/dev/null; then
+                qlog_error "Another sites daemon already running (PID $old_pid), exiting"
+                exit 1
+            fi
+            rm -f "$PID_FILE"
+        fi
+        echo $$ | atomic_put "$PID_FILE"
+    fi
+    trap cleanup EXIT
+    trap on_term INT TERM
+    rm -f "$CHECKING_FILE"
+    # Probe dirs a SIGKILLed run left behind (mktemp -d names, 6-char suffix).
+    [ -z "$ONESHOT" ] && rm -rf "$TMP_DIR"/qmanager_sites.??????
+    own_or_rm "$RAW_FILE"; own_or_rm "$FLUSHED_FILE"; own_or_rm "$LATEST_FILE"
+    own_or_rm "$LIVE_FILE"
+    load_flushed
+
+    qlog_info "QManager Sites daemon starting (PID $$)"
+
+    if [ -z "$ONESHOT" ]; then
+        while [ "$(mono_now)" -lt "$BOOT_SETTLE" ]; do nap 5; done
+    fi
+
+    while :; do
+        if ! load_config; then
+            [ -n "$ONESHOT" ] && { qlog_error "jq unavailable"; exit 1; }
+            nap 15
+            continue
+        fi
+        if [ "$cfg_enabled" = "false" ] && [ -z "$ONESHOT" ]; then
+            nap 30
+            continue
+        fi
+
+        [ -e "$NOW_FLAG" ] && rm -f "$NOW_FLAG"
+        sweep
+        last_end=$(mono_now)
+
+        if [ -n "$ONESHOT" ]; then
+            [ "$(date +%s)" -ge "$SANE_EPOCH" ] && flush_rollups 99999999999
+            exit 0
+        fi
+
+        next_mono=$(( last_end + cfg_interval ))
+        while :; do
+            now_mono=$(mono_now)
+            [ "$now_mono" -ge "$next_mono" ] && break
+            if [ -e "$NOW_FLAG" ] && [ $(( now_mono - last_end )) -ge "$MIN_FLAG_GAP" ]; then
+                break
+            fi
+            if live_fresh; then
+                if [ "$live_on" != "true" ]; then
+                    live_on="true"; qlog_info "sites: live mode on"
+                fi
+                live_tick
+            else
+                if [ "$live_on" = "true" ]; then
+                    live_on="false"; qlog_info "sites: live mode off"
+                fi
+                nap "$POLL"
+            fi
+        done
+    done
+}
+
+main "$@"

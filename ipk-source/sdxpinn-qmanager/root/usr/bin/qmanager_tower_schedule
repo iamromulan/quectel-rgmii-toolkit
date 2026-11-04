@@ -1,0 +1,225 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_tower_schedule — Cron-Callable Tower Lock Apply/Clear
+# =============================================================================
+# Called by cron to automatically apply or clear tower locks on a schedule.
+# Two modes:
+#   qmanager_tower_schedule apply   — Read config, send lock AT commands
+#   qmanager_tower_schedule clear   — Clear all tower locks
+#
+# On "apply", reads /etc/qmanager/tower_lock.json for cell targets and
+# sends the appropriate AT+QNWLOCK commands. Also spawns the failover
+# watcher if failover is enabled.
+#
+# On "clear", sends unlock commands for both LTE and NR-SA, and kills
+# any running failover watcher.
+#
+# Dependencies: qcmd, qlog.sh, tower_lock_mgr.sh
+# Install location: /usr/bin/qmanager_tower_schedule
+# =============================================================================
+
+# --- Logging -----------------------------------------------------------------
+# Guarded with -f: BusyBox ash exits when `.` cannot find its file.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init() { :; }
+    qlog_debug() { :; }
+    qlog_info() { :; }
+    qlog_warn() { :; }
+    qlog_error() { :; }
+fi
+qlog_init "tower_schedule"
+
+# --- Load library ------------------------------------------------------------
+if [ -f /usr/lib/qmanager/tower_lock_mgr.sh ]; then
+    . /usr/lib/qmanager/tower_lock_mgr.sh
+else
+    qlog_error "tower_lock_mgr.sh missing; cannot run"
+    exit 1
+fi
+
+# --- Validate arguments ------------------------------------------------------
+MODE="$1"
+
+if [ "$MODE" != "apply" ] && [ "$MODE" != "clear" ]; then
+    qlog_error "Invalid mode: $MODE (expected 'apply' or 'clear')"
+    exit 1
+fi
+
+# --- Clock-step guard (issue #9) ---------------------------------------------
+# crond runs a job whose minute a boot-time clock step crosses. Deny before any
+# config write or AT command. An unreadable schedule time means the config is
+# not readable, not "no schedule", so it denies too. See schedule_guard.sh.
+if [ -f /usr/lib/qmanager/schedule_guard.sh ]; then
+    . /usr/lib/qmanager/schedule_guard.sh
+    if [ "$MODE" = "apply" ]; then
+        sched_time=$(jq -r '.schedule.start_time // empty' "$TOWER_CONFIG_FILE" 2>/dev/null)
+    else
+        sched_time=$(jq -r '.schedule.end_time // empty' "$TOWER_CONFIG_FILE" 2>/dev/null)
+    fi
+    sched_days=$(jq -r '(.schedule.days // []) | map(tostring) | join(",")' "$TOWER_CONFIG_FILE" 2>/dev/null)
+    if ! _qm_validate_hhmm "$sched_time"; then
+        qlog_warn "Schedule $MODE skipped: schedule time unreadable ('$sched_time')"
+        exit 0
+    fi
+    if ! _qm_timer_fire_allowed "$sched_time" "$sched_days"; then
+        qlog_warn "Schedule $MODE skipped: $QM_GUARD_REASON (clock-step guard)"
+        exit 0
+    fi
+else
+    qlog_warn "Schedule $MODE skipped: schedule_guard.sh missing, failing closed"
+    exit 0
+fi
+
+# =============================================================================
+# APPLY MODE — Read config and send lock commands
+# =============================================================================
+if [ "$MODE" = "apply" ]; then
+    qlog_info "Schedule APPLY triggered"
+
+    tower_config_init
+
+    if [ ! -f "$TOWER_CONFIG_FILE" ] || ! jq empty "$TOWER_CONFIG_FILE" 2>/dev/null; then
+        qlog_error "Cannot read tower lock config"
+        exit 1
+    fi
+
+    applied_any="false"
+
+    # AT results below are judged on "$rc:$result". qcmd prints a modem ERROR
+    # on stdout with rc=0; a transport failure (lock timeout, broker down) is
+    # rc!=0 with empty stdout, which a bare *ERROR* match read as success.
+
+    # --- LTE Lock (using jq for all config parsing) ---
+    lte_enabled=$(jq -r '.lte.enabled // false' "$TOWER_CONFIG_FILE" 2>/dev/null)
+
+    if [ "$lte_enabled" != "true" ]; then
+        qlog_info "Schedule: LTE locking disabled in config, skipping"
+    else
+        c1_earfcn=$(jq -r '.lte.cells[0].earfcn // empty' "$TOWER_CONFIG_FILE" 2>/dev/null)
+        c1_pci=$(jq -r '.lte.cells[0].pci // empty' "$TOWER_CONFIG_FILE" 2>/dev/null)
+        c2_earfcn=$(jq -r '.lte.cells[1].earfcn // empty' "$TOWER_CONFIG_FILE" 2>/dev/null)
+        c2_pci=$(jq -r '.lte.cells[1].pci // empty' "$TOWER_CONFIG_FILE" 2>/dev/null)
+        c3_earfcn=$(jq -r '.lte.cells[2].earfcn // empty' "$TOWER_CONFIG_FILE" 2>/dev/null)
+        c3_pci=$(jq -r '.lte.cells[2].pci // empty' "$TOWER_CONFIG_FILE" 2>/dev/null)
+
+        num_cells=0
+        at_args=""
+        if [ -n "$c1_earfcn" ] && [ -n "$c1_pci" ]; then
+            num_cells=$((num_cells + 1))
+            at_args="$c1_earfcn $c1_pci"
+        fi
+        if [ -n "$c2_earfcn" ] && [ -n "$c2_pci" ]; then
+            num_cells=$((num_cells + 1))
+            at_args="$at_args $c2_earfcn $c2_pci"
+        fi
+        if [ -n "$c3_earfcn" ] && [ -n "$c3_pci" ]; then
+            num_cells=$((num_cells + 1))
+            at_args="$at_args $c3_earfcn $c3_pci"
+        fi
+
+        if [ "$num_cells" -gt 0 ]; then
+            qlog_info "Applying LTE lock: $num_cells cell(s)"
+            result=$(tower_lock_lte "$num_cells" $at_args)
+            rc=$?
+            case "$rc:$result" in
+                0:*ERROR*|0:|[!0]*)
+                    qlog_error "Schedule: LTE lock failed (rc=$rc): $result"
+                    ;;
+                *)
+                    qlog_info "Schedule: LTE lock applied"
+                    tower_config_update '.lte.enabled = true'
+                    applied_any="true"
+                    ;;
+            esac
+            sleep 0.2
+        fi
+    fi
+
+    # --- NR-SA Lock (using jq for all config parsing) ---
+    nr_sa_enabled=$(jq -r '.nr_sa.enabled // false' "$TOWER_CONFIG_FILE" 2>/dev/null)
+
+    if [ "$nr_sa_enabled" != "true" ]; then
+        qlog_info "Schedule: NR-SA locking disabled in config, skipping"
+    else
+        nr_pci=$(jq -r '.nr_sa.pci // empty' "$TOWER_CONFIG_FILE" 2>/dev/null)
+        nr_arfcn=$(jq -r '.nr_sa.arfcn // empty' "$TOWER_CONFIG_FILE" 2>/dev/null)
+        nr_scs=$(jq -r '.nr_sa.scs // empty' "$TOWER_CONFIG_FILE" 2>/dev/null)
+        nr_band=$(jq -r '.nr_sa.band // empty' "$TOWER_CONFIG_FILE" 2>/dev/null)
+
+        if [ -n "$nr_pci" ] && [ "$nr_pci" != "null" ] && \
+           [ -n "$nr_arfcn" ] && [ "$nr_arfcn" != "null" ] && \
+           [ -n "$nr_scs" ] && [ "$nr_scs" != "null" ] && \
+           [ -n "$nr_band" ] && [ "$nr_band" != "null" ]; then
+            qlog_info "Applying NR-SA lock: PCI=$nr_pci ARFCN=$nr_arfcn SCS=$nr_scs Band=$nr_band"
+            result=$(tower_lock_nr "$nr_pci" "$nr_arfcn" "$nr_scs" "$nr_band")
+            rc=$?
+            case "$rc:$result" in
+                0:*ERROR*|0:|[!0]*)
+                    qlog_error "Schedule: NR-SA lock failed (rc=$rc): $result"
+                    ;;
+                *)
+                    qlog_info "Schedule: NR-SA lock applied"
+                    tower_config_update '.nr_sa.enabled = true'
+                    applied_any="true"
+                    ;;
+            esac
+        fi
+    fi
+
+    # --- Spawn failover watcher if enabled and something was locked ---
+    if [ "$applied_any" = "true" ]; then
+        # Clear previous failover activation
+        rm -f "$TOWER_FAILOVER_FLAG"
+        tower_spawn_failover_watcher >/dev/null
+
+        # Re-apply custom MTU after interface bounce
+        mtu_reapply_after_bounce
+    else
+        qlog_info "Schedule: No locks applied (both lock types disabled or no targets configured)"
+    fi
+
+    qlog_info "Schedule APPLY complete"
+
+# =============================================================================
+# CLEAR MODE — Unlock all tower locks
+# =============================================================================
+elif [ "$MODE" = "clear" ]; then
+    qlog_info "Schedule CLEAR triggered"
+
+    # Clear LTE lock
+    result=$(tower_unlock_lte 2>/dev/null)
+    rc=$?
+    case "$rc:$result" in
+        0:*ERROR*|0:|[!0]*) qlog_error "Schedule: Failed to clear LTE lock (rc=$rc): $result" ;;
+        *) qlog_info "Schedule: LTE lock cleared" ;;
+    esac
+
+    sleep 0.2
+
+    # Clear NR-SA lock
+    result=$(tower_unlock_nr 2>/dev/null)
+    rc=$?
+    case "$rc:$result" in
+        0:*ERROR*|0:|[!0]*) qlog_error "Schedule: Failed to clear NR lock (rc=$rc): $result" ;;
+        *) qlog_info "Schedule: NR-SA lock cleared" ;;
+    esac
+
+    # NOTE: We intentionally do NOT set lte.enabled / nr_sa.enabled to false
+    # in the config. The schedule clear just unlocks the modem temporarily.
+    # The enabled flags reflect the user's intent — if the user manually
+    # disabled a lock type, the next schedule apply will respect that.
+    # If the user left them enabled, the next apply will re-lock.
+
+    # Kill any running failover watcher
+    tower_kill_failover_watcher
+    rm -f "$TOWER_FAILOVER_FLAG"
+
+    # Re-apply custom MTU after interface bounce
+    mtu_reapply_after_bounce
+
+    qlog_info "Schedule CLEAR complete"
+fi
+
+exit 0

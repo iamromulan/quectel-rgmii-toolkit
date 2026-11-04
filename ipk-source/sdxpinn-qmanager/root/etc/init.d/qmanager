@@ -1,0 +1,122 @@
+#!/bin/sh /etc/rc.common
+# =============================================================================
+# qmanager — OpenWRT Init Script (procd)
+# =============================================================================
+# Manages core QManager daemon lifecycles:
+#   1. qmanager_ping     — Unified ping daemon (internet reachability + latency)
+#   2. qmanager_poller   — Modem data poller (AT commands + system metrics)
+#
+# Each daemon runs as a separate procd instance with independent respawn.
+# Startup order matters: ping → poller
+#
+# Feature daemons (watchcat, tower failover, etc.) have their own init scripts.
+#
+# Usage:
+#   /etc/init.d/qmanager start|stop|restart|enable|disable
+#
+# Install location: /etc/init.d/qmanager
+# =============================================================================
+
+START=99
+STOP=10
+USE_PROCD=1
+
+start_service() {
+    # Ensure required directories exist
+    mkdir -p /var/lock
+    mkdir -p /etc/qmanager
+    mkdir -p /usr/lib/qmanager
+
+    # Ensure all /usr/bin scripts are executable
+    for f in /usr/bin/qmanager_*; do
+        [ -f "$f" ] && chmod +x "$f"
+    done
+
+    # Ensure all CGI scripts are executable
+    for f in /www/cgi-bin/quecmanager/*.sh /www/cgi-bin/quecmanager/*/*.sh; do
+        [ -f "$f" ] && chmod +x "$f"
+    done
+
+    # Ensure auth config has restrictive permissions if it exists
+    [ -f /etc/qmanager/auth.json ] && chmod 600 /etc/qmanager/auth.json
+
+    # Create the default long commands list if it is missing or empty (a
+    # crash during an earlier write can leave it 0 bytes). Temp + sync + mv so
+    # this write cannot leave it empty either.
+    if [ ! -s /etc/qmanager/long_commands.list ]; then
+        cat > /etc/qmanager/long_commands.list.tmp << 'EOF'
+# QManager Long Commands List
+# Commands listed here will use extended timeouts and signal the poller to yield.
+# One command keyword per line. Lines starting with # are comments.
+QSCAN
+QSCANFREQ
+QFOTADL
+EOF
+        sync
+        mv -f /etc/qmanager/long_commands.list.tmp /etc/qmanager/long_commands.list
+        sync
+    fi
+
+    # Read log level from config (default: INFO)
+    local log_level
+    log_level=$(cat /etc/qmanager/log_level 2>/dev/null || echo "INFO")
+
+    # -----------------------------------------------------------------
+    # Instance 1: Ping Daemon (starts first — no dependencies)
+    # -----------------------------------------------------------------
+    procd_open_instance "ping"
+    procd_set_param command /usr/bin/qmanager_ping
+    procd_set_param env QLOG_LEVEL="$log_level"
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_set_param respawn 3600 5 5
+    procd_close_instance
+
+    # -----------------------------------------------------------------
+    # Instance 2: Poller Daemon (reads ping data for connectivity section)
+    # -----------------------------------------------------------------
+    procd_open_instance "poller"
+    procd_set_param command /usr/bin/qmanager_poller
+    procd_set_param env QLOG_LEVEL="$log_level"
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_set_param respawn 3600 5 5
+    procd_close_instance
+
+    # Watchcat and tower failover daemons are managed by their own init.d
+    # scripts: /etc/init.d/qmanager_watchcat, /etc/init.d/qmanager_tower_failover
+}
+
+stop_service() {
+    # Clean up state files
+    rm -f /tmp/qmanager_long_running
+    rm -f /var/lock/qmanager.pid
+    # Adaptive-backoff runtime files: the UI heartbeat and the live-reload flag.
+    # Removed so a fresh poller start re-seeds the heartbeat (begins in Active)
+    # and never consumes a stale reload flag.
+    rm -f /tmp/qmanager_ui_active /tmp/qmanager_ui_active.*
+    rm -f /tmp/qmanager_poller_reload
+    # Dev-only poller AT tap (B5.29): never survive a restart.
+    rm -f /var/run/qmanager/poller_tap
+    rm -rf /var/run/qmanager/tap
+    # Poller's on-demand cache read stamp (B5.29): a fresh start re-reads once.
+    rm -f /var/run/qmanager/ondemand.stamp
+    # Poller's qmi.env read stamp: a fresh start re-reads the sidecar once.
+    rm -f /var/run/qmanager/qmi.stamp
+    # B5.29 Phase C runtime files: the poller's jq-free sidecars (written by
+    # qmanager_ping and ondemand_radio.sh), the state-file read stamps, and the
+    # dev-only status parity hook. A fresh start rebuilds them.
+    rm -f /var/run/qmanager/ping.env /var/run/qmanager/ping.env.new
+    rm -f /var/run/qmanager/dns.env /var/run/qmanager/dns.env.new
+    rm -f /var/run/qmanager/ondemand.env /var/run/qmanager/ondemand.env.new
+    rm -f /var/run/qmanager/watchcat.stamp /var/run/qmanager/sim_swap.stamp
+    rm -f /var/run/qmanager/sim_failover.stamp
+    rm -f /var/run/qmanager/wc_parity
+    rm -rf /var/run/qmanager/wcp
+    # Note: Ping cache and history are left for post-mortem debugging
+    # Note: Logs in /tmp/qmanager.log are preserved for post-mortem debugging
+}
+
+service_triggers() {
+    procd_add_reload_trigger "qmanager"
+}

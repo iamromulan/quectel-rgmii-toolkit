@@ -1,0 +1,193 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_language_install — Detached language-pack install worker
+# =============================================================================
+# Spawned by /www/cgi-bin/quecmanager/system/language-packs/install.sh via
+# double-fork. Reads /tmp/qmanager_language_install_input.json and:
+#
+#   1. Fetch the remote manifest (URL from input).
+#   2. Find the pack entry matching the requested code.
+#   3. Pre-flight disk-space check (pack size_bytes vs /www free KB + 64 KB slack).
+#   4. Download the tarball to /var/run/qmanager/lp_download/<code>.tar.gz (root 0700, B4.1).
+#   5. Verify sha256 against the manifest entry.
+#   6. Extract to staging /var/run/qmanager/lp_staging/<code>/.
+#   7. Validate staging contains every required namespace file (parseable JSON).
+#   8. Copy staging (tmpfs) to /www/locales/.<code>.new.<pid> (same fs as the
+#      target), write .version into it, sync, then swap it in with two renames
+#      and sync again. A crash leaves the old pack or the new one, never a
+#      half-copied tree.
+#   9. Exit 0.
+#
+# Progress JSON is written to /tmp/qmanager_language_install.json after every
+# step. Honors /tmp/qmanager_language_install.cancel sentinel between steps.
+# =============================================================================
+
+# Guarded with -f: BusyBox ash exits when `.` cannot find its file.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init() { :; }; qlog_info() { :; }; qlog_warn() { :; }; qlog_error() { :; }
+fi
+qlog_init "lang_install"
+
+. /usr/lib/qmanager/language_packs.sh
+
+INPUT_FILE="$LP_INPUT_FILE"
+PID_FILE="$LP_PID_FILE"
+CANCEL_FILE="$LP_CANCEL_FILE"
+PROGRESS_FILE="$LP_PROGRESS_FILE"
+
+# --- Singleton check ---------------------------------------------------------
+if [ -f "$PID_FILE" ]; then
+    _existing=$(cat "$PID_FILE" 2>/dev/null)
+    if [ -n "$_existing" ] && kill -0 "$_existing" 2>/dev/null; then
+        qlog_warn "Another language install already running (PID $_existing)"
+        exit 1
+    fi
+fi
+echo "$$" > "$PID_FILE"
+
+# --- Resource tracking for cleanup ------------------------------------------
+LP_TARBALL=""
+LP_STAGING=""
+LP_CODE=""
+LP_NEW=""
+LP_OLD=""
+
+cleanup() {
+    [ -n "$LP_TARBALL" ] && [ -f "$LP_TARBALL" ] && rm -f "$LP_TARBALL"
+    [ -n "$LP_STAGING" ] && [ -d "$LP_STAGING" ] && rm -rf "$LP_STAGING"
+    [ -n "$LP_NEW" ] && [ -d "$LP_NEW" ] && rm -rf "$LP_NEW"
+    [ -n "$LP_OLD" ] && [ -d "$LP_OLD" ] && rm -rf "$LP_OLD"
+    rm -f "$PID_FILE" "$CANCEL_FILE" "$INPUT_FILE"
+    # lp_download_dir left for inspection; clean its contents
+    [ -d "$LP_DOWNLOAD_DIR" ] && rm -rf "$LP_DOWNLOAD_DIR"
+}
+trap cleanup EXIT INT TERM
+
+# --- Bail helper -------------------------------------------------------------
+die_fail() {
+    _msg="$1"
+    qlog_error "$_msg"
+    lp_write_progress "failed" "$LP_CODE" 100 "failed" "$_msg"
+    exit 1
+}
+
+# --- Cancel helper -----------------------------------------------------------
+bail_if_cancelled() {
+    if [ -f "$CANCEL_FILE" ]; then
+        qlog_info "Cancel requested — aborting"
+        lp_write_progress "cancelled" "$LP_CODE" 100 "cancelled" "Install cancelled"
+        exit 0
+    fi
+}
+
+# --- Validate input ----------------------------------------------------------
+[ -f "$INPUT_FILE" ] || die_fail "Input file not found"
+# B4.1: the CGI writes this file as root; refuse one another user planted
+qm_trusted_file "$INPUT_FILE" || die_fail "Input file not found"
+
+LP_CODE=$(jq -r '.code // empty' "$INPUT_FILE" 2>/dev/null)
+MANIFEST_URL=$(jq -r '.manifest_url // empty' "$INPUT_FILE" 2>/dev/null)
+
+[ -z "$LP_CODE" ] && die_fail "Missing code"
+lp_pack_is_code_safe "$LP_CODE" || die_fail "Invalid language code"
+[ -z "$MANIFEST_URL" ] && die_fail "Missing manifest_url"
+
+qlog_info "Installing language pack: $LP_CODE"
+lp_write_progress "running" "$LP_CODE" 5 "fetch_catalog" "Fetching catalog..."
+
+# --- Step 1: fetch manifest --------------------------------------------------
+bail_if_cancelled
+MANIFEST_BODY=$(lp_fetch_manifest "$MANIFEST_URL") || die_fail "Manifest unreachable"
+
+# --- Step 2: find pack -------------------------------------------------------
+bail_if_cancelled
+PACK_JSON=$(lp_manifest_find_pack "$MANIFEST_BODY" "$LP_CODE")
+[ -z "$PACK_JSON" ] && die_fail "Pack not found in catalog"
+
+PACK_URL=$(printf '%s' "$PACK_JSON" | jq -r '.url // empty')
+PACK_SHA=$(printf '%s' "$PACK_JSON" | jq -r '.sha256 // empty')
+PACK_VER=$(printf '%s' "$PACK_JSON" | jq -r '.version // empty')
+PACK_SIZE=$(printf '%s' "$PACK_JSON" | jq -r '.size_bytes // 0')
+
+[ -z "$PACK_URL" ] && die_fail "Pack URL missing"
+[ -z "$PACK_SHA" ] && die_fail "Pack sha256 missing"
+# version is nice-to-have but not required for install to proceed
+
+# --- Step 3: disk-space pre-flight (pack_size + 64 KB slack) -----------------
+bail_if_cancelled
+FREE_KB=$(lp_disk_free_kb)
+NEEDED_KB=$(( (PACK_SIZE / 1024) + 64 ))
+if [ -n "$FREE_KB" ] && [ "$FREE_KB" -lt "$NEEDED_KB" ] 2>/dev/null; then
+    die_fail "Not enough disk space (needs ~${NEEDED_KB} KB, have ${FREE_KB} KB)"
+fi
+
+lp_write_progress "running" "$LP_CODE" 20 "download" "Downloading pack..."
+
+# --- Step 4: download tarball ------------------------------------------------
+bail_if_cancelled
+qm_run_dir >/dev/null && qm_root_dir "$LP_DOWNLOAD_DIR" 0700 || die_fail "Cannot prepare work directory"
+LP_TARBALL="$LP_DOWNLOAD_DIR/${LP_CODE}.tar.gz"
+curl -sSfL -m 30 -H "User-Agent: QManager" -o "$LP_TARBALL" "$PACK_URL" 2>/dev/null \
+    || die_fail "Download failed"
+[ -s "$LP_TARBALL" ] || die_fail "Downloaded file is empty"
+
+lp_write_progress "running" "$LP_CODE" 55 "verify" "Verifying checksum..."
+
+# --- Step 5: sha256 verify ---------------------------------------------------
+bail_if_cancelled
+lp_verify_sha256 "$LP_TARBALL" "$PACK_SHA" || die_fail "Checksum mismatch"
+
+lp_write_progress "running" "$LP_CODE" 70 "extract" "Extracting files..."
+
+# --- Step 6: extract to staging ---------------------------------------------
+bail_if_cancelled
+qm_run_dir >/dev/null && qm_root_dir "$LP_STAGING_DIR" 0700 || die_fail "Cannot prepare work directory"
+LP_STAGING="$LP_STAGING_DIR/$LP_CODE"
+rm -rf "$LP_STAGING"
+mkdir -p "$LP_STAGING"
+# The tarball is expected to contain the namespace .json files at the top
+# level of the archive (flat layout), matching the bundled packs.
+tar -xzf "$LP_TARBALL" -C "$LP_STAGING" 2>/dev/null || die_fail "Extraction failed"
+
+lp_write_progress "running" "$LP_CODE" 85 "validate" "Validating pack..."
+
+# --- Step 7: validate pack tree ---------------------------------------------
+bail_if_cancelled
+lp_validate_pack_tree "$LP_STAGING" || die_fail "Pack is missing required namespaces"
+
+lp_write_progress "running" "$LP_CODE" 95 "install" "Installing..."
+
+# --- Step 8: swap -------------------------------------------------------------
+# Staging is on tmpfs, so an mv into /www would be a copy over the live pack.
+# Instead copy it beside the target (same fs), flush, then rename it in. The
+# pack is absent only between the two renames, never for the copy.
+bail_if_cancelled
+TARGET="$LP_LOCALES_DIR/$LP_CODE"
+mkdir -p "$LP_LOCALES_DIR"
+LP_NEW="$LP_LOCALES_DIR/.${LP_CODE}.new.$$"
+LP_OLD="$LP_LOCALES_DIR/.${LP_CODE}.old.$$"
+rm -rf "$LP_NEW" "$LP_OLD"
+cp -r "$LP_STAGING" "$LP_NEW" || die_fail "Failed to install pack"
+printf '%s' "$PACK_VER" > "$LP_NEW/.version" 2>/dev/null || true
+chmod 755 "$LP_NEW" 2>/dev/null
+sync
+if [ -d "$TARGET" ]; then
+    mv "$TARGET" "$LP_OLD" || die_fail "Failed to install pack"
+fi
+if ! mv "$LP_NEW" "$TARGET"; then
+    # Put the old pack back; if even that fails, keep it at LP_OLD (cleanup
+    # must not delete the only copy).
+    [ -d "$LP_OLD" ] && mv "$LP_OLD" "$TARGET" || LP_OLD=""
+    die_fail "Failed to install pack"
+fi
+LP_NEW=""
+sync
+rm -rf "$LP_OLD"
+LP_OLD=""
+
+# --- Done --------------------------------------------------------------------
+lp_write_progress "success" "$LP_CODE" 100 "done" "Installed"
+qlog_info "Language pack $LP_CODE installed (version=${PACK_VER:-unknown})"
+exit 0

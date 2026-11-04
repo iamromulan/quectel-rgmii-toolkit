@@ -1,0 +1,4 @@
+#!/bin/sh
+# Configure the files opkg just placed (install.sh --configure).
+[ -n "$IPKG_INSTROOT" ] && exit 0
+exec /bin/sh /usr/share/qmanager/install.sh --configure

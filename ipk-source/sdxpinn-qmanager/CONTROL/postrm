@@ -1,0 +1,6 @@
+#!/bin/sh
+# /usr, /www and /etc are UBIFS: commit opkg's removals to flash.
+[ -n "$IPKG_INSTROOT" ] && exit 0
+case "$1" in upgrade) exit 0 ;; esac
+sync
+exit 0

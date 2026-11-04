@@ -1,0 +1,110 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_scenario_schedule — Cron-Callable Connection Scenario Apply
+# =============================================================================
+# Called by cron at each schedule transition to apply a connection scenario
+# (network mode + band locks) for the currently active SIM profile.
+#
+# Usage:
+#   qmanager_scenario_schedule <scenarioId>
+#
+# The scenario id is baked into the cron line at install time. This worker
+# resolves the scenario's config from disk (DISK is the single source of
+# truth — see scenario_mgr.sh::scenario_resolve_config) and applies it.
+#
+# Self-heal guard: if no profile with schedule.enabled is active when this
+# fires (e.g. the user deactivated the profile and teardown was missed), the
+# worker tears down the stale scenario cron lines and exits without applying.
+#
+# scenario_apply is NON-REBOOT (mode_pref + band locks only).
+#
+# Dependencies: qcmd, qlog.sh, scenario_mgr.sh, profile_mgr.sh
+# Install location: /usr/bin/qmanager_scenario_schedule
+# =============================================================================
+
+# --- Logging -----------------------------------------------------------------
+# Guarded with -f: BusyBox ash exits when `.` cannot find its file.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init() { :; }
+    qlog_debug() { :; }
+    qlog_info() { :; }
+    qlog_warn() { :; }
+    qlog_error() { :; }
+fi
+qlog_init "scenario_schedule"
+
+# --- Load libraries ----------------------------------------------------------
+if [ -f /usr/lib/qmanager/scenario_mgr.sh ]; then
+    . /usr/lib/qmanager/scenario_mgr.sh
+else
+    qlog_error "scenario_mgr.sh missing; cannot run"
+    exit 1
+fi
+if [ -f /usr/lib/qmanager/profile_mgr.sh ]; then
+    . /usr/lib/qmanager/profile_mgr.sh
+else
+    qlog_error "profile_mgr.sh missing; cannot run"
+    exit 1
+fi
+
+# --- Validate arguments ------------------------------------------------------
+TARGET="$1"
+
+if [ -z "$TARGET" ]; then
+    qlog_error "No scenario id provided"
+    exit 1
+fi
+
+# --- Clock-step guard (issue #9) ---------------------------------------------
+# crond runs a job whose minute a boot-time clock step crosses. A scenario
+# schedule is a multi-block timeline with no single HH:MM, so pass "" and the
+# guard degrades to clock + uptime. A deny is a plain skip, NOT an orphan: it
+# must not fall through to the self-heal teardown below.
+if [ -f /usr/lib/qmanager/schedule_guard.sh ]; then
+    . /usr/lib/qmanager/schedule_guard.sh
+    if ! _qm_timer_fire_allowed ""; then
+        qlog_warn "Scenario transition '$TARGET' skipped: $QM_GUARD_REASON (clock-step guard)"
+        exit 0
+    fi
+else
+    qlog_warn "Scenario transition '$TARGET' skipped: schedule_guard.sh missing, failing closed"
+    exit 0
+fi
+
+# --- Self-heal guard: only act for an active, schedule-enabled profile -------
+ACTIVE_PROFILE=$(get_active_profile)
+if [ -z "$ACTIVE_PROFILE" ] || \
+   [ "$(scenario_profile_schedule_enabled "$ACTIVE_PROFILE")" != "true" ]; then
+    qlog_warn "No active scheduled profile — tearing down stale scenario cron"
+    scenario_teardown_cron
+    exit 0
+fi
+
+# --- Fallback to profile default if the baked-in scenario was deleted --------
+if ! scenario_is_known "$TARGET"; then
+    qlog_warn "Scheduled scenario '$TARGET' no longer exists — falling back to default"
+    TARGET=$(scenario_profile_block "$ACTIVE_PROFILE" | jq -r '.default // "balanced"' 2>/dev/null)
+    [ -z "$TARGET" ] && TARGET="balanced"
+    scenario_is_known "$TARGET" || TARGET="balanced"
+fi
+
+# --- Minute leg: the fire must be the transition that is in effect now --------
+# The guard above cannot check a minute (no single HH:MM), so a forward clock
+# step after the 300 s uptime floor made crond run every crossed transition,
+# oldest first, and the last one to finish won. Apply only when the timeline
+# resolves "now" to this target: of the crossed fires, exactly the current
+# block's own transition matches, and an on-time fire always does.
+NOW_TARGET=$(scenario_block_for_now "$ACTIVE_PROFILE")
+# A block naming a deleted scenario cannot be compared; the fallback above rules.
+[ -n "$NOW_TARGET" ] && ! scenario_is_known "$NOW_TARGET" && NOW_TARGET=""
+if [ -n "$NOW_TARGET" ] && [ "$NOW_TARGET" != "$TARGET" ]; then
+    qlog_warn "Scenario transition '$TARGET' skipped: the schedule resolves now to '$NOW_TARGET' (late or catch-up fire)"
+    exit 0
+fi
+
+qlog_info "Scheduled scenario transition → '$TARGET' (profile $ACTIVE_PROFILE)"
+scenario_apply "$TARGET"
+
+exit 0
