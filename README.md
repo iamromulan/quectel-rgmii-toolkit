@@ -10,7 +10,8 @@ Fork development, and PR development to development :)
 
 #### [JUMP TO HOW TO USE](#how-to-use)
 **Currently:** This will allow you to install or if already installed, update, remove, or modify:
- - Simple Admin: A simple web interface for managing your Quectel m.2 modem through it's gateway address
+ - QManager (Recommended): A modern web interface for managing your Quectel modem, the successor to Simple Admin. It installs standalone (no Simple Admin needed) from https://github.com/dr-dolomite/QManager-RM520N
+ - Simple Admin (Legacy - discontinued): A simple web interface for managing your Quectel m.2 modem through it's gateway address
 	 - It will install socat-at-bridge: sets up ttyOUT and ttyOUT2 for AT commands. You'll be able to use the `atcmd` command as well for an interactive at command session from adb, ssh, or ttyd
 	 - It will install simplefirewall: A simple firewall that blocks definable incoming ports and a TTL mangle option/modifier. As of now only the TTL is controllable through Simple Admin. You can edit port block options and TTL from the 3rd option in the toolkit
  - Tailscale: A magic VPN for accessing Simple Admin, SSH, and ttyd on the go. The Toolkit installs the Tailscale client directly to the modem and allows you to login and configure other settings. Head over to tailscale.com to sign up for a free account and learn more.
