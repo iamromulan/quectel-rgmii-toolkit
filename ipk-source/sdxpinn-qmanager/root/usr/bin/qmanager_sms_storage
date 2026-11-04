@@ -1,0 +1,72 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_sms_storage — One-Shot SMS Storage Routing Daemon
+# =============================================================================
+# Spawned by /etc/init.d/qmanager_sms_storage at boot.
+#
+# Purpose: route incoming SMS to the user's chosen storage even if the SMS
+# page is never opened. The RM551E defaults CPMS mem3 to SM (SIM) at boot.
+# The choice is /etc/qmanager/sms_storage ("ME" or "SM"; missing = ME, the
+# 255-slot modem store), written by cellular/sms_storage.sh.
+#
+# Flow:
+#   1. Poll `qsms status ME` until it succeeds (modem SMS-ready), up to ~60s.
+#      (qsms already restores the choice after each op; step 2 makes it
+#      explicit.)
+#   2. Once ready, set AT+CPMS="X","X","X" via qcmd (X = the choice). If SM is
+#      chosen but the SIM store is unusable (no SIM), use ME for this boot
+#      without changing the saved choice.
+#   3. Log result. Exit 0 on success, 1 on failure. No respawn.
+#
+# qsms and qcmd both go through qmanager_atd, which takes
+# /var/lock/qmanager.lock itself: never wrap them in flock on that lock.
+#
+# Does NOT reboot or call CFUN.
+#
+# Dependencies: qsms + qcmd (qmanager_atd), logger
+# Install location: /usr/bin/qmanager_sms_storage
+# =============================================================================
+
+QSMS="/usr/bin/qsms"
+QCMD="/usr/bin/qcmd"
+PREF_FILE="/etc/qmanager/sms_storage"
+READY_TRIES=20
+READY_SLEEP=3
+
+# --- Wait for modem readiness ------------------------------------------------
+ready=0
+i=0
+while [ "$i" -lt "$READY_TRIES" ]; do
+    if "$QSMS" status ME >/dev/null 2>&1; then
+        ready=1
+        break
+    fi
+
+    i=$((i + 1))
+    sleep "$READY_SLEEP"
+done
+
+if [ "$ready" -ne 1 ]; then
+    logger -t qmanager_sms_storage "Modem not ready after $((READY_TRIES * READY_SLEEP))s — CPMS routing not applied"
+    exit 1
+fi
+
+# --- Apply routing -----------------------------------------------------------
+mem=$(tr -d ' \r\n' < "$PREF_FILE" 2>/dev/null | tr 'a-z' 'A-Z')
+[ "$mem" = "SM" ] || mem="ME"
+if [ "$mem" = "SM" ] && ! "$QSMS" status SM >/dev/null 2>&1; then
+    logger -t qmanager_sms_storage "SIM storage chosen but unusable; using modem storage this boot"
+    mem="ME"
+fi
+
+# qcmd exits 0 even on an AT ERROR, so success is the OK final line.
+apply_out=$("$QCMD" "AT+CPMS=\"$mem\",\"$mem\",\"$mem\"" 2>/dev/null)
+apply_rc=$?
+
+if [ "$apply_rc" -eq 0 ] && printf '%s\n' "$apply_out" | tr -d '\r' | grep -q '^OK'; then
+    logger -t qmanager_sms_storage "CPMS routing set to $mem (incoming SMS storage)"
+    exit 0
+fi
+
+logger -t qmanager_sms_storage "Failed to set CPMS routing (rc=$apply_rc)"
+exit 1

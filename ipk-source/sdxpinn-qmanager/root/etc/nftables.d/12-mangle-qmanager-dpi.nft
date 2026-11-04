@@ -1,0 +1,22 @@
+# qmanager_dpi — persistent NFQUEUE rules for Video Optimizer / Traffic Masquerade
+#
+# Sourced by fw4 on every load and reload (survives `fw4 reload`, VPN toggles,
+# port-forward edits, etc. — runtime `nft add rule` does NOT survive).
+#
+# The `bypass` flag on `queue num 200` means: if nfqws is not bound to queue 200,
+# packets fall through normally. Therefore these rules are SAFE to leave
+# permanently active even when both Video Optimizer and Traffic Masquerade are
+# disabled — they cost one extra connection-tracking lookup per matching packet
+# and otherwise have zero effect.
+#
+# Interface match uses `rmnet*` wildcard so the rules survive cellular
+# reconnect / SIM failover / interface rename (rmnet_data0 -> rmnet_data1).
+#
+# Mode (split2 vs fake-SNI) is selected entirely by nfqws CLI args in
+# /etc/init.d/qmanager_dpi — these rules are mode-agnostic.
+
+chain mangle_postrouting_qmanager_dpi {
+    type filter hook postrouting priority mangle; policy accept;
+    oifname "rmnet*" tcp dport 443 ct original packets 1-4 counter queue num 200 bypass comment "qmanager_dpi"
+    oifname "rmnet*" udp dport 443 ct original packets 1-4 counter queue num 200 bypass comment "qmanager_dpi"
+}

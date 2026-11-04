@@ -1,0 +1,7 @@
+#!/bin/sh
+# Stop and tear down QManager before opkg deletes its files. Config in
+# /etc/qmanager is kept. An upgrade is handled by the new preinst instead.
+[ -n "$IPKG_INSTROOT" ] && exit 0
+case "$1" in upgrade) exit 0 ;; esac
+/bin/sh /usr/share/qmanager/uninstall.sh --deconfigure || true
+exit 0

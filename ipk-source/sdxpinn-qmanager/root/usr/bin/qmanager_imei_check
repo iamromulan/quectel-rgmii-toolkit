@@ -1,0 +1,136 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_imei_check — One-Shot IMEI Rejection Check Daemon
+# =============================================================================
+# Spawned by /etc/init.d/qmanager_imei_check at boot.
+# Waits for modem readiness, checks AT+QNETRC? for IMEI rejection,
+# and applies backup IMEI if configured.
+#
+# Guard: only runs when /etc/qmanager/imei_check_pending flag exists
+#        AND backup IMEI config is enabled.
+#
+# Flow:
+#   1. Sleep 20s for modem to register on network
+#   2. Query AT+QNETRC? for rejection causes
+#   3. If emm_cause=5 or 5gmm_cause=5 -> write backup IMEI -> remove flag -> reboot
+#   4. If no rejection -> remove flag -> exit
+#
+# Anti-infinite-loop: flag is ALWAYS removed before any reboot.
+#
+# Dependencies: qcmd, qlog.sh, jq
+# Install location: /usr/bin/qmanager_imei_check
+# =============================================================================
+
+# --- Logging -----------------------------------------------------------------
+# GUARD with [ -f ] before dot-sourcing: a `.` on a MISSING file aborts a
+# non-interactive BusyBox ash script (POSIX special builtin), so a bare
+# `. FILE || {...}` fallback would never run. Guard, then stub in the else.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init() { :; }
+    qlog_info() { :; }
+    qlog_warn() { :; }
+    qlog_error() { :; }
+    qlog_debug() { :; }
+    record_planned_reboot() { :; }
+fi
+qlog_init "imei_check"
+. /usr/lib/qmanager/cgi_at.sh
+
+# --- Constants ---------------------------------------------------------------
+BACKUP_CONFIG="/etc/qmanager/imei_backup.json"
+CHECK_PENDING="/etc/qmanager/imei_check_pending"
+SETTLE_TIME=20
+CMD_GAP=0.2
+
+# --- Guard: flag must exist --------------------------------------------------
+if [ ! -f "$CHECK_PENDING" ]; then
+    qlog_debug "No check pending flag — exiting"
+    exit 0
+fi
+
+# --- Guard: backup config must exist and be enabled --------------------------
+if [ ! -f "$BACKUP_CONFIG" ]; then
+    qlog_info "No backup config — removing flag and exiting"
+    rm -f "$CHECK_PENDING"
+    exit 0
+fi
+
+backup_enabled=$(jq -r '(.enabled) | if . == null then "false" else tostring end' "$BACKUP_CONFIG" 2>/dev/null)
+if [ "$backup_enabled" != "true" ]; then
+    qlog_info "Backup not enabled — removing flag and exiting"
+    rm -f "$CHECK_PENDING"
+    exit 0
+fi
+
+backup_imei=$(jq -r '.imei // ""' "$BACKUP_CONFIG" 2>/dev/null)
+if ! validate_imei "$backup_imei"; then
+    qlog_error "Backup IMEI invalid: '$backup_imei' — removing flag and exiting"
+    rm -f "$CHECK_PENDING"
+    exit 0
+fi
+
+qlog_info "IMEI check pending — settling ${SETTLE_TIME}s for modem readiness"
+
+wait_modem_ready "$SETTLE_TIME"
+
+# --- Query AT+QNETRC? -------------------------------------------------------
+qlog_info "Querying network reject cause..."
+netrc_resp=$(qcmd 'AT+QNETRC?' 2>/dev/null)
+
+if [ -z "$netrc_resp" ]; then
+    qlog_warn "AT+QNETRC? returned empty — removing flag"
+    rm -f "$CHECK_PENDING"
+    exit 0
+fi
+
+qlog_info "NETRC response: $netrc_resp"
+
+# Parse emm_cause and 5gmm_cause
+# Response lines: +QNETRC: "emm_cause",<num>  and  +QNETRC: "5gmm_cause",<num>
+emm_cause=$(printf '%s' "$netrc_resp" | awk -F',' '/emm_cause/ { gsub(/[^0-9]/, "", $2); print $2 }' | head -1)
+fivegmm_cause=$(printf '%s' "$netrc_resp" | awk -F',' '/5gmm_cause/ { gsub(/[^0-9]/, "", $2); print $2 }' | head -1)
+
+qlog_info "Reject causes: emm=$emm_cause 5gmm=$fivegmm_cause"
+
+# --- Check for IMEI rejection (cause 5) -------------------------------------
+imei_rejected=""
+if [ "$emm_cause" = "5" ]; then
+    imei_rejected="emm_cause=5 (IMEI not accepted)"
+fi
+if [ "$fivegmm_cause" = "5" ]; then
+    imei_rejected="${imei_rejected:+$imei_rejected, }5gmm_cause=5 (PEI not accepted)"
+fi
+
+if [ -n "$imei_rejected" ]; then
+    qlog_warn "IMEI rejected: $imei_rejected — switching to backup IMEI: $backup_imei"
+
+    # Write backup IMEI
+    result=$(qcmd "AT+EGMR=1,7,\"${backup_imei}\"" 2>/dev/null)
+    rc=$?
+    # rc!=0 or an empty reply is a transport failure: never reboot with the IMEI unwritten.
+    case "$rc:$result" in
+        0:*ERROR*|0:|[!0]*)
+            qlog_error "Failed to write backup IMEI: rc=$rc ${result:-no reply}"
+            rm -f "$CHECK_PENDING"
+            exit 1
+            ;;
+    esac
+
+    # CRITICAL: Remove flag BEFORE reboot to prevent infinite loops
+    rm -f "$CHECK_PENDING"
+
+    qlog_info "Backup IMEI written — rebooting device"
+    # Planned reboot (backup-IMEI apply) — record before reboot so the next boot
+    # classifies this as a user reboot rather than an unplanned power loss.
+    record_planned_reboot "user"
+    sleep 1
+    reboot
+    exit 0
+fi
+
+# No rejection — normal operation
+qlog_info "No IMEI rejection detected — clearing flag"
+rm -f "$CHECK_PENDING"
+exit 0

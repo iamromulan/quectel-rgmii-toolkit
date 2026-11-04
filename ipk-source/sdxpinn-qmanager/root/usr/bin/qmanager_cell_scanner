@@ -1,0 +1,270 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_cell_scanner — Background Cell Scanner Worker
+# =============================================================================
+# Spawned by cell_scan_start.sh CGI. Executes AT+QSCAN=3,1 (up to 180s),
+# parses the response, resolves operator names from operator-list.json,
+# and writes a clean JSON result to /tmp/qmanager_cell_scan_result.json.
+#
+# Files:
+#   /tmp/qmanager_cell_scan.pid          — Worker PID (exists while running)
+#   /tmp/qmanager_cell_scan_result.json  — Final JSON array of scanned cells
+#   /tmp/qmanager_cell_scan_error        — Error message if scan failed
+#
+# Install location: /usr/bin/qmanager_cell_scanner
+# Dependencies: qcmd, jq
+# =============================================================================
+
+# --- Logging -----------------------------------------------------------------
+# Guarded with -f: BusyBox ash exits when `.` cannot find its file.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init() { :; }
+    qlog_info() { :; }
+    qlog_warn() { :; }
+    qlog_error() { :; }
+fi
+qlog_init "cell_scanner"
+
+# --- Configuration -----------------------------------------------------------
+PID_FILE="/tmp/qmanager_cell_scan.pid"
+RESULT_FILE="/tmp/qmanager_cell_scan_result.json"
+ERROR_FILE="/tmp/qmanager_cell_scan_error"
+RAW_FILE="/tmp/qmanager_cell_scan_raw.tmp"
+PARSED_FILE="/tmp/qmanager_cell_scan_parsed.tmp"
+OPERATOR_LIST="/www/cgi-bin/quecmanager/operator-list.json"
+
+# --- Cleanup on exit ---------------------------------------------------------
+cleanup() {
+    rm -f "$PID_FILE" "$RAW_FILE" "$PARSED_FILE"
+}
+trap cleanup EXIT INT TERM
+
+# --- Write PID ---------------------------------------------------------------
+echo $$ > "$PID_FILE"
+rm -f "$ERROR_FILE"
+
+qlog_info "Cell scanner started (PID: $$)"
+
+# =============================================================================
+# STEP 1: Execute AT+QSCAN=3,1 via qcmd
+# =============================================================================
+# Mode 3 = LTE + NR5G, ext 1 = show all extension parameters
+raw_output=$(qcmd 'AT+QSCAN=3,1')
+scan_rc=$?
+
+if [ $scan_rc -ne 0 ]; then
+    qlog_error "AT+QSCAN failed (exit=$scan_rc)"
+    echo "AT+QSCAN command failed (exit=$scan_rc)" > "$ERROR_FILE"
+    exit 1
+fi
+
+# Filter only +QSCAN: lines
+scan_lines=$(printf '%s\n' "$raw_output" | grep '^+QSCAN:')
+
+if [ -z "$scan_lines" ]; then
+    qlog_warn "AT+QSCAN returned no cells"
+    # Write an empty array — this is not an error, just no cells found
+    echo "[]" > "${RESULT_FILE}.tmp"
+    mv "${RESULT_FILE}.tmp" "$RESULT_FILE"
+    qlog_info "Cell scanner complete — 0 cells found"
+    exit 0
+fi
+
+qlog_info "AT+QSCAN returned data, parsing..."
+
+# =============================================================================
+# STEP 2: Parse each +QSCAN line into tab-separated fields
+# =============================================================================
+# We write TSV rows and then use jq to build the final JSON array.
+#
+# AT+QSCAN response formats (with ext=1):
+#
+# LTE:
+#   +QSCAN: "LTE",<MCC>,<MNC>,<freq>,<PCI>,<RSRP>,<RSRQ>,<srxlev>,<squal>,<cellID>,<TAC>,<bandwidth>,<LTE_band>
+#   Fields:   1     2     3     4      5     6      7      8        9       10        11    12          13
+#
+# NR5G:
+#   +QSCAN: "NR5G",<MCC>,<MNC>,<freq>,<PCI>,<RSRP>,<RSRQ>,<srxlev>,<SCS>,<cellID>,<TAC>,<carrierBW>,<band>,<offsetToPointA>,<SSB_subcarrier_offset>,<SSB_SCS>
+#   Fields:   1      2     3     4      5     6      7      8        9      10       11    12          13
+#
+# We output: networkType\tMCC\tMNC\tfreq\tPCI\tRSRP\tRSRQ\tcellID_hex\tTAC_hex\tbandwidth\tband\tSCS
+# (one TSV row per cell)
+
+: > "$PARSED_FILE"
+
+printf '%s\n' "$scan_lines" | while IFS= read -r line; do
+    # Strip the +QSCAN: prefix, quotes, and spaces
+    csv=$(printf '%s' "$line" | sed 's/+QSCAN: //g' | tr -d '"' | tr -d ' ' | tr -d '\r')
+
+    net_type=$(printf '%s' "$csv" | cut -d',' -f1)
+    mcc=$(printf '%s' "$csv" | cut -d',' -f2)
+    mnc=$(printf '%s' "$csv" | cut -d',' -f3)
+    freq=$(printf '%s' "$csv" | cut -d',' -f4)
+    pci=$(printf '%s' "$csv" | cut -d',' -f5)
+    rsrp=$(printf '%s' "$csv" | cut -d',' -f6)
+    rsrq=$(printf '%s' "$csv" | cut -d',' -f7)
+    # Field 8 is srxlev (LTE) or srxlev (NR5G) — skip
+    # Field 9 is squal (LTE) or SCS (NR5G)
+
+    cell_id_hex=""
+    tac_hex=""
+    bandwidth=""
+    band=""
+    scs=""
+
+    case "$net_type" in
+        LTE)
+            # LTE ext fields: cellID(10), TAC(11), bandwidth(12), LTE_band(13)
+            cell_id_hex=$(printf '%s' "$csv" | cut -d',' -f10)
+            tac_hex=$(printf '%s' "$csv" | cut -d',' -f11)
+            bandwidth=$(printf '%s' "$csv" | cut -d',' -f12)
+            band=$(printf '%s' "$csv" | cut -d',' -f13)
+            ;;
+        NR5G)
+            # NR5G ext fields: SCS(9), cellID(10), TAC(11), carrierBW(12), band(13)
+            scs=$(printf '%s' "$csv" | cut -d',' -f9)
+            cell_id_hex=$(printf '%s' "$csv" | cut -d',' -f10)
+            tac_hex=$(printf '%s' "$csv" | cut -d',' -f11)
+            bandwidth=$(printf '%s' "$csv" | cut -d',' -f12)
+            band=$(printf '%s' "$csv" | cut -d',' -f13)
+            ;;
+        *)
+            # Unknown type — skip
+            continue
+            ;;
+    esac
+
+    # Convert hex cellID and TAC to decimal
+    cell_id_dec=""
+    if [ -n "$cell_id_hex" ] && [ "$cell_id_hex" != "-" ]; then
+        cell_id_dec=$(printf '%d' "0x$cell_id_hex" 2>/dev/null) || cell_id_dec=""
+    fi
+
+    tac_dec=""
+    if [ -n "$tac_hex" ] && [ "$tac_hex" != "-" ]; then
+        tac_dec=$(printf '%d' "0x$tac_hex" 2>/dev/null) || tac_dec=""
+    fi
+
+    # Convert LTE bandwidth RB count to MHz
+    bw_mhz=""
+    case "$net_type" in
+        LTE)
+            case "$bandwidth" in
+                6)   bw_mhz="1" ;;
+                15)  bw_mhz="3" ;;
+                25)  bw_mhz="5" ;;
+                50)  bw_mhz="10" ;;
+                75)  bw_mhz="15" ;;
+                100) bw_mhz="20" ;;
+                *)   bw_mhz="$bandwidth" ;;
+            esac
+            ;;
+        NR5G)
+            # NR5G carrierBandwidth is already in number of RBs,
+            # but we keep it as-is since exact MHz depends on SCS.
+            # The UI just shows a raw value here.
+            bw_mhz="$bandwidth"
+            ;;
+    esac
+
+    # Sanitize dash values from modem
+    case "$rsrp"       in '-') rsrp=""       ;; esac
+    case "$rsrq"       in '-') rsrq=""       ;; esac
+    case "$cell_id_dec" in '') cell_id_dec="" ;; esac
+    case "$tac_dec"    in '') tac_dec=""      ;; esac
+    case "$band"       in '-') band=""       ;; esac
+    case "$bw_mhz"     in '-') bw_mhz=""     ;; esac
+
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+        "$net_type" "$mcc" "$mnc" "$freq" "$pci" "$rsrp" "$rsrq" \
+        "$cell_id_dec" "$tac_dec" "$bw_mhz" "$band" "$scs" >> "$PARSED_FILE"
+
+done
+
+if [ ! -s "$PARSED_FILE" ]; then
+    qlog_warn "No valid cells parsed from AT+QSCAN output"
+    echo "[]" > "${RESULT_FILE}.tmp"
+    mv "${RESULT_FILE}.tmp" "$RESULT_FILE"
+    qlog_info "Cell scanner complete — 0 valid cells"
+    exit 0
+fi
+
+# =============================================================================
+# STEP 3: Build JSON with operator lookup via jq
+# =============================================================================
+# We pass the operator list and parsed TSV data into a single jq invocation.
+# jq reads the TSV, splits it, and for each row looks up the operator name
+# from the operator-list.json using MCC+MNC matching.
+
+if [ -f "$OPERATOR_LIST" ]; then
+    OPERATOR_ARG="--slurpfile operators $OPERATOR_LIST"
+else
+    qlog_warn "Operator list not found at $OPERATOR_LIST — provider names will be 'Unknown'"
+    OPERATOR_ARG=""
+fi
+
+# Build the final JSON array
+# shellcheck disable=SC2086
+jq -Rs $OPERATOR_ARG '
+    # If operators was not loaded, default to empty array
+    (if $operators then $operators[0] else [] end) as $ops |
+
+    split("\n") | map(select(length > 0) | split("\t")) |
+    to_entries | map(
+        .key as $idx |
+        .value as $row |
+        ($row[1] // "") as $mcc |
+        ($row[2] // "") as $mnc |
+
+        # Zero-pad MNC to match operator-list format (e.g. "03" not "3")
+        (if ($mnc | length) == 1 then "0" + $mnc
+         elif ($mnc | length) == 0 then $mnc
+         else $mnc end) as $mnc_padded |
+
+        # Lookup operator: try exact match first with zero-padded, then raw
+        ($ops | map(select(.mcc == $mcc and (.mnc == $mnc_padded or .mnc == $mnc))) | first // null) as $op |
+
+        # Resolve provider name: brand > operator > "Unknown"
+        (if $op then
+            (if $op.brand and ($op.brand | type) == "string" and ($op.brand | length) > 0
+             then $op.brand
+             else ($op.operator // "Unknown")
+             end)
+         else
+            ($mcc + "/" + $mnc)
+         end) as $provider |
+
+        {
+            id: ($idx + 1 | tostring),
+            networkType: ($row[0] // ""),
+            earfcn: ($row[3] // "" | if . == "" then 0 else tonumber end),
+            pci: ($row[4] // "" | if . == "" then 0 else tonumber end),
+            band: ($row[10] // "" | if . == "" then 0 else tonumber end),
+            bandwidth: ($row[9] // "" | if . == "" then 0 else tonumber end),
+            cellID: ($row[7] // "" | if . == "" then 0 else tonumber end),
+            tac: ($row[8] // "" | if . == "" then 0 else tonumber end),
+            signalStrength: ($row[5] // "" | if . == "" then 0 else tonumber end),
+            rsrq: ($row[6] // "" | if . == "" then null else tonumber end),
+            mcc: ($mcc | if . == "" then 0 else tonumber end),
+            mnc: ($mnc | if . == "" then 0 else tonumber end),
+            provider: $provider,
+            scs: ($row[11] // "" | if . == "" then null else tonumber end)
+        }
+    )
+' "$PARSED_FILE" > "${RESULT_FILE}.tmp"
+
+jq_rc=$?
+
+if [ $jq_rc -ne 0 ]; then
+    qlog_error "jq JSON build failed (exit=$jq_rc)"
+    echo "JSON assembly failed" > "$ERROR_FILE"
+    exit 1
+fi
+
+# Atomic rename
+mv "${RESULT_FILE}.tmp" "$RESULT_FILE"
+
+cell_count=$(jq 'length' "$RESULT_FILE" 2>/dev/null || echo "?")
+qlog_info "Cell scanner complete — $cell_count cells found"

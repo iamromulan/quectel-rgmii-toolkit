@@ -1,0 +1,255 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_debug_report — On-demand plain-text diagnostic snapshot generator
+# =============================================================================
+# Collects a single human-readable diagnostics report to
+# /tmp/qmanager_debug_<epoch>.txt and prints the artifact path as the LAST
+# line of stdout (the diagnostics.sh CGI reads only that last line).
+#
+# Design invariants:
+#   - Output is byte-sanitized (control chars stripped) so the file is safe to
+#     embed verbatim into a jq --rawfile JSON envelope.
+#   - Hard size cap (MAX_BYTES) with head+tail trim so a runaway log can never
+#     produce a multi-megabyte artifact that bloats the CGI response.
+#   - Self-prunes to the newest 3 reports so /tmp doesn't accumulate snapshots.
+#   - NEVER touches the modem serial port, NEVER reboots, NEVER calls qcmd.
+#   - Runs standalone even if the qmanager libs are absent (qlog is optional).
+#
+# Install location: /usr/bin/qmanager_debug_report  (mode 755)
+# Dependencies: BusyBox applets only (printf, tr, head, tail, wc, sed, grep,
+#               cat, ls, date, dmesg, logread, ip, ifconfig, free, df, uptime,
+#               lsmod, uci, jq) plus ubus (OpenWRT core). No bashisms.
+# =============================================================================
+
+# --- Logging (optional) ------------------------------------------------------
+# Guard the source so the script still runs if the libs are missing.
+# Guarded with -f: BusyBox ash exits when `.` cannot find its file.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init()  { :; }
+    qlog_debug() { :; }
+    qlog_info()  { :; }
+    qlog_warn()  { :; }
+    qlog_error() { :; }
+fi
+qlog_init "debug_report"
+
+# --- Configuration -----------------------------------------------------------
+TS=$(date +%s)
+OUT="/tmp/qmanager_debug_${TS}.txt"
+TMP="${OUT}.tmp"
+MAX_BYTES=307200        # ~300 KB hard cap on the final artifact
+KEEP_REPORTS=3          # newest N reports survive the prune
+STATUS_FILE="/tmp/qmanager_status.json"
+
+# Driver / subsystem keywords for the targeted dmesg grep. BusyBox grep -E is
+# confirmed available on this device (RM551E OpenWRT 23.05 aarch64), so the
+# ERE alternation form is used directly.
+#
+# Two keyword families:
+#   1. Driver / Qualcomm-subsystem signatures (the original set) — baseband and
+#      offload-driver chatter, plus recoverable MPSS subsystem restarts (SSR).
+#   2. App-processor crash / watchdog signatures — added for the RM551E-GL
+#      random-drop investigation. Recoverable drops show
+#      `qcom_q6v5_pas ...remoteproc-mss: crash detected ... type fatal error`;
+#      the hard wedge is an AP kernel hang surfaced via panic/hung/rcu/lockup
+#      markers. Kept literal (no ERE metacharacters) so the alternation is safe
+#      inside the double-quoted `sh -c "... grep -E '$DRIVER_GREP'"` below.
+DRIVER_GREP='ipa|ioss|r8125|rtl|ssr|subsys|fatal|smd|qrtr|remoteproc|q6v5|qcom_q6v5|watchdog|wdog|wdt|panic|Oops|BUG:|hung|rcu_sched|stall|lockup'
+
+# --- Sanitizer ---------------------------------------------------------------
+# Strip every byte that is not TAB, LF, or printable ASCII (0x20-0x7E). This
+# keeps the report a clean single-byte text stream — safe for jq --rawfile and
+# free of terminal control sequences from log lines.
+sanitize() {
+    tr -cd '\11\12\40-\176'
+}
+
+# --- Section emitter ---------------------------------------------------------
+# section <title> <command...>
+# Runs the command, sanitizes its combined output, and appends under a banner.
+# A failed/empty command still emits the banner with a "(no output)" marker so
+# the report structure is predictable.
+section() {
+    _title="$1"
+    shift
+    {
+        printf '\n===== %s =====\n' "$_title"
+        _body=$("$@" 2>&1 | sanitize)
+        if [ -n "$_body" ]; then
+            printf '%s\n' "$_body"
+        else
+            printf '(no output)\n'
+        fi
+    } >> "$TMP"
+}
+
+# section_raw <title> — body comes from stdin (for pipelines/heredocs)
+section_raw() {
+    _title="$1"
+    printf '\n===== %s =====\n' "$_title" >> "$TMP"
+    sanitize >> "$TMP"
+}
+
+# --- UCI redaction -----------------------------------------------------------
+# Emit `uci show quecmanager` with secret-bearing values redacted. Device jq
+# has no regex and we avoid sed -E/-i, so redaction is a pure BusyBox
+# case-glob match over each `key=value` line read with the shell's read
+# builtin. Any option name matching a sensitive glob has its value replaced
+# with [REDACTED]; everything else passes through verbatim.
+redact_uci() {
+    uci show quecmanager 2>/dev/null | while IFS= read -r _line; do
+        # _line looks like: quecmanager.section.option='value'
+        _opt=${_line%%=*}        # left of the first '='
+        case "$_opt" in
+            *password*|*passwd*|*secret*|*token*|*hash*|*salt*|*cookie*|*_key|*apikey*|*api_key*|*credential*)
+                printf '%s=[REDACTED]\n' "$_opt"
+                ;;
+            *)
+                printf '%s\n' "$_line"
+                ;;
+        esac
+    done
+}
+
+# --- Runtime JSON dump -------------------------------------------------------
+# Append each /tmp/qmanager_*.json runtime file. ping_history can be large, so
+# it is tailed to the last 50 lines; everything else is emitted whole. Pretty-
+# printed via jq when the file is valid JSON, raw otherwise.
+dump_runtime_json() {
+    for _f in /tmp/qmanager_*.json; do
+        [ -f "$_f" ] || continue
+        printf '\n----- %s -----\n' "$_f" >> "$TMP"
+        case "$_f" in
+            *ping_history*)
+                tail -n 50 "$_f" 2>/dev/null | sanitize >> "$TMP"
+                ;;
+            *)
+                if jq -e '.' "$_f" >/dev/null 2>&1; then
+                    jq '.' "$_f" 2>/dev/null | sanitize >> "$TMP"
+                else
+                    sanitize < "$_f" >> "$TMP"
+                fi
+                ;;
+        esac
+        printf '\n' >> "$TMP"
+    done
+}
+
+# --- Build report ------------------------------------------------------------
+: > "$TMP"
+
+{
+    printf '===== QManager Debug Report =====\n'
+    printf 'generated_at: %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null)"
+    printf 'epoch: %s\n' "$TS"
+} >> "$TMP"
+
+# Version
+section "qmanager_version" cat /etc/qmanager/VERSION
+section "openwrt_release"  cat /etc/openwrt_release
+
+# System state
+section "uptime_loadavg"   cat /proc/loadavg
+section "uptime"           uptime
+section "memory"           free
+section "df_tmp"           df /tmp
+
+# Kernel ring buffer
+section "dmesg_tail_300"   sh -c 'dmesg 2>/dev/null | tail -n 300'
+section "dmesg_driver_grep" sh -c "dmesg 2>/dev/null | grep -i -E '$DRIVER_GREP'"
+
+# System log
+section "logread_tail_300" sh -c 'logread 2>/dev/null | tail -n 300'
+
+# Network
+section "ip_link_stats"    ip -s link
+section "ip_route"         ip route
+section "ifconfig"         ifconfig
+
+# Redacted UCI
+redact_uci | section_raw "uci_show_quecmanager_redacted"
+
+# Offload / driver module state
+section "lsmod_offload"    sh -c "lsmod 2>/dev/null | grep -i -E 'ipa|ioss|r8125|offload'"
+section "r8125_ioss_enabled" sh -c '/etc/init.d/r8125_ioss.init enabled 2>&1; echo "enabled_rc=$?"'
+
+# --- Crash-forensics captures (RM551E-GL random-drop investigation) ----------
+# All read-only and individually fault-tolerant: each capture self-guards with
+# 2>/dev/null so a missing source (no HW watchdog, no /data ramdumps, no
+# pstore) prints nothing and the surrounding `section` helper emits its
+# "(no output)" marker rather than failing the report.
+
+# Watchdog state. On the affected RM551E-GL build there is NO hardware
+# watchdog (/dev/watchdog absent, `ubus call system watchdog` reports
+# "status":"offline"), which is precisely why an AP hang needs a manual power
+# cycle. Capturing this in every report makes that condition visible.
+section "watchdog_state" sh -c '
+    ubus call system watchdog 2>/dev/null
+    ls -la /dev/watchdog* 2>/dev/null
+    cat /sys/class/watchdog/watchdog0/state 2>/dev/null
+'
+
+# Modem SSR ramdumps — LISTINGS ONLY. These are large binary .elf ramdumps;
+# cat-ing them would blow MAX_BYTES and inject binary the sanitizer would
+# mangle. Recoverable Qualcomm MPSS subsystem restarts drop dated ELF dumps
+# into /data/vendor/ramdump/ (persistent UBI), so listing them lets us count
+# and timestamp baseband crashes across reboots.
+section "modem_ssr_dumps" sh -c '
+    ls -la /data/vendor/ramdump/ 2>/dev/null
+    ls -la /data/ssr_kpi/ 2>/dev/null
+    ls -la /data/minidump/ 2>/dev/null
+'
+
+# pstore. Today this build captures pmsg only, so an AP panic leaves no
+# record; if the firmware is later fixed to record panics, this surfaces it.
+section "pstore" sh -c '
+    ls -la /sys/fs/pstore/ 2>/dev/null
+    cat /sys/module/pstore/parameters/backend 2>/dev/null
+'
+
+# QManager application log
+section "qmanager_log_tail_200" sh -c 'tail -n 200 /tmp/qmanager.log 2>/dev/null'
+
+# Runtime JSON snapshots
+dump_runtime_json
+
+# --- Size cap (head + tail trim) ---------------------------------------------
+# If the assembled report exceeds MAX_BYTES, keep the head and tail and drop
+# the middle so the most useful context (report header + most recent log tails)
+# survives. wc -c is byte-accurate; the trim is line-based for readability.
+_bytes=$(wc -c < "$TMP" 2>/dev/null)
+case "$_bytes" in
+    ''|*[!0-9]*) _bytes=0 ;;
+esac
+
+if [ "$_bytes" -gt "$MAX_BYTES" ]; then
+    qlog_warn "debug report ${_bytes}B exceeds cap ${MAX_BYTES}B — trimming middle"
+    _total_lines=$(wc -l < "$TMP" 2>/dev/null)
+    case "$_total_lines" in
+        ''|*[!0-9]*) _total_lines=0 ;;
+    esac
+    {
+        head -n 400 "$TMP"
+        printf '\n... [TRIMMED: report exceeded %s bytes; middle %s lines omitted] ...\n\n' \
+            "$MAX_BYTES" "$_total_lines"
+        tail -n 400 "$TMP"
+    } > "${TMP}.trim" 2>/dev/null
+    mv "${TMP}.trim" "$TMP" 2>/dev/null
+fi
+
+# Commit
+mv "$TMP" "$OUT" 2>/dev/null
+
+# --- Self-prune: keep newest KEEP_REPORTS ------------------------------------
+# ls -t sorts newest-first; drop everything past the keep count. The freshly
+# written $OUT is newest so it always survives.
+for _old in $(ls -t /tmp/qmanager_debug_*.txt 2>/dev/null | tail -n +$((KEEP_REPORTS + 1))); do
+    rm -f "$_old" 2>/dev/null
+done
+
+qlog_info "debug report written: $OUT"
+
+# LAST line of stdout MUST be the artifact path — diagnostics.sh reads only it.
+printf '%s\n' "$OUT"

@@ -1,0 +1,91 @@
+{
+  "groups": {
+    "dashboard": "仪表板",
+    "cellular": "蜂窝网络",
+    "local_network": "本地网络",
+    "monitoring": "监控",
+    "system": "系统"
+  },
+  "breadcrumb": "面包屑导航",
+  "items": {
+    "home": "主页",
+    "cellular_overview": "概览",
+    "sms_inbox": "收件箱",
+    "band_locking_bands": "频段锁定",
+    "cell_scanner_full_scan": "全面扫描",
+    "cellular_settings_general": "常规",
+    "ip_passthrough": "IP 直通",
+    "connection_quality_overview": "概览",
+    "system_settings_general": "常规",
+    "cellular_information": "蜂窝网络信息",
+    "antenna_statistics": "天线统计",
+    "antenna_alignment": "天线对准",
+    "sms_center": "短信中心",
+    "sms_forwarding": "短信转发",
+    "custom_profiles": "自定义配置",
+    "band_locking": "频段选择",
+    "tower_locking": "基站锁定",
+    "frequency_locking": "频率锁定",
+    "cell_scanner": "小区扫描",
+    "neighboring_cells": "邻近小区",
+    "frequency_calculator": "频率计算器",
+    "settings": "设置",
+    "apn_management": "APN 设置",
+    "network_priority": "网络优先级",
+    "imei_settings": "IMEI 设置",
+    "fplmn_settings": "FPLMN 设置",
+    "ethernet_status": "以太网状态",
+    "local_network_settings": "设置",
+    "custom_dns": "自定义 DNS",
+    "ttl_mtu_settings": "TTL 和 MTU 设置",
+    "video_optimizer": "视频优化器",
+    "traffic_masquerade": "流量伪装",
+    "traffic_engine": "流量引擎",
+    "network_events": "网络事件",
+    "latency_monitor": "延迟监控",
+    "alerts": "警报",
+    "tailscale": "Tailscale",
+    "netbird": "NetBird",
+    "watchdog": "看门狗",
+    "system_settings": "系统设置",
+    "configuration_backup": "配置备份",
+    "device_access": "设备访问",
+    "ssh_password": "SSH 密码",
+    "connection_quality": "连接质量",
+    "adaptive_polling": "自适应轮询",
+    "hardware": "硬件",
+    "logs": "日志",
+    "system_health_check": "系统健康检查",
+    "software_update": "软件更新",
+    "at_terminal": "AT 终端",
+    "luci": "LuCI",
+    "about_device": "关于设备",
+    "support": "支持",
+    "donate": "捐赠项目",
+    "languages": "语言",
+    "prometheus": "Prometheus"
+  },
+  "switcher": {
+    "opens_new_tab": "在新标签页中打开",
+    "apps": "应用",
+    "current": "当前应用"
+  },
+  "user": {
+    "signed_in": "已登录"
+  },
+  "actions": {
+    "toggle_section": "展开/收起 {{section}} 分区",
+    "toggle_sidebar": "展开/收起侧边栏",
+    "skip_to_content": "跳到主要内容"
+  },
+  "mobile": {
+    "title": "侧边栏",
+    "description": "QManager 的主导航。"
+  },
+  "status": {
+    "watchdog_acting": "处理中",
+    "watchdog_acting_detail": "看门狗正在恢复连接（第 {{tier}} 级）。",
+    "watchdog_settling": "观察中",
+    "watchdog_settling_detail": "看门狗正在确认恢复后连接是否稳定。"
+  }
+}

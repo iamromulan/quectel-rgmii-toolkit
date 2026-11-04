@@ -1,0 +1,172 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_auto_update — Unattended update check + install
+# =============================================================================
+# Called by cron. Checks GitHub Releases API for a newer version and, if found,
+# hands off to qmanager_update to download, install, and reboot.
+#
+# UCI config: quecmanager.update.include_prerelease (respects user preference)
+# Lock:       /tmp/qmanager_update.pid (shared with manual updates)
+# =============================================================================
+
+# Guarded with -f: BusyBox ash exits when `.` cannot find its file.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init() { :; }
+    qlog_info() { logger -t auto_update "$1"; }
+    qlog_warn() { logger -t auto_update "WARN: $1"; }
+fi
+[ -f /usr/lib/qmanager/safe_tmp.sh ] && . /usr/lib/qmanager/safe_tmp.sh
+# Without the helper, fail closed below (no pid trusted = treat as running).
+command -v qm_read_pid >/dev/null 2>&1 || qm_read_pid() { [ -f "$1" ] && head -n 1 "$1"; }
+
+qlog_init "auto_update"
+
+# --- Configuration -----------------------------------------------------------
+
+REPO="dr-dolomite/QManager"
+VERSION_FILE="/etc/qmanager/VERSION"
+PID_FILE="/tmp/qmanager_update.pid"
+UPDATER="/usr/bin/qmanager_update"
+
+# --- Guard: package (ipk) installs update through opkg -----------------------
+
+if [ -f /usr/lib/opkg/info/sdxpinn-qmanager.control ]; then
+    qlog_info "Auto-update skipped: QManager is managed by the package manager"
+    exit 0
+fi
+
+# --- Clock-step guard (issue #9) ---------------------------------------------
+# crond runs a job whose minute a boot-time clock step crosses; this worker can
+# end in an install + reboot, so it fails closed. See schedule_guard.sh.
+if [ -f /usr/lib/qmanager/schedule_guard.sh ]; then
+    . /usr/lib/qmanager/schedule_guard.sh
+    sched_time=$(uci -q get quecmanager.update.auto_update_time 2>/dev/null)
+    if ! _qm_validate_hhmm "$sched_time"; then
+        qlog_warn "Auto-update check skipped: schedule time unreadable ('$sched_time')"
+        exit 0
+    fi
+    if ! _qm_timer_fire_allowed "$sched_time"; then
+        qlog_warn "Auto-update check skipped: $QM_GUARD_REASON (clock-step guard)"
+        exit 0
+    fi
+else
+    qlog_warn "Auto-update check skipped: schedule_guard.sh missing, failing closed"
+    exit 0
+fi
+
+# --- Guard: skip if update already in progress -------------------------------
+
+if [ -f "$PID_FILE" ]; then
+    # B4.1: only a root-owned pidfile naming a live updater counts.
+    pid=$(qm_read_pid "$PID_FILE" qmanager_update 2>/dev/null)
+    if [ -n "$pid" ]; then
+        qlog_info "Update already in progress (PID $pid), skipping"
+        exit 0
+    fi
+    rm -f "$PID_FILE"
+fi
+
+# --- Read current state ------------------------------------------------------
+
+current_version=$(tr -d '[:space:]' < "$VERSION_FILE" 2>/dev/null)
+[ -z "$current_version" ] && current_version="0.0.0"
+
+include_prerelease=$(uci -q get quecmanager.update.include_prerelease 2>/dev/null)
+[ -z "$include_prerelease" ] && include_prerelease="1"
+
+# --- Fetch GitHub releases ---------------------------------------------------
+
+api_url="https://api.github.com/repos/$REPO/releases"
+# B4.1: private temp name; the release JSON picks the download URL.
+tmp_body=$(mktemp /tmp/qm_auto_update_body.XXXXXX 2>/dev/null) || {
+    qlog_warn "Auto-update check skipped: cannot create a temp file"
+    exit 1
+}
+
+if ! command -v curl >/dev/null 2>&1; then
+    qlog_warn "curl is not installed — cannot auto-update"
+    rm -f "$tmp_body"
+    exit 1
+fi
+
+if ! curl -sSL --max-time 15 --connect-timeout 10 -o "$tmp_body" "$api_url" 2>/dev/null \
+   || [ ! -s "$tmp_body" ]; then
+    qlog_warn "Failed to fetch releases from GitHub"
+    rm -f "$tmp_body"
+    exit 1
+fi
+
+# --- Parse latest version ----------------------------------------------------
+
+if [ "$include_prerelease" = "1" ]; then
+    filter='.[0]'
+else
+    filter='[ .[] | select(.prerelease == false) ] | .[0]'
+fi
+
+latest_tag=$(jq -r "$filter | .tag_name // empty" "$tmp_body")
+rm -f "$tmp_body"
+
+if [ -z "$latest_tag" ]; then
+    qlog_info "No releases found"
+    exit 0
+fi
+
+# --- Semver comparison -------------------------------------------------------
+# Exit codes: 0 = $1 newer, 1 = same, 2 = $1 older
+# Duplicated from update.sh — kept self-contained per project convention.
+
+semver_compare() {
+    local a="$1" b="$2"
+    a="${a#v}"; b="${b#v}"
+    local a_ver="${a%%-*}" a_pre="" b_ver="${b%%-*}" b_pre=""
+    case "$a" in *-*) a_pre="${a#*-}" ;; esac
+    case "$b" in *-*) b_pre="${b#*-}" ;; esac
+
+    local a1 a2 a3 b1 b2 b3
+    IFS='.' read a1 a2 a3 <<EOF
+$a_ver
+EOF
+    IFS='.' read b1 b2 b3 <<EOF
+$b_ver
+EOF
+    a1=${a1:-0}; a2=${a2:-0}; a3=${a3:-0}
+    b1=${b1:-0}; b2=${b2:-0}; b3=${b3:-0}
+
+    [ "$a1" -gt "$b1" ] 2>/dev/null && return 0
+    [ "$a1" -lt "$b1" ] 2>/dev/null && return 2
+    [ "$a2" -gt "$b2" ] 2>/dev/null && return 0
+    [ "$a2" -lt "$b2" ] 2>/dev/null && return 2
+    [ "$a3" -gt "$b3" ] 2>/dev/null && return 0
+    [ "$a3" -lt "$b3" ] 2>/dev/null && return 2
+
+    # Equal major.minor.patch — no pre-release > any pre-release
+    [ -z "$a_pre" ] && [ -n "$b_pre" ] && return 0
+    [ -n "$a_pre" ] && [ -z "$b_pre" ] && return 2
+    [ -z "$a_pre" ] && [ -z "$b_pre" ] && return 1
+
+    # Both have pre-release — lexical comparison
+    if [ "$a_pre" != "$b_pre" ]; then
+        _lesser=$(printf '%s\n%s\n' "$a_pre" "$b_pre" | sort | head -1)
+        if [ "$_lesser" = "$a_pre" ]; then
+            return 2
+        else
+            return 0
+        fi
+    fi
+    return 1
+}
+
+# --- Check + install ---------------------------------------------------------
+
+semver_compare "$latest_tag" "$current_version"
+case $? in
+    0) ;; # latest is newer — continue to install
+    *) qlog_info "Up to date ($current_version)"; exit 0 ;;
+esac
+
+download_url="https://github.com/${REPO}/releases/download/${latest_tag}/qmanager.tar.gz"
+qlog_info "Auto-update: installing $latest_tag (current: $current_version)"
+exec "$UPDATER" install "$download_url" "$latest_tag"

@@ -1,0 +1,249 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_neighbour_scanner — Background Neighbour Cell Scanner Worker
+# =============================================================================
+# Spawned by neighbour_scan_start.sh CGI. Queries the modem for LTE and NR5G
+# neighbour cells via AT commands, parses the response, and writes a clean
+# JSON result to /tmp/qmanager_neighbour_scan_result.json.
+#
+# AT Commands:
+#   AT+QENG="neighbourcell"             — LTE intra/inter frequency neighbours
+#   AT+QNWCFG="nr5g_meas_info",1       — Enable NR5G measurement reporting
+#   AT+QNWCFG="nr5g_meas_info"         — Read NR5G neighbour measurements
+#
+# Files:
+#   /tmp/qmanager_neighbour_scan.pid          — Worker PID (exists while running)
+#   /tmp/qmanager_neighbour_scan_result.json  — Final JSON array
+#   /tmp/qmanager_neighbour_scan_error        — Error message if scan failed
+#
+# Install location: /usr/bin/qmanager_neighbour_scanner
+# Dependencies: qcmd, jq
+# =============================================================================
+
+# --- Logging -----------------------------------------------------------------
+# Guarded with -f: BusyBox ash exits when `.` cannot find its file.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init() { :; }
+    qlog_info() { :; }
+    qlog_warn() { :; }
+    qlog_error() { :; }
+fi
+qlog_init "neighbour_scanner"
+
+# --- Configuration -----------------------------------------------------------
+PID_FILE="/tmp/qmanager_neighbour_scan.pid"
+RESULT_FILE="/tmp/qmanager_neighbour_scan_result.json"
+ERROR_FILE="/tmp/qmanager_neighbour_scan_error"
+PARSED_FILE="/tmp/qmanager_neighbour_scan_parsed.tmp"
+# Per-leg stderr: qcmd prints "ERROR: <code>" there on failure, and
+# modem_busy / scan_in_progress (another AT user holds the modem) must read
+# differently from a real AT failure.
+LTE_ERR_FILE="/tmp/qmanager_neighbour_scan_lte_err.tmp"
+NR_ERR_FILE="/tmp/qmanager_neighbour_scan_nr_err.tmp"
+
+# --- Cleanup on exit ---------------------------------------------------------
+cleanup() {
+    rm -f "$PID_FILE" "$PARSED_FILE" "$LTE_ERR_FILE" "$NR_ERR_FILE"
+}
+trap cleanup EXIT INT TERM
+
+# --- Write PID ---------------------------------------------------------------
+echo $$ > "$PID_FILE"
+rm -f "$ERROR_FILE"
+
+qlog_info "Neighbour scanner started (PID: $$)"
+
+# =============================================================================
+# STEP 1: Query LTE neighbour cells via AT+QENG="neighbourcell"
+# =============================================================================
+# Response format (each line):
+#   +QENG: "neighbourcell intra","LTE",<earfcn>,<pcid>,<rsrq>,<rsrp>,<rssi>,<sinr>,<srxlev>,<cell_resel_priority>,<s_non_intra_search>,<thresh_serving_low>,<s_intra_search>
+#   +QENG: "neighbourcell inter","LTE",<earfcn>,<pcid>,<rsrq>,<rsrp>,<rssi>,<sinr>,<srxlev>,<cell_resel_priority>,<threshX_low>,<threshX_high>
+
+lte_output=$(qcmd 'AT+QENG="neighbourcell"' 2>"$LTE_ERR_FILE")
+lte_rc=$?
+
+: > "$PARSED_FILE"
+
+if [ $lte_rc -ne 0 ]; then
+    qlog_warn "AT+QENG neighbourcell failed (exit=$lte_rc) — skipping LTE neighbours"
+else
+    lte_lines=$(printf '%s\n' "$lte_output" | grep '^+QENG:')
+
+    if [ -n "$lte_lines" ]; then
+        qlog_info "LTE neighbour data received, parsing..."
+
+        printf '%s\n' "$lte_lines" | while IFS= read -r line; do
+            # Determine cell type from the line
+            cell_type=""
+            case "$line" in
+                *"neighbourcell intra"*) cell_type="intra" ;;
+                *"neighbourcell inter"*) cell_type="inter" ;;
+                *) continue ;;
+            esac
+
+            # Strip prefix up to "LTE", then extract CSV fields after it
+            # Format: +QENG: "neighbourcell intra","LTE",<earfcn>,<pcid>,<rsrq>,<rsrp>,<rssi>,<sinr>,...
+            csv=$(printf '%s' "$line" | sed 's/.*"LTE",//' | tr -d ' ' | tr -d '\r')
+
+            earfcn=$(printf '%s' "$csv" | cut -d',' -f1)
+            pcid=$(printf '%s' "$csv" | cut -d',' -f2)
+            rsrq=$(printf '%s' "$csv" | cut -d',' -f3)
+            rsrp=$(printf '%s' "$csv" | cut -d',' -f4)
+            rssi=$(printf '%s' "$csv" | cut -d',' -f5)
+            sinr=$(printf '%s' "$csv" | cut -d',' -f6)
+
+            # Sanitize dash/empty values
+            case "$earfcn" in '-'|'') earfcn="" ;; esac
+            case "$pcid"   in '-'|'') pcid=""   ;; esac
+            case "$rsrq"   in '-'|'') rsrq=""   ;; esac
+            case "$rsrp"   in '-'|'') rsrp=""   ;; esac
+            case "$rssi"   in '-'|'') rssi=""   ;; esac
+            case "$sinr"   in '-'|'') sinr=""   ;; esac
+
+            # Output TSV: networkType cellType earfcn pci rsrp rsrq rssi sinr
+            printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+                "LTE" "$cell_type" "$earfcn" "$pcid" "$rsrp" "$rsrq" "$rssi" "$sinr" >> "$PARSED_FILE"
+        done
+    else
+        qlog_info "No LTE neighbour cells found"
+    fi
+fi
+
+# =============================================================================
+# STEP 2: Query NR5G neighbour cells via AT+QNWCFG="nr5g_meas_info"
+# =============================================================================
+# First enable measurement reporting, then read results.
+#
+# Response format:
+#   +QNWCFG: "nr5g_meas_info",<nr_arfcn>,<pci>,<rsrp>,<rsrq>,<sinr>
+
+qcmd 'AT+QNWCFG="nr5g_meas_info",1' >/dev/null 2>&1
+# Brief pause to allow measurement data to populate
+sleep 1
+
+nr_output=$(qcmd 'AT+QNWCFG="nr5g_meas_info"' 2>"$NR_ERR_FILE")
+nr_rc=$?
+
+if [ $nr_rc -ne 0 ]; then
+    qlog_warn "AT+QNWCFG nr5g_meas_info failed (exit=$nr_rc) — skipping NR5G neighbours"
+else
+    nr_lines=$(printf '%s\n' "$nr_output" | grep '^+QNWCFG: "nr5g_meas_info"')
+
+    if [ -n "$nr_lines" ]; then
+        qlog_info "NR5G neighbour data received, parsing..."
+
+        printf '%s\n' "$nr_lines" | while IFS= read -r line; do
+            # Strip prefix: +QNWCFG: "nr5g_meas_info",<enabled>,<arfcn>,<pci>,<rsrp>,<rsrq>,<sinr>
+            # Field 1 is the enabled flag (always 1 when reporting is on) — skip it.
+            csv=$(printf '%s' "$line" | sed 's/.*"nr5g_meas_info",//' | tr -d ' ' | tr -d '\r')
+
+            arfcn=$(printf '%s' "$csv" | cut -d',' -f2)
+            pci=$(printf '%s' "$csv" | cut -d',' -f3)
+            rsrp=$(printf '%s' "$csv" | cut -d',' -f4)
+            rsrq=$(printf '%s' "$csv" | cut -d',' -f5)
+            sinr=$(printf '%s' "$csv" | cut -d',' -f6)
+
+            # Sanitize
+            case "$arfcn" in '-'|'') arfcn="" ;; esac
+            case "$pci"   in '-'|'') pci=""   ;; esac
+            case "$rsrp"  in '-'|'') rsrp=""  ;; esac
+            case "$rsrq"  in '-'|'') rsrq=""  ;; esac
+            case "$sinr"  in '-'|'') sinr=""  ;; esac
+
+            # Output TSV: networkType cellType earfcn pci rsrp rsrq rssi sinr
+            # NR5G doesn't report RSSI, leave empty
+            printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+                "NR5G" "nr5g" "$arfcn" "$pci" "$rsrp" "$rsrq" "" "$sinr" >> "$PARSED_FILE"
+        done
+    else
+        qlog_info "No NR5G neighbour cells found"
+    fi
+fi
+
+# =============================================================================
+# STEP 3: Check if any data was parsed
+# =============================================================================
+# leg_busy <rc> <err_file>: the leg failed because another AT user held the
+# modem, not because the command errored.
+leg_busy() {
+    [ "$1" -ne 0 ] && grep -q -e 'modem_busy' -e 'scan_in_progress' "$2" 2>/dev/null
+}
+
+if [ ! -s "$PARSED_FILE" ]; then
+    # Check if both commands failed entirely
+    if [ $lte_rc -ne 0 ] && [ $nr_rc -ne 0 ]; then
+        if leg_busy "$lte_rc" "$LTE_ERR_FILE" || leg_busy "$nr_rc" "$NR_ERR_FILE"; then
+            qlog_error "Neighbour scan: modem busy on both legs"
+            echo "The modem is busy with another operation. Wait a moment and try again." > "$ERROR_FILE"
+        else
+            qlog_error "Both neighbour cell queries failed"
+            echo "Both AT commands failed" > "$ERROR_FILE"
+        fi
+        exit 1
+    fi
+
+    # One leg failed and the other found nothing: "complete, 0 cells" would
+    # look authoritative while half the read never ran. Report an error.
+    if [ $lte_rc -ne 0 ] || [ $nr_rc -ne 0 ]; then
+        if [ $lte_rc -ne 0 ]; then
+            failed_leg="LTE"; failed_rc="$lte_rc"; failed_err="$LTE_ERR_FILE"
+        else
+            failed_leg="NR5G"; failed_rc="$nr_rc"; failed_err="$NR_ERR_FILE"
+        fi
+        if leg_busy "$failed_rc" "$failed_err"; then
+            qlog_warn "Neighbour scan: $failed_leg leg blocked by a busy modem, other leg found no cells"
+            echo "The modem was busy during the $failed_leg read. Results are incomplete, try again." > "$ERROR_FILE"
+        else
+            qlog_warn "Neighbour scan: $failed_leg leg failed, other leg found no cells"
+            echo "The $failed_leg neighbour read failed. Results are incomplete, try again." > "$ERROR_FILE"
+        fi
+        exit 1
+    fi
+
+    qlog_info "No neighbour cells found"
+    echo "[]" > "${RESULT_FILE}.tmp"
+    mv "${RESULT_FILE}.tmp" "$RESULT_FILE"
+    qlog_info "Neighbour scanner complete — 0 cells"
+    exit 0
+fi
+
+# =============================================================================
+# STEP 4: Build JSON via jq
+# =============================================================================
+# TSV columns: networkType(0) cellType(1) frequency(2) pci(3) rsrp(4) rsrq(5) rssi(6) sinr(7)
+
+jq -Rs '
+    split("\n") | map(select(length > 0) | split("\t")) |
+    to_entries | map(
+        .key as $idx |
+        .value as $row |
+        {
+            id: ($idx + 1 | tostring),
+            networkType: ($row[0] // ""),
+            cellType: ($row[1] // ""),
+            frequency: ($row[2] // "" | if . == "" then 0 else tonumber end),
+            pci: ($row[3] // "" | if . == "" then 0 else tonumber end),
+            signalStrength: ($row[4] // "" | if . == "" then 0 else tonumber end),
+            rsrq: ($row[5] // "" | if . == "" then null else tonumber end),
+            rssi: ($row[6] // "" | if . == "" then null else tonumber end),
+            sinr: ($row[7] // "" | if . == "" then null else tonumber end)
+        }
+    )
+' "$PARSED_FILE" > "${RESULT_FILE}.tmp"
+
+jq_rc=$?
+
+if [ $jq_rc -ne 0 ]; then
+    qlog_error "jq JSON build failed (exit=$jq_rc)"
+    echo "JSON assembly failed" > "$ERROR_FILE"
+    exit 1
+fi
+
+# Atomic rename
+mv "${RESULT_FILE}.tmp" "$RESULT_FILE"
+
+cell_count=$(jq 'length' "$RESULT_FILE" 2>/dev/null || echo "?")
+qlog_info "Neighbour scanner complete — $cell_count cells found"

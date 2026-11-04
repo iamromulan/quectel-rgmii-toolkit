@@ -1,0 +1,741 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_profile_apply — Detached Profile Application Script
+# =============================================================================
+# Spawned as a detached process by apply.sh CGI. Applies a saved profile's
+# settings to the modem and system, one step at a time, with progress
+# tracking via a JSON state file.
+#
+# Usage:
+#   qmanager_profile_apply <profile_id>
+#
+# State file: /tmp/qmanager_profile_state.json
+# PID file:   /tmp/qmanager_profile_apply.pid
+#
+# Apply steps (4 total), ordered least → most disruptive:
+#   1. APN       — AT+CGDCONT (no modem reboot)
+#   2. TTL/HL    — iptables/ip6tables (no modem lock needed)
+#   3. MPDN rule — Verizon PDP3 routing or revert on carrier switch (no reboot)
+#   4. IMEI      — AT+EGMR + AT+CFUN=1,1 reboot (MOST disruptive — STRICTLY last)
+#
+# IMEI is last because AT+CFUN=1,1 may trigger a full USB-bus / system reset
+# that kills this worker mid-run. Every other step (APN, TTL/HL, and the MPDN
+# rule — which is left PINNED, never bare-released) must already be applied and
+# the active marker pre-set BEFORE that reboot, so a worker death at IMEI cannot
+# leave data routing or carrier-switch revert half-done. Rebooting with a pinned
+# MPDN rule is safe; only a bare-released rule + reboot bricks the modem.
+#
+# NOTE: Band locking and network mode are NOT part of SIM Profiles.
+# They will be owned by the Connection Scenarios feature.
+#
+# Architecture: CUSTOM_SIM_PROFILE_ARCHITECTURE_v2.md §5.2, §7
+# Dependencies: qcmd, qlog.sh, profile_mgr.sh
+# Install location: /usr/bin/qmanager_profile_apply
+# =============================================================================
+
+# --- Logging -----------------------------------------------------------------
+# Guarded with -f: BusyBox ash exits when `.` cannot find its file.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init() { :; }
+    qlog_debug() { :; }
+    qlog_info() { :; }
+    qlog_warn() { :; }
+    qlog_error() { :; }
+fi
+qlog_init "profile_apply"
+. /usr/lib/qmanager/cgi_at.sh
+
+# --- Events (for append_event) -----------------------------------------------
+# Must define EVENTS_FILE and MAX_EVENTS before sourcing events.sh
+EVENTS_FILE="/tmp/qmanager_events.json"
+MAX_EVENTS=50
+if [ -f /usr/lib/qmanager/events.sh ]; then
+    . /usr/lib/qmanager/events.sh
+else
+    append_event() { :; }
+fi
+
+# --- Source profile manager library ------------------------------------------
+. /usr/lib/qmanager/profile_mgr.sh
+
+# --- Configuration -----------------------------------------------------------
+STATE_FILE="/tmp/qmanager_profile_state.json"
+TTL_FILE="/etc/firewall.user.ttl"
+# Pending re-apply marker: auto_apply_profile writes this when it finds THIS
+# worker holding the PID lock; we consume it on exit (after the lock is freed).
+PROFILE_PENDING_APPLY_FILE="/tmp/qmanager_profile_pending_apply"
+
+# Sip-don't-gulp gap between AT commands (seconds)
+CMD_GAP=0.3
+# Max seconds to wait for modem to come back after AT+CFUN=1,1
+REBOOT_TIMEOUT=60
+
+# --- Validate arguments ------------------------------------------------------
+PROFILE_ID="$1"
+
+if [ -z "$PROFILE_ID" ]; then
+    qlog_error "No profile ID provided"
+    exit 1
+fi
+
+# Auto mode: set only when spawned by auto_apply_profile (SIM-driven). Enables
+# the stale-SIM guard below. Manual Activate (apply.sh) omits it and keeps its
+# exact prior semantics — no guard, never aborts on a SIM read.
+AUTO_MODE=""
+if [ "$2" = "--auto" ]; then
+    AUTO_MODE=1
+fi
+
+# --- Auto-mode stale-SIM guard helpers ---------------------------------------
+# _auto_read_live_iccid — canonical QCCID parse + iccid_canonicalize, 3x1s
+# retry. Prints the canonicalized ICCID (empty if every read failed). Empty is
+# a "don't know" signal — callers must NOT abort on it (best-effort guard).
+_auto_read_live_iccid() {
+    local _ali_raw
+    local _ali_i
+    _ali_i=1
+    while [ "$_ali_i" -le 3 ]; do
+        _ali_raw=$(qcmd 'AT+QCCID' 2>/dev/null | grep '+QCCID:' | sed 's/+QCCID: //g' | tr -d '\r ')
+        if [ -n "$_ali_raw" ]; then
+            iccid_canonicalize "$_ali_raw"
+            return 0
+        fi
+        sleep 1
+        _ali_i=$((_ali_i + 1))
+    done
+    printf ''
+    return 0
+}
+
+# _auto_sim_guard <phase> — returns 0 (proceed) unless, in auto mode, the profile
+# is SIM-bound AND the live ICCID now differs from the profile's sim_iccid — i.e.
+# a newer SIM switch has superseded this apply. An empty live read never aborts.
+_auto_sim_guard() {
+    local _asg_phase
+    local _asg_live
+    local _asg_want
+    _asg_phase="$1"
+    [ -z "$AUTO_MODE" ] && return 0
+    [ -z "$p_sim_iccid" ] && return 0
+    _asg_live=$(_auto_read_live_iccid)
+    [ -z "$_asg_live" ] && return 0
+    _asg_want=$(iccid_canonicalize "$p_sim_iccid")
+    [ "$_asg_live" = "$_asg_want" ] && return 0
+    qlog_warn "[auto] SIM changed under apply ($_asg_phase): live=$_asg_live != profile=$_asg_want — superseding"
+    return 1
+}
+
+# _consume_pending_apply — called from the EXIT trap STRICTLY AFTER the PID lock
+# is freed, so a re-spawned auto_apply_profile can acquire the lock instead of
+# busy-skipping again. If a pending marker exists, consume it and re-run
+# auto_apply for the FRESHEST live SIM (read now, not the stored value) so the
+# newest state wins; fall back to the stored ICCID only if the live read is
+# empty. Terminates: a re-run that again finds the lock busy just rewrites the
+# pending file for the next worker's exit — no loop.
+_consume_pending_apply() {
+    [ -f "$PROFILE_PENDING_APPLY_FILE" ] || return 0
+    local _cp_stored
+    local _cp_live
+    local _cp_i
+    local _cp_iccid
+    _cp_stored=$(head -1 "$PROFILE_PENDING_APPLY_FILE" 2>/dev/null | cut -f1)
+    rm -f "$PROFILE_PENDING_APPLY_FILE"
+    _cp_live=""
+    _cp_i=1
+    while [ "$_cp_i" -le 3 ]; do
+        _cp_live=$(qcmd 'AT+QCCID' 2>/dev/null | grep '+QCCID:' | sed 's/+QCCID: //g' | tr -d '\r ')
+        [ -n "$_cp_live" ] && break
+        sleep 1
+        _cp_i=$((_cp_i + 1))
+    done
+    _cp_iccid="$_cp_live"
+    [ -z "$_cp_iccid" ] && _cp_iccid="$_cp_stored"
+    [ -z "$_cp_iccid" ] && return 0
+    qlog_info "[requeue] Consuming pending apply; re-running auto_apply for ICCID ...$(printf '%s' "$_cp_iccid" | tail -c 4)"
+    ( . /usr/lib/qmanager/profile_mgr.sh && auto_apply_profile "$_cp_iccid" "requeue" ) </dev/null >/dev/null 2>&1 &
+}
+
+# --- Singleton enforcement via PID file --------------------------------------
+if ! profile_acquire_lock; then
+    qlog_warn "Apply already running (PID: $_profile_lock_pid)"
+    exit 1
+fi
+
+# --- Cleanup trap: remove PID file, THEN consume any queued re-apply ----------
+# Order is critical: the pending re-apply must run only after the PID lock is
+# gone, or the re-spawned auto_apply would busy-skip and drop the marker.
+cleanup() {
+    rm -f "$PROFILE_APPLY_PID_FILE"
+    _consume_pending_apply
+}
+trap cleanup EXIT INT TERM
+
+# =============================================================================
+# State File Management
+# =============================================================================
+
+# Step names (4 steps) — execution AND state-file array order. IMEI is last
+# (reboot-bearing); mpdn_rule runs before it so its rule is pinned pre-reboot.
+STEP_NAMES="apn ttl_hl mpdn_rule imei"
+STEP_COUNT=4
+
+# Step statuses (initialized to "pending")
+step_status_apn="pending"
+step_status_ttl_hl="pending"
+step_status_imei="pending"
+step_status_mpdn_rule="pending"
+
+# Step details
+step_detail_apn=""
+step_detail_ttl_hl=""
+step_detail_imei=""
+step_detail_mpdn_rule=""
+
+# Global state
+apply_status="applying"
+apply_current_step=0
+apply_requires_reboot="false"
+apply_error="null"
+apply_started_at=$(date +%s)
+apply_profile_name=""
+
+# Counters for final status
+steps_done=0
+steps_failed=0
+steps_skipped=0
+
+# --- Write the state file (atomic mv) ----------------------------------------
+write_state() {
+    local tmp="${STATE_FILE}.tmp"
+    local err_val
+    if [ "$apply_error" = "null" ]; then
+        err_val="null"
+    else
+        err_val="$apply_error"
+    fi
+
+    jq -n \
+        --arg status       "$apply_status" \
+        --arg profile_id   "$PROFILE_ID" \
+        --arg profile_name "$apply_profile_name" \
+        --argjson started  "$apply_started_at" \
+        --argjson cur_step "$apply_current_step" \
+        --argjson total    "$STEP_COUNT" \
+        --arg s1_status    "$step_status_apn" \
+        --arg s1_detail    "$step_detail_apn" \
+        --arg s2_status    "$step_status_ttl_hl" \
+        --arg s2_detail    "$step_detail_ttl_hl" \
+        --arg s3_status    "$step_status_mpdn_rule" \
+        --arg s3_detail    "$step_detail_mpdn_rule" \
+        --arg s4_status    "$step_status_imei" \
+        --arg s4_detail    "$step_detail_imei" \
+        --argjson reboot   "$apply_requires_reboot" \
+        --arg err          "$err_val" \
+        '{
+            status: $status,
+            profile_id: $profile_id,
+            profile_name: $profile_name,
+            started_at: $started,
+            current_step: $cur_step,
+            total_steps: $total,
+            steps: [
+                {name: "apn",       status: $s1_status, detail: $s1_detail},
+                {name: "ttl_hl",    status: $s2_status, detail: $s2_detail},
+                {name: "mpdn_rule", status: $s3_status, detail: $s3_detail},
+                {name: "imei",      status: $s4_status, detail: $s4_detail}
+            ],
+            requires_reboot: $reboot,
+            error: (if $err == "null" then null else $err end)
+        }' > "$tmp"
+    mv "$tmp" "$STATE_FILE"
+}
+
+# --- Step lifecycle helpers ---------------------------------------------------
+mark_step_running() {
+    local step="$1"
+    local detail="$2"
+    # Only increment current_step on first transition (pending → running),
+    # not on subsequent detail updates while already running.
+    local prev_status
+    eval "prev_status=\"\$step_status_${step}\""
+    eval "step_status_${step}=\"running\""
+    eval "step_detail_${step}=\"\$detail\""
+    if [ "$prev_status" != "running" ]; then
+        apply_current_step=$((apply_current_step + 1))
+    fi
+    write_state
+}
+
+mark_step_done() {
+    local step="$1"
+    local detail="$2"
+    eval "step_status_${step}=\"done\""
+    eval "step_detail_${step}=\"\$detail\""
+    steps_done=$((steps_done + 1))
+    write_state
+}
+
+mark_step_failed() {
+    local step="$1"
+    local detail="$2"
+    eval "step_status_${step}=\"failed\""
+    eval "step_detail_${step}=\"\$detail\""
+    steps_failed=$((steps_failed + 1))
+    write_state
+}
+
+mark_step_skipped() {
+    local step="$1"
+    local detail="$2"
+    eval "step_status_${step}=\"skipped\""
+    eval "step_detail_${step}=\"\$detail\""
+    steps_skipped=$((steps_skipped + 1))
+    # Don't increment apply_current_step here — mark_step_running already
+    # incremented it when the step first transitioned to "running".
+    write_state
+}
+
+# =============================================================================
+# Load Profile
+# =============================================================================
+qlog_info "Starting profile apply: $PROFILE_ID"
+
+profile_json=$(profile_get "$PROFILE_ID")
+if [ -z "$profile_json" ]; then
+    qlog_error "Profile not found: $PROFILE_ID"
+    apply_status="failed"
+    apply_error="Profile not found"
+    write_state
+    exit 1
+fi
+
+# Extract settings from the profile JSON using jq with proper nested paths
+p_name=$(printf '%s' "$profile_json" | jq -r '.name // empty')
+apply_profile_name="$p_name"
+
+p_apn_name=$(printf '%s' "$profile_json" | jq -r '.settings.apn.name // empty')
+p_apn_cid=$(printf '%s' "$profile_json" | jq -r '.settings.apn.cid // empty | tostring')
+p_pdp_type=$(printf '%s' "$profile_json" | jq -r '.settings.apn.pdp_type // empty')
+p_imei=$(printf '%s' "$profile_json" | jq -r '.settings.imei // empty')
+p_ttl=$(printf '%s' "$profile_json" | jq -r '.settings.ttl // empty | tostring')
+p_hl=$(printf '%s' "$profile_json" | jq -r '.settings.hl // empty | tostring')
+p_mno=$(printf '%s' "$profile_json" | jq -r '.mno // empty')
+p_sim_iccid=$(printf '%s' "$profile_json" | jq -r '.sim_iccid // empty')
+
+# Defaults
+[ -z "$p_apn_cid" ] && p_apn_cid=1
+[ -z "$p_ttl" ] && p_ttl=0
+[ -z "$p_hl" ] && p_hl=0
+
+# Verizon profiles must always use CID 3 for MPDN routing
+if [ "$p_mno" = "Verizon" ]; then
+    p_apn_cid=3
+    qlog_info "Verizon profile: forcing APN CID to 3"
+fi
+
+qlog_info "Applying profile: $p_name (APN=$p_apn_name, CID=$p_apn_cid)"
+
+# Write initial state
+write_state
+
+# --- Auto-mode at-start stale-SIM guard --------------------------------------
+# If the SIM already changed before we ran the first step, this apply was
+# superseded by a newer switch. Abort cleanly WITHOUT touching the active marker
+# (the authoritative apply for the current SIM owns it). The EXIT trap still runs
+# the pending re-apply. "failed" is a terminal state for the status poller.
+if ! _auto_sim_guard "pre-apply"; then
+    apply_status="failed"
+    apply_error="superseded_sim_changed"
+    write_state
+    append_event "profile_failed" "Profile '$p_name' apply superseded — active SIM changed before apply" "warning"
+    exit 0
+fi
+
+# =============================================================================
+# Step 1: APN
+# =============================================================================
+apply_apn() {
+    mark_step_running "apn" "Checking APN configuration..."
+
+    # Skip if no APN specified (avoids writing empty APN to live WAN CID)
+    if [ -z "$p_apn_name" ]; then
+        mark_step_skipped "apn" "No APN specified in profile"
+        return
+    fi
+
+    # Read current APN for this CID
+    local cgdcont_resp
+    cgdcont_resp=$(run_at "AT+CGDCONT?")
+    if [ $? -ne 0 ]; then
+        mark_step_failed "apn" "Failed to read current APN"
+        return
+    fi
+
+    # Parse current APN for the profile's CID
+    # Response format: +CGDCONT: <cid>,"<pdp_type>","<apn>",...
+    # Using awk -F'"' — $2=pdp_type, $4=apn (same approach as current_settings.sh)
+    local current_apn
+    current_apn=$(printf '%s' "$cgdcont_resp" | grep "+CGDCONT: ${p_apn_cid}," | awk -F'"' '{print $4}' | head -1)
+
+    # Skip if APN hasn't changed
+    if [ "$current_apn" = "$p_apn_name" ]; then
+        mark_step_skipped "apn" "APN already set to ${p_apn_name} (CID ${p_apn_cid})"
+        return
+    fi
+
+    local pdp="${p_pdp_type:-IPV4V6}"
+    local at_cmd="AT+CGDCONT=${p_apn_cid},\"${pdp}\",\"${p_apn_name}\""
+    mark_step_running "apn" "Setting APN to ${p_apn_name} (CID ${p_apn_cid})..."
+
+    # 1. Write new APN to NVM first — the modem must know the new config
+    #    before we cycle the network attachment, otherwise COPS=0 reattaches
+    #    against the previously-negotiated APN.
+    local resp
+    resp=$(run_at "$at_cmd")
+    if [ $? -ne 0 ]; then
+        mark_step_failed "apn" "Failed to set APN"
+        return
+    fi
+
+    # 2. Detach from network. At this point NVM holds the new APN.
+    mark_step_running "apn" "Detaching from network..."
+    run_at "AT+COPS=2" >/dev/null 2>&1 || qlog_warn "AT+COPS=2 failed; new APN may not take effect until reboot"
+
+    # 3. Let the detach settle.
+    sleep 2
+
+    # 4. Reattach with the new APN — this is what makes CGCONTRDP reflect
+    #    the new APN on the live session.
+    mark_step_running "apn" "Reattaching to network..."
+    run_at "AT+COPS=0" >/dev/null 2>&1 || qlog_warn "AT+COPS=0 reattach failed; modem may be stuck detached"
+
+    # 5. Let the attach settle before declaring the step done.
+    sleep 2
+
+    mark_step_done "apn" "Set APN to ${p_apn_name} (CID ${p_apn_cid})"
+}
+
+# =============================================================================
+# Step 2: TTL / HL (system-level, no modem lock needed)
+# =============================================================================
+apply_ttl_hl() {
+    mark_step_running "ttl_hl" "Checking TTL/HL settings..."
+
+    # Read current values from the firewall rules file
+    local current_ttl="" current_hl=""
+    if [ -s "$TTL_FILE" ]; then
+        current_ttl=$(grep 'iptables.*--ttl-set' "$TTL_FILE" 2>/dev/null | awk '{for(i=1;i<=NF;i++){if($i=="--ttl-set"){print $(i+1)}}}' | head -1)
+        current_hl=$(grep 'ip6tables.*--hl-set' "$TTL_FILE" 2>/dev/null | awk '{for(i=1;i<=NF;i++){if($i=="--hl-set"){print $(i+1)}}}' | head -1)
+    fi
+
+    # Normalize empties to 0 for comparison
+    [ -z "$current_ttl" ] && current_ttl=0
+    [ -z "$current_hl" ] && current_hl=0
+    local new_ttl="${p_ttl:-0}"
+    local new_hl="${p_hl:-0}"
+
+    if [ "$current_ttl" = "$new_ttl" ] && [ "$current_hl" = "$new_hl" ]; then
+        mark_step_skipped "ttl_hl" "TTL/HL unchanged (TTL=$new_ttl, HL=$new_hl)"
+        return
+    fi
+
+    mark_step_running "ttl_hl" "Applying TTL=$new_ttl, HL=$new_hl..."
+
+    # Clear existing rules
+    if [ "$current_ttl" -gt 0 ] 2>/dev/null; then
+        iptables -t mangle -D POSTROUTING -o rmnet+ -j TTL --ttl-set "$current_ttl" 2>/dev/null
+    fi
+    if [ "$current_hl" -gt 0 ] 2>/dev/null; then
+        ip6tables -t mangle -D POSTROUTING -o rmnet+ -j HL --hl-set "$current_hl" 2>/dev/null
+    fi
+
+    # Apply the live rules, then replace the rules file in one durable write
+    # (an in-place truncate + append could leave it empty after a crash; the
+    # IMEI step after this can reset the host). Empty content is valid: both
+    # values 0 means no rules.
+    local rules=""
+    if [ "$new_ttl" -gt 0 ] 2>/dev/null; then
+        rules="iptables -t mangle -A POSTROUTING -o rmnet+ -j TTL --ttl-set $new_ttl
+"
+        iptables -t mangle -A POSTROUTING -o rmnet+ -j TTL --ttl-set "$new_ttl"
+    fi
+    if [ "$new_hl" -gt 0 ] 2>/dev/null; then
+        rules="${rules}ip6tables -t mangle -A POSTROUTING -o rmnet+ -j HL --hl-set $new_hl
+"
+        ip6tables -t mangle -A POSTROUTING -o rmnet+ -j HL --hl-set "$new_hl"
+    fi
+    if ! printf '%s' "$rules" | qm_durable_write "$TTL_FILE"; then
+        mark_step_failed "ttl_hl" "Applied TTL=$new_ttl, HL=$new_hl but could not save them"
+        return
+    fi
+
+    mark_step_done "ttl_hl" "Applied TTL=$new_ttl, HL=$new_hl"
+}
+
+# =============================================================================
+# Step 4: IMEI (most disruptive — STRICTLY last; carries AT+CFUN=1,1 reboot)
+# =============================================================================
+apply_imei() {
+    mark_step_running "imei" "Checking IMEI..."
+
+    # Skip if no IMEI specified in profile
+    if [ -z "$p_imei" ]; then
+        mark_step_skipped "imei" "No IMEI specified in profile"
+        return
+    fi
+
+    # Read current IMEI
+    local current_imei
+    current_imei=$(run_at "AT+CGSN")
+    if [ $? -ne 0 ]; then
+        mark_step_failed "imei" "Failed to read current IMEI"
+        return
+    fi
+    # Clean up the response (just the 15-digit IMEI)
+    current_imei=$(printf '%s' "$current_imei" | grep -o '[0-9]\{15\}' | head -1)
+
+    if [ "$current_imei" = "$p_imei" ]; then
+        mark_step_skipped "imei" "IMEI already set to $p_imei"
+        return
+    fi
+
+    mark_step_running "imei" "Writing IMEI ${p_imei}..."
+
+    # Write new IMEI to modem NVM
+    local resp
+    resp=$(run_at "AT+EGMR=1,7,\"${p_imei}\"")
+    if [ $? -ne 0 ]; then
+        mark_step_failed "imei" "Failed to write IMEI"
+        return
+    fi
+
+    sleep "$CMD_GAP"
+
+    # Pre-set active profile before modem reboot — AT+CFUN=1,1 may trigger
+    # a full system reboot on some configurations (USB bus reset), which would
+    # kill this script before finalization. APN + TTL already applied above.
+    set_active_profile "$PROFILE_ID"
+    mark_sim_acknowledged
+
+    # Trigger modem reboot to apply IMEI
+    apply_requires_reboot="true"
+    mark_step_running "imei" "Rebooting modem to apply new IMEI..."
+    write_state
+
+    run_at "AT+CFUN=1,1" 2>/dev/null
+    # After CFUN=1,1 the modem goes offline — serial commands will fail
+
+    # Wait for modem to come back
+    local waited=0
+    local modem_back=0
+    while [ "$waited" -lt "$REBOOT_TIMEOUT" ]; do
+        sleep 2
+        waited=$((waited + 2))
+        local check
+        check=$(qcmd "AT" 2>/dev/null)
+        case "$check" in
+            *OK*)
+                modem_back=1
+                break
+                ;;
+        esac
+    done
+
+    if [ "$modem_back" -eq 0 ]; then
+        mark_step_failed "imei" "Modem did not respond after reboot (waited ${REBOOT_TIMEOUT}s)"
+        return
+    fi
+
+    sleep 1
+
+    # Verify new IMEI
+    local verify_imei
+    verify_imei=$(run_at "AT+CGSN")
+    verify_imei=$(printf '%s' "$verify_imei" | grep -o '[0-9]\{15\}' | head -1)
+
+    if [ "$verify_imei" = "$p_imei" ]; then
+        mark_step_done "imei" "IMEI changed to $p_imei (modem rebooted)"
+    else
+        mark_step_failed "imei" "IMEI verify failed: expected $p_imei, got $verify_imei"
+    fi
+}
+
+# =============================================================================
+# Step 3: MPDN rule (Verizon CID routing or revert on carrier switch — no reboot)
+# =============================================================================
+apply_mpdn_rule() {
+    if [ "$p_mno" = "Verizon" ]; then
+        # --- Verizon path: ensure PDP context 3 is active ---
+        mark_step_running "mpdn_rule" "Configuring data routing for Verizon..."
+
+        local current_pdp
+        current_pdp=$(mpdn_get_active_pdp)
+        if [ "$current_pdp" = "3" ]; then
+            mark_step_skipped "mpdn_rule" "Already routed via PDP context 3"
+            return
+        fi
+
+        if mpdn_apply_verizon; then
+            mark_step_done "mpdn_rule" "Routed data via PDP context 3"
+        else
+            mark_step_failed "mpdn_rule" "Failed to set Verizon data routing rule"
+        fi
+    else
+        # --- Non-Verizon path: revert if a Verizon rule is still active ---
+        mark_step_running "mpdn_rule" "Checking for leftover Verizon routing..."
+        local current_pdp
+        current_pdp=$(mpdn_get_active_pdp)
+        if [ "$current_pdp" != "3" ]; then
+            mark_step_skipped "mpdn_rule" "No Verizon routing rule active"
+            return
+        fi
+
+        # Active PDP=3 detected — previous Verizon profile left a rule; revert it
+        mark_step_running "mpdn_rule" "Reverting Verizon data routing..."
+
+        if mpdn_revert_to_default; then
+            mark_step_done "mpdn_rule" "Restored default data routing"
+            apply_requires_reboot="true"
+        else
+            mark_step_failed "mpdn_rule" "Failed to restore default data routing — a reboot is recommended"
+        fi
+    fi
+}
+
+# =============================================================================
+# EXECUTE ALL STEPS (ordered by impact: least disruptive first)
+# =============================================================================
+
+# USB-mode pre-flight for Verizon profiles only
+if [ "$p_mno" = "Verizon" ]; then
+    if ! usb_mode_supports_mpdn; then
+        qlog_warn "USB mode incompatible with Verizon MPDN — skipping all steps"
+        _skip_detail="Blocked: USB mode incompatible with Verizon (requires ECM or RNDIS)"
+        mark_step_failed  "apn"       "usb_mode_incompatible_for_verizon"
+        mark_step_skipped "ttl_hl"    "$_skip_detail"
+        mark_step_skipped "imei"      "$_skip_detail"
+        mark_step_skipped "mpdn_rule" "$_skip_detail"
+        apply_status="failed"
+        apply_error="usb_mode_incompatible_for_verizon"
+        write_state
+        append_event "profile_failed" "Profile '$p_name' failed: USB mode incompatible with Verizon (requires ECM or RNDIS)" "error"
+        exit 1
+    fi
+fi
+
+apply_apn
+sleep "$CMD_GAP"
+
+apply_ttl_hl
+# No CMD_GAP after TTL — it's system-level (iptables), no modem command.
+
+# MPDN BEFORE IMEI: the rule must be applied/reverted and left PINNED while the
+# modem is stable and attached, so it rides through IMEI's reboot intact. (A
+# pinned rule survives AT+CFUN=1,1; only a bare-released rule + reboot bricks.)
+sleep "$CMD_GAP"
+apply_mpdn_rule
+
+# IMEI LAST: AT+CFUN=1,1 may USB-reset / reboot the host and kill this worker.
+# Everything above is already applied + the active marker pre-set inside the
+# IMEI step before the reboot, so a death here cannot half-apply the profile.
+sleep "$CMD_GAP"
+apply_imei
+
+# =============================================================================
+# FINALIZE
+# =============================================================================
+
+# --- Auto-mode pre-finalize stale-SIM guard ----------------------------------
+# A rapid back-to-back switch can supersede this apply while it ran; committing
+# the active marker now would pin the WRONG SIM's profile (the exact bug the
+# read-back fix surfaced). Re-verify the live SIM still matches; on mismatch
+# finalize as "failed" and do NOT write the marker. The EXIT trap's pending
+# re-apply then reconciles to the current SIM. NOTE: the IMEI step pre-sets the
+# marker before AT+CFUN=1,1 (line ~408); that reboot-bearing path is unchanged.
+if [ -n "$AUTO_MODE" ] && ! _auto_sim_guard "pre-finalize"; then
+    apply_status="failed"
+    apply_error="superseded_sim_changed"
+    write_state
+    append_event "profile_failed" "Profile '$p_name' apply superseded — active SIM changed during apply" "warning"
+    exit 0
+fi
+
+# Determine final status
+if [ "$steps_failed" -gt 0 ] && [ "$steps_done" -gt 0 ]; then
+    apply_status="partial"
+    apply_error="partial_apply"
+elif [ "$steps_failed" -gt 0 ]; then
+    apply_status="failed"
+    apply_error="all_steps_failed"
+else
+    apply_status="complete"
+fi
+
+write_state
+
+# Set active profile on success or partial success.
+# Note: IMEI step pre-sets the active marker before AT+CFUN=1,1 (modem reboot
+# may trigger a system reboot on some configs). Re-set here for the non-IMEI
+# path, and clear on total failure.
+if [ "$apply_status" = "complete" ] || [ "$apply_status" = "partial" ]; then
+    set_active_profile "$PROFILE_ID"
+    mark_sim_acknowledged
+    # Force an early poller Tier-2 refresh so the UI (and adaptive-backoff Idle/
+    # Deep tiers) reflect the applied identity/registration within ~2s instead of
+    # waiting for the next tier boundary. This is the single success chokepoint
+    # for ALL profile applies — manual (apply.sh CGI), boot, ICCID auto-apply,
+    # and scenario cron all spawn this worker. Detached so it never delays the
+    # worker's own exit. Idempotent: touch of an existing flag is a no-op.
+    #
+    # The APN / WAN / DNS display fields were relocated off the poller (L1 safety,
+    # see ondemand_radio.sh), so force_tier2 alone no longer refreshes the shown
+    # APN after a profile apply. Refresh the on-demand data-plane cache directly
+    # here — CGCONTRDP / QMAP only, NO L1/mimo read — so the UI reflects the new
+    # APN immediately. Guarded; absent lib -> APN updates on next page open.
+    (
+        sleep 2
+        touch /tmp/qmanager_force_tier2
+        if [ -f /usr/lib/qmanager/ondemand_radio.sh ] && [ -f /usr/lib/qmanager/parse_at.sh ]; then
+            . /usr/lib/qmanager/parse_at.sh
+            . /usr/lib/qmanager/ondemand_radio.sh
+            command -v ondemand_dataplane_refresh >/dev/null 2>&1 && ondemand_dataplane_refresh
+        fi
+    ) </dev/null >/dev/null 2>&1 &
+    # Scenario binding side-effect (D5: NOT a tracked apply step). Install the
+    # profile's scenario schedule cron (when enabled) and snap the modem to the
+    # scenario covering "now"; when the schedule is disabled this applies the
+    # profile's on-activate default scenario instead. scenario_apply is
+    # non-reboot. If the IMEI step triggered AT+CFUN=1,1 / a system reboot, this
+    # may not run — boot-time auto_apply_profile re-runs the worker and installs
+    # the cron then.
+    if [ -f /usr/lib/qmanager/scenario_mgr.sh ]; then
+        . /usr/lib/qmanager/scenario_mgr.sh
+    fi
+    if command -v scenario_install_cron >/dev/null 2>&1; then
+        scenario_install_cron "$PROFILE_ID"
+    fi
+elif [ "$apply_status" = "failed" ]; then
+    clear_active_profile
+    if [ -f /usr/lib/qmanager/scenario_mgr.sh ]; then
+        . /usr/lib/qmanager/scenario_mgr.sh
+    fi
+    if command -v scenario_teardown_cron >/dev/null 2>&1; then
+        scenario_teardown_cron
+    fi
+    if command -v scenario_reset_to_default >/dev/null 2>&1; then
+        scenario_reset_to_default
+    fi
+fi
+
+# --- Emit network event ------------------------------------------------------
+if [ "$apply_status" = "complete" ]; then
+    append_event "profile_applied" "Profile '$p_name' applied successfully" "info"
+elif [ "$apply_status" = "partial" ]; then
+    append_event "profile_applied" "Profile '$p_name' partially applied ($steps_failed step(s) failed)" "warning"
+else
+    append_event "profile_failed" "Profile '$p_name' failed to apply ($steps_failed step(s) failed)" "error"
+fi
+
+qlog_info "Profile apply finished: status=$apply_status (done=$steps_done, failed=$steps_failed, skipped=$steps_skipped)"

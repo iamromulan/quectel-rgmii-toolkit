@@ -1,0 +1,208 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_tower_failover — Tower Lock Failover Daemon
+# =============================================================================
+# Monitors signal quality and clears tower locks if signal degrades below
+# the configured threshold. Reads signal data from the poller's cached JSON
+# at /tmp/qmanager_status.json (no AT commands, no modem contention).
+#
+# Managed by /etc/init.d/qmanager_tower_failover (start/stop).
+# All callers (CGI, cron, boot) go through init.d.
+#
+# Files:
+#   PID:    /tmp/qmanager_tower_failover.pid
+#   Flag:   /tmp/qmanager_tower_failover  (written on failover activation)
+#   Config: /etc/qmanager/tower_lock.json
+#   Cache:  /tmp/qmanager_status.json     (read-only)
+#
+# Dependencies: jq, tower_lock_mgr.sh, qlog.sh
+# Install location: /usr/bin/qmanager_tower_failover
+# =============================================================================
+
+# --- Logging -----------------------------------------------------------------
+# Guarded with -f: BusyBox ash exits when `.` cannot find its file.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init() { :; }
+    qlog_debug() { :; }
+    qlog_info() { :; }
+    qlog_warn() { :; }
+    qlog_error() { :; }
+fi
+qlog_init "tower_failover"
+
+# --- Load tower lock library -------------------------------------------------
+if [ -f /usr/lib/qmanager/tower_lock_mgr.sh ]; then
+    . /usr/lib/qmanager/tower_lock_mgr.sh
+else
+    qlog_error "tower_lock_mgr.sh missing; cannot run"
+    exit 1
+fi
+
+# --- Constants ---------------------------------------------------------------
+PID_FILE="/tmp/qmanager_tower_failover.pid"
+FLAG_FILE="/tmp/qmanager_tower_failover"
+CACHE="/tmp/qmanager_status.json"
+SETTLE=20          # seconds before first check (modem reconnects after lock)
+INTERVAL=20        # seconds between checks
+BAD_LIMIT=3        # consecutive bad readings before failover
+CONFIG_EVERY=6     # re-read config every N cycles
+
+# --- Traps (single registration to avoid BusyBox conflicts) -----------------
+cleanup() { rm -f "$PID_FILE"; }
+trap cleanup EXIT INT TERM
+
+# --- Write PID ---------------------------------------------------------------
+echo $$ > "$PID_FILE"
+qlog_info "Daemon started (PID=$$), settling ${SETTLE}s"
+
+# --- Settle ------------------------------------------------------------------
+i=0
+while [ "$i" -lt "$SETTLE" ]; do
+    sleep 1
+    i=$((i + 1))
+done
+
+# --- Read initial threshold --------------------------------------------------
+threshold=$(tower_config_get ".failover.threshold")
+[ -z "$threshold" ] && threshold=20
+qlog_info "Active: interval=${INTERVAL}s threshold=${threshold}% bad_limit=${BAD_LIMIT}"
+
+# --- Main loop ---------------------------------------------------------------
+bad=0
+cycle=0
+
+while true; do
+    cycle=$((cycle + 1))
+
+    # --- Periodic config validation ------------------------------------------
+    if [ $((cycle % CONFIG_EVERY)) -eq 0 ]; then
+        lte_on=$(tower_config_get ".lte.enabled")
+        nr_on=$(tower_config_get ".nr_sa.enabled")
+        if [ "$lte_on" != "true" ] && [ "$nr_on" != "true" ]; then
+            qlog_info "No active locks — exiting"
+            exit 0
+        fi
+        new_thr=$(tower_config_get ".failover.threshold")
+        if [ -n "$new_thr" ] && [ "$new_thr" != "$threshold" ]; then
+            threshold="$new_thr"
+            qlog_info "Threshold updated to ${threshold}%"
+        fi
+    fi
+
+    # --- Read signal from poller cache ---------------------------------------
+    if [ ! -f "$CACHE" ]; then
+        qlog_debug "No status cache — skipping"
+        sleep "$INTERVAL"
+        continue
+    fi
+
+    modem_ok=$(jq -r '.modem_reachable // false' "$CACHE" 2>/dev/null)
+    if [ "$modem_ok" != "true" ]; then
+        qlog_debug "Modem unreachable — skipping"
+        sleep "$INTERVAL"
+        continue
+    fi
+
+    # Prefer LTE RSRP, fall back to NR
+    rsrp=$(jq -r '.lte.rsrp // empty' "$CACHE" 2>/dev/null)
+    [ -z "$rsrp" ] && rsrp=$(jq -r '.nr.rsrp // empty' "$CACHE" 2>/dev/null)
+
+    # Validate: must be a negative number
+    case "$rsrp" in
+        -[0-9]*) ;;
+        *) rsrp="" ;;
+    esac
+
+    if [ -z "$rsrp" ]; then
+        # No RSRP reading yet — the poller hasn't published a confirmed
+        # signal value for this boot. Treating this as 0% would falsely
+        # trigger failover and clear the user's locks. Wait for the next
+        # interval and re-check; once the poller publishes a real value,
+        # the daemon resumes normal threshold evaluation on the same cycle.
+        # Mirrors the existing modem_reachable=false fast-path above.
+        qlog_debug "No RSRP yet — waiting for poller (skip cycle, bad counter unchanged)"
+        sleep "$INTERVAL"
+        continue
+    fi
+
+    quality=$(calc_signal_quality "$rsrp")
+
+    # --- Evaluate ------------------------------------------------------------
+    if [ "$quality" -lt "$threshold" ]; then
+        bad=$((bad + 1))
+        qlog_warn "Below threshold: ${quality}% < ${threshold}%, bad=${bad}/${BAD_LIMIT}"
+
+        if [ "$bad" -ge "$BAD_LIMIT" ]; then
+            qlog_warn "FAILOVER: ${BAD_LIMIT} consecutive bad — clearing locks"
+
+            # Both RATs must unlock: one shared flag OR'd across them reported
+            # COMPLETE (and wrote enabled=false) with the LTE lock still applied.
+            # qcmd prints a modem ERROR on stdout with rc=0; a transport failure
+            # is rc!=0 with empty stdout. Either one is a failed unlock.
+            lte_ok=0
+            nr_ok=0
+            lte_r=$(tower_unlock_lte 2>/dev/null)
+            lte_rc=$?
+            case "$lte_rc:$lte_r" in 0:*ERROR*|0:) qlog_error "LTE unlock failed" ;; 0:*) lte_ok=1 ;; *) qlog_error "LTE unlock failed (rc=$lte_rc)" ;; esac
+
+            sleep 0.2
+
+            nr_r=$(tower_unlock_nr 2>/dev/null)
+            nr_rc=$?
+            case "$nr_rc:$nr_r" in 0:*ERROR*|0:) qlog_error "NR unlock failed" ;; 0:*) nr_ok=1 ;; *) qlog_error "NR unlock failed (rc=$nr_rc)" ;; esac
+
+            if [ "$lte_ok" -eq 0 ] || [ "$nr_ok" -eq 0 ]; then
+                qlog_error "FAILOVER INCOMPLETE (lte_ok=$lte_ok nr_ok=$nr_ok) — retrying failed unlock(s) in 5s"
+                sleep 5
+                if [ "$lte_ok" -eq 0 ]; then
+                    lte_r=$(tower_unlock_lte 2>/dev/null)
+                    lte_rc=$?
+                    case "$lte_rc:$lte_r" in 0:*ERROR*|0:) ;; 0:*) lte_ok=1 ;; esac
+                    sleep 0.2
+                fi
+                if [ "$nr_ok" -eq 0 ]; then
+                    nr_r=$(tower_unlock_nr 2>/dev/null)
+                    nr_rc=$?
+                    case "$nr_rc:$nr_r" in 0:*ERROR*|0:) ;; 0:*) nr_ok=1 ;; esac
+                fi
+            fi
+
+            if [ "$lte_ok" -eq 1 ] && [ "$nr_ok" -eq 1 ]; then
+                tower_config_update '.lte.enabled = false | .nr_sa.enabled = false'
+                echo "activated" > "$FLAG_FILE"
+                qlog_warn "FAILOVER COMPLETE — locks cleared"
+            else
+                # Record only what actually cleared, so config never claims a
+                # lock is off while the modem still holds it.
+                # The "activated" flag is not written: its presence alone reads as
+                # "failover cleared the locks". Keep watching and try again after
+                # another full bad window.
+                [ "$lte_ok" -eq 1 ] && tower_config_update '.lte.enabled = false'
+                [ "$nr_ok" -eq 1 ] && tower_config_update '.nr_sa.enabled = false'
+                qlog_error "FAILOVER FAILED after retry (lte_ok=$lte_ok nr_ok=$nr_ok) — remaining lock left in place, watching again"
+                if [ "$lte_ok" -eq 1 ] || [ "$nr_ok" -eq 1 ]; then
+                    mtu_reapply_after_bounce
+                fi
+                bad=0
+                sleep "$INTERVAL"
+                continue
+            fi
+
+            # Re-apply custom MTU after interface bounce
+            mtu_reapply_after_bounce
+
+            exit 0
+        fi
+    else
+        if [ "$bad" -gt 0 ]; then
+            qlog_info "Signal recovered: ${quality}% (was bad=${bad})"
+        else
+            qlog_debug "OK: ${quality}% (RSRP=${rsrp:-?})"
+        fi
+        bad=0
+    fi
+
+    sleep "$INTERVAL"
+done
