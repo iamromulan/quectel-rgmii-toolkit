@@ -1,0 +1,73 @@
+#!/bin/sh
+# qmanager_dpi_verify — Quick functional test for Video Optimizer
+# Checks if nfqws is intercepting traffic for hostlisted domains
+# by reading the nftables packet counter before and after a request.
+#
+# This is the same approach as test_masquerade but targets a hostlisted
+# domain to confirm the Video Optimizer pipeline is working end-to-end.
+
+. /usr/lib/qmanager/qlog.sh
+. /usr/lib/qmanager/dpi_helper.sh
+
+qlog_init "dpi_verify"
+
+RESULT_FILE="/tmp/qmanager_dpi_verify.json"
+
+# Must be running with VO enabled
+vo_enabled=$(uci -q get quecmanager.video_optimizer.enabled)
+if [ "$vo_enabled" != "1" ] || [ "$(dpi_get_status)" != "running" ]; then
+    printf '{"success":false,"status":"error","error":"Video Optimizer is not running. Enable it first."}' > "$RESULT_FILE"
+    exit 1
+fi
+
+# Pick a test domain from the hostlist (first one)
+test_domain=""
+if [ -f "$DPI_HOSTLIST" ]; then
+    test_domain=$(grep -v '^[[:space:]]*#' "$DPI_HOSTLIST" | grep -v '^[[:space:]]*$' | head -1)
+fi
+
+if [ -z "$test_domain" ]; then
+    printf '{"success":false,"status":"error","error":"No domains in hostlist to test against."}' > "$RESULT_FILE"
+    exit 1
+fi
+
+qlog_info "Verification test: using domain $test_domain"
+
+# Read counter, make HTTPS request to a hostlisted domain, read counter again
+count_before=$(dpi_get_packet_count)
+curl -4 -so /dev/null --max-time 5 --connect-to "${test_domain}:443:${test_domain}:443" "https://${test_domain}/" 2>/dev/null
+sleep 1
+count_after=$(dpi_get_packet_count)
+
+intercepted=$((count_after - count_before))
+
+if [ "$intercepted" -gt 0 ]; then
+    qlog_info "Verification passed: $intercepted packets intercepted for $test_domain"
+    jq -n \
+        --arg status "complete" \
+        --arg test_domain "$test_domain" \
+        --argjson intercepted "$intercepted" \
+        '{
+            success: true,
+            status: $status,
+            passed: true,
+            test_domain: $test_domain,
+            packets: $intercepted,
+            message: "DPI evasion active — \($intercepted) packets intercepted for \($test_domain)"
+        }' > "$RESULT_FILE"
+else
+    qlog_warn "Verification failed: no packets intercepted for $test_domain"
+    jq -n \
+        --arg status "complete" \
+        --arg test_domain "$test_domain" \
+        '{
+            success: true,
+            status: $status,
+            passed: false,
+            test_domain: $test_domain,
+            packets: 0,
+            message: "No packets intercepted. The cellular interface may have changed — try restarting the service."
+        }' > "$RESULT_FILE"
+fi
+
+exit 0

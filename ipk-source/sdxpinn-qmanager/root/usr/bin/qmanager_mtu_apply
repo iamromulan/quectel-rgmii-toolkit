@@ -1,0 +1,45 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_mtu_apply — One-Shot Daemon: Wait for Interface, Apply MTU
+# =============================================================================
+# Spawned at boot by /etc/init.d/qmanager_mtu. Waits for rmnet_data0 to
+# appear (the modem's primary data interface), then sources the persistent
+# MTU rules file to restore the custom MTU on all rmnet_data interfaces.
+#
+# The rules file (/etc/firewall.user.mtu) is written by the MTU CGI endpoint
+# (/www/cgi-bin/quecmanager/network/mtu.sh) and contains ip-link commands:
+#   ip link set rmnet_data0 mtu <value>
+#   ip link set rmnet_data1 mtu <value>
+#   ...
+#
+# The wait loop exits early once rmnet_data0 is visible. A brief extra settle
+# time is added so that peer interfaces (rmnet_data1+) are also ready.
+#
+# Install location: /usr/bin/qmanager_mtu_apply
+# =============================================================================
+
+MTU_FILE="/etc/firewall.user.mtu"
+
+# Nothing to do if no custom MTU is configured
+[ -f "$MTU_FILE" ] || exit 0
+
+# Wait for the primary rmnet interface (up to 120s, polling every 2s)
+retries=0
+while [ "$retries" -lt 60 ]; do
+    ip link show rmnet_data0 >/dev/null 2>&1 && break
+    sleep 2
+    retries=$((retries + 1))
+done
+
+if ! ip link show rmnet_data0 >/dev/null 2>&1; then
+    logger -t qmanager_mtu_apply "rmnet_data0 not ready after 120s, skipping MTU apply"
+    exit 0
+fi
+
+# Brief settle time for all rmnet_data interfaces to appear
+sleep 2
+
+# Source the rules file to apply MTU to all configured interfaces
+. "$MTU_FILE"
+
+logger -t qmanager_mtu_apply "MTU settings applied from $MTU_FILE"

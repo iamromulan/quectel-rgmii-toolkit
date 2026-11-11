@@ -1,0 +1,580 @@
+{
+  "shared": {
+    "status_active": "已激活",
+    "status_inactive": "未激活",
+    "status_not_installed": "未安装",
+    "validation_domain_required": "请输入域名",
+    "validation_domain_invalid_format": "域名格式无效",
+    "validation_domain_needs_dot": "必须至少包含一个点",
+    "validation_domain_too_long": "域名过长（最多 253 个字符）",
+    "validation_domain_duplicate": "域名已在列表中"
+  },
+  "traffic_engine": {
+    "page_title": "流量引擎",
+    "page_description": "一个 DPI 引擎，两种模式。绕过运营商视频限速，或让 HTTPS 流量看起来像访问白名单服务。同一时间只能运行一种模式。",
+    "mode_video": "视频优化器",
+    "mode_masquerade": "流量伪装",
+    "aria_mode_selector": "引擎模式",
+    "state_starting": "正在启动",
+    "state_stopping": "正在停止",
+    "state_switching": "正在切换",
+    "hero_rate_unit": "包/秒",
+    "tile_uptime": "运行时长",
+    "toast_video_enabled": "视频优化器正在保护视频",
+    "toast_video_disabled": "视频优化器已关闭",
+    "toast_masquerade_enabled": "流量伪装已激活",
+    "toast_masquerade_disabled": "流量伪装已关闭",
+    "error_load_failed": "调制解调器没有响应。请检查连接后重试。",
+    "onboarding_title": "安装流量引擎",
+    "onboarding_description": "一次安装即可解锁视频优化器和流量伪装。",
+    "onboarding_zapret_attribution": "自动从 <link>zapret</link> 项目下载。",
+    "onboarding_install": "安装引擎",
+    "onboarding_installing": "正在安装",
+    "onboarding_check_again": "重新检查",
+    "advanced_remove_button": "移除",
+    "advanced_removing": "正在移除",
+    "advanced_dialog_title": "移除引擎程序？",
+    "advanced_dialog_desc": "两种模式共用此引擎，移除后视频优化器和流量伪装都会关闭，直到您重新安装。",
+    "advanced_toast_success": "引擎程序已移除",
+    "advanced_toast_error": "移除引擎程序失败",
+    "video_tagline": "对抗运营商对视频的限速，减少缓冲。",
+    "masquerade_tagline": "将 HTTPS 伪装成单一白名单域名，使运营商无法识别并限速。",
+    "bypass_label": "绕过热点检测",
+    "bypass_helper_external": "已在其他处设为 TTL {{ttl}} / HL {{hl}}（TTL 页面或 SIM 配置文件）。请在那里管理。",
+    "bypass_toast_enabled": "热点绕过已开启",
+    "bypass_toast_disabled": "热点绕过已关闭",
+    "bypass_toast_error": "无法更改热点绕过",
+    "kernel_module_hint": "请在调制解调器上安装 kmod-nft-queue 软件包，然后重新加载此页面。",
+    "aria_kernel_module_hint": "如何添加数据包队列支持",
+    "stat_empty": "—",
+    "toast_applied": "流量引擎设置已应用",
+    "error_load_title": "无法读取流量引擎",
+    "refresh": "刷新",
+    "kernel_banner_desc": "此固件缺少引擎所需的数据包队列支持，因此两种模式都无法开启。",
+    "aria_bypass_hint": "关于绕过热点检测",
+    "bypass_hint": "运营商通过数据包到达时的跳数识别共享网络的设备。将所有数据包固定为 64，可让调制解调器后面的设备看起来与调制解调器本身一样。",
+    "back": "返回",
+    "pkg_available": "可用",
+    "pkg_missing": "缺失",
+    "package_title": "引擎软件包",
+    "engine_title": "引擎",
+    "package_desc": "两种模式共用的数据包引擎，以及它对固件的要求。",
+    "engine_desc": "选择一种模式，并查看引擎处理的数据包。",
+    "pkg_queue": "数据包队列支持",
+    "pkg_engine": "引擎",
+    "pkg_installed": "已安装",
+    "pkg_source": "来源",
+    "pkg_source_value": "zapret 项目",
+    "pkg_status_busy": "移除前请先关闭引擎。",
+    "pkg_status_idle": "可以随时在此页面重新安装。",
+    "advanced_dialog_confirm": "移除引擎",
+    "label_mode": "模式",
+    "mode_off": "关闭",
+    "mode_reason_kernel": "此固件缺少数据包队列支持，因此无法运行任何模式。",
+    "metric_packets": "已处理数据包",
+    "metric_package": "软件包",
+    "aria_open_package": "查看引擎软件包详情",
+    "pkg_queue_missing": "缺少队列",
+    "live_legend": "已处理数据包（最近 60 秒）",
+    "strip_sni": "SNI：{{domain}}",
+    "strip_fragment": "1 B",
+    "strip_rest": "握手其余部分",
+    "strip_decoy": "诱饵",
+    "strip_real": "真实握手",
+    "strip_aria_video_one": "握手开头以 {{count}} 个单字节片段发出，运营商无法读取完整的主机名。",
+    "strip_aria_video_other": "握手开头以 {{count}} 个单字节片段发出，运营商无法读取完整的主机名。",
+    "strip_aria_masquerade": "两个指向 {{domain}} 的诱饵握手先于真实握手发出，运营商读取到的是伪装域名。",
+    "strip_eyebrow": "运营商看到的内容",
+    "strip_preview": "预览",
+    "strip_axis_first": "最先发送",
+    "strip_axis_last": "最后发送",
+    "hosts_add": "添加",
+    "hosts_empty_title": "暂无主机名",
+    "hosts_empty_desc": "在上方添加视频 CDN 域名，或恢复默认列表。",
+    "hosts_group_custom": "自定义",
+    "saving": "正在保存",
+    "foot_invalid": "请先修正域名再应用。",
+    "foot_restart": "应用时引擎会短暂重启。",
+    "foot_switch_to_apply": "将引擎切换到{{mode}}后生效。",
+    "foot_on_enable": "开启{{mode}}后生效。",
+    "apply_blocked_other": "{{mode}}正在运行。请切换模式后再应用。",
+    "applying": "正在应用",
+    "state_applying": "正在应用",
+    "check_passed": "通过",
+    "check_not_detected": "未检测到",
+    "check_failed": "失败",
+    "check_injection_confirmed_other": "已确认伪造 SNI 注入（已处理 {{count}} 个数据包）",
+    "acts_on_domains_one": "{{count}} 个主机名",
+    "acts_on_domains_other": "{{count}} 个主机名",
+    "hosts_title": "主机名",
+    "hosts_desc": "视频优化器作用的视频 CDN 域名。",
+    "hosts_not_used": "未使用",
+    "aria_video_how": "视频优化器的工作原理",
+    "video_how": "运营商 DPI 通过读取每次握手中的主机名来识别视频。视频优化器将握手开头拆成单字节片段发送，主机名无法完整到达，视频也就不会被标记。",
+    "metric_carrier_reads": "运营商读取到",
+    "carrier_reads_none": "无主机名",
+    "metric_acts_on": "作用于",
+    "aria_edit_hostnames": "编辑主机名",
+    "aria_strength_lower": "降低强度",
+    "aria_strength_raise": "提高强度",
+    "check_blocked": "开启{{mode}}后才能运行此检查。",
+    "aria_masquerade_how": "流量伪装的工作原理",
+    "masquerade_how": "在每次真实握手之前，流量伪装会发送两个指向伪装域名的诱饵。运营商读取诱饵后，会把该连接视为对应的服务。",
+    "acts_on_all": "所有 HTTPS 流量",
+    "chart_aria_idle": "最近 60 秒未处理任何数据包",
+    "chart_empty": "开启一种模式即可查看数据包",
+    "chart_x_start": "60 秒前",
+    "chart_x_end": "现在",
+    "toast_install_success": "流量引擎已安装",
+    "toast_install_error": "无法安装流量引擎",
+    "kernel_banner_title": "缺少数据包队列支持",
+    "chart_aria": "最近 60 秒每秒处理的数据包，峰值 {{max}}"
+  },
+  "ethernet": {
+    "page": {
+      "title": "以太网状态",
+      "description": "监控以太网链路、限制其速度并设置 LAN 网关。",
+      "refresh": "刷新"
+    },
+    "strip": {
+      "label": "以太网端口",
+      "unresponsive": "无响应",
+      "unavailable_title": "无法读取以太网端口",
+      "unavailable_body": "每 10 秒重试一次。未做任何更改。",
+      "absent_title": "无以太网控制器",
+      "absent_body": "此设备没有以太网端口，因此没有可报告或配置的内容。"
+    },
+    "tiles": {
+      "link": {
+        "label": "链路状态",
+        "value_up": "已连接",
+        "value_down": "已断开",
+        "value_unknown": "未知",
+        "caption_up": "线缆已连接到主机端口",
+        "caption_down": "未在主机端口检测到线缆",
+        "caption_unknown": "等待链路状态"
+      },
+      "speed": {
+        "label": "协商速率",
+        "caption": "与对端协商确定",
+        "caption_ceiling": "端口最高支持 {{ceiling}}",
+        "caption_down": "需要活动链路"
+      },
+      "duplex": {
+        "label": "双工模式",
+        "caption": "同时收发",
+        "caption_down": "需要活动链路",
+        "value_full": "全双工",
+        "value_half": "半双工"
+      },
+      "negotiation": {
+        "label": "协商模式",
+        "value_auto": "自动",
+        "value_forced": "强制",
+        "value_unknown": "未知",
+        "caption_auto": "未设置速度限制",
+        "caption_limited": "限制为 {{speed}}"
+      }
+    },
+    "settings": {
+      "title": "以太网端口",
+      "description": "设置端口的链路速度，以及调制解调器为以太网控制器供电的方式。",
+      "row_label": "速度限制",
+      "placeholder": "选择速度",
+      "option_auto": "自动（最大）",
+      "option_10": "10 Mbps",
+      "option_100": "100 Mbps",
+      "option_1000": "1 Gbps",
+      "option_2500": "2.5 Gbps",
+      "consequence": "应用后链路会中断几秒钟，等待端口重新协商。你正在使用该链路。",
+      "consequence_applying": "端口重新协商期间链路已中断。本页面会自行确认新速度。",
+      "consequence_unresponsive": "调制解调器已停止响应，因此在下一次成功读取前锁定此控件。",
+      "consequence_unread": "调制解调器尚未响应，在首次读取完成前没有可更改的内容。",
+      "consequence_absent": "此设备上没有可配置的以太网端口。",
+      "toast_success": "链路速度已更新",
+      "toast_error": "设置链路速度失败",
+      "toast_confirm_error": "无法确认新速度。请检查链路。",
+      "apply": "应用更改",
+      "aspm_label": "PCIe 节能",
+      "aspm_hint_aria": "关于 PCIe 节能",
+      "aspm_hint": "活动状态电源管理（ASPM）允许通往以太网控制器的 PCIe 链路在数据包之间休眠。性能模式让它保持唤醒。",
+      "aspm_consequence": "节能模式可能导致以太网端口断流并增加延迟。应用时不会断开链路。",
+      "aspm_placeholder": "选择策略",
+      "aspm_option_performance": "性能（推荐）",
+      "aspm_option_default": "内核默认",
+      "aspm_option_powersave": "节能",
+      "aspm_option_powersupersave": "最大节能",
+      "toast_aspm_success": "PCIe 节能已更新"
+    }
+  },
+  "lan_config": {
+    "card_title": "LAN 地址",
+    "card_description": "设置路由器的 LAN IP 地址（设备所用的网关）以及本地网络的大小。",
+    "label_gateway": "网关 IP 地址",
+    "help_gateway": "路由器在 LAN 上的自身地址。设备将其用作默认网关。",
+    "label_subnet": "子网掩码",
+    "help_subnet": "以 CIDR 前缀形式选择 LAN 网络的大小。",
+    "action_apply": "应用更改",
+    "confirm_title": "更改 LAN 地址？",
+    "confirm_body": "LAN 将切换为 {{address}}（掩码 {{netmask}}）。此操作会重新绑定网络，您当前的连接将中断。",
+    "confirm_reconnect": "应用后网络会重新绑定，您的连接将短暂中断。使用 DHCP 的路由器或设备会在几秒内自动重新连接；使用静态 IP 的设备则需手动改到新子网。随后请访问新地址以继续。",
+    "confirm_action": "应用并重新连接",
+    "applied_title": "LAN 地址正在更改",
+    "applied_body": "设备正在切换到 {{address}}。连接将中断约 {{seconds}} 秒 — 请重新插拔 LAN 或以太网线缆，然后打开新地址：",
+    "applied_body_auto": "设备正在切换到 {{address}}。设置为 DHCP 的路由器应会在约 {{seconds}} 秒内自动重新连接并获取新网关。若未自动连接，请重新插拔线缆，然后打开新地址：",
+    "reconnecting_title": "正在重新连接到新地址…",
+    "reconnecting_auto_note": "此页面将自动打开新地址。",
+    "reconnecting_opening": "正在打开新地址…",
+    "toast_error_save": "应用 LAN 设置失败",
+    "error_invalid_ipaddr": "请输入有效的单播 IPv4 地址（例如 192.168.1.1）。",
+    "error_invalid_host_in_subnet": "这是所选子网的网络地址或广播地址。请选择可用的主机地址。",
+    "error_invalid_prefix": "请选择 /16 到 /30 之间的子网前缀。",
+    "errors": {
+      "fetch_failed": "加载 LAN 设置失败",
+      "save_failed": "保存 LAN 设置失败",
+      "parse_failed": "无法读取保存响应"
+    }
+  },
+  "dns": {
+    "page_title": "自定义 DNS",
+    "page_description": "使用您偏好的解析器覆盖运营商分配的 DNS 服务器，适用于本地网络内的所有设备。",
+    "provider_custom": "自定义",
+    "placeholder_primary_dns": "示例：8.8.8.8",
+    "placeholder_secondary_dns": "示例：1.1.1.1",
+    "placeholder_tertiary_dns": "示例：8.8.4.4",
+    "placeholder_primary_dns6": "示例：2606:4700:4700::1111",
+    "placeholder_secondary_dns6": "示例：2606:4700:4700::1001",
+    "error_at_least_one": "至少输入一个 DNS 服务器地址",
+    "error_invalid_ipv6": "请输入有效的 IPv6 地址（例如 2606:4700:4700::1111）。",
+    "toast_success_enabled": "自定义 DNS 应用成功",
+    "toast_success_disabled": "已恢复运营商 DNS",
+    "toast_error_apply": "无法应用 DNS 设置",
+    "error_load_title": "无法读取 DNS 设置",
+    "error_load_desc": "调制解调器没有响应。请检查连接后重试。",
+    "errors": {
+      "fetch_failed": "无法加载 DNS 设置",
+      "apply_failed": "无法应用 DNS 设置"
+    },
+    "error_invalid_ipv4": "请输入有效的 IPv4 地址（例如 9.9.9.9）。",
+    "blocked_invalid": "请先修正标出的地址。",
+    "cards": {
+      "resolver": {
+        "title": "解析器",
+        "description": "为网络中的设备分配哪些 DNS 服务器。"
+      },
+      "ipv4": {
+        "title": "IPv4 服务器",
+        "description": "最多三个，按顺序尝试。"
+      },
+      "ipv6": {
+        "title": "IPv6 服务器",
+        "description": "最多两个，供使用 IPv6 的设备。"
+      }
+    },
+    "rows": {
+      "mode": {
+        "label": "自定义 DNS",
+        "consequence_on": "网络中的设备使用下方的服务器。",
+        "consequence_off": "设备使用运营商分配的服务器。"
+      },
+      "provider": {
+        "label": "服务商",
+        "consequence": "填充两组服务器列表。编辑任一地址即变为自定义。"
+      },
+      "primary": "主要",
+      "secondary": "备用",
+      "tertiary": "第三"
+    }
+  },
+  "ttl_mtu": {
+    "page_title": "TTL 与 MTU",
+    "page_description": "重写调制解调器写入蜂窝接口的跳数和数据包大小。",
+    "refresh": "刷新",
+    "strip": {
+      "label": "当前生效",
+      "chip_custom": "自定义",
+      "chip_default": "运营商默认值",
+      "retry": "重试",
+      "unavailable_title": "无法读取 TTL 或 MTU",
+      "unavailable_body": "调制解调器没有响应。其上未做任何更改。",
+      "idle_title": "没有生效的覆盖值",
+      "idle_body": "调制解调器完全按协商结果使用运营商的 TTL 和 MTU。在下方开启其中一项即可改变。"
+    },
+    "tiles": {
+      "shared": {
+        "caption_pending": "仍在读取",
+        "caption_unread": "调制解调器没有响应"
+      },
+      "ttl": {
+        "label": "TTL（IPv4）",
+        "caption_active": "对每个数据包重写",
+        "caption_idle": "不重写"
+      },
+      "hl": {
+        "label": "跳数限制（IPv6）",
+        "caption_active": "对每个数据包重写",
+        "caption_idle": "不重写"
+      },
+      "mtu": {
+        "label": "MTU 大小",
+        "unit": "字节",
+        "caption_active": "运营商默认值为 {{carrier}}",
+        "caption_idle": "由运营商协商确定"
+      }
+    },
+    "banner": {
+      "title": "TTL 和跳数限制来自 {{profile}} 配置",
+      "body": "激活该配置会同时写入这两个值，因此此卡片被锁定，以免两个写入方相互覆盖。请在该配置中修改，或激活一个不设置 TTL 的配置。"
+    },
+    "cards": {
+      "ttl": {
+        "title": "TTL 与跳数限制",
+        "description": "应用于蜂窝接口上的出站数据包。"
+      },
+      "mtu": {
+        "title": "最大传输单元",
+        "description": "蜂窝接口在不分片的情况下能发送的最大数据包。"
+      }
+    },
+    "rows": {
+      "shared": {
+        "consequence_off": "开启重写后才能设置数值。",
+        "consequence_unread": "调制解调器尚未响应，目前没有可更改的内容。"
+      },
+      "rewrite": {
+        "label": "重写跳数",
+        "consequence": "关闭后，调制解调器会原样转发客户端发出的跳数。部分运营商通过统计跳数来识别共享上网。"
+      },
+      "ttl_value": {
+        "label": "TTL 数值",
+        "consequence": "{{min}}–{{max}}。位于调制解调器后一跳的设备通常设为 64。"
+      },
+      "hl_value": {
+        "label": "跳数限制数值",
+        "consequence": "IPv6 的对应设置。除非确定客户端是单栈，否则两项都要设置。"
+      },
+      "mtu_toggle": {
+        "label": "覆盖 MTU",
+        "consequence": "关闭后，蜂窝接口会恢复运营商协商的数值。"
+      },
+      "mtu_value": {
+        "label": "MTU 值",
+        "consequence": "{{min}}–{{max}}。低于约 1400 时，可能会让丢弃 ICMP 的站点无法完成路径 MTU 发现。",
+        "consequence_off": "开启覆盖后才能设置数值。"
+      }
+    },
+    "values": {
+      "on": "开",
+      "off": "关"
+    },
+    "errors": {
+      "value_range": "TTL 和跳数限制都必须在 {{min}} 到 {{max}} 之间。",
+      "no_value": "请先填写 TTL 或跳数限制，再应用。",
+      "mtu_range": "MTU 必须在 {{min}} 到 {{max}} 之间。"
+    },
+    "toast_ttl_applied": "已应用（TTL {{ttl}}，跳数限制 {{hl}}）。",
+    "toast_ttl_cleared": "调制解调器已恢复使用运营商自己的跳数。",
+    "toast_ttl_error": "无法应用 TTL 和跳数限制。",
+    "toast_mtu_applied": "MTU 已设为 {{mtu}}。",
+    "toast_mtu_cleared": "MTU 已恢复为运营商协商的数值。",
+    "toast_mtu_error": "无法应用 MTU。"
+  },
+  "ippt": {
+    "page": {
+      "title": "IP 直通与 USB",
+      "description": "将调制解调器的公网 IP 直接交给一台连接设备，而不是为整个局域网做路由。"
+    },
+    "header": {
+      "refresh": "刷新"
+    },
+    "status": {
+      "label": "上次应用",
+      "mode_title": {
+        "disabled": "路由模式",
+        "eth": "以太网直通",
+        "usb": "USB 直通"
+      },
+      "blurb": {
+        "disabled": "调制解调器为局域网做路由",
+        "eth": "设置为将 WAN IP 交给以太网设备",
+        "usb": "设置为将 WAN IP 交给 USB 设备"
+      },
+      "gateway_off": "局域网网关不提供服务"
+    },
+    "card": {
+      "description": "应用会写入所有设置并重启调制解调器。",
+      "network_description": "与直通设置一起应用，只需一次重启。",
+      "apply": "应用并重启",
+      "mac_label": "目标 MAC 地址",
+      "mac_placeholder": "XX:XX:XX:XX:XX:XX"
+    },
+    "groups": {
+      "passthrough": "直通",
+      "network": "网络"
+    },
+    "rows": {
+      "mode": {
+        "label": "模式",
+        "description": "路由整个局域网，或将公网 IP 直通给一台设备。"
+      },
+      "target": {
+        "label": "目标设备",
+        "pick_mode": "请先选择模式。",
+        "description": "接收公网 IP 的设备。"
+      },
+      "nat": {
+        "label": "NAT 转换",
+        "description": "几乎所有场景都适合启用 NAT。"
+      },
+      "usb": {
+        "label": "USB 连接",
+        "description": "调制解调器通过 USB 连接时使用的协议。"
+      },
+      "dns": {
+        "label": "DNS 代理",
+        "description": "开启后，由调制解调器为目标设备应答 DHCP DNS。"
+      }
+    },
+    "options": {
+      "mode_disabled": "路由",
+      "mode_eth": "以太网",
+      "mode_usb": "USB",
+      "target_automatic": "自动",
+      "target_device": "从局域网",
+      "target_manual": "按 MAC",
+      "nat_on": "启用 NAT",
+      "nat_off": "不启用 NAT",
+      "dns_off": "关闭",
+      "dns_on": "开启"
+    },
+    "mode_note": {
+      "rest": "以太网或 USB 会把 WAN IP 交给一台设备，调制解调器将不再在其局域网网关地址上响应。请保留 Tailscale 或其他登入方式。",
+      "to_passthrough": "应用会重启调制解调器，此标签页将与其断开。之后局域网网关不再响应，请保留 Tailscale 或其他登入方式。"
+    },
+    "dialog": {
+      "title": "现在应用并重启？",
+      "body": "设置会被写入，调制解调器随即重启。本页面将转到重启倒计时并让你退出登录。",
+      "body_gateway": "直通生效后，调制解调器将不再在局域网网关地址上应答。请确认你有 Tailscale、直通设备本身或串口控制台可以重新登入。",
+      "body_persist": "该设置会在后续重启后继续保持。",
+      "cancel": "取消",
+      "confirm": "应用并重启"
+    },
+    "toast_apply_error": "无法应用 IP 直通设置",
+    "errors": {
+      "read_title": "无法读取直通配置",
+      "read_body": "未做任何更改。请重试，或检查调制解调器是否在响应。",
+      "retry": "重试",
+      "card_unread": "调制解调器尚未响应，在首次读取完成前没有可更改的内容。",
+      "mac_invalid": "请输入完整的 MAC 地址，即六组十六进制数字。",
+      "no_changes": "尚未有任何更改。",
+      "device_unpicked": "请先选择一个已连接的设备。"
+    },
+    "device": {
+      "label": "从已连接列表中选择目标设备",
+      "placeholder": "选择设备",
+      "scanning": "正在扫描已连接设备…",
+      "error": "无法加载已连接设备。",
+      "empty": "未找到已连接设备。请将设备连接到调制解调器，然后重新扫描。",
+      "retry": "重试",
+      "rescan": "重新扫描",
+      "rescan_label": "重新扫描已连接设备",
+      "enter_manually": "手动输入",
+      "unknown": "未知设备"
+    },
+    "locked_by_verizon": {
+      "title": "IP 穿透由您的 Verizon 配置文件管理",
+      "body": "活动配置文件：\"{{name}}\"。要更改这些设置，请从自定义配置文件中停用该配置文件。",
+      "cta": "打开自定义配置文件",
+      "blocked": "IP 直通由您的 Verizon 配置文件管理。"
+    }
+  },
+  "masquerade": {
+    "page_title": "流量伪装",
+    "page_description": "让所有 HTTPS 流量在运营商 DPI 看来像是白名单服务",
+    "card_title": "流量伪装",
+    "card_description": "让 HTTPS 流量在运营商 DPI 看来像是白名单服务。",
+    "error_load_failed": "加载设置失败。",
+    "label_enable": "启用流量伪装",
+    "label_domain": "伪装域名",
+    "placeholder_domain": "speedtest.net",
+    "helper_domain": "出现在发送给运营商的虚假 TLS 握手中的域名。",
+    "help_domain": "运营商通过读取 SNI（每次 TLS 握手中以明文发送的服务器名称）来决定限速对象。流量伪装会将其改写为此域名，使你的流量看起来像该服务。",
+    "aria_domain_info": "关于伪装域名的更多信息",
+    "test_hint": "通过表示你的 HTTPS 握手携带了伪造名称，运营商看到的是此域名而非真实域名。",
+    "aria_test_hint": "注入测试通过的含义",
+    "toast_success_enabled": "流量伪装已启用",
+    "toast_success_disabled": "流量伪装已禁用",
+    "toast_error_apply": "保存设置失败",
+    "test_title": "注入测试",
+    "test_description": "确认伪造的 SNI 数据包正被注入 HTTPS 流量",
+    "state_testing": "测试中",
+    "button_run_test": "运行测试",
+    "errors": {
+      "load_failed": "加载设置失败",
+      "save_failed": "保存设置失败",
+      "uninstall_failed": "卸载失败",
+      "test_failed": "测试失败"
+    }
+  },
+  "video_optimizer": {
+    "page_title": "视频优化器",
+    "page_description": "通过针对目标视频 CDN 主机名使用 DPI 规避，绕过运营商的视频限速",
+    "card_title": "视频优化器",
+    "card_description": "通过 DPI 规避在蜂窝连接上绕过运营商视频限速。",
+    "error_load_failed": "加载设置失败。",
+    "label_enable": "启用视频优化器",
+    "label_desync_repeats": "干扰强度",
+    "help_desync_repeats": "每个匹配流发送 DPI 干扰包的次数。数值越高，丢包或乱序时绕过越稳定，但 CPU 占用和上行带宽也会增加。默认 1 已适用于大多数用户。",
+    "helper_desync_repeats": "数值越高越能对抗更严格的 DPI，但会增加少量开销。1 适用于大多数网络。",
+    "verify_hint": "通过表示引擎正在拦截发往主机列表域名的流量并应用 DPI 规避。",
+    "aria_verify_hint": "验证通过的含义",
+    "aria_desync_repeats_info": "关于干扰强度的更多信息",
+    "toast_success_enabled": "视频优化器已启用",
+    "toast_success_disabled": "视频优化器已禁用",
+    "toast_error_apply": "保存设置失败",
+    "verify_title": "验证服务",
+    "verify_description": "确认 DPI 规避正在拦截主机列表中域名的流量",
+    "state_verifying": "验证中",
+    "button_verify_service": "验证服务",
+    "hostlist_card_title": "CDN 主机名列表",
+    "hostlist_card_description": "视频优化器处理的视频 CDN 域名。",
+    "hostlist_error_load_failed": "加载主机名列表失败。",
+    "aria_sort_az": "按字母升序排序",
+    "aria_sort_za": "按字母降序排序",
+    "aria_sort_clear": "清除排序",
+    "aria_menu_options": "主机名列表选项",
+    "menu_export": "导出列表",
+    "menu_import": "导入列表",
+    "placeholder_new_domain": "示例：cdn.example.com",
+    "aria_new_domain": "新域名",
+    "aria_add_domain": "添加域名",
+    "empty_state_no_domains": "尚未配置域名",
+    "aria_custom_domain_badge": "自定义域名",
+    "aria_remove_domain": "移除 {{domain}}",
+    "toast_save_success": "主机名列表已保存",
+    "toast_save_error": "保存主机名列表失败",
+    "toast_restore_success": "已恢复默认主机名",
+    "toast_restore_error": "恢复默认失败",
+    "toast_export_success_one": "已导出 {{count}} 个域名",
+    "toast_export_success_other": "已导出 {{count}} 个域名",
+    "toast_import_no_new": "没有要导入的新域名 — 均已在列表中",
+    "toast_import_success_one": "已导入 {{count}} 个新域名",
+    "toast_import_success_other": "已导入 {{count}} 个新域名",
+    "button_restore_defaults": "恢复默认",
+    "state_restoring": "恢复中",
+    "dialog_restore_title": "恢复默认主机名？",
+    "dialog_restore_desc": "这将使用出厂默认的 CDN 主机名替换当前列表。您添加的所有自定义域名将被移除。",
+    "dialog_action_restore": "恢复默认",
+    "errors": {
+      "load_failed": "加载设置失败",
+      "save_failed": "保存设置失败",
+      "uninstall_failed": "卸载失败",
+      "verify_start_failed": "无法启动验证",
+      "install_start_failed": "无法启动安装",
+      "install_starting": "正在启动安装…",
+      "hostlist_load_failed": "加载主机名列表失败",
+      "hostlist_save_failed": "保存主机名列表失败",
+      "hostlist_restore_failed": "恢复默认失败"
+    }
+  }
+}

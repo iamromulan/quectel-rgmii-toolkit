@@ -1,0 +1,36 @@
+#!/bin/sh /etc/rc.common
+# =============================================================================
+# qmanager_sites — Init Script for the Sites Monitor (procd)
+# =============================================================================
+# Runs qmanager_sites, which times a TCP handshake to each configured website
+# every few minutes and keeps the per-site history. Always enabled: on/off is
+# the "enabled" key in /etc/qmanager/sites.json, which the daemon re-reads
+# (a disabled monitor stays running and idles). See docs/features/sites-monitor.md.
+#
+# Usage:
+#   /etc/init.d/qmanager_sites start|stop|restart|enable|disable
+#
+# Install location: /etc/init.d/qmanager_sites
+# =============================================================================
+
+START=99
+STOP=10
+USE_PROCD=1
+
+start_service() {
+    local log_level
+    log_level=$(cat /etc/qmanager/log_level 2>/dev/null || echo "INFO")
+
+    procd_open_instance "sites"
+    procd_set_param command /usr/bin/qmanager_sites
+    procd_set_param env QLOG_LEVEL="$log_level"
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_set_param respawn 3600 5 5
+    # SIGTERM flushes the pending hour into the rollups before exiting.
+    procd_set_param term_timeout 10
+    procd_close_instance
+}
+
+# No stop_service: rc.common runs it before procd kills the instance, so it
+# would race a running sweep. The daemon clears its own leftovers on start.

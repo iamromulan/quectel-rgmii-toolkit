@@ -1,0 +1,500 @@
+#!/bin/sh
+# =============================================================================
+# qmanager_watchcat — QManager Connection Health Watchdog
+# =============================================================================
+# A pure state machine that monitors internet health by reading the ping
+# daemon's output and executes tiered recovery actions when connectivity
+# is lost. It NEVER pings on its own.
+#
+# States: MONITOR → SUSPECT → RECOVERY → COOLDOWN → (back to MONITOR)
+#         LOCKED (maintenance mode — sleeps until lock removed)
+#
+# Escalation Tiers:
+#   Tier 1: Network re-registration (AT+COPS=2 -> AT+COPS=0)
+#   Tier 2: Radio toggle (AT+CFUN=0/1) — skipped if tower lock active
+#   Tier 3: SIM failover (AT+QUIMSLOT) — Golden Rule sequence
+#   Tier 4: System reboot — token bucket: max N/hour, auto-disables
+#
+# Data flow:
+#   Reads:  /tmp/qmanager_ping.json (from ping daemon)
+#   Writes: /tmp/qmanager_watchcat.json (for poller consumption)
+#           /tmp/qmanager_sim_failover (on Tier 3 success)
+#           /tmp/qmanager_recovery_active (during any recovery)
+#           /etc/qmanager/crash.log (Tier 4 reboot log)
+#
+# Libraries (sourced from /usr/lib/qmanager; function definitions and global
+# initialisers only):
+#   wd_config.sh  UCI read, CFG_* defaults, timing constants
+#   wd_state.sh   state file writer, maintenance-lock check, wd_sleep, radio markers
+#   wd_detect.sh  ping read, quality window, SSR gate
+#   wd_ledger.sh  reboot count from crash.log
+#   wd_tiers.sh   Tiers 1/2/4, escalation, cooldown verdict
+#   wd_sim.sh     Tier 3, fallback, revert, auto-failback, failover record
+#
+# Install location: /usr/bin/qmanager_watchcat
+# Dependencies: jq, qcmd, qlog.sh, events.sh, wd_*.sh
+# =============================================================================
+
+# --- Logging -----------------------------------------------------------------
+# Guarded with -f: BusyBox ash exits when `.` cannot find its file.
+if [ -f /usr/lib/qmanager/qlog.sh ]; then
+    . /usr/lib/qmanager/qlog.sh
+else
+    qlog_init() { :; }; qlog_debug() { :; }; qlog_info() { :; }
+    qlog_warn() { :; }; qlog_error() { :; }; qlog_state_change() { :; }
+    mono_now() { awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0; }
+fi
+[ -f /usr/lib/qmanager/safe_tmp.sh ] && . /usr/lib/qmanager/safe_tmp.sh
+qlog_init "watchcat"
+
+# --- Events (for append_event) -----------------------------------------------
+# Must define EVENTS_FILE and MAX_EVENTS before sourcing events.sh
+EVENTS_FILE="/tmp/qmanager_events.json"
+MAX_EVENTS=50
+if [ -f /usr/lib/qmanager/events.sh ]; then
+    . /usr/lib/qmanager/events.sh
+else
+    append_event() { :; }
+fi
+
+# --- Known-SIMs database (for sim_db_add on SIM revert/failover) -------------
+if [ -f /usr/lib/qmanager/sim_db.sh ]; then
+    . /usr/lib/qmanager/sim_db.sh
+else
+    sim_db_add() { :; }
+fi
+
+# --- Clock sanity (_qm_clock_sane, for the reboot ledger) --------------------
+# Optional: wd_ledger.sh falls back to its own year >= 2025 test when absent.
+[ -f /usr/lib/qmanager/schedule_guard.sh ] && . /usr/lib/qmanager/schedule_guard.sh
+
+# --- Ping-cache reader (conn_state_read) -------------------------------------
+# Without it every read is "stale" and the state machine skips cycles —
+# fail-closed, never a recovery decision on unknown data.
+if [ -f /usr/lib/qmanager/conn_state.sh ]; then
+    . /usr/lib/qmanager/conn_state.sh
+else
+    conn_state_read() { CQ_STALE=1; CQ_STALE_REASON="conn_state.sh missing"; return 1; }
+    conn_state_why() { printf '%s' "$CQ_STALE_REASON"; }
+fi
+
+# --- File Paths --------------------------------------------------------------
+STATE_FILE="/tmp/qmanager_watchcat.json"
+STATE_TMP="/tmp/qmanager_watchcat.json.tmp"
+PID_FILE="/tmp/qmanager_watchcat.pid"
+RECOVERY_FLAG="/tmp/qmanager_recovery_active"
+LOCK_FILE="/tmp/qmanager_watchcat.lock"
+RELOAD_FLAG="/tmp/qmanager_watchcat_reload"
+REVERT_FLAG="/tmp/qmanager_watchcat_revert_sim"
+DISABLED_FLAG="/tmp/qmanager_watchcat_disabled"
+SIM_FAILOVER_FILE="/tmp/qmanager_sim_failover"
+LONG_RUNNING_FLAG="/tmp/qmanager_long_running"
+PROFILE_APPLY_PID="/tmp/qmanager_profile_apply.pid"
+TOWER_LOCK_CONFIG="/etc/qmanager/tower_lock.json"
+CRASH_LOG="/etc/qmanager/crash.log"
+
+# --- Watchdog libraries ------------------------------------------------------
+# Guarded with -f (BusyBox `.` aborts the shell on a missing file) and each lib
+# ends by setting WD_<NAME>_LOADED, so a missing or truncated lib refuses to
+# start here, before the PID file, the trap or any AT command.
+WD_LIB_DIR="${WD_LIB_DIR:-/usr/lib/qmanager}"   # override for the harness only
+for _wd_l in wd_config wd_state wd_detect wd_ledger wd_tiers wd_sim; do
+    if [ -f "$WD_LIB_DIR/$_wd_l.sh" ]; then
+        . "$WD_LIB_DIR/$_wd_l.sh"
+    else
+        qlog_error "watchcat: missing $_wd_l.sh, refusing to start"
+        echo "qmanager_watchcat: missing $WD_LIB_DIR/$_wd_l.sh" >&2
+        exit 1
+    fi
+done
+[ "$WD_CONFIG_LOADED$WD_STATE_LOADED$WD_DETECT_LOADED$WD_LEDGER_LOADED$WD_TIERS_LOADED$WD_SIM_LOADED" = "111111" ] || {
+    qlog_error "watchcat: library set incomplete, refusing to start"; exit 1; }
+
+# =============================================================================
+# EXIT CLEANUP
+# =============================================================================
+
+# Runs on every exit after the PID file is written (normal exit, TERM, INT).
+# Removing STATE_FILE makes "daemon gone" visible to the poller at once instead
+# of leaving a frozen last state behind.
+_wd_exit_cleanup() {
+    trap '' TERM INT
+    [ -n "$_wd_sleep_pid" ] && kill "$_wd_sleep_pid" 2>/dev/null
+    # A TERM between AT+CFUN=0 and AT+CFUN=1 must not leave the radio off.
+    if [ "$wd_radio_down" = "1" ]; then
+        qlog_warn "Exit with radio marked down, restoring AT+CFUN=1"
+        qcmd 'AT+CFUN=1' >/dev/null 2>&1
+        wd_radio_down=0
+    fi
+    # A TERM in the middle of a SIM swap must not leave the poller paused.
+    [ "$WD_SWAP_FLAG_OWNED" = "1" ] && rm -f "$WD_SIM_SWITCH_FLAG"
+    rm -f "$PID_FILE" "$STATE_TMP" "$RECOVERY_FLAG" "$STATE_FILE"
+}
+
+# =============================================================================
+# MAIN LOOP
+# =============================================================================
+
+main() {
+    # Cross-lib reset writes. Each global is owned (declared and initialised) by
+    # one lib (plan 2.1) but, as before the split, these paths reset globals owned
+    # by others. Phase 2 code must write a new global only through its owner's
+    # function.
+    #   LOCKED entry (below): wd_sim revert_settle_active, recheck_interrupted,
+    #       primary_recheck_active; wd_tiers current_tier, cooldown_stale_retries,
+    #       _recovery_marker_emitted; wd_state failure_counter; wd_detect
+    #       quality_breach_counter and, via ssr_hold_clear, ssr_hold /
+    #       ssr_hold_started.
+    #   LOCKED exit: the same set minus revert_settle_active / recheck_interrupted;
+    #       then wd_sim_on_unlock (wd_sim) writes wd_state state and wd_tiers
+    #       recovery_reason / cooldown_remaining.
+    #   natural recovery (suspect/ssr_hold -> monitor) and the "unexpected
+    #       RECOVERY" arm: failure_counter, quality_breach_counter, current_tier,
+    #       primary_recheck_active, _recovery_marker_emitted, ssr_hold_clear.
+    #   wd_detect evaluate_quality: wd_state state, wd_tiers recovery_reason and
+    #       current_tier (via find_next_tier).
+    #   wd_tiers wd_enter_radio_off (from the start gates) and the radio_off arm
+    #       below: wd_state state and failure_counter, wd_detect
+    #       quality_breach_counter and ssr_hold, wd_tiers current_tier,
+    #       cooldown_remaining, cooldown_stale_retries, _recovery_marker_emitted.
+    #   wd_tiers do_recovery / _cooldown_handle_failure / finish_cooldown /
+    #       execute_tier4: wd_state state and failure_counter, wd_detect
+    #       quality_breach_counter, wd_sim revert_settle_active, wd_config
+    #       CFG_ENABLED.
+    #   wd_sim execute_tier3 / sim_failover_fallback / finalize_sim_failover /
+    #       initiate_primary_recheck / check_revert_request / wd_sim_finish_recheck:
+    #       wd_state state and failure_counter, wd_tiers current_tier,
+    #       cooldown_remaining, recovery_reason, _recovery_marker_emitted,
+    #       wd_detect quality_breach_counter.
+    # Loop temporaries _pr_now / _pr_due belong to main.
+
+    local _prev_streak
+    local _radio_streak_base
+    _prev_streak=0
+    # Ping streak at the moment the radio came back on. The ping daemon kept
+    # counting failures while the radio was off; those are not an outage.
+    _radio_streak_base=0
+
+    # Prevent duplicate instances
+    if [ -f "$PID_FILE" ]; then
+        local old_pid
+        old_pid=$(cat "$PID_FILE" 2>/dev/null)
+        if [ -n "$old_pid" ] && kill -0 "$old_pid" 2>/dev/null; then
+            qlog_error "Another watchcat already running (PID $old_pid), exiting"
+            exit 1
+        fi
+        rm -f "$PID_FILE"
+    fi
+    echo $$ > "$PID_FILE"
+
+    # Cleanup runs from the EXIT trap only; TERM/INT just exit so the cleanup
+    # runs exactly once (ash runs the EXIT trap after `exit` in a signal trap).
+    trap '_wd_exit_cleanup' EXIT
+    trap 'exit 143' TERM
+    trap 'exit 130' INT
+
+    # Read configuration
+    read_config
+
+    if [ "$CFG_ENABLED" != "1" ]; then
+        qlog_info "Watchcat disabled in config, exiting"
+        wd_retire_service
+        exit 0
+    fi
+
+    qlog_info "========================================"
+    qlog_info "QManager Watchcat starting (PID $$)"
+    qlog_info "========================================"
+
+    # Count reboots from crash.log (persisted across reboots)
+    count_recent_reboots
+    qlog_info "Reboots in last hour: $reboots_this_hour"
+
+    # Boot settle — let modem and other daemons stabilize
+    qlog_info "Boot settle: waiting ${BOOT_SETTLE}s"
+    write_state
+    wd_sleep "$BOOT_SETTLE"
+
+    # The quality window starts once the settle is over (wd_detect.sh).
+    wd_quality_mark
+
+    # Resume a Tier-3 failover recorded before this start (wd_sim.sh). After the
+    # settle, so the modem answers when the live SIM slot is read.
+    wd_sim_resume_at_start
+
+    # --- Main monitoring loop ---
+    while true; do
+        # Rolling-hour reboot count: first statement of every pass so it also
+        # runs while locked, in cooldown or on any early `continue` below.
+        wd_ledger_tick
+
+        # Check for config reload request. read_config re-resolves the SHARED
+        # quality thresholds (quecmanager.quality_thresholds.*) too, so a change
+        # to the shared degraded thresholds reaches the watchdog when the CGI
+        # drops $RELOAD_FLAG. NOTE for Pass B: quality_thresholds.sh must drop
+        # /tmp/qmanager_watchcat_reload (in addition to /tmp/qmanager_quality_reload
+        # for the poller) so a live shared-threshold edit reaches the watchdog
+        # without a full daemon restart. The watchdog deliberately does NOT consume
+        # /tmp/qmanager_quality_reload itself — the poller owns that flag's deletion.
+        if [ -f "$RELOAD_FLAG" ]; then
+            rm -f "$RELOAD_FLAG"
+            qlog_info "Config reload requested"
+            read_config
+            if [ "$CFG_ENABLED" != "1" ]; then
+                qlog_info "Watchcat disabled via config reload, exiting"
+                state="disabled"
+                write_state
+                wd_retire_service
+                exit 0
+            fi
+        fi
+
+        # Check for user SIM revert request
+        check_revert_request
+
+        # --- LOCKED state check ---
+        if check_locked; then
+            if [ "$state" != "locked" ]; then
+                qlog_info "Entering LOCKED state (maintenance)"
+                state="locked"
+                # If we were mid-recovery, clear the suppression flag so events resume.
+                # Any active recovery is abandoned; the lock holder owns the modem.
+                rm -f "$RECOVERY_FLAG"
+                revert_settle_active="false"
+                # A primary-recheck settle is abandoned with the device on the
+                # primary slot while the failover record still says backup; the
+                # exit below re-arms the settle so finish_cooldown decides.
+                [ "$primary_recheck_active" = "true" ] && recheck_interrupted="true"
+                primary_recheck_active="false"
+                current_tier=0
+                failure_counter=0
+                cooldown_stale_retries=0
+                quality_breach_counter=0
+                _recovery_marker_emitted=""
+                ssr_hold_clear
+            fi
+            write_state
+            wd_sleep "$CFG_CHECK_INTERVAL"
+            continue
+        fi
+
+        # Exiting locked state
+        if [ "$state" = "locked" ]; then
+            qlog_info "Exiting LOCKED state"
+            state="monitor"
+            current_tier=0
+            failure_counter=0
+            cooldown_stale_retries=0
+            quality_breach_counter=0
+            primary_recheck_active="false"
+            _recovery_marker_emitted=""
+            ssr_hold_clear
+            wd_quality_mark
+
+            # Revert an unconfirmed Tier-3 swap / re-arm an interrupted primary
+            # recheck (wd_sim.sh). Not on LOCKED entry: the lock holder owns the
+            # modem until here.
+            wd_sim_on_unlock
+        fi
+
+        # --- COOLDOWN state ---
+        if [ "$state" = "cooldown" ]; then
+            cooldown_remaining=$((cooldown_remaining - CFG_CHECK_INTERVAL))
+            if [ "$cooldown_remaining" -le 0 ]; then
+                cooldown_remaining=0
+                finish_cooldown
+            fi
+            write_state
+            wd_sleep "$CFG_CHECK_INTERVAL"
+            continue
+        fi
+
+        # --- RADIO_OFF state (airplane mode / CFUN 0 or 4 set by the user) ---
+        # Nothing is run and no ping data matters while the radio is off. Resume
+        # monitoring once AT+CFUN? reads 1; an unreadable reply keeps waiting.
+        # Quality evaluation and auto-failback below are skipped by the continue.
+        if [ "$state" = "radio_off" ]; then
+            if [ "$(wd_cfun_now)" = "1" ]; then
+                qlog_info "Radio is back on (AT+CFUN=1) — resuming monitoring"
+                state="monitor"
+                current_tier=0
+                failure_counter=0
+                cooldown_remaining=0
+                cooldown_stale_retries=0
+                quality_breach_counter=0
+                _recovery_marker_emitted=""
+                wd_quality_mark
+                # Time the next outage from now: discount the streak so far.
+                _radio_streak_base=0
+                if read_ping; then
+                    case "$ping_streak_fail" in
+                        ''|*[!0-9]*) ;;
+                        *) _radio_streak_base="$ping_streak_fail" ;;
+                    esac
+                fi
+                # A swap-back deferred while the radio was off (wd_sim.sh).
+                wd_sim_on_radio_back
+            fi
+            write_state
+            wd_sleep "$CFG_CHECK_INTERVAL"
+            continue
+        fi
+
+        # A failover record that startup could not resume (wd_sim.sh), retried
+        # every minute while idle.
+        wd_sim_resume_retry
+
+        # --- Read ping data ---
+        if ! read_ping; then
+            # Stale or missing data — don't make recovery decisions
+            write_state
+            wd_sleep "$CFG_CHECK_INTERVAL"
+            continue
+        fi
+
+        # --- Sanitize the raw probe-failure streak from the ping daemon ---
+        # A stale/garbage value must never crash the loop arithmetic; treat a
+        # non-numeric streak as 0 (no failures observed this cycle).
+        case "$ping_streak_fail" in ''|*[!0-9]*) ping_streak_fail=0 ;; esac
+        # Failures carried over from radio_off do not count. A streak below the
+        # base means the ping daemon reset it (a success): the discount ends.
+        if [ "$_radio_streak_base" -gt 0 ]; then
+            if [ "$ping_streak_fail" -lt "$_radio_streak_base" ]; then
+                _radio_streak_base=0
+            else
+                ping_streak_fail=$((ping_streak_fail - _radio_streak_base))
+            fi
+        fi
+        # Mirror the raw streak into failure_counter purely for the state-file
+        # readout (quality_breach_count stays separate). The recovery DECISION no
+        # longer uses an accumulator — it compares the raw streak directly.
+        failure_counter="$ping_streak_fail"
+
+        # An outage in progress: restart the quality window each pass, so the
+        # first quality decision after it sees only post-outage samples.
+        # The pass that ends the outage restarts it too, so the failed probes of
+        # its last pass do not count against the recovered link.
+        if [ "$ping_streak_fail" -gt 0 ] || [ "$_prev_streak" -gt 0 ]; then
+            wd_quality_mark
+        fi
+        _prev_streak="$ping_streak_fail"
+
+        # The pause after an exhausted ladder ends once the link is healthy: the
+        # ladder left the state at monitor, so the suspect arm below never sees it.
+        # A pause that followed a quality ladder is kept (wd_holdoff_clear, wd_tiers.sh).
+        # A reachable link also proves the radio is on (no AT cost), so a radio-down
+        # marker that a lost AT+CFUN=1 left behind is cleared here.
+        if [ "$state" = "monitor" ] && [ "$ping_streak_fail" -eq 0 ] && [ "$ping_reachable" = "true" ]; then
+            wd_holdoff_clear
+            if [ "$wd_radio_down" = "1" ]; then
+                qlog_info "Link is reachable: clearing the stale radio-down marker"
+                wd_mark_radio_up
+            fi
+        fi
+
+        # --- State machine ---
+        case "$state" in
+            monitor)
+                if [ "$ping_streak_fail" -gt 0 ]; then
+                    prev_state="$state"
+                    state="suspect"
+                    qlog_info "MONITOR → SUSPECT: streak_fail=$ping_streak_fail (threshold=$CFG_FAIL_THRESHOLD)"
+                fi
+                ;;
+
+            suspect|ssr_hold)
+                if [ "$ping_reachable" = "true" ] && [ "$ping_streak_fail" -eq 0 ]; then
+                    # Naturally recovered (the expected SSR self-heal happy path)
+                    qlog_info "SUSPECT → MONITOR: connectivity restored naturally"
+                    state="monitor"
+                    failure_counter=0
+                    quality_breach_counter=0
+                    primary_recheck_active="false"
+                    _recovery_marker_emitted=""
+                    wd_holdoff_clear
+                    ssr_hold_clear
+                else
+                    qlog_debug "SUSPECT: streak_fail=$ping_streak_fail/$CFG_FAIL_THRESHOLD"
+
+                    # Breach is purely the RAW consecutive-probe streak crossing
+                    # the threshold — no per-cycle accumulation (the ping daemon
+                    # already debounces; double-counting here was the re-count bug).
+                    if [ "$ping_streak_fail" -ge "$CFG_FAIL_THRESHOLD" ]; then
+                        # Start gate (wd_detect.sh): no enabled tier or a pause
+                        # after an exhausted ladder leaves state, counters and
+                        # events alone; a radio turned off on purpose parks in
+                        # radio_off. Only "go" runs the ladder.
+                        wd_radio_reconcile
+                        _wd_gate=$(wd_start_gate)
+                        if [ "$_wd_gate" = "radio_off" ]; then
+                            wd_enter_radio_off
+                        elif [ "$_wd_gate" != "go" ]; then
+                            qlog_debug "SUSPECT: recovery not started ($_wd_gate), streak_fail=$ping_streak_fail"
+                        else
+                            qlog_info "SUSPECT → RECOVERY: streak_fail=$ping_streak_fail >= $CFG_FAIL_THRESHOLD"
+                            state="recovery"
+                            recovery_reason="unreachable"
+
+                            # Find first enabled tier
+                            if [ "$current_tier" -eq 0 ]; then
+                                find_next_tier 1
+                            fi
+
+                            # SSR-aware hold: if a recoverable baseband SSR is
+                            # mid-flight, hold the ladder this cycle (leave
+                            # current_tier as found above so fall-through after
+                            # grace escalates exactly as today). continue
+                            # re-evaluates next loop iteration.
+                            if ssr_hold_gate; then
+                                state="ssr_hold"
+                                write_state
+                                wd_sleep "$CFG_CHECK_INTERVAL"
+                                continue
+                            fi
+
+                            do_recovery
+                        fi
+                    fi
+                fi
+                ;;
+
+            recovery)
+                # Should not stay here — do_recovery transitions to cooldown
+                # If we're here, something went wrong
+                qlog_warn "Unexpected RECOVERY state in main loop, resetting"
+                state="monitor"
+                failure_counter=0
+                current_tier=0
+                ;;
+        esac
+
+        # --- Quality-degradation trigger (independent of reachability) ---
+        # Only when the reachability path did NOT already move us into
+        # recovery/cooldown/ssr_hold this cycle. evaluate_quality runs the same
+        # Tier ladder via do_recovery; if it triggers it sets state itself.
+        # NOTE: ssr_hold is intentionally excluded (like recovery/cooldown) — do
+        # NOT add it to this include-set, or quality would fire during a hold.
+        if [ "$state" = "monitor" ] || [ "$state" = "suspect" ]; then
+            evaluate_quality
+        fi
+
+        # --- Auto-failback: blind periodic primary-SIM recheck ---
+        # Opt-in (default off). Only when an active failover exists, we are idle
+        # in monitor, no recheck is already settling, and no user revert is
+        # pending (revert takes precedence). Each attempt is a real outage, so it
+        # is gated to once every CFG_PRIMARY_RECHECK_INTERVAL minutes. A real
+        # recovery this cycle already moved state away from monitor, so it wins.
+        if [ "$CFG_PRIMARY_RECHECK_ENABLED" = "1" ] && [ "$sim_failover_active" = "true" ] && [ "$state" = "monitor" ] && [ "$primary_recheck_active" = "false" ] && [ ! -f "$REVERT_FLAG" ]; then
+            _pr_now=$(mono_now)
+            _pr_due=$((last_recheck_time + CFG_PRIMARY_RECHECK_INTERVAL * 60))
+            if [ "$_pr_now" -ge "$_pr_due" ]; then
+                initiate_primary_recheck
+            fi
+        fi
+
+        write_state
+        wd_sleep "$CFG_CHECK_INTERVAL"
+    done
+}
+
+[ "${WATCHCAT_NO_MAIN:-0}" = "1" ] || main "$@"
