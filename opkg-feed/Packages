@@ -330,7 +330,7 @@ Description:  Sets up a tty from SMD11
 
 
 Package: tailscale-tiny
-Version: 1.104.6
+Version: 1.104.7
 Depends: ca-bundle, kmod-tun
 Conflicts: tailscale, tailscaled
 Source: feeds/packages/net/tailscale
@@ -339,10 +339,10 @@ License: BSD-3-Clause
 Section: net
 Maintainer: Cameron Thompson <iamromulan@github>
 Architecture: aarch64_cortex-a53
-MD5Sum: 833a12f82020e3336c22011fa964f29f
-SHA256sum: 23e7904a4d578f0c51814409e10a6c3b20917980f69f96ca40b57913f76ebbce
-Size: 7687038
-Filename: tailscale-tiny_1.104.6_aarch64_cortex-a53.ipk
+MD5Sum: ca8f5a9664c8f06020090c5d8e8d498a
+SHA256sum: 8b513f2395c60e104063d115468645cab2cf2ef83afe1248f6e84e66cf3ebd70
+Size: 7687602
+Filename: tailscale-tiny_1.104.7_aarch64_cortex-a53.ipk
 Description: Zero config VPN. Stripped combined binary from tiny-tailscale with 25 features kept. Static, no libc dependency.
 
 
